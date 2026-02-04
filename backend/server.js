@@ -434,8 +434,15 @@ app.get('/api/lockbox/template', (req, res) => {
         headerFields = config.header.map(f => f.fieldName);
         headerRow = config.header.map(f => f.constantValue || sampleValues[f.fieldName] || '');
     } else {
+        // Use saved field values from configuration (FLD-001, FLD-002, FLD-003)
         headerFields = ['Lockbox', 'DepositDateTime', 'AmountInTransactionCurrency', 'LockboxBatchOrigin', 'LockboxBatchDestination'];
-        headerRow = ['1234', '2024-01-15T10:30:00', '25000.00', '1234567890', 'SAMPLEDEST'];
+        headerRow = [
+            getFieldDefault('Lockbox') || '1234',
+            '2024-01-15T10:30:00',
+            '25000.00',
+            getFieldDefault('LockboxBatchOrigin') || '1234567890',
+            getFieldDefault('LockboxBatchDestination') || 'SAMPLEDEST'
+        ];
     }
     const headerData = [headerFields, headerRow];
     const headerWs = XLSX.utils.aoa_to_sheet(headerData);
