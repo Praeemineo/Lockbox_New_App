@@ -1108,8 +1108,9 @@ async function getSapServiceDocument() {
     console.log('=== GET SAP Service Document (XML) ===');
     
     try {
+        const destination = await getSapDestination();
         const response = await executeHttpRequest(
-            { destinationName: SAP_DESTINATION_NAME },
+            destination,
             {
                 method: 'GET',
                 url: '/sap/opu/odata/sap/API_LOCKBOXPOST_IN/',
@@ -1134,8 +1135,9 @@ async function getSapMetadata() {
     console.log('=== GET SAP Metadata (XML) ===');
     
     try {
+        const destination = await getSapDestination();
         const response = await executeHttpRequest(
-            { destinationName: SAP_DESTINATION_NAME },
+            destination,
             {
                 method: 'GET',
                 url: '/sap/opu/odata/sap/API_LOCKBOXPOST_IN/$metadata',
@@ -1300,8 +1302,9 @@ async function getLockboxClearing(queryParams) {
     console.log('Entity Key:', entityKey);
     
     try {
+        const destination = await getSapDestination();
         const response = await executeHttpRequest(
-            { destinationName: SAP_DESTINATION_NAME },
+            destination,
             {
                 method: 'GET',
                 url: `/sap/opu/odata/sap/API_LOCKBOXPOST_IN/${entityKey}`,
@@ -1366,8 +1369,9 @@ async function getLockboxClearingXml(queryParams) {
     console.log('Filter:', filter);
     
     try {
+        const destination = await getSapDestination();
         const response = await executeHttpRequest(
-            { destinationName: SAP_DESTINATION_NAME },
+            destination,
             {
                 method: 'GET',
                 url: SAP_CLEARING_PATH,
