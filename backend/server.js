@@ -991,51 +991,6 @@ function extractSapODataError(error) {
     return structuredError;
 }
 
-// Helper function to fetch SAP destination with proper authentication
-// CRITICAL: For BasicAuthentication, we need to bypass JWT token exchange
-async function getSapDestination() {
-    const { getDestination } = require('@sap-cloud-sdk/connectivity');
-    
-    // Try with iss option to use subscriber token instead of user token
-    try {
-        const destination = await getDestination({ 
-            destinationName: SAP_DESTINATION_NAME,
-            iss: process.env.VCAP_APPLICATION ? 
-                JSON.parse(process.env.VCAP_APPLICATION).application_uris[0] : 
-                undefined,  // Use subscriber/provider context
-            useCache: false
-        });
-        
-        console.log('Destination fetched with iss option');
-        return destination;
-    } catch (issError) {
-        console.log('iss option failed, trying with jwt: undefined');
-        
-        // Fallback: try with jwt: undefined
-        try {
-            const destination = await getDestination({ 
-                destinationName: SAP_DESTINATION_NAME,
-                jwt: undefined,
-                useCache: false
-            });
-            
-            console.log('Destination fetched with jwt: undefined');
-            return destination;
-        } catch (jwtError) {
-            console.log('jwt: undefined failed, trying without any token options');
-            
-            // Last fallback: try plain destinationName
-            const destination = await getDestination({ 
-                destinationName: SAP_DESTINATION_NAME,
-                useCache: false
-            });
-            
-            console.log('Destination fetched with plain destinationName');
-            return destination;
-        }
-    }
-}
-
 // Helper function to POST to SAP using SAP Cloud SDK via BTP Destination
 // SAP Cloud SDK handles Cloud Connector routing automatically
 async function postToSapApi(payload) {
@@ -1048,24 +1003,9 @@ async function postToSapApi(payload) {
     console.log('Payload:', JSON.stringify(payload, null, 2));
     
     try {
-        // Fetch destination with comprehensive logging
-        const destination = await getSapDestination();
-        
-        console.log('=== DESTINATION OBJECT DETAILS ===');
-        console.log('Destination name:', destination?.name);
-        console.log('Destination URL:', destination?.url);
-        console.log('Destination type:', destination?.type);
-        console.log('Destination authentication:', destination?.authentication);
-        console.log('Destination proxyType:', destination?.proxyType);
-        console.log('Has username:', !!destination?.username);
-        console.log('Has password:', !!destination?.password);
-        console.log('Username value:', destination?.username ? `${destination.username.substring(0, 3)}***` : 'MISSING');
-        console.log('All destination keys:', Object.keys(destination || {}));
-        console.log('=== END DESTINATION DETAILS ===');
-        
-        // Execute HTTP request using the fetched destination object
+        // Simple pattern - let SDK handle authentication automatically
         const response = await executeHttpRequest(
-            destination,
+            { destinationName: SAP_DESTINATION_NAME },  // BTP Destination handles Basic Auth
             {
                 method: 'POST',
                 url: url,
