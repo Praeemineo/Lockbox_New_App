@@ -15,4 +15,4 @@ modules:
 resources:
   - name: lockbox-db
     parameters:
-      service-plan: trial  # Use trial plan for dev
+      service-plan: free  # Use free plan for dev
