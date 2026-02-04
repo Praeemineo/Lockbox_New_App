@@ -991,6 +991,17 @@ function extractSapODataError(error) {
     return structuredError;
 }
 
+// Helper function to fetch SAP destination with proper authentication
+// CRITICAL: jwt: undefined forces provider token flow for BasicAuthentication
+async function getSapDestination() {
+    const { getDestination } = require('@sap-cloud-sdk/connectivity');
+    return await getDestination({ 
+        destinationName: SAP_DESTINATION_NAME,
+        jwt: undefined,  // 👈 CRITICAL: Force provider token, ignore user JWT
+        useCache: false  // Get fresh credentials
+    });
+}
+
 // Helper function to POST to SAP using SAP Cloud SDK via BTP Destination
 // SAP Cloud SDK handles Cloud Connector routing automatically
 async function postToSapApi(payload) {
