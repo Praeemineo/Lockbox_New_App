@@ -1,0 +1,17 @@
+{
+  "name": "lockbox-app",
+  "version": "1.0.0",
+  "description": "SAP Lockbox Application - MTA Root",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "build": "mbt build",
+    "build:dev": "mbt build -e mta-dev.mtaext",
+    "build:prod": "mbt build -e mta-prod.mtaext",
+    "deploy": "./deploy.sh",
+    "clean": "rm -rf mta_archives .mta"
+  },
+  "devDependencies": {
+    "mbt": "^1.2.0"
+  }
+}
