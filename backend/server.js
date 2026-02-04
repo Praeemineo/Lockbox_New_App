@@ -1166,8 +1166,9 @@ async function getLockboxBatchDetails(internalKey, batch) {
     // Read specific lockbox batch: /LockboxBatch(LockboxBatchInternalKey='xxx',LockboxBatch='001')
     const url = `${SAP_API_PATH}/LockboxBatch(LockboxBatchInternalKey='${internalKey}',LockboxBatch='${batch}')`;
     
+    const destination = await getSapDestination();
     const response = await executeHttpRequest(
-        { destinationName: SAP_DESTINATION_NAME },
+        destination,  // Use fetched destination with jwt: undefined
         {
             method: 'GET',
             url: url,
