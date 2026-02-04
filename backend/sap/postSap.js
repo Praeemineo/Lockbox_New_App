@@ -20,6 +20,14 @@ async function postToSapApi(payload) {
     console.log('sap-client:', SAP_CONFIG.CLIENT);
     console.log('Payload:', JSON.stringify(payload, null, 2));
     
+    // Check if running in BTP environment
+    const isBTPEnvironment = process.env.VCAP_SERVICES || process.env.VCAP_APPLICATION;
+    if (!isBTPEnvironment) {
+        console.warn('⚠️  WARNING: Not running in BTP environment (VCAP_SERVICES not found)');
+        console.warn('⚠️  Destination service will not be available');
+        console.warn('⚠️  Use useMock=true for local testing');
+    }
+    
     try {
         const response = await executeHttpRequest(
             { destinationName: SAP_CONFIG.DESTINATION_NAME },
@@ -43,21 +51,57 @@ async function postToSapApi(payload) {
         return response;
     } catch (error) {
         console.error('SAP API Error:', error.message);
+        console.error('Error Name:', error.name);
+        console.error('Error Stack:', error.stack);
+        
+        // Enhanced error details for troubleshooting
+        const errorDetails = {
+            message: error.message || 'Unknown error',
+            httpStatus: null,
+            responseData: null,
+            responseXml: null,
+            rootCause: null,
+            isDestinationError: false,
+            isBTPEnvironment: isBTPEnvironment
+        };
+        
+        // Check if it's a destination error
+        const errorMsg = error.message?.toLowerCase() || '';
+        if (errorMsg.includes('destination') || errorMsg.includes('vcap') || errorMsg.includes('not found')) {
+            errorDetails.isDestinationError = true;
+            errorDetails.message = !isBTPEnvironment 
+                ? 'SAP BTP Destination Service not available (not running in BTP environment). Use useMock=true for local testing.'
+                : 'SAP Destination "' + SAP_CONFIG.DESTINATION_NAME + '" not found or not configured in BTP Cockpit';
+        }
         
         // Log detailed error response from SAP
         if (error.response) {
+            errorDetails.httpStatus = error.response.status;
+            errorDetails.responseData = error.response.data;
+            
             console.error('SAP Response Status:', error.response.status);
             console.error('SAP Response Headers:', JSON.stringify(error.response.headers, null, 2));
             console.error('SAP Response Data:', JSON.stringify(error.response.data, null, 2));
+            
+            // Try to extract XML error message if present
+            if (typeof error.response.data === 'string' && error.response.data.includes('<?xml')) {
+                errorDetails.responseXml = error.response.data;
+            }
         }
         
         if (error.rootCause) {
+            errorDetails.rootCause = error.rootCause.message;
             console.error('Root Cause:', error.rootCause.message);
             if (error.rootCause.response) {
+                errorDetails.httpStatus = error.rootCause.response.status;
+                errorDetails.responseData = error.rootCause.response.data;
                 console.error('Root Cause Response Status:', error.rootCause.response.status);
                 console.error('Root Cause Response Data:', JSON.stringify(error.rootCause.response.data, null, 2));
             }
         }
+        
+        // Attach detailed error info to the error object for upstream handling
+        error.sapErrorDetails = errorDetails;
         
         throw error;
     }
