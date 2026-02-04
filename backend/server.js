@@ -992,14 +992,48 @@ function extractSapODataError(error) {
 }
 
 // Helper function to fetch SAP destination with proper authentication
-// CRITICAL: jwt: undefined forces provider token flow for BasicAuthentication
+// CRITICAL: For BasicAuthentication, we need to bypass JWT token exchange
 async function getSapDestination() {
     const { getDestination } = require('@sap-cloud-sdk/connectivity');
-    return await getDestination({ 
-        destinationName: SAP_DESTINATION_NAME,
-        jwt: undefined,  // 👈 CRITICAL: Force provider token, ignore user JWT
-        useCache: false  // Get fresh credentials
-    });
+    
+    // Try with iss option to use subscriber token instead of user token
+    try {
+        const destination = await getDestination({ 
+            destinationName: SAP_DESTINATION_NAME,
+            iss: process.env.VCAP_APPLICATION ? 
+                JSON.parse(process.env.VCAP_APPLICATION).application_uris[0] : 
+                undefined,  // Use subscriber/provider context
+            useCache: false
+        });
+        
+        console.log('Destination fetched with iss option');
+        return destination;
+    } catch (issError) {
+        console.log('iss option failed, trying with jwt: undefined');
+        
+        // Fallback: try with jwt: undefined
+        try {
+            const destination = await getDestination({ 
+                destinationName: SAP_DESTINATION_NAME,
+                jwt: undefined,
+                useCache: false
+            });
+            
+            console.log('Destination fetched with jwt: undefined');
+            return destination;
+        } catch (jwtError) {
+            console.log('jwt: undefined failed, trying without any token options');
+            
+            // Last fallback: try plain destinationName
+            const destination = await getDestination({ 
+                destinationName: SAP_DESTINATION_NAME,
+                useCache: false
+            });
+            
+            console.log('Destination fetched with plain destinationName');
+            return destination;
+        }
+    }
 }
 
 // Helper function to POST to SAP using SAP Cloud SDK via BTP Destination
