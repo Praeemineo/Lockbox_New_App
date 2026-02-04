@@ -1005,6 +1005,31 @@ async function postToSapApi(payload) {
         return response;
         
     } catch (error) {
+        // Log raw error first to see what we're dealing with
+        console.error('=== RAW ERROR OBJECT ===');
+        console.error('Error type:', error.constructor.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack?.split('\n').slice(0, 3).join('\n'));
+        console.error('Error keys:', Object.keys(error));
+        console.error('Has response:', !!error.response);
+        console.error('Has rootCause:', !!error.rootCause);
+        console.error('Has cause:', !!error.cause);
+        
+        // Log specific error properties that SAP Cloud SDK might use
+        if (error.response) {
+            console.error('error.response.status:', error.response.status);
+            console.error('error.response.statusText:', error.response.statusText);
+        }
+        if (error.rootCause) {
+            console.error('error.rootCause.message:', error.rootCause.message);
+            console.error('error.rootCause has response:', !!error.rootCause.response);
+        }
+        if (error.cause) {
+            console.error('error.cause.message:', error.cause.message);
+            console.error('error.cause has response:', !!error.cause.response);
+        }
+        console.error('=== END RAW ERROR ===');
+        
         // Extract structured SAP OData error
         const structuredError = extractSapODataError(error);
         
