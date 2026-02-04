@@ -58,14 +58,11 @@ modules:
   #         forwardAuthToken: true
 
 resources:
-  # PostgreSQL Database Service
+  # PostgreSQL Database Service (Using existing free plan)
   - name: lockbox-db
-    type: org.cloudfoundry.managed-service
+    type: org.cloudfoundry.existing-service
     parameters:
-      service: postgresql-db
-      service-plan: standard
-    properties:
-      database-name: lockbox
+      service-name: Postgresql
 
   # SAP Destination Service
   - name: lockbox-destination
