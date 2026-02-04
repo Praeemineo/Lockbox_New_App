@@ -1018,13 +1018,22 @@ async function postToSapApi(payload) {
     }
     
     try {
-        // For on-premise destinations with BasicAuthentication,
-        // explicitly specify to use destination credentials
+        // SAP Cloud SDK v4 - For BasicAuthentication destinations
+        // Use the destination object directly instead of just the name
+        const { getDestination } = require('@sap-cloud-sdk/connectivity');
+        const destination = await getDestination({ 
+            destinationName: SAP_DESTINATION_NAME,
+            useCache: false  // Don't use cached destination to get fresh credentials
+        });
+        
+        console.log('Destination fetched:', destination?.name);
+        console.log('Destination authentication:', destination?.authentication);
+        console.log('Has username:', !!destination?.username);
+        console.log('Has password:', !!destination?.password);
+        
+        // Execute HTTP request using the fetched destination object
         const response = await executeHttpRequest(
-            { 
-                destinationName: SAP_DESTINATION_NAME,
-                jwt: null  // Don't use JWT, use destination's basic auth credentials
-            },
+            destination,  // Pass the full destination object, not just the name
             {
                 method: 'POST',
                 url: url,
