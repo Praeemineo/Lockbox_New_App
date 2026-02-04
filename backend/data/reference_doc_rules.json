@@ -1,0 +1,57 @@
+{
+  "rules": [
+    {
+      "id": "70539e2f-dce4-4c0c-ac3e-5efca307255a",
+      "ruleId": "RULE-001",
+      "ruleName": "Document Number",
+      "description": "Use Accounting Document number (BELNR) as reference",
+      "ruleType": "BELNR",
+      "logicCondition": "lbinvref = belnr",
+      "documentIdType": "Accounting document",
+      "priority": 1,
+      "isDefault": false,
+      "active": true,
+      "createdAt": "2026-02-03T12:51:49.149Z"
+    },
+    {
+      "id": "adb8c709-dbfd-4d5e-b55f-cbde11d7775e",
+      "ruleId": "RULE-002",
+      "ruleName": "Reference Document Number",
+      "description": "Use Invoice Reference number (XBLNR) as reference",
+      "ruleType": "XBLNR",
+      "logicCondition": "lbinvref = XBLNR",
+      "documentIdType": "Invoice reference",
+      "priority": 2,
+      "isDefault": true,
+      "active": true,
+      "createdAt": "2026-02-03T12:51:49.149Z"
+    },
+    {
+      "id": "7eed84db-50fd-4647-ba1e-ab7db4abb5bf",
+      "ruleId": "RULE-003",
+      "ruleName": "Doc Number First - If Not Found Reference Doc",
+      "description": "Try Accounting Document first, if not found use Invoice Reference",
+      "ruleType": "BELNR_THEN_XBLNR",
+      "logicCondition": "lbinvref = belnr else XBLNR",
+      "documentIdType": "Accounting document exists else Invoice document",
+      "priority": 3,
+      "isDefault": false,
+      "active": true,
+      "createdAt": "2026-02-03T12:51:49.149Z"
+    },
+    {
+      "id": "2f07ee39-544e-4666-bed5-0028ac418baa",
+      "ruleId": "RULE-004",
+      "ruleName": "Ref Document First - If Not Found Doc Number",
+      "description": "Try Invoice Reference first, if not found use Accounting Document",
+      "ruleType": "XBLNR_THEN_BELNR",
+      "logicCondition": "lbinvref = XBLNR else belnr",
+      "documentIdType": "Invoice document else Accounting document",
+      "priority": 4,
+      "isDefault": false,
+      "active": true,
+      "createdAt": "2026-02-03T12:51:49.149Z"
+    }
+  ],
+  "selectedRule": "RULE-004"
+}

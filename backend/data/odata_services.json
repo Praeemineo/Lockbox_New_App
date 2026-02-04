@@ -1,0 +1,18 @@
+[
+  {
+    "id": "f1ad6d4a-721a-429c-b08a-e6064793c2df",
+    "serviceId": "SVC-001",
+    "system": "S4HANA On Premise",
+    "productVersion": "V2",
+    "technicalServiceName": "API_LOCKBOXPOST_IN",
+    "externalServiceName": "Lockbox Posting API",
+    "serviceDescription": "UPDATED: SAP Lockbox Post Service - Main Production",
+    "serviceOperations": "POST, GET, DELETE",
+    "httpsApiOdata": "/sap/opu/odata/sap/API_LOCKBOXPOST_IN/",
+    "authType": "BASIC",
+    "destination": "S4HANA_SYSTEM_DESTINATION",
+    "active": true,
+    "createdAt": "2026-01-07T11:57:28.501Z",
+    "lastModified": "2026-01-07T11:57:46.348Z"
+  }
+]
