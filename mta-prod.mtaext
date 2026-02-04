@@ -1,0 +1,26 @@
+# MTA Extension for Production Environment
+_schema-version: "3.2"
+ID: lockbox-app.prod
+extends: lockbox-app
+
+modules:
+  - name: lockbox-srv
+    properties:
+      NODE_ENV: production
+    parameters:
+      memory: 1024M
+      disk-quota: 2048M
+      instances: 2  # Scale to 2 instances for HA
+
+resources:
+  - name: lockbox-db
+    parameters:
+      service-plan: standard  # Production-grade plan
+  
+  - name: lockbox-destination
+    parameters:
+      service-plan: lite
+  
+  - name: lockbox-connectivity
+    parameters:
+      service-plan: lite

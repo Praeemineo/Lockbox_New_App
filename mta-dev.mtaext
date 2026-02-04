@@ -1,0 +1,18 @@
+# MTA Extension for Development Environment
+_schema-version: "3.2"
+ID: lockbox-app.dev
+extends: lockbox-app
+
+modules:
+  - name: lockbox-srv
+    properties:
+      NODE_ENV: development
+    parameters:
+      memory: 256M
+      disk-quota: 512M
+      instances: 1
+
+resources:
+  - name: lockbox-db
+    parameters:
+      service-plan: trial  # Use trial plan for dev
