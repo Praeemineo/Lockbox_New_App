@@ -37,7 +37,27 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static UI files from /app directory
-app.use(express.static(path.join(__dirname, 'app')));
+// Set proper MIME types for SAPUI5 files
+app.use(express.static(path.join(__dirname, 'app'), {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        } else if (filePath.endsWith('.json')) {
+            res.setHeader('Content-Type', 'application/json');
+        } else if (filePath.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        } else if (filePath.endsWith('.xml')) {
+            res.setHeader('Content-Type', 'application/xml');
+        }
+    },
+    // Don't serve index.html for missing files - let them 404 properly
+    index: false
+}));
+
+// Serve index.html only for root path
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'index.html'));
+});
 
 // Multer for file uploads
 const storage = multer.memoryStorage();
