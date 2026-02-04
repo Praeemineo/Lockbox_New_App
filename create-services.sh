@@ -42,7 +42,7 @@ create_service_if_not_exists() {
 
 # PostgreSQL Database
 echo "1️⃣  PostgreSQL Database"
-create_service_if_not_exists "lockbox-db" "postgresql-db" "standard"
+create_service_if_not_exists "lockbox-db" "postgresql-db" "free"
 
 # Destination Service
 echo "2️⃣  Destination Service"
