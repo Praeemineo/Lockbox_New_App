@@ -1014,14 +1014,8 @@ async function postToSapApi(payload) {
     console.log('Payload:', JSON.stringify(payload, null, 2));
     
     try {
-        // SAP Cloud SDK v4 - Force provider token flow for BasicAuthentication
-        // jwt: undefined is CRITICAL to prevent SDK from trying to use user JWT
-        const { getDestination } = require('@sap-cloud-sdk/connectivity');
-        const destination = await getDestination({ 
-            destinationName: SAP_DESTINATION_NAME,
-            jwt: undefined,  // 👈 CRITICAL: Force provider token, ignore user JWT
-            useCache: false  // Get fresh credentials
-        });
+        // Fetch destination with jwt: undefined to force BasicAuthentication
+        const destination = await getSapDestination();
         
         console.log('Destination fetched:', destination?.name);
         console.log('Destination authentication:', destination?.authentication);
@@ -1030,7 +1024,7 @@ async function postToSapApi(payload) {
         
         // Execute HTTP request using the fetched destination object
         const response = await executeHttpRequest(
-            destination,  // Pass the full destination object with credentials
+            destination,
             {
                 method: 'POST',
                 url: url,
