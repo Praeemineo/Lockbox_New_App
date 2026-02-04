@@ -1,0 +1,19 @@
+---
+applications:
+  - name: lockbox-srv
+    path: backend
+    memory: 512M
+    disk_quota: 1024M
+    instances: 1
+    buildpack: nodejs_buildpack
+    command: node server.js
+    health-check-type: http
+    health-check-http-endpoint: /api/health
+    timeout: 180
+    env:
+      NODE_ENV: production
+    services:
+      - lockbox-db
+      - lockbox-destination
+      - lockbox-xsuaa
+      - lockbox-connectivity

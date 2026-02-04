@@ -1,0 +1,78 @@
+{
+  "xsappname": "lockbox-app",
+  "tenant-mode": "dedicated",
+  "description": "Security profile for Lockbox Application",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.Admin",
+      "description": "Administrator - Full access to all features"
+    },
+    {
+      "name": "$XSAPPNAME.User",
+      "description": "User - Upload and process lockbox files"
+    },
+    {
+      "name": "$XSAPPNAME.Viewer",
+      "description": "Viewer - Read-only access"
+    }
+  ],
+  "attributes": [
+    {
+      "name": "CompanyCode",
+      "description": "Company Code Access",
+      "valueType": "string"
+    }
+  ],
+  "role-templates": [
+    {
+      "name": "Admin",
+      "description": "Administrator Role",
+      "scope-references": [
+        "$XSAPPNAME.Admin"
+      ],
+      "attribute-references": [
+        {
+          "name": "CompanyCode",
+          "value": "*"
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "description": "User Role",
+      "scope-references": [
+        "$XSAPPNAME.User"
+      ]
+    },
+    {
+      "name": "Viewer",
+      "description": "Viewer Role",
+      "scope-references": [
+        "$XSAPPNAME.Viewer"
+      ]
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "Lockbox_Admin",
+      "description": "Lockbox Administrator",
+      "role-template-references": [
+        "$XSAPPNAME.Admin"
+      ]
+    },
+    {
+      "name": "Lockbox_User",
+      "description": "Lockbox User",
+      "role-template-references": [
+        "$XSAPPNAME.User"
+      ]
+    },
+    {
+      "name": "Lockbox_Viewer",
+      "description": "Lockbox Viewer",
+      "role-template-references": [
+        "$XSAPPNAME.Viewer"
+      ]
+    }
+  ]
+}

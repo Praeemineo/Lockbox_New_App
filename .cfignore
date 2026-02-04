@@ -1,0 +1,67 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+dist/
+.next/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Temporary files
+*.tmp
+*.temp
+
+# Upload directory
+uploads/
+
+# Documentation
+README.md
+SETUP_COMPLETE.md
+
+# Test files
+tests/
+test_reports/
+*.test.js
+*.spec.js
+
+# MTA build artifacts
+mta_archives/
+.mta/
+*.mtar
+
+# Cloned repository
+Lockbox_New/

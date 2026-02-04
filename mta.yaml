@@ -1,0 +1,109 @@
+_schema-version: "3.2"
+ID: lockbox-app
+version: 1.0.0
+description: SAP Lockbox Application - Upload, Review and Post to SAP
+parameters:
+  enable-parallel-deployments: true
+  deploy_mode: html5-repo
+
+modules:
+  # Backend Service Module
+  - name: lockbox-srv
+    type: nodejs
+    path: backend
+    parameters:
+      buildpack: nodejs_buildpack
+      memory: 512M
+      disk-quota: 1024M
+      health-check-type: http
+      health-check-http-endpoint: /api/health
+      instances: 1
+    properties:
+      NODE_ENV: production
+      SAP_CLIENT: "100"
+    requires:
+      - name: lockbox-db
+      - name: lockbox-destination
+      - name: lockbox-xsuaa
+      - name: lockbox-connectivity
+    provides:
+      - name: lockbox-srv-api
+        properties:
+          srv-url: ${default-url}
+    build-parameters:
+      builder: npm-ci
+      ignore:
+        - node_modules/
+        - "*.py"
+        - "__pycache__/"
+        - ".env"
+        - "*.log"
+        - "uploads/"
+
+  # Frontend Approuter Module (Optional - for authentication)
+  # Uncomment if you need authentication proxy
+  # - name: lockbox-approuter
+  #   type: approuter.nodejs
+  #   path: approuter
+  #   parameters:
+  #     memory: 256M
+  #     disk-quota: 512M
+  #   requires:
+  #     - name: lockbox-xsuaa
+  #     - name: lockbox-srv-api
+  #       group: destinations
+  #       properties:
+  #         name: backend
+  #         url: ~{srv-url}
+  #         forwardAuthToken: true
+
+resources:
+  # PostgreSQL Database Service
+  - name: lockbox-db
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: postgresql-db
+      service-plan: standard
+    properties:
+      database-name: lockbox
+
+  # SAP Destination Service
+  - name: lockbox-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite
+      config:
+        HTML5Runtime_enabled: true
+        init_data:
+          instance:
+            destinations:
+              - Name: S4HANA_SYSTEM_DESTINATION
+                Description: SAP S/4HANA System
+                Type: HTTP
+                ProxyType: OnPremise
+                Authentication: BasicAuthentication
+                URL: https://your-sap-system:port
+                # Credentials will be provided during deployment
+            existing_destinations_policy: update
+
+  # SAP Cloud Connector (Connectivity Service)
+  - name: lockbox-connectivity
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: connectivity
+      service-plan: lite
+
+  # XSUAA Authentication Service
+  - name: lockbox-xsuaa
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: lockbox-app-${org}-${space}
+        tenant-mode: dedicated
+        oauth2-configuration:
+          redirect-uris:
+            - https://*.cfapps.*.hana.ondemand.com/**
