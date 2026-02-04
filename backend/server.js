@@ -1217,8 +1217,9 @@ async function getBusinessPartnerBankDetails(customerId) {
         console.log('Fetching bank details from:', url);
         console.log('Filter: BusinessPartner eq', customerId);
         
+        const destination = await getSapDestination();
         const response = await executeHttpRequest(
-            { destinationName: SAP_DESTINATION_NAME },
+            destination,  // Use fetched destination with jwt: undefined
             {
                 method: 'GET',
                 url: url,
