@@ -1325,6 +1325,12 @@ async function getLockboxClearingXml(queryParams) {
 
 // Helper function to build SAP Lockbox payload matching exact SAP API structure
 async function buildLockboxPayload(headerId, pool) {
+    // Helper function to get saved field default value
+    const getFieldDefault = (fieldName) => {
+        const field = apiFields.find(f => f.fieldName === fieldName);
+        return field ? field.defaultValue : '';
+    };
+    
     // Fetch header data
     const header = (await pool.query('SELECT * FROM lockbox_header WHERE id = $1', [headerId])).rows[0];
     if (!header) {
@@ -1348,22 +1354,22 @@ async function buildLockboxPayload(headerId, pool) {
             NetPaymentAmountInPaytCurrency: c.net_payment_amount ? c.net_payment_amount.toString() : "0",
             DeductionAmountInPaytCurrency: c.deduction_amount ? c.deduction_amount.toString() : "0",
             PaymentDifferenceReason: (c.payment_difference_reason || "").substring(0, 3),
-            Currency: (c.currency || item.currency || "USD").substring(0, 5)
+            Currency: (c.currency || item.currency || getFieldDefault('Currency') || "USD").substring(0, 5)
         }));
         
         // Build item object with exact SAP field names
         // SAP Field Limits: LockboxBatch(3), LockboxBatchItem(5), Cheque(13), PartnerBank(15), PartnerBankAccount(18), PartnerBankCountry(3)
-        // IMPORTANT: Always include PartnerBank fields with defaults to prevent SAP 400 errors
+        // Use saved field defaults from FLD-010, FLD-011, FLD-011b
         const itemObj = {
             LockboxBatch: (item.lockbox_batch || "001").substring(0, 3),
             LockboxBatchItem: (item.lockbox_batch_item || "001").substring(0, 5),
             AmountInTransactionCurrency: item.amount_in_transaction_currency ? item.amount_in_transaction_currency.toString() : "0",
-            Currency: (item.currency || "USD").substring(0, 5),
+            Currency: (item.currency || getFieldDefault('Currency') || "USD").substring(0, 5),
             Cheque: (item.cheque || "").substring(0, 13),
-            // DEFAULT: Partner bank information (hardcoded defaults as per SAP requirement)
-            PartnerBank: (item.partner_bank || "15051554").substring(0, 15),
-            PartnerBankAccount: (item.partner_bank_account || "314129119").substring(0, 18),
-            PartnerBankCountry: (item.partner_bank_country || "US").substring(0, 3)
+            // Use saved default values from API fields configuration
+            PartnerBank: (item.partner_bank || getFieldDefault('PartnerBank') || "15051554").substring(0, 15),
+            PartnerBankAccount: (item.partner_bank_account || getFieldDefault('PartnerBankAccount') || "314129119").substring(0, 18),
+            PartnerBankCountry: (item.partner_bank_country || getFieldDefault('PartnerBankCountry') || "US").substring(0, 3)
         };
         
         // Only add to_LockboxClearing if there are clearing entries
@@ -1388,12 +1394,14 @@ async function buildLockboxPayload(headerId, pool) {
     // Build main payload matching exact SAP API structure
     // Based on SAP template - NO CompanyCode at top level
     // SAP Field Limits: Lockbox(7), LockboxBatchOrigin(10), LockboxBatchDestination(10)
+    // Use saved values from FLD-001 (Lockbox), FLD-002 (Destination), FLD-003 (Origin)
+    // If values exist in header, use them (don't overwrite), otherwise use saved defaults
     const payload = {
-        Lockbox: (header.lockbox || "").substring(0, 7),
+        Lockbox: (header.lockbox || getFieldDefault('Lockbox') || "").substring(0, 7),
         DepositDateTime: depositDateTime,
         AmountInTransactionCurrency: header.amount_in_transaction_currency ? header.amount_in_transaction_currency.toString() : "0",
-        LockboxBatchOrigin: (header.lockbox_batch_origin || "").substring(0, 10),
-        LockboxBatchDestination: (header.lockbox_batch_destination || "").substring(0, 10),
+        LockboxBatchOrigin: (header.lockbox_batch_origin || getFieldDefault('LockboxBatchOrigin') || "").substring(0, 10),
+        LockboxBatchDestination: (header.lockbox_batch_destination || getFieldDefault('LockboxBatchDestination') || "").substring(0, 10),
         to_Item: {
             results: itemResults
         }
