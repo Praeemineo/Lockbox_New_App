@@ -15,7 +15,7 @@ modules:
 resources:
   - name: lockbox-db
     parameters:
-      service-plan: standard  # Production-grade plan
+      service-plan: free  # Use free plan (standard not available)
   
   - name: lockbox-destination
     parameters:
