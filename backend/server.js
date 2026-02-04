@@ -1003,8 +1003,13 @@ async function postToSapApi(payload) {
     console.log('Payload:', JSON.stringify(payload, null, 2));
     
     try {
+        // For on-premise destinations with BasicAuthentication,
+        // we need to explicitly request credentials
         const response = await executeHttpRequest(
-            { destinationName: SAP_DESTINATION_NAME },
+            { 
+                destinationName: SAP_DESTINATION_NAME,
+                jwt: null  // Use technical user from destination, not JWT
+            },
             {
                 method: 'POST',
                 url: url,
