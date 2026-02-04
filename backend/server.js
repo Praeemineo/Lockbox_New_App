@@ -1002,21 +1002,6 @@ async function postToSapApi(payload) {
     console.log('sap-client:', SAP_CLIENT);
     console.log('Payload:', JSON.stringify(payload, null, 2));
     
-    // Debug: Try to fetch destination to see what we get
-    try {
-        const { getDestination } = require('@sap-cloud-sdk/connectivity');
-        console.log('=== Attempting to fetch destination ===');
-        const destConfig = await getDestination({ destinationName: SAP_DESTINATION_NAME });
-        console.log('Destination fetched successfully');
-        console.log('Destination URL:', destConfig?.url);
-        console.log('Destination authType:', destConfig?.authentication);
-        console.log('Has username:', !!destConfig?.username);
-        console.log('Has password:', !!destConfig?.password);
-        console.log('Destination keys:', Object.keys(destConfig || {}));
-    } catch (destError) {
-        console.error('Failed to fetch destination:', destError.message);
-    }
-    
     try {
         // SAP Cloud SDK v4 - For BasicAuthentication destinations
         // Use the destination object directly instead of just the name
