@@ -1048,13 +1048,20 @@ async function postToSapApi(payload) {
     console.log('Payload:', JSON.stringify(payload, null, 2));
     
     try {
-        // Fetch destination with jwt: undefined to force BasicAuthentication
+        // Fetch destination with comprehensive logging
         const destination = await getSapDestination();
         
-        console.log('Destination fetched:', destination?.name);
+        console.log('=== DESTINATION OBJECT DETAILS ===');
+        console.log('Destination name:', destination?.name);
+        console.log('Destination URL:', destination?.url);
+        console.log('Destination type:', destination?.type);
         console.log('Destination authentication:', destination?.authentication);
+        console.log('Destination proxyType:', destination?.proxyType);
         console.log('Has username:', !!destination?.username);
         console.log('Has password:', !!destination?.password);
+        console.log('Username value:', destination?.username ? `${destination.username.substring(0, 3)}***` : 'MISSING');
+        console.log('All destination keys:', Object.keys(destination || {}));
+        console.log('=== END DESTINATION DETAILS ===');
         
         // Execute HTTP request using the fetched destination object
         const response = await executeHttpRequest(
