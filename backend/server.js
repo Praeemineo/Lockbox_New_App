@@ -388,23 +388,29 @@ app.get('/api/lockbox/headers', async (req, res) => {
 app.get('/api/lockbox/template', (req, res) => {
     const wb = XLSX.utils.book_new();
     
-    // Default sample values for fields
+    // Helper function to get field default value from saved configuration
+    const getFieldDefault = (fieldName) => {
+        const field = apiFields.find(f => f.fieldName === fieldName);
+        return field ? field.defaultValue : '';
+    };
+    
+    // Use saved field values from FLD-001, FLD-002, FLD-003
     const sampleValues = {
-        // Header
-        'Lockbox': '1234',  // Fixed lockbox number for all batches
+        // Header - Use saved values from API fields configuration
+        'Lockbox': getFieldDefault('Lockbox') || '1234',  // FLD-001
         'DepositDateTime': '2024-01-15T10:30:00',
         'AmountInTransactionCurrency': '25000.00',
-        'LockboxBatchOrigin': 'EMERGENT',  // Emergent AI Platform origin
-        'LockboxBatchDestination': 'SAMPLEDEST',
+        'LockboxBatchOrigin': getFieldDefault('LockboxBatchOrigin') || '1234567890',  // FLD-003
+        'LockboxBatchDestination': getFieldDefault('LockboxBatchDestination') || 'SAMPLEDEST',  // FLD-002
         'CompanyCode': '1710',
         // Cheques
         'LockboxBatch': '001',
         'LockboxBatchItem': '001',
-        'Currency': 'USD',
+        'Currency': getFieldDefault('Currency') || 'USD',
         'Cheque': '4713',
-        'PartnerBank': '88888876',
-        'PartnerBankAccount': '8765432195',
-        'PartnerBankCountry': 'US',
+        'PartnerBank': getFieldDefault('PartnerBank') || '88888876',
+        'PartnerBankAccount': getFieldDefault('PartnerBankAccount') || '8765432195',
+        'PartnerBankCountry': getFieldDefault('PartnerBankCountry') || 'US',
         // Payment References
         'PaymentReference': '5678',
         'NetPaymentAmountInPaytCurrency': '6000.00',
