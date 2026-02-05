@@ -979,6 +979,7 @@ function extractSapODataError(error) {
 
 // Helper function to POST to SAP using SAP Cloud SDK via BTP Destination
 // SAP Cloud SDK handles Cloud Connector routing automatically
+// FALLBACK: If destination service fails, use direct axios with env variables
 async function postToSapApi(payload) {
     const url = SAP_API_PATH;
     
@@ -990,6 +991,7 @@ async function postToSapApi(payload) {
     
     // ENHANCED DEBUGGING: Check if destination service is accessible
     console.log('=== DESTINATION SERVICE CHECK ===');
+    let destinationResolved = false;
     try {
         const { getDestination } = require('@sap-cloud-sdk/connectivity');
         console.log('Attempting to resolve destination:', SAP_DESTINATION_NAME);
@@ -998,32 +1000,81 @@ async function postToSapApi(payload) {
         console.log('Destination URL:', destination?.url);
         console.log('Destination ProxyType:', destination?.proxyType);
         console.log('Destination Authentication:', destination?.authentication);
+        destinationResolved = true;
     } catch (destError) {
-        console.error('CRITICAL: Failed to resolve destination!');
+        console.error('WARNING: Failed to resolve destination!');
         console.error('Destination Error:', destError.message);
         console.error('Destination Error Details:', JSON.stringify(destError, Object.getOwnPropertyNames(destError), 2));
+        console.log('Will attempt fallback to direct connection using environment variables...');
     }
     console.log('=== END DESTINATION CHECK ===');
     
-    try {
-        const response = await executeHttpRequest(
-            { destinationName: SAP_DESTINATION_NAME },
-            {
-                method: 'POST',
-                url: url,
-                params: {
-                    'sap-client': SAP_CLIENT
-                },
-                data: payload,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+    // Try destination service approach first
+    if (destinationResolved) {
+        try {
+            const response = await executeHttpRequest(
+                { destinationName: SAP_DESTINATION_NAME },
+                {
+                    method: 'POST',
+                    url: url,
+                    params: {
+                        'sap-client': SAP_CLIENT
+                    },
+                    data: payload,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
                 }
-            }
-        );
+            );
+            
+            console.log('SAP Response Status:', response.status);
+            console.log('SAP Response Data:', JSON.stringify(response.data, null, 2));
+            
+            return response;
+            
+        } catch (error) {
+            console.error('Destination service approach failed, will try fallback...');
+            // Continue to fallback below
+        }
+    }
+    
+    // FALLBACK: Use direct axios with environment variables
+    console.log('=== FALLBACK: Direct SAP Connection ===');
+    const SAP_URL = process.env.SAP_URL;
+    const SAP_USER = process.env.SAP_USER;
+    const SAP_PASSWORD = process.env.SAP_PASSWORD;
+    
+    if (!SAP_URL || !SAP_USER || !SAP_PASSWORD) {
+        throw new Error('SAP connection failed: Destination service unavailable and environment variables (SAP_URL, SAP_USER, SAP_PASSWORD) not configured');
+    }
+    
+    console.log('Using direct connection to:', SAP_URL);
+    console.log('User:', SAP_USER);
+    
+    try {
+        const fullUrl = `${SAP_URL}${url}?sap-client=${SAP_CLIENT}`;
+        console.log('Full URL:', fullUrl);
         
-        console.log('SAP Response Status:', response.status);
-        console.log('SAP Response Data:', JSON.stringify(response.data, null, 2));
+        const response = await axios({
+            method: 'POST',
+            url: fullUrl,
+            data: payload,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            auth: {
+                username: SAP_USER,
+                password: SAP_PASSWORD
+            },
+            httpsAgent: new (require('https').Agent)({
+                rejectUnauthorized: false // For self-signed certificates
+            })
+        });
+        
+        console.log('SAP Response Status (Direct):', response.status);
+        console.log('SAP Response Data (Direct):', JSON.stringify(response.data, null, 2));
         
         return response;
         
