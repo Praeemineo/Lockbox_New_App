@@ -10,6 +10,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "@sap-cloud-sdk/connectivity": "^4.4.0",
     "@sap-cloud-sdk/http-client": "^4.2.0",
     "axios": "^1.13.2",
     "cors": "^2.8.5",
