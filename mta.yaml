@@ -80,8 +80,13 @@ resources:
                 Type: HTTP
                 ProxyType: OnPremise
                 Authentication: BasicAuthentication
-                URL: https://your-sap-system:port
-                # Credentials will be provided during deployment
+                URL: http://s4fnd:443
+                User: S4H_FIN
+                Password: Welcome1
+                HTML5.DynamicDestination: true
+                WebIDEEnabled: true
+                sap-client: "100"
+                WebIDEUsage: odata_abap,odata_gen,bsp_execute_abap,odata_abap,ui5_execute_abap,dev_abap
             existing_destinations_policy: update
 
   # SAP Cloud Connector (Connectivity Service)
