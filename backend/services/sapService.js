@@ -104,6 +104,5 @@ async function getCustomerBankDetails(customerId) {
 module.exports = {
     postToSapApi,
     getLockboxBatchDetails,
-    getCustomerBankDetails,
-    extractSapODataError
+    getCustomerBankDetails
 };
