@@ -4735,24 +4735,37 @@ function extractDataByPattern(data, headers, pattern, headerMapping) {
         // Build extracted row with XBLNR and BELNR for reference document rules
         const invoiceNumber = invoiceIdx !== undefined ? (row[invoiceIdx] || '').toString().trim() : `INV-${i + 1}`;
         
-        // Determine XBLNR and BELNR
-        // Priority: Explicit columns > InvoiceNumber defaults to XBLNR
+        // Determine XBLNR and BELNR with smart detection
         let xblnrValue = '';
         let belnrValue = '';
+        let detectionLog = '';
         
         if (xblnrIdx !== undefined) {
             // Explicit XBLNR column provided
             xblnrValue = (row[xblnrIdx] || '').toString().trim();
-        } else if (belnrIdx === undefined) {
-            // No XBLNR or BELNR columns provided
-            // Default behavior: InvoiceNumber is treated as XBLNR (Reference Document)
-            // This is the most common case - invoice numbers are reference documents, not accounting documents
-            xblnrValue = invoiceNumber;
-        }
-        
-        if (belnrIdx !== undefined) {
+            detectionLog = 'XBLNR from explicit column';
+        } else if (belnrIdx !== undefined) {
             // Explicit BELNR column provided
             belnrValue = (row[belnrIdx] || '').toString().trim();
+            detectionLog = 'BELNR from explicit column';
+        } else {
+            // No explicit columns - detect document type from InvoiceNumber
+            const detection = detectDocumentType(invoiceNumber);
+            
+            if (detection.type === 'BELNR') {
+                belnrValue = invoiceNumber;
+                detectionLog = `Auto-detected as BELNR: ${detection.reason}`;
+            } else {
+                // Default to XBLNR (most common case)
+                xblnrValue = invoiceNumber;
+                detectionLog = `Auto-detected as XBLNR: ${detection.reason}`;
+            }
+            
+            // Log detection for first few rows
+            if (i < 3) {
+                console.log(`  Row ${i + 1}: InvoiceNumber="${invoiceNumber}" → ${detection.type} (${detection.confidence} confidence)`);
+                console.log(`    Reason: ${detection.reason}`);
+            }
         }
         
         const extractedRow = {
@@ -4767,6 +4780,7 @@ function extractDataByPattern(data, headers, pattern, headerMapping) {
             // Reference Document Rule fields - XBLNR (Invoice Reference) and BELNR (Accounting Document)
             XBLNR: xblnrValue,
             BELNR: belnrValue,
+            _documentTypeDetection: detectionLog,  // For debugging
             _rowIndex: i + 1,
             _pattern: pattern.patternType
         };
