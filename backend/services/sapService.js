@@ -101,8 +101,32 @@ async function getCustomerBankDetails(customerId) {
     }
 }
 
+/**
+ * GET SAP OData Service Document
+ */
+async function getServiceDocument(req, res) {
+    res.status(501).json({ message: 'Implementation pending - being migrated from server.js' });
+}
+
+/**
+ * GET SAP OData Metadata
+ */
+async function getMetadata(req, res) {
+    res.status(501).json({ message: 'Implementation pending - being migrated from server.js' });
+}
+
+/**
+ * Run SAP diagnostics
+ */
+async function runDiagnostics(req, res) {
+    res.status(501).json({ message: 'Implementation pending - being migrated from server.js' });
+}
+
 module.exports = {
     postToSapApi,
     getLockboxBatchDetails,
-    getCustomerBankDetails
+    getCustomerBankDetails,
+    getServiceDocument,
+    getMetadata,
+    runDiagnostics
 };
