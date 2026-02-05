@@ -891,6 +891,25 @@ async function persistLineLevelClearing(runId, clearingEntries, companyCode) {
 // SAP OData errors follow this format:
 // { "error": { "code": "...", "message": { "lang": "en", "value": "Actual error message" }, "innererror": {...} } }
 function extractSapODataError(error) {
+    // ENHANCED DEBUGGING: Log complete raw error object structure
+    console.error('=== RAW SAP SDK ERROR OBJECT ===');
+    console.error('Error Object Keys:', Object.keys(error));
+    console.error('Error Name:', error.name);
+    console.error('Error Message:', error.message);
+    console.error('Error Stack:', error.stack);
+    console.error('Error Response:', error.response ? 'EXISTS' : 'NULL');
+    console.error('Error Cause:', error.cause ? 'EXISTS' : 'NULL');
+    console.error('Error Root Cause:', error.rootCause ? 'EXISTS' : 'NULL');
+    
+    // Try to serialize the entire error object
+    try {
+        const errorCopy = JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+        console.error('Full Error Object (JSON):', JSON.stringify(errorCopy, null, 2));
+    } catch (serializeError) {
+        console.error('Could not serialize error object:', serializeError.message);
+    }
+    console.error('=== END RAW ERROR ===');
+    
     const structuredError = {
         // Basic error info
         errorType: error.name || 'Error',
