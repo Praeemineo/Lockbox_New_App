@@ -988,6 +988,23 @@ async function postToSapApi(payload) {
     console.log('sap-client:', SAP_CLIENT);
     console.log('Payload:', JSON.stringify(payload, null, 2));
     
+    // ENHANCED DEBUGGING: Check if destination service is accessible
+    console.log('=== DESTINATION SERVICE CHECK ===');
+    try {
+        const { getDestination } = require('@sap-cloud-sdk/connectivity');
+        console.log('Attempting to resolve destination:', SAP_DESTINATION_NAME);
+        const destination = await getDestination(SAP_DESTINATION_NAME);
+        console.log('Destination resolved successfully!');
+        console.log('Destination URL:', destination?.url);
+        console.log('Destination ProxyType:', destination?.proxyType);
+        console.log('Destination Authentication:', destination?.authentication);
+    } catch (destError) {
+        console.error('CRITICAL: Failed to resolve destination!');
+        console.error('Destination Error:', destError.message);
+        console.error('Destination Error Details:', JSON.stringify(destError, Object.getOwnPropertyNames(destError), 2));
+    }
+    console.log('=== END DESTINATION CHECK ===');
+    
     try {
         const response = await executeHttpRequest(
             { destinationName: SAP_DESTINATION_NAME },
