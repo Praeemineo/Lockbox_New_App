@@ -4669,18 +4669,40 @@ function extractDataByPattern(data, headers, pattern, headerMapping) {
         }
         
         // Build extracted row with XBLNR and BELNR for reference document rules
+        const invoiceNumber = invoiceIdx !== undefined ? (row[invoiceIdx] || '').toString().trim() : `INV-${i + 1}`;
+        
+        // Determine XBLNR and BELNR
+        // Priority: Explicit columns > InvoiceNumber defaults to XBLNR
+        let xblnrValue = '';
+        let belnrValue = '';
+        
+        if (xblnrIdx !== undefined) {
+            // Explicit XBLNR column provided
+            xblnrValue = (row[xblnrIdx] || '').toString().trim();
+        } else if (belnrIdx === undefined) {
+            // No XBLNR or BELNR columns provided
+            // Default behavior: InvoiceNumber is treated as XBLNR (Reference Document)
+            // This is the most common case - invoice numbers are reference documents, not accounting documents
+            xblnrValue = invoiceNumber;
+        }
+        
+        if (belnrIdx !== undefined) {
+            // Explicit BELNR column provided
+            belnrValue = (row[belnrIdx] || '').toString().trim();
+        }
+        
         const extractedRow = {
             Customer: currentCustomer || '',
             CheckNumber: currentCheck || `CHK-${Date.now()}-${i}`,
             CheckAmount: currentCheckAmount,
-            InvoiceNumber: invoiceIdx !== undefined ? (row[invoiceIdx] || '').toString().trim() : `INV-${i + 1}`,
+            InvoiceNumber: invoiceNumber,
             InvoiceAmount: invoiceAmountIdx !== undefined ? parseFloat((row[invoiceAmountIdx] || '0').toString().replace(/[^0-9.-]/g, '')) || 0 : 0,
             DeductionAmount: deductionIdx !== undefined ? parseFloat((row[deductionIdx] || '0').toString().replace(/[^0-9.-]/g, '')) || 0 : 0,
             ReasonCode: reasonIdx !== undefined ? (row[reasonIdx] || '').toString().trim() : '',
             DepositDate: dateIdx !== undefined ? row[dateIdx] : new Date().toISOString().split('T')[0],
             // Reference Document Rule fields - XBLNR (Invoice Reference) and BELNR (Accounting Document)
-            XBLNR: xblnrIdx !== undefined ? (row[xblnrIdx] || '').toString().trim() : '',
-            BELNR: belnrIdx !== undefined ? (row[belnrIdx] || '').toString().trim() : '',
+            XBLNR: xblnrValue,
+            BELNR: belnrValue,
             _rowIndex: i + 1,
             _pattern: pattern.patternType
         };
