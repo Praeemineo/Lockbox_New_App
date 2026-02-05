@@ -13,16 +13,24 @@ modules:
     path: backend
     parameters:
       buildpack: nodejs_buildpack
-      memory: 512M
-      disk-quota: 1024M
+      memory: 256M
+      disk-quota: 512M
       health-check-type: http
       health-check-http-endpoint: /api/health
-      instances: 1
     properties:
       NODE_ENV: production
+      SAP_URL: "https://44.194.22.195:44301"
       SAP_CLIENT: "100"
+      SAP_USER: "S4H_FIN"
+      SAP_PASSWORD: "Welcome1"
+      DB_HOST: "postgres-aee790df-b48b-48cc-96b3-db432a62390e.czuelothxj0h.ap-southeast-2.rds.amazonaws.com"
+      DB_PORT: "2477"
+      DB_NAME: "CAmqjnIfEdIX"
+      DB_USER: "CAmqjnIfEdIX"
+      DB_PASSWORD: "593373429221a65ff07f625d1b"
+      DB_SSL: "true"
     requires:
-      - name: lockbox-db
+      - name: postgresql-db
       - name: lockbox-destination
       - name: lockbox-xsuaa
       - name: lockbox-connectivity
@@ -31,14 +39,11 @@ modules:
         properties:
           srv-url: ${default-url}
     build-parameters:
-      builder: npm-ci
+      builder: npm
       ignore:
         - node_modules/
         - "*.py"
         - "__pycache__/"
-        - ".env"
-        - "*.log"
-        - "uploads/"
 
   # Frontend Approuter Module (Optional - for authentication)
   # Uncomment if you need authentication proxy
@@ -58,8 +63,8 @@ modules:
   #         forwardAuthToken: true
 
 resources:
-  # PostgreSQL Database Service (Using existing free plan)
-  - name: lockbox-db
+  # PostgreSQL Database Service (Using existing service)
+  - name: postgresql-db
     type: org.cloudfoundry.existing-service
     parameters:
       service-name: Postgresql
