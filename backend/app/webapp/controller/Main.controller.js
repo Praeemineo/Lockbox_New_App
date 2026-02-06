@@ -10695,6 +10695,275 @@ sap.ui.define([
             oModel.setProperty("/ruleDetail/previewResult", "");
             oModel.setProperty("/ruleDetail/previewApiPayload", "");
             oModel.setProperty("/ruleDetail/previewMessage", "");
+        },
+
+        // Show stage-specific details when clicking on processing flow icons
+        onShowStageDetails: function (oEvent) {
+            var oIcon = oEvent.getSource();
+            var sStage = oIcon.data("stage");
+            var sRunId = oIcon.data("runId");
+            
+            if (!sRunId) {
+                MessageBox.warning("No run ID available");
+                return;
+            }
+            
+            // Get the run data from model
+            var oModel = this.getView().getModel("app");
+            var aRuns = oModel.getProperty("/processingRuns") || [];
+            var oRun = aRuns.find(function(run) { return run.runId === sRunId; });
+            
+            if (!oRun) {
+                MessageBox.warning("Run data not found");
+                return;
+            }
+            
+            // Build stage-specific content
+            var sContent = "";
+            var sTitle = "";
+            var sIcon = "";
+            
+            if (sStage === "upload") {
+                // Stage 1: Upload & Parse
+                sTitle = "Upload & Parse Details";
+                sIcon = "sap-icon://document-text";
+                sContent = this._buildUploadStageContent(oRun);
+            } else if (sStage === "validate") {
+                // Stage 2: Validate & Map
+                sTitle = "Validate & Map Details";
+                sIcon = "sap-icon://validate";
+                sContent = this._buildValidateStageContent(oRun);
+            } else if (sStage === "post") {
+                // Stage 3: Post
+                sTitle = "Post Details";
+                sIcon = "sap-icon://add-document";
+                sContent = this._buildPostStageContent(oRun);
+            }
+            
+            // Show dialog
+            this._showStageDetailsDialog(sTitle, sIcon, sContent);
+        },
+        
+        _buildUploadStageContent: function (oRun) {
+            var sContent = "";
+            sContent += "════════════════════════════════════════════════════════════════\n";
+            sContent += "              UPLOAD & PARSE STAGE\n";
+            sContent += "════════════════════════════════════════════════════════════════\n\n";
+            
+            // Upload
+            if (oRun.stages && oRun.stages.upload) {
+                var uploadStatus = oRun.stages.upload.status === "success" ? "✅ SUCCESS" : 
+                                  oRun.stages.upload.status === "error" ? "❌ FAILED" : "⚠️ PENDING";
+                sContent += "📤 Upload Stage:\n";
+                sContent += "  Status: " + uploadStatus + "\n";
+                if (oRun.stages.upload.message) {
+                    sContent += "  Message: " + oRun.stages.upload.message + "\n";
+                }
+                if (oRun.filename) {
+                    sContent += "  File: " + oRun.filename + "\n";
+                }
+                sContent += "\n";
+            }
+            
+            // Template Match
+            if (oRun.stages && oRun.stages.templateMatch) {
+                var templateStatus = oRun.stages.templateMatch.status === "success" ? "✅ SUCCESS" : 
+                                    oRun.stages.templateMatch.status === "error" ? "❌ FAILED" : "⚠️ PENDING";
+                sContent += "🔍 Template Match Stage:\n";
+                sContent += "  Status: " + templateStatus + "\n";
+                if (oRun.stages.templateMatch.templateId) {
+                    sContent += "  Template ID: " + oRun.stages.templateMatch.templateId + "\n";
+                }
+                if (oRun.stages.templateMatch.templateName) {
+                    sContent += "  Template Name: " + oRun.stages.templateMatch.templateName + "\n";
+                }
+                if (oRun.stages.templateMatch.message) {
+                    sContent += "  Message: " + oRun.stages.templateMatch.message + "\n";
+                }
+                sContent += "\n";
+            }
+            
+            // Extraction
+            if (oRun.stages && oRun.stages.extraction) {
+                var extractStatus = oRun.stages.extraction.status === "success" ? "✅ SUCCESS" : 
+                                   oRun.stages.extraction.status === "error" ? "❌ FAILED" : "⚠️ PENDING";
+                sContent += "📊 Data Extraction Stage:\n";
+                sContent += "  Status: " + extractStatus + "\n";
+                if (oRun.stages.extraction.rowCount) {
+                    sContent += "  Rows Extracted: " + oRun.stages.extraction.rowCount + "\n";
+                }
+                if (oRun.stages.extraction.columnsDetected) {
+                    sContent += "  Columns Detected: " + oRun.stages.extraction.columnsDetected + "\n";
+                }
+                if (oRun.stages.extraction.message) {
+                    sContent += "  Message: " + oRun.stages.extraction.message + "\n";
+                }
+                sContent += "\n";
+            }
+            
+            sContent += "════════════════════════════════════════════════════════════════\n";
+            return sContent;
+        },
+        
+        _buildValidateStageContent: function (oRun) {
+            var sContent = "";
+            sContent += "════════════════════════════════════════════════════════════════\n";
+            sContent += "              VALIDATE & MAP STAGE\n";
+            sContent += "════════════════════════════════════════════════════════════════\n\n";
+            
+            // Validation
+            if (oRun.stages && oRun.stages.validation) {
+                var validStatus = oRun.stages.validation.status === "success" ? "✅ SUCCESS" : 
+                                 oRun.stages.validation.status === "warning" ? "⚠️ WARNING" :
+                                 oRun.stages.validation.status === "error" ? "❌ FAILED" : "⚠️ PENDING";
+                sContent += "✓ Validation Stage:\n";
+                sContent += "  Status: " + validStatus + "\n";
+                if (oRun.stages.validation.validRecords) {
+                    sContent += "  Valid Records: " + oRun.stages.validation.validRecords + "\n";
+                }
+                if (oRun.stages.validation.invalidRecords) {
+                    sContent += "  Invalid Records: " + oRun.stages.validation.invalidRecords + "\n";
+                }
+                if (oRun.stages.validation.warningCount) {
+                    sContent += "  Warnings: " + oRun.stages.validation.warningCount + "\n";
+                }
+                if (oRun.stages.validation.message) {
+                    sContent += "  Message: " + oRun.stages.validation.message + "\n";
+                }
+                if (oRun.stages.validation.errors && oRun.stages.validation.errors.length > 0) {
+                    sContent += "  Errors:\n";
+                    oRun.stages.validation.errors.forEach(function(err) {
+                        sContent += "    • " + err + "\n";
+                    });
+                }
+                sContent += "\n";
+            }
+            
+            // Mapping
+            if (oRun.stages && oRun.stages.mapping) {
+                var mapStatus = oRun.stages.mapping.status === "success" ? "✅ SUCCESS" : 
+                               oRun.stages.mapping.status === "error" ? "❌ FAILED" : "⚠️ PENDING";
+                sContent += "🗺️ API Field Mapping Stage:\n";
+                sContent += "  Status: " + mapStatus + "\n";
+                if (oRun.stages.mapping.fieldsMapped) {
+                    sContent += "  Fields Mapped: " + oRun.stages.mapping.fieldsMapped + "\n";
+                }
+                if (oRun.stages.mapping.rulesApplied) {
+                    sContent += "  Rules Applied: " + oRun.stages.mapping.rulesApplied + "\n";
+                }
+                if (oRun.stages.mapping.message) {
+                    sContent += "  Message: " + oRun.stages.mapping.message + "\n";
+                }
+                sContent += "\n";
+            }
+            
+            sContent += "════════════════════════════════════════════════════════════════\n";
+            return sContent;
+        },
+        
+        _buildPostStageContent: function (oRun) {
+            var sContent = "";
+            sContent += "════════════════════════════════════════════════════════════════\n";
+            sContent += "              POST TO SAP STAGE\n";
+            sContent += "════════════════════════════════════════════════════════════════\n\n";
+            
+            if (oRun.productionResult) {
+                if (oRun.productionResult.success) {
+                    sContent += "✅ Status: SUCCESS\n\n";
+                    
+                    if (oRun.productionResult.sapResponse) {
+                        var sapResp = oRun.productionResult.sapResponse;
+                        sContent += "📄 SAP Response:\n";
+                        sContent += "  Accounting Document: " + (sapResp.accountingDocument || "N/A") + "\n";
+                        sContent += "  Payment Advice: " + (sapResp.paymentAdvice || "N/A") + "\n";
+                        sContent += "  Fiscal Year: " + (sapResp.fiscalYear || "N/A") + "\n";
+                        sContent += "  Company Code: " + (sapResp.companyCode || "N/A") + "\n";
+                        sContent += "\n";
+                    }
+                    
+                    if (oRun.productionResult.clearing) {
+                        sContent += "💰 Clearing Information:\n";
+                        sContent += "  Status: " + (oRun.productionResult.clearing.status || "N/A") + "\n";
+                        sContent += "  Items Cleared: " + (oRun.productionResult.clearing.clearedItems || 0) + "\n";
+                        if (oRun.productionResult.clearing.totalAmount) {
+                            sContent += "  Total Amount: " + oRun.productionResult.clearing.totalAmount + " " + (oRun.productionResult.clearing.currency || "USD") + "\n";
+                        }
+                        sContent += "\n";
+                    }
+                } else {
+                    sContent += "❌ Status: FAILED\n\n";
+                    
+                    if (oRun.productionResult.error) {
+                        sContent += "⚠️ Error Details:\n";
+                        sContent += "  Message: " + (oRun.productionResult.error.message || "Unknown error") + "\n";
+                        if (oRun.productionResult.error.sapErrorMessage) {
+                            sContent += "  SAP Error: " + oRun.productionResult.error.sapErrorMessage + "\n";
+                        }
+                        if (oRun.productionResult.error.sapErrorCode) {
+                            sContent += "  Error Code: " + oRun.productionResult.error.sapErrorCode + "\n";
+                        }
+                        sContent += "\n";
+                    }
+                }
+            } else if (oRun.stages && oRun.stages.posted) {
+                var postStatus = oRun.stages.posted.status === "success" ? "✅ SUCCESS" : 
+                                oRun.stages.posted.status === "error" ? "❌ FAILED" : "⚠️ NOT POSTED YET";
+                sContent += "Status: " + postStatus + "\n\n";
+                
+                if (oRun.stages.posted.message) {
+                    sContent += "Message: " + oRun.stages.posted.message + "\n\n";
+                }
+            } else {
+                sContent += "⚠️ Status: NOT POSTED YET\n\n";
+                sContent += "This run has not been posted to SAP.\n";
+                sContent += "Use the Production Run action to post.\n\n";
+            }
+            
+            sContent += "════════════════════════════════════════════════════════════════\n";
+            return sContent;
+        },
+        
+        _showStageDetailsDialog: function (sTitle, sIcon, sContent) {
+            var oTextArea = new TextArea({
+                value: sContent,
+                width: "100%",
+                height: "400px",
+                editable: false,
+                growing: false
+            });
+            
+            var oDialog = new Dialog({
+                title: sTitle,
+                icon: sIcon,
+                contentWidth: "700px",
+                contentHeight: "500px",
+                content: [
+                    new VBox({
+                        items: [oTextArea]
+                    }).addStyleClass("sapUiSmallMargin")
+                ],
+                beginButton: new Button({
+                    text: "Copy to Clipboard",
+                    icon: "sap-icon://copy",
+                    press: function () {
+                        navigator.clipboard.writeText(sContent).then(function () {
+                            MessageToast.show("Stage details copied to clipboard");
+                        });
+                    }
+                }),
+                endButton: new Button({
+                    text: "Close",
+                    press: function () {
+                        oDialog.close();
+                    }
+                }),
+                afterClose: function () {
+                    oDialog.destroy();
+                }
+            });
+            
+            this.getView().addDependent(oDialog);
+            oDialog.open();
         }
 
     });
