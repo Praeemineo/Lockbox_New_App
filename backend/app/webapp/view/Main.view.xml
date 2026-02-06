@@ -324,9 +324,9 @@
                                             <Button
                                                 icon="sap-icon://restart"
                                                 type="Transparent"
-                                                tooltip="Repost - Execute production run for simulated file"
+                                                tooltip="Repost - Retry production run after posting failure"
                                                 press="onRepostItem"
-                                                enabled="{= ${app>status} === 'SIMULATED'}" />
+                                                enabled="{= ${app>status} === 'POST_FAILED'}" />
                                             <Button
                                                 icon="sap-icon://refresh"
                                                 type="Transparent"
