@@ -10866,6 +10866,82 @@ sap.ui.define([
             return sContent;
         },
         
+        _buildSimulateStageContent: function (oRun) {
+            var sContent = "";
+            sContent += "════════════════════════════════════════════════════════════════\n";
+            sContent += "              SIMULATION STAGE\n";
+            sContent += "════════════════════════════════════════════════════════════════\n\n";
+            
+            // Check simulation status
+            if (oRun.stages && oRun.stages.simulate) {
+                var simStatus = oRun.stages.simulate.status === "success" ? "✅ SUCCESS" : 
+                               oRun.stages.simulate.status === "error" ? "❌ FAILED" : "⚠️ PENDING";
+                sContent += "🧪 Simulation Status: " + simStatus + "\n\n";
+                
+                if (oRun.stages.simulate.message) {
+                    sContent += "Message: " + oRun.stages.simulate.message + "\n\n";
+                }
+            }
+            
+            // Check if simulated based on overallStatus
+            var isSimulated = (oRun.overallStatus === 'simulated' || oRun.overallStatus === 'SIMULATED');
+            
+            if (isSimulated && oRun.simulationResult) {
+                if (oRun.simulationResult.success) {
+                    sContent += "✅ Simulation Result: SUCCESS\n\n";
+                    
+                    if (oRun.simulationResult.sapResponse) {
+                        var sapResp = oRun.simulationResult.sapResponse;
+                        sContent += "📄 SAP Simulation Preview:\n";
+                        sContent += "  Payment Advice: " + (sapResp.paymentAdvice || "N/A") + "\n";
+                        if (sapResp.companyCode) {
+                            sContent += "  Company Code: " + sapResp.companyCode + "\n";
+                        }
+                        if (sapResp.fiscalYear) {
+                            sContent += "  Fiscal Year: " + sapResp.fiscalYear + "\n";
+                        }
+                        sContent += "\n";
+                    }
+                    
+                    if (oRun.simulationResult.itemsProcessed) {
+                        sContent += "📊 Items Processed: " + oRun.simulationResult.itemsProcessed + "\n";
+                    }
+                    
+                    if (oRun.simulationResult.totalAmount) {
+                        sContent += "💰 Total Amount: " + oRun.simulationResult.totalAmount + " " + 
+                                   (oRun.simulationResult.currency || "USD") + "\n";
+                    }
+                    
+                    sContent += "\n📝 Note: This is a simulation preview. No documents have been posted to SAP.\n";
+                    sContent += "   To complete posting, click the Production Run button.\n";
+                    
+                } else {
+                    sContent += "❌ Simulation Result: FAILED\n\n";
+                    
+                    if (oRun.simulationResult.error) {
+                        sContent += "Error: " + oRun.simulationResult.error + "\n\n";
+                    }
+                    
+                    if (oRun.simulationResult.sapErrors && oRun.simulationResult.sapErrors.length > 0) {
+                        sContent += "SAP Errors:\n";
+                        oRun.simulationResult.sapErrors.forEach(function(err, index) {
+                            sContent += "  " + (index + 1) + ". " + err + "\n";
+                        });
+                        sContent += "\n";
+                    }
+                    
+                    sContent += "❗ Please fix the errors before attempting Production Run.\n";
+                }
+            } else if (!isSimulated) {
+                sContent += "⚠️ Status: NOT YET SIMULATED\n\n";
+                sContent += "This run has not been simulated yet.\n";
+                sContent += "Click the 'Simulate' button to preview the SAP posting.\n";
+            }
+            
+            sContent += "\n════════════════════════════════════════════════════════════════\n";
+            return sContent;
+        },
+        
         _buildPostStageContent: function (oRun) {
             var sContent = "";
             sContent += "════════════════════════════════════════════════════════════════\n";
