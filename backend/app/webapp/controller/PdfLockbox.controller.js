@@ -53,10 +53,18 @@ sap.ui.define([
                     return response.json();
                 })
                 .then(function(data) {
+                    // Ensure data is an array
+                    if (!Array.isArray(data)) {
+                        console.error("API did not return an array:", data);
+                        data = [];
+                    }
+                    
                     // Filter only PDF runs
                     var pdfRuns = data.filter(function(run) {
                         return run.fileType === 'PDF';
                     });
+                    
+                    console.log("PDF runs loaded:", pdfRuns.length);
                     
                     var oModel = that.getOwnerComponent().getModel("app");
                     if (oModel) {
@@ -65,11 +73,23 @@ sap.ui.define([
                     }
                     
                     BusyIndicator.hide();
+                    
+                    if (pdfRuns.length === 0) {
+                        MessageToast.show("No PDF runs found. Upload a PDF to get started.");
+                    }
                 })
                 .catch(function(error) {
                     console.error("Error loading PDF runs:", error);
                     BusyIndicator.hide();
-                    MessageToast.show("Error loading data: " + error.message);
+                    
+                    // Set empty array on error
+                    var oModel = that.getOwnerComponent().getModel("app");
+                    if (oModel) {
+                        oModel.setProperty("/pdfRuns", []);
+                        oModel.setProperty("/pdfRunsCount", 0);
+                    }
+                    
+                    MessageToast.show("Could not load PDF runs. Please check your connection.");
                 });
         },
 
