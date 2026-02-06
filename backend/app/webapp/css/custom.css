@@ -1,94 +1,154 @@
 /* Custom Font Family for Lockbox Transaction and Field Mapping Rules */
+/* SAP 72 Font Family - Applied Globally */
 
-/* Apply SAP 72 font family to all table cells and text elements in Lockbox Transaction */
+/* Root body and all SAP UI elements */
+body,
+.sapUiBody,
+.sapUiBody * {
+    font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
+}
+
+/* SAP UI5 Table - All cells and content */
+.sapUiTable,
+.sapUiTable *,
+.sapUiTableCell,
+.sapUiTableCellInner,
+.sapUiTableCell *,
+.sapUiTableTr,
+.sapUiTableTd,
+.sapUiTableColHdr,
+.sapUiTableColHdrCnt,
+.sapUiTableRowHdr {
+    font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
+}
+
+/* SAP Mobile Library - All text and controls */
+.sapMText,
+.sapMLabel,
+.sapMTitle,
+.sapMInput,
+.sapMInputBaseInner,
+.sapMBtn,
+.sapMBtnInner,
+.sapMBtnContent,
+.sapMObjectStatus,
+.sapMObjectNumber,
+.sapMLink,
+.sapMTextArea,
+.sapMSelect,
+.sapMComboBox,
+.sapMDatePicker,
+.sapMTimePicker {
+    font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
+}
+
+/* List and Table controls */
+.sapMList,
+.sapMListTbl,
+.sapMListTblRow,
+.sapMListTblCell,
+.sapMLIBContent,
+.sapMColumnHeader,
+.sapMListHdr,
+.sapMListHdrText {
+    font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
+}
+
+/* All text spans and paragraphs */
+span,
+p,
+div,
+label,
+a,
+button,
+input,
+textarea,
+select {
+    font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
+}
+
+/* Lockbox Transaction Table - Specific targeting */
+#lockboxTable,
+#lockboxTable *,
 #lockboxTable .sapUiTableCell,
-#lockboxTable .sapUiTableCellInner,
+#lockboxTable .sapUiTableCell span,
+#lockboxTable .sapUiTableCell div,
 #lockboxTable .sapMText,
 #lockboxTable .sapMLabel,
-#lockboxTable .sapMInput,
-#lockboxTable .sapMObjectStatus,
-#lockboxTable .sapMObjectNumber,
-#lockboxTable span,
-#lockboxTable p {
+#lockboxTable .sapMObjectStatus {
     font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
 }
 
-/* Apply SAP 72 font family to Field Mapping section */
-#fieldMappingSection .sapMText,
-#fieldMappingSection .sapMLabel,
-#fieldMappingSection .sapMInput,
-#fieldMappingSection .sapMTitle,
-#fieldMappingSection .sapMObjectStatus,
-#fieldMappingSection .sapMObjectNumber,
-#fieldMappingSection .sapUiTableCell,
-#fieldMappingSection .sapUiTableCellInner,
-#fieldMappingSection span,
-#fieldMappingSection p,
-#fieldMappingSection .sapMListTblCell {
+/* Field Mapping Section */
+#fieldMappingSection,
+#fieldMappingSection *,
+.fieldMappingRulesTable,
+.fieldMappingRulesTable * {
     font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
 }
 
-/* Apply to table headers in Lockbox Transaction */
-#lockboxTable .sapUiTableColHdr,
-#lockboxTable .sapUiTableColHdrCnt,
-#lockboxTable .sapMLabel {
+/* Icons and Processing Flow */
+.sapUiIcon,
+.sapUiIcon + span,
+.sapMHBox,
+.sapMHBox *,
+.sapMVBox,
+.sapMVBox * {
     font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
 }
 
-/* Apply to Field Mapping Rules table */
-.fieldMappingRulesTable .sapMText,
-.fieldMappingRulesTable .sapMLabel,
-.fieldMappingRulesTable .sapMInput,
-.fieldMappingRulesTable .sapMListTblCell,
-.fieldMappingRulesTable span,
-.fieldMappingRulesTable p {
+/* Dialogs and Popovers */
+.sapMDialog,
+.sapMDialog *,
+.sapMPopover,
+.sapMPopover *,
+.sapMMessageBox,
+.sapMMessageBox * {
     font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
 }
 
-/* Apply to all dialogs and popovers in Lockbox Transaction context */
-.lockboxDialog .sapMText,
-.lockboxDialog .sapMLabel,
-.lockboxDialog .sapMInput,
-.lockboxDialog .sapMTextArea,
-.lockboxDialog span,
-.lockboxDialog p {
+/* Headers and Toolbars */
+.sapMBar,
+.sapMBar *,
+.sapMTB,
+.sapMTB *,
+.sapMIBar,
+.sapMIBar *,
+.sapMPageHeader,
+.sapMPageHeader * {
     font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
 }
 
-/* Global application font for consistency */
-body .sapUiBody {
-    font-family: "72", "72full", Arial, Helvetica, sans-serif;
-}
-
-/* Ensure Processing Flow icons and text use the font */
-.sapUiTableCell .sapMHBox .sapMText,
-.sapUiTableCell .sapUiIcon {
+/* Forms and Input Groups */
+.sapUiForm,
+.sapUiForm *,
+.sapMInputBase,
+.sapMInputBase *,
+.sapMInputBaseInner,
+form,
+form * {
     font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
 }
 
-/* Apply to all input fields and forms */
-.sapMInput input,
-.sapMTextArea textarea,
-.sapMSelect,
-.sapMComboBox {
+/* Override all SAP theme fonts */
+.sapUiTheme-sap_fiori_3,
+.sapUiTheme-sap_fiori_3 * {
     font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
 }
 
-/* Apply to all buttons */
-.sapMBtn .sapMBtnInner,
-.sapMBtn .sapMBtnContent {
+/* Status indicators and badges */
+.sapMObjStatus,
+.sapMObjStatusText,
+.sapMObjNumber,
+.sapMObjNumberText {
     font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
 }
 
-/* Apply to all list items */
-.sapMListTblCell,
-.sapMListTblRow,
-.sapMLIBContent {
+/* Columns and headers */
+.sapUiTableCol,
+.sapUiTableColHdrScr,
+.sapUiTableCtrlScr,
+.sapUiTableColRowHdr {
     font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
 }
 
-/* Apply to titles and headers */
-.sapMTitle,
-.sapMLabel {
-    font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
-}
