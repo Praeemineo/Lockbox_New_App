@@ -251,53 +251,41 @@
                                 <table:Column width="15%">
                                     <Label text="Processing Flow" />
                                     <table:template>
-                                        <HBox alignItems="Center" justifyContent="Start" visible="{= ${app>type} === 'HEADER' || ${app>type} === 'LOCKBOX'}">
-                                            <!-- Stage 1: Upload - Green document icon -->
-                                            <core:Icon src="sap-icon://document" size="1.5rem" 
-                                                color="{= ${app>stages/extraction} === 'success' ? '#107e3e' : (${app>stages/extraction} === 'error' || ${app>stages/upload} === 'error' || ${app>stages/templateMatch} === 'error') ? '#bb0000' : '#5b738b'}"
-                                                tooltip="Upload &amp; Parse: File upload, template matching, and data extraction"
-                                                press=".onShowStageDetails"
-                                                class="sapUiTinyMarginEnd">
-                                                <core:customData>
-                                                    <core:CustomData key="stage" value="upload" />
-                                                    <core:CustomData key="runId" value="{app>runId}" />
-                                                </core:customData>
-                                            </core:Icon>
-                                            <Text text=" → " class="sapUiTinyMarginBeginEnd"/>
-                                            
-                                            <!-- Stage 2: Validate - Orange shield icon -->
-                                            <core:Icon src="sap-icon://shield" size="1.5rem" 
-                                                color="{= (${app>stages/validation} === 'success' &amp;&amp; ${app>stages/mapping} === 'success') ? '#107e3e' : ${app>stages/validation} === 'warning' ? '#e78c07' : (${app>stages/validation} === 'error' || ${app>stages/mapping} === 'error') ? '#bb0000' : '#5b738b'}"
-                                                tooltip="Validate &amp; Map: Data validation and API field mapping"
-                                                press=".onShowStageDetails"
-                                                class="sapUiTinyMarginEnd">
-                                                <core:customData>
-                                                    <core:CustomData key="stage" value="validate" />
-                                                    <core:CustomData key="runId" value="{app>runId}" />
-                                                </core:customData>
-                                            </core:Icon>
-                                            <Text text=" → " class="sapUiTinyMarginBeginEnd"/>
-                                            
-                                            <!-- Stage 3: Post - Blue document with plus icon -->
-                                            <core:Icon src="sap-icon://add-document" size="1.5rem" 
-                                                color="{= 
-                                                    (${app>overallStatus} === 'posted' || ${app>overallStatus} === 'POSTED') ? '#107e3e' : 
-                                                    (${app>overallStatus} === 'simulated' || ${app>overallStatus} === 'SIMULATED') ? (
-                                                        (${app>stages/validation} === 'error' || ${app>stages/mapping} === 'error') ? '#bb0000' :
-                                                        (${app>stages/validation} === 'warning') ? '#e78c07' :
-                                                        '#107e3e'
-                                                    ) :
-                                                    ${app>stages/posted} === 'error' ? '#bb0000' : 
-                                                    '#5b738b'
-                                                }"
-                                                tooltip="Post: Production posting to SAP S/4HANA"
-                                                press=".onShowStageDetails"
-                                                class="sapUiTinyMarginEnd">
-                                                <core:customData>
-                                                    <core:CustomData key="stage" value="post" />
-                                                    <core:CustomData key="runId" value="{app>runId}" />
-                                                </core:customData>
-                                            </core:Icon>
+                                        <HBox alignItems="Center" visible="{= ${app>type} === 'HEADER' || ${app>type} === 'LOCKBOX'}">
+                                            <!-- Upload - File upload stage -->
+                                            <core:Icon src="sap-icon://circle-task-2" size="1rem" 
+                                                color="{= ${app>stages/upload} === 'success' ? '#107e3e' : ${app>stages/upload} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                tooltip="Upload: File parsing and format detection" />
+                                            <Text text=" → " />
+                                            <!-- Template - Template matching stage -->
+                                            <core:Icon src="sap-icon://circle-task-2" size="1rem" 
+                                                color="{= ${app>stages/templateMatch} === 'success' ? '#107e3e' : ${app>stages/templateMatch} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                tooltip="Template Match: Matching file to customer template" />
+                                            <Text text=" → " />
+                                            <!-- Extract - Data extraction stage -->
+                                            <core:Icon src="sap-icon://circle-task-2" size="1rem" 
+                                                color="{= ${app>stages/extraction} === 'success' ? '#107e3e' : ${app>stages/extraction} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                tooltip="Extract: Extracting and transforming data using mapping rules" />
+                                            <Text text=" → " />
+                                            <!-- Validate - Data validation stage -->
+                                            <core:Icon src="sap-icon://circle-task-2" size="1rem" 
+                                                color="{= ${app>stages/validation} === 'success' ? '#107e3e' : ${app>stages/validation} === 'warning' ? '#e78c07' : ${app>stages/validation} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                tooltip="Validate: Validating data against business rules and SAP API requirements" />
+                                            <Text text=" → " />
+                                            <!-- Map - API field mapping stage -->
+                                            <core:Icon src="sap-icon://circle-task-2" size="1rem" 
+                                                color="{= ${app>stages/mapping} === 'success' ? '#107e3e' : ${app>stages/mapping} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                tooltip="Map: Mapping extracted data to SAP Lockbox API fields" />
+                                            <Text text=" → " />
+                                            <!-- Simulate - SAP simulation stage -->
+                                            <core:Icon src="sap-icon://circle-task-2" size="1rem" 
+                                                color="{= ${app>stages/simulate} === 'success' ? '#107e3e' : '#5b738b'}"
+                                                tooltip="Simulate: Preview SAP posting without committing - generates Payment Advice preview" />
+                                            <Text text=" → " />
+                                            <!-- Posted - Production run complete -->
+                                            <core:Icon src="sap-icon://circle-task-2" size="1rem" 
+                                                color="{= ${app>stages/posted} === 'success' ? '#107e3e' : '#5b738b'}"
+                                                tooltip="Posted: Production run complete - document posted to SAP S/4HANA via OData API" />
                                         </HBox>
                                     </table:template>
                                 </table:Column>
