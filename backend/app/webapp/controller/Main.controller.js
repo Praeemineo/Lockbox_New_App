@@ -6060,6 +6060,122 @@ sap.ui.define([
             oXhr.send(oFormData);
         },
 
+        
+        // ═══════════════════════════════════════════════════════════════════
+        // PDF UPLOAD FUNCTIONS - Separate OCR Processing
+        // ═══════════════════════════════════════════════════════════════════
+        
+        onOpenPdfUploadDialog: function () {
+            var oDialog = this.byId("pdfUploadDialog");
+            if (oDialog) {
+                oDialog.open();
+            }
+        },
+        
+        onClosePdfUploadDialog: function () {
+            var oDialog = this.byId("pdfUploadDialog");
+            if (oDialog) {
+                oDialog.close();
+            }
+            // Clear file uploader
+            var oFileUploader = this.byId("pdfFileUploader");
+            if (oFileUploader) {
+                oFileUploader.clear();
+            }
+        },
+        
+        onUploadPdf: function () {
+            var that = this;
+            var oFileUploader = this.byId("pdfFileUploader");
+            
+            if (!oFileUploader || !oFileUploader.getValue()) {
+                MessageBox.warning("Please select a PDF file first");
+                return;
+            }
+            
+            // Validate file type
+            var sFileName = oFileUploader.getValue();
+            if (!sFileName.toLowerCase().endsWith('.pdf')) {
+                MessageBox.warning("Only PDF files are supported in this upload");
+                return;
+            }
+            
+            // Show busy indicator
+            BusyIndicator.show(0);
+            
+            // Create form data
+            var oFormData = new FormData();
+            var oFileList = oFileUploader.oFileUpload.files;
+            oFormData.append('file', oFileList[0]);
+            
+            // Make API call to separate PDF endpoint
+            var oXhr = new XMLHttpRequest();
+            oXhr.open("POST", API_BASE + "/lockbox/process-pdf", true);
+            
+            oXhr.onload = function () {
+                BusyIndicator.hide();
+                
+                try {
+                    var oResponse = JSON.parse(oXhr.responseText);
+                    
+                    if (oResponse.success) {
+                        // Close dialog
+                        that.onClosePdfUploadDialog();
+                        
+                        // Reload data
+                        that._loadRunHistory();
+                        
+                        // Show success message with OCR details
+                        var sMessage = "PDF uploaded successfully!\n\n" +
+                                      "✅ OCR Extraction: " + (oResponse.extractedRows || 0) + " rows extracted\n" +
+                                      "🤖 AI Model: " + (oResponse.run.stages.ocr.provider || 'Claude AI') + "\n\n" +
+                                      "The extracted data is ready for review.\n" +
+                                      "You can now proceed with Simulation and Posting.";
+                        
+                        MessageBox.success(sMessage, {
+                            title: "PDF Processing Complete",
+                            onClose: function () {
+                                // Select the new run if available
+                                if (oResponse.run) {
+                                    var oModel = that.getView().getModel("app");
+                                    oModel.setProperty("/selectedRun", oResponse.run);
+                                }
+                            }
+                        });
+                    } else {
+                        MessageBox.error("PDF upload failed: " + (oResponse.message || oResponse.error || "Unknown error"));
+                    }
+                } catch (e) {
+                    console.error("Error parsing PDF response:", e);
+                    MessageBox.error("Error processing PDF response. Please try again.");
+                }
+            };
+            
+            oXhr.onerror = function () {
+                BusyIndicator.hide();
+                MessageBox.error("Network error during PDF upload. Please try again.");
+            };
+            
+            // Send request
+            oXhr.send(oFormData);
+        },
+        
+        onPdfUploadComplete: function (oEvent) {
+            // This is triggered by FileUploader component
+            var oFileUploader = oEvent.getSource();
+            var sResponse = oEvent.getParameter("response");
+            
+            try {
+                var oResponse = JSON.parse(sResponse);
+                if (oResponse.success) {
+                    MessageToast.show("PDF uploaded successfully");
+                }
+            } catch (e) {
+                // Handled by onUploadPdf
+            }
+        },
+
+
         // Format processing stages with detailed step-by-step info
         _formatProcessingStagesDetailed: function (oRun) {
             var sResult = "";
