@@ -8213,7 +8213,7 @@ sap.ui.define([
             
             BusyIndicator.show(0);
             
-            fetch(API_BASE + "/run/" + sRunId, {
+            fetch(API_BASE + "/lockbox/runs/" + sRunId, {
                 method: "GET",
                 headers: { "Accept": "application/json" }
             })
@@ -8226,7 +8226,7 @@ sap.ui.define([
             .then(function (data) {
                 BusyIndicator.hide();
                 
-                if (data.success) {
+                if (data.run) {
                     that._showRunDetailsDialog(data);
                 } else {
                     MessageBox.error("Failed to load run details");
