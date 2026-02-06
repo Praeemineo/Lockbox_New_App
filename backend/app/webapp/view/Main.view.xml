@@ -365,8 +365,9 @@
                                             <Button
                                                 icon="sap-icon://delete"
                                                 type="Transparent"
-                                                tooltip="Delete - Remove this lockbox entry"
-                                                press="onDeleteItem" />
+                                                tooltip="Delete - Remove unprocessed file"
+                                                press="onDeleteItem"
+                                                enabled="{= ${app>status} !== 'POSTED' &amp;&amp; ${app>status} !== 'SIMULATED' }" />
                                         </HBox>
                                     </table:template>
                                 </table:Column>
