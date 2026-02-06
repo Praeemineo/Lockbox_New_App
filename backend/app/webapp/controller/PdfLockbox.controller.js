@@ -53,14 +53,16 @@ sap.ui.define([
                     return response.json();
                 })
                 .then(function(data) {
-                    // Ensure data is an array
-                    if (!Array.isArray(data)) {
-                        console.error("API did not return an array:", data);
-                        data = [];
+                    // Handle both array and object with runs property
+                    var runsData = Array.isArray(data) ? data : (data.runs || []);
+                    
+                    if (!Array.isArray(runsData)) {
+                        console.error("Could not extract runs array:", data);
+                        runsData = [];
                     }
                     
                     // Filter only PDF runs
-                    var pdfRuns = data.filter(function(run) {
+                    var pdfRuns = runsData.filter(function(run) {
                         return run.fileType === 'PDF';
                     });
                     
