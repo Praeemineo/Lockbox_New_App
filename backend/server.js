@@ -7693,6 +7693,191 @@ async function initializeAndStart() {
     console.log('=== Initializing Lockbox Application ===');
     
     // Load data BEFORE starting the server
+
+// ═══════════════════════════════════════════════════════════════════
+// SEPARATE PDF OCR PROCESSING ENDPOINT
+// ═══════════════════════════════════════════════════════════════════
+app.post('/api/lockbox/process-pdf', upload.single('file'), async (req, res) => {
+    const fs = require('fs');
+    const path = require('path');
+    const { spawn } = require('child_process');
+    
+    const runId = generateProcessingRunId();
+    const run = {
+        id: uuidv4(),
+        runId,
+        filename: req.file?.originalname || 'unknown.pdf',
+        fileType: 'PDF',
+        fileSize: req.file?.size || 0,
+        startedAt: new Date().toISOString(),
+        uploadedAt: new Date().toISOString(),
+        batchNumber: lockboxProcessingRuns.length + 1,
+        stages: {
+            upload: { status: 'pending', message: '' },
+            ocr: { status: 'pending', message: '', provider: null, model: null },
+            templateMatch: { status: 'pending', message: '', templateId: null },
+            extraction: { status: 'pending', message: '', rowCount: 0, appliedRules: [] },
+            validation: { status: 'pending', message: '', errors: [], warnings: [] },
+            mapping: { status: 'pending', message: '' },
+            simulate: { status: 'pending', message: '' },
+            posted: { status: 'pending', message: '' }
+        },
+        currentStage: 'upload',
+        overallStatus: 'processing',
+        rawData: [],
+        extractedData: [],
+        mappedData: [],
+        hierarchy: [],
+        sapPayload: null,
+        lastFailedStage: null,
+        ocrMetadata: null,
+        originalFileBuffer: null,
+        originalFileMimeType: null
+    };
+    
+    lockboxProcessingRuns.unshift(run);
+    
+    try {
+        console.log('=== PDF OCR PROCESSING START ===');
+        console.log('Run ID:', runId);
+        console.log('File:', req.file.originalname, 'Size:', req.file.size);
+        
+        if (!req.file) {
+            run.stages.upload.status = 'error';
+            run.stages.upload.message = 'No PDF file uploaded';
+            run.overallStatus = 'failed';
+            run.lastFailedStage = 'upload';
+            return res.status(400).json({ success: false, run });
+        }
+        
+        // Validate PDF file
+        const fileType = req.file.originalname.split('.').pop().toUpperCase();
+        if (fileType !== 'PDF') {
+            run.stages.upload.status = 'error';
+            run.stages.upload.message = 'Only PDF files are supported in this endpoint';
+            run.overallStatus = 'failed';
+            run.lastFailedStage = 'upload';
+            return res.status(400).json({ success: false, run, message: 'Only PDF files are supported' });
+        }
+        
+        // Store original file
+        run.originalFileBuffer = req.file.buffer.toString('base64');
+        run.originalFileMimeType = 'application/pdf';
+        run.stages.upload.status = 'success';
+        run.stages.upload.message = 'PDF file uploaded successfully';
+        
+        // ═══════════════════════════════════════════════════════════════════
+        // STAGE 2: OCR EXTRACTION
+        // ═══════════════════════════════════════════════════════════════════
+        console.log('=== Stage 2: OCR Extraction ===');
+        run.currentStage = 'ocr';
+        run.stages.ocr.status = 'processing';
+        
+        // Save PDF temporarily
+        const tempPdfPath = path.join(__dirname, 'uploads', `temp_${runId}.pdf`);
+        fs.writeFileSync(tempPdfPath, req.file.buffer);
+        
+        try {
+            // Call Python OCR service
+            const pythonProcess = spawn('python3', [
+                path.join(__dirname, 'services', 'ocr_service.py'),
+                tempPdfPath
+            ]);
+            
+            let ocrOutput = '';
+            let ocrError = '';
+            
+            pythonProcess.stdout.on('data', (data) => {
+                ocrOutput += data.toString();
+            });
+            
+            pythonProcess.stderr.on('data', (data) => {
+                ocrError += data.toString();
+            });
+            
+            await new Promise((resolve, reject) => {
+                pythonProcess.on('close', (code) => {
+                    if (code !== 0) {
+                        reject(new Error(`OCR process exited with code ${code}: ${ocrError}`));
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+            
+            // Parse OCR results
+            const ocrResult = JSON.parse(ocrOutput);
+            
+            if (!ocrResult.success) {
+                throw new Error(ocrResult.error || 'OCR extraction failed');
+            }
+            
+            // Store OCR results
+            const extractedData = ocrResult.data;
+            run.ocrMetadata = extractedData.metadata || {};
+            run.stages.ocr.provider = ocrResult.provider;
+            run.stages.ocr.model = ocrResult.model;
+            run.stages.ocr.status = 'success';
+            run.stages.ocr.message = `OCR completed using ${ocrResult.provider}/${ocrResult.model}`;
+            
+            // Convert OCR result to jsonData format
+            let jsonData = [];
+            if (extractedData.rows && extractedData.rows.length > 0) {
+                const headers = Object.keys(extractedData.rows[0]);
+                jsonData = [headers];
+                extractedData.rows.forEach(row => {
+                    jsonData.push(headers.map(h => row[h] || ''));
+                });
+            }
+            
+            console.log('✓ OCR extraction successful - Rows:', jsonData.length);
+            
+            // ═══════════════════════════════════════════════════════════════════
+            // Continue with standard workflow (Template Match, Extraction, etc.)
+            // ═══════════════════════════════════════════════════════════════════
+            
+            // Store raw data
+            run.rawData = jsonData;
+            
+            // Complete status
+            run.currentStage = 'extraction';
+            run.stages.extraction.status = 'success';
+            run.stages.extraction.rowCount = jsonData.length - 1; // Exclude header
+            run.stages.extraction.message = `Extracted ${jsonData.length - 1} rows from PDF`;
+            run.overallStatus = 'extracted';
+            
+            console.log('=== PDF OCR PROCESSING COMPLETE ===');
+            
+            res.json({
+                success: true,
+                run: run,
+                message: 'PDF processed successfully with OCR',
+                extractedRows: jsonData.length - 1
+            });
+            
+        } finally {
+            // Clean up temp file
+            if (fs.existsSync(tempPdfPath)) {
+                fs.unlinkSync(tempPdfPath);
+            }
+        }
+        
+    } catch (error) {
+        console.error('PDF OCR Processing Error:', error);
+        run.stages[run.currentStage].status = 'error';
+        run.stages[run.currentStage].message = error.message;
+        run.overallStatus = 'failed';
+        run.lastFailedStage = run.currentStage;
+        
+        res.status(500).json({
+            success: false,
+            run: run,
+            error: error.message
+        });
+    }
+});
+
+
     await initTables();
     await initRunIdCounter();
     await loadProcessingRuns();
