@@ -7735,16 +7735,67 @@ sap.ui.define([
             var oContext = oButton.getBindingContext("app");
             var oItem = oContext.getObject();
             
-            MessageBox.confirm("Are you sure you want to delete lockbox '" + oItem.lockbox + "'?", {
-                title: "Confirm Delete",
-                onClose: function (sAction) {
-                    if (sAction === MessageBox.Action.OK) {
-                        // For now, just remove from display (in-memory)
-                        MessageToast.show("Lockbox " + oItem.lockbox + " removed from list");
-                        that._loadRunHistory();
+            // Check if item can be deleted
+            if (oItem.status === 'POSTED' || oItem.status === 'SIMULATED') {
+                MessageBox.warning("Cannot delete files that have been simulated or posted.\n\nStatus: " + oItem.status);
+                return;
+            }
+            
+            MessageBox.confirm(
+                "Are you sure you want to delete this file?\n\n" +
+                "Run ID: " + oItem.runId + "\n" +
+                "File: " + oItem.filename + "\n" +
+                "Status: " + oItem.status + "\n\n" +
+                "This action cannot be undone.",
+                {
+                    title: "Confirm Delete",
+                    actions: [MessageBox.Action.DELETE, MessageBox.Action.CANCEL],
+                    emphasizedAction: MessageBox.Action.DELETE,
+                    onClose: function (sAction) {
+                        if (sAction === MessageBox.Action.DELETE) {
+                            that._deleteRun(oItem.runId);
+                        }
                     }
                 }
-            });
+            );
+        },
+        
+        _deleteRun: function (runId) {
+            var that = this;
+            
+            BusyIndicator.show(0);
+            
+            fetch(API_BASE + "/api/lockbox/runs/" + runId, {
+                method: "DELETE",
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(function (response) {
+                    BusyIndicator.hide();
+                    
+                    if (!response.ok) {
+                        throw new Error("Failed to delete run");
+                    }
+                    
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (data.success) {
+                        MessageToast.show("File deleted successfully");
+                        
+                        // Reload the run history
+                        that._loadRunHistory();
+                    } else {
+                        MessageBox.error("Failed to delete: " + (data.message || "Unknown error"));
+                    }
+                })
+                .catch(function (error) {
+                    BusyIndicator.hide();
+                    console.error("Error deleting run:", error);
+                    MessageBox.error("Error deleting file: " + error.message);
+                });
         },
         
         // ============================================================================
