@@ -280,7 +280,7 @@
                                             
                                             <!-- Stage 3: Ready for Post - Document icon -->
                                             <core:Icon src="sap-icon://document" size="1.5rem" 
-                                                color="{= ${app>stages/simulate} === 'success' ? '#107e3e' : '#5b738b'}"
+                                                color="{= ${app>stages/simulate} === 'success' ? '#107e3e' : ${app>stages/simulate} === 'error' ? '#bb0000' : '#5b738b'}"
                                                 tooltip="Ready: Prepared for posting"
                                                 press=".onShowStageDetails"
                                                 class="sapUiTinyMarginEnd">
