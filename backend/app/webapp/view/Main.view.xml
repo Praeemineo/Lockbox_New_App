@@ -252,40 +252,28 @@
                                     <Label text="Processing Flow" />
                                     <table:template>
                                         <HBox alignItems="Center" visible="{= ${app>type} === 'HEADER' || ${app>type} === 'LOCKBOX'}">
-                                            <!-- Upload - File upload stage -->
-                                            <core:Icon src="sap-icon://circle-task-2" size="1rem" 
-                                                color="{= ${app>stages/upload} === 'success' ? '#107e3e' : ${app>stages/upload} === 'error' ? '#bb0000' : '#5b738b'}"
-                                                tooltip="Upload: File parsing and format detection" />
+                                            <!-- Stage 1: Upload & Parse - Green shield with checkmark -->
+                                            <core:Icon src="sap-icon://sys-enter-2" size="1.2rem" 
+                                                color="{= ${app>stages/extraction} === 'success' ? '#107e3e' : ${app>stages/extraction} === 'error' || ${app>stages/upload} === 'error' || ${app>stages/templateMatch} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                tooltip="Upload & Parse: File upload, template matching, and data extraction" />
                                             <Text text=" → " />
-                                            <!-- Template - Template matching stage -->
-                                            <core:Icon src="sap-icon://circle-task-2" size="1rem" 
-                                                color="{= ${app>stages/templateMatch} === 'success' ? '#107e3e' : ${app>stages/templateMatch} === 'error' ? '#bb0000' : '#5b738b'}"
-                                                tooltip="Template Match: Matching file to customer template" />
+                                            
+                                            <!-- Stage 2: Validate & Map - Orange shield with exclamation -->
+                                            <core:Icon src="sap-icon://alert" size="1.2rem" 
+                                                color="{= ${app>stages/validation} === 'success' &amp;&amp; ${app>stages/mapping} === 'success' ? '#107e3e' : ${app>stages/validation} === 'warning' ? '#e78c07' : ${app>stages/validation} === 'error' || ${app>stages/mapping} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                tooltip="Validate & Map: Data validation and API field mapping" />
                                             <Text text=" → " />
-                                            <!-- Extract - Data extraction stage -->
-                                            <core:Icon src="sap-icon://circle-task-2" size="1rem" 
-                                                color="{= ${app>stages/extraction} === 'success' ? '#107e3e' : ${app>stages/extraction} === 'error' ? '#bb0000' : '#5b738b'}"
-                                                tooltip="Extract: Extracting and transforming data using mapping rules" />
+                                            
+                                            <!-- Stage 3: Ready for Post - Grey square with document -->
+                                            <core:Icon src="sap-icon://document" size="1.2rem" 
+                                                color="{= ${app>stages/simulate} === 'success' ? '#5b738b' : '#5b738b'}"
+                                                tooltip="Ready: Prepared for posting" />
                                             <Text text=" → " />
-                                            <!-- Validate - Data validation stage -->
-                                            <core:Icon src="sap-icon://circle-task-2" size="1rem" 
-                                                color="{= ${app>stages/validation} === 'success' ? '#107e3e' : ${app>stages/validation} === 'warning' ? '#e78c07' : ${app>stages/validation} === 'error' ? '#bb0000' : '#5b738b'}"
-                                                tooltip="Validate: Validating data against business rules and SAP API requirements" />
-                                            <Text text=" → " />
-                                            <!-- Map - API field mapping stage -->
-                                            <core:Icon src="sap-icon://circle-task-2" size="1rem" 
-                                                color="{= ${app>stages/mapping} === 'success' ? '#107e3e' : ${app>stages/mapping} === 'error' ? '#bb0000' : '#5b738b'}"
-                                                tooltip="Map: Mapping extracted data to SAP Lockbox API fields" />
-                                            <Text text=" → " />
-                                            <!-- Simulate - SAP simulation stage -->
-                                            <core:Icon src="sap-icon://circle-task-2" size="1rem" 
-                                                color="{= ${app>stages/simulate} === 'success' ? '#107e3e' : '#5b738b'}"
-                                                tooltip="Simulate: Preview SAP posting without committing - generates Payment Advice preview" />
-                                            <Text text=" → " />
-                                            <!-- Posted - Production run complete -->
-                                            <core:Icon src="sap-icon://circle-task-2" size="1rem" 
-                                                color="{= ${app>stages/posted} === 'success' ? '#107e3e' : '#5b738b'}"
-                                                tooltip="Posted: Production run complete - document posted to SAP S/4HANA via OData API" />
+                                            
+                                            <!-- Stage 4: Posted - Grey square with document -->
+                                            <core:Icon src="sap-icon://document" size="1.2rem" 
+                                                color="{= ${app>stages/posted} === 'success' ? '#5b738b' : '#5b738b'}"
+                                                tooltip="Posted: Document posted to SAP S/4HANA" />
                                         </HBox>
                                     </table:template>
                                 </table:Column>
