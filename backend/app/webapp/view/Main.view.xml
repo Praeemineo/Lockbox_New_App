@@ -178,13 +178,6 @@
                                 press="onOpenUploadDialog"
                                 tooltip="Upload customer file - Auto processes: Template Match → Extract → Validate → Map" />
                             <Button
-                                text="Repost"
-                                icon="sap-icon://refresh"
-                                type="Emphasized"
-                                press="onRepostProduction"
-                                enabled="{= !!${app>/selectedRun} &amp;&amp; (${app>/selectedRun/overallStatus} === 'posted' || ${app>/selectedRun/overallStatus} === 'post_failed')}"
-                                tooltip="Repost the same file as a new batch run" />
-                            <Button
                                 text="Run History"
                                 icon="sap-icon://history"
                                 type="Ghost"
