@@ -1688,6 +1688,44 @@
                     <Button text="Close" press="onCloseFieldMappingPreview" />
                 </endButton>
             </Dialog>
+
+            
+            <!-- PDF Upload Dialog - Separate OCR Processing -->
+            <Dialog id="pdfUploadDialog" title="Upload PDF File with OCR" contentWidth="500px">
+                <content>
+                    <VBox class="sapUiSmallMargin">
+                        <Label text="Upload PDF File" class="sapUiSmallMarginBottom" />
+                        <Text text="This feature uses AI-powered OCR to extract payment data from PDF files." class="sapUiTinyMarginBottom" />
+                        <Text text="Supported: Invoices, payment remittances, bank statements" class="sapUiSmallMarginBottom" />
+                        
+                        <FileUploader
+                            id="pdfFileUploader"
+                            name="file"
+                            uploadUrl="/api/lockbox/process-pdf"
+                            tooltip="Select PDF file"
+                            fileType="pdf"
+                            placeholder="Choose PDF file..."
+                            width="100%"
+                            class="sapUiSmallMarginBottom"
+                            uploadComplete="onPdfUploadComplete" />
+                        
+                        <Text text="After upload, the system will:" class="sapUiTinyMarginTop sapUiSmallMarginBottom" />
+                        <VBox class="sapUiSmallMarginBegin">
+                            <Text text="1. Extract data using Claude AI OCR" />
+                            <Text text="2. Convert to structured table format" />
+                            <Text text="3. Display extracted payment records" />
+                            <Text text="4. Ready for simulation & posting" />
+                        </VBox>
+                    </VBox>
+                </content>
+                <beginButton>
+                    <Button text="Upload PDF" press="onUploadPdf" type="Emphasized" icon="sap-icon://upload" />
+                </beginButton>
+                <endButton>
+                    <Button text="Cancel" press="onClosePdfUploadDialog" />
+                </endButton>
+            </Dialog>
+
         </dependents>
     </Page>
 </mvc:View>
