@@ -6775,7 +6775,7 @@ sap.ui.define([
             stepsText += "  Items Posted: " + (mockData.itemsPosted || simulation.summary?.itemCount || 0) + "\n";
             stepsText += "═══════════════════════════════════════════════════════════\n\n";
             stepsText += "⚠️  This is a MOCK simulation. No data has been sent to SAP.\n";
-            stepsText += "    Click 'Production Run' to commit to SAP S/4HANA.\n";
+            stepsText += "    Use the Processing Runs view to execute production posting.\n";
             
             // Create and show dialog
             if (!this._oSimulationDialog) {
