@@ -178,20 +178,6 @@
                                 press="onOpenUploadDialog"
                                 tooltip="Upload customer file - Auto processes: Template Match → Extract → Validate → Map" />
                             <Button
-                                text="Simulate"
-                                icon="sap-icon://simulate"
-                                type="Ghost"
-                                press="onSimulate"
-                                enabled="{= !!${app>/selectedRun} &amp;&amp; ${app>/selectedRun/overallStatus} === 'validated'}"
-                                tooltip="Simulate SAP API call with OData service" />
-                            <Button
-                                text="Production Run"
-                                icon="sap-icon://accept"
-                                type="Accept"
-                                press="onProductionRun"
-                                enabled="{= !!${app>/selectedRun} &amp;&amp; ${app>/selectedRun/overallStatus} === 'simulated'}"
-                                tooltip="Execute production run - Creates Accounting Document and Payment Advice" />
-                            <Button
                                 text="Repost"
                                 icon="sap-icon://refresh"
                                 type="Emphasized"
@@ -204,20 +190,6 @@
                                 type="Ghost"
                                 press="onRunHistory"
                                 tooltip="View processing runs with stage status (🔴/🟢)" />
-                            <Button
-                                text="Edit"
-                                icon="sap-icon://edit"
-                                type="Ghost"
-                                press="onEditHeader"
-                                enabled="{= !!${app>/selectedHeader} &amp;&amp; ${app>/selectedHeaderDetails/status} !== 'POSTED'}"
-                                tooltip="Edit selected lockbox" />
-                            <Button
-                                text="Delete"
-                                icon="sap-icon://delete"
-                                type="Reject"
-                                press="onDeleteHeader"
-                                enabled="{= !!${app>/selectedHeader} &amp;&amp; ${app>/selectedHeaderDetails/status} !== 'POSTED'}"
-                                tooltip="Delete selected lockbox" />
                             <Button
                                 icon="sap-icon://action-settings"
                                 press="onOpenTableSettings"
