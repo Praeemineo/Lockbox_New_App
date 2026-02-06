@@ -257,9 +257,12 @@
                                                 color="{= ${app>stages/extraction} === 'success' ? '#107e3e' : (${app>stages/extraction} === 'error' || ${app>stages/upload} === 'error' || ${app>stages/templateMatch} === 'error') ? '#bb0000' : '#5b738b'}"
                                                 tooltip="Upload &amp; Parse: File upload, template matching, and data extraction"
                                                 press=".onShowStageDetails"
-                                                class="sapUiTinyMarginEnd"
-                                                customData:stage="upload"
-                                                customData:runId="{app>runId}" />
+                                                class="sapUiTinyMarginEnd">
+                                                <core:customData>
+                                                    <core:CustomData key="stage" value="upload" />
+                                                    <core:CustomData key="runId" value="{app>runId}" />
+                                                </core:customData>
+                                            </core:Icon>
                                             <Text text=" → " class="sapUiTinyMarginBeginEnd"/>
                                             
                                             <!-- Stage 2: Validate & Map (Validation & Preparation) -->
@@ -267,9 +270,12 @@
                                                 color="{= (${app>stages/validation} === 'success' &amp;&amp; ${app>stages/mapping} === 'success') ? '#107e3e' : ${app>stages/validation} === 'warning' ? '#e78c07' : (${app>stages/validation} === 'error' || ${app>stages/mapping} === 'error') ? '#bb0000' : '#5b738b'}"
                                                 tooltip="Validate &amp; Map: Data validation and API field mapping"
                                                 press=".onShowStageDetails"
-                                                class="sapUiTinyMarginEnd"
-                                                customData:stage="validate"
-                                                customData:runId="{app>runId}" />
+                                                class="sapUiTinyMarginEnd">
+                                                <core:customData>
+                                                    <core:CustomData key="stage" value="validate" />
+                                                    <core:CustomData key="runId" value="{app>runId}" />
+                                                </core:customData>
+                                            </core:Icon>
                                             <Text text=" → " class="sapUiTinyMarginBeginEnd"/>
                                             
                                             <!-- Stage 3: Post (Production posting to SAP) -->
@@ -277,9 +283,12 @@
                                                 color="{= ${app>stages/posted} === 'success' ? '#107e3e' : ${app>stages/posted} === 'error' ? '#bb0000' : '#5b738b'}"
                                                 tooltip="Post: Production posting to SAP S/4HANA"
                                                 press=".onShowStageDetails"
-                                                class="sapUiTinyMarginEnd"
-                                                customData:stage="post"
-                                                customData:runId="{app>runId}" />
+                                                class="sapUiTinyMarginEnd">
+                                                <core:customData>
+                                                    <core:CustomData key="stage" value="post" />
+                                                    <core:CustomData key="runId" value="{app>runId}" />
+                                                </core:customData>
+                                            </core:Icon>
                                         </HBox>
                                     </table:template>
                                 </table:Column>
