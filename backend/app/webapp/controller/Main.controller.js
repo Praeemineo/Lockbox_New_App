@@ -6077,25 +6077,26 @@ sap.ui.define([
             if (oDialog) {
                 oDialog.close();
             }
-            // Clear file uploader
-            var oFileUploader = this.byId("pdfFileUploader");
-            if (oFileUploader) {
-                oFileUploader.clear();
+            // Clear HTML file input
+            var oFileInput = document.getElementById("pdfFileInput");
+            if (oFileInput) {
+                oFileInput.value = "";
             }
         },
         
         onUploadPdf: function () {
             var that = this;
-            var oFileUploader = this.byId("pdfFileUploader");
+            var oFileInput = document.getElementById("pdfFileInput");
             
-            if (!oFileUploader || !oFileUploader.getValue()) {
+            if (!oFileInput || !oFileInput.files || oFileInput.files.length === 0) {
                 MessageBox.warning("Please select a PDF file first");
                 return;
             }
             
+            var oFile = oFileInput.files[0];
+            
             // Validate file type
-            var sFileName = oFileUploader.getValue();
-            if (!sFileName.toLowerCase().endsWith('.pdf')) {
+            if (!oFile.name.toLowerCase().endsWith('.pdf')) {
                 MessageBox.warning("Only PDF files are supported in this upload");
                 return;
             }
@@ -6105,8 +6106,7 @@ sap.ui.define([
             
             // Create form data
             var oFormData = new FormData();
-            var oFileList = oFileUploader.oFileUpload.files;
-            oFormData.append('file', oFileList[0]);
+            oFormData.append('file', oFile);
             
             // Make API call to separate PDF endpoint
             var oXhr = new XMLHttpRequest();
@@ -6158,21 +6158,6 @@ sap.ui.define([
             
             // Send request
             oXhr.send(oFormData);
-        },
-        
-        onPdfUploadComplete: function (oEvent) {
-            // This is triggered by FileUploader component
-            var oFileUploader = oEvent.getSource();
-            var sResponse = oEvent.getParameter("response");
-            
-            try {
-                var oResponse = JSON.parse(sResponse);
-                if (oResponse.success) {
-                    MessageToast.show("PDF uploaded successfully");
-                }
-            } catch (e) {
-                // Handled by onUploadPdf
-            }
         },
 
 
