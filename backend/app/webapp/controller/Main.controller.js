@@ -6803,16 +6803,9 @@ sap.ui.define([
                             ]
                         })
                     ],
-                    beginButton: new sap.m.Button({
-                        text: "Production Run",
-                        type: "Emphasized",
-                        press: function () {
-                            that._oSimulationDialog.close();
-                            that.onProductionRun();
-                        }
-                    }),
                     endButton: new sap.m.Button({
                         text: "Close",
+                        type: "Emphasized",
                         press: function () {
                             that._oSimulationDialog.close();
                         }
