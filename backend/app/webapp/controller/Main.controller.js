@@ -6893,19 +6893,19 @@ sap.ui.define([
                 return;
             }
             
-            // Check if status is SIMULATED
-            if (oItem.status !== 'SIMULATED') {
-                MessageBox.warning("Production run can only be executed for simulated files");
+            // Check if status is POST_FAILED
+            if (oItem.status !== 'POST_FAILED') {
+                MessageBox.warning("Repost can only be executed for failed postings");
                 return;
             }
             
             MessageBox.confirm(
-                "Execute production run to SAP S/4HANA?\n\n" +
+                "Retry production run to SAP S/4HANA?\n\n" +
                 "Run ID: " + oItem.runId + "\n" +
                 "File: " + (oItem.filename || oItem.name) + "\n\n" +
-                "This will post the document to SAP without re-running simulation.",
+                "This will retry posting the document to SAP using the existing simulation results.",
                 {
-                    title: "Confirm Production Run",
+                    title: "Confirm Repost",
                     onClose: function (sAction) {
                         if (sAction === MessageBox.Action.OK) {
                             that._executeProductionRun(oItem.runId);
