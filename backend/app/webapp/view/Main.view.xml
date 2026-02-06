@@ -280,7 +280,16 @@
                                             
                                             <!-- Stage 3: Post (Production posting to SAP) -->
                                             <core:Icon src="sap-icon://add-document" size="1.2rem" 
-                                                color="{= (${app>overallStatus} === 'posted' || ${app>overallStatus} === 'POSTED' || ${app>stages/posted} === 'success') ? '#107e3e' : (${app>overallStatus} === 'simulated' || ${app>overallStatus} === 'SIMULATED') ? '#bb0000' : ${app>stages/posted} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                color="{= 
+                                                    (${app>overallStatus} === 'posted' || ${app>overallStatus} === 'POSTED') ? '#107e3e' : 
+                                                    (${app>overallStatus} === 'simulated' || ${app>overallStatus} === 'SIMULATED') ? (
+                                                        (${app>stages/validation} === 'error' || ${app>stages/mapping} === 'error') ? '#bb0000' :
+                                                        (${app>stages/validation} === 'warning') ? '#e78c07' :
+                                                        '#107e3e'
+                                                    ) :
+                                                    ${app>stages/posted} === 'error' ? '#bb0000' : 
+                                                    '#5b738b'
+                                                }"
                                                 tooltip="Post: Production posting to SAP S/4HANA"
                                                 press=".onShowStageDetails"
                                                 class="sapUiTinyMarginEnd">
