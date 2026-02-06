@@ -324,9 +324,9 @@
                                             <Button
                                                 icon="sap-icon://restart"
                                                 type="Transparent"
-                                                tooltip="Repost - Create new batch run from this file"
+                                                tooltip="Repost - Execute production run for simulated file"
                                                 press="onRepostItem"
-                                                enabled="{= ${app>status} === 'POSTED' || ${app>status} === 'POST_FAILED'}" />
+                                                enabled="{= ${app>status} === 'SIMULATED'}" />
                                             <Button
                                                 icon="sap-icon://refresh"
                                                 type="Transparent"
