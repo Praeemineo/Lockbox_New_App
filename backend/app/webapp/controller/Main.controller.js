@@ -7231,7 +7231,7 @@ sap.ui.define([
                 return;
             }
             
-            // Create a dialog with mode selection
+            // Create a dialog for production run confirmation
             var oDialog = new sap.m.Dialog({
                 title: "Production Run - Post to SAP",
                 type: sap.m.DialogType.Message,
@@ -7242,18 +7242,8 @@ sap.ui.define([
                             new sap.m.Text({ text: "Run ID: " + oItem.runId }),
                             new sap.m.Text({ text: "Amount: " + oItem.amount + " " + (oItem.currency || "USD") }),
                             new sap.ui.core.HTML({ content: "<br/>" }),
-                            new sap.m.Label({ text: "Select Posting Mode:", design: "Bold" }),
-                            new sap.m.RadioButtonGroup({
-                                id: "productionModeGroup",
-                                selectedIndex: 1,  // Default to LIVE mode (Post to SAP)
-                                buttons: [
-                                    new sap.m.RadioButton({ text: "Mock Mode (Testing - No SAP connection)" }),
-                                    new sap.m.RadioButton({ text: "Live Mode (Post to SAP via BTP Destination)" })
-                                ]
-                            }),
-                            new sap.ui.core.HTML({ content: "<br/>" }),
                             new sap.m.Text({ 
-                                text: "⚠️ Live mode will post documents to SAP S/4HANA backend.",
+                                text: "This will post documents to SAP S/4HANA backend in LIVE mode.",
                                 wrapping: true
                             })
                         ]
@@ -7263,10 +7253,9 @@ sap.ui.define([
                     text: "Post to SAP",
                     type: "Emphasized",
                     press: function () {
-                        var oRadioGroup = sap.ui.getCore().byId("productionModeGroup");
-                        var bUseMock = oRadioGroup.getSelectedIndex() === 0;
                         oDialog.close();
-                        that._executeProductionRunForItem(oItem.runId, bUseMock);
+                        // Always use LIVE mode (bUseMock = false)
+                        that._executeProductionRunForItem(oItem.runId, false);
                     }
                 }),
                 endButton: new sap.m.Button({
