@@ -1698,16 +1698,7 @@
                         <Text text="This feature uses AI-powered OCR to extract payment data from PDF files." class="sapUiTinyMarginBottom" />
                         <Text text="Supported: Invoices, payment remittances, bank statements" class="sapUiSmallMarginBottom" />
                         
-                        <FileUploader
-                            id="pdfFileUploader"
-                            name="file"
-                            uploadUrl="/api/lockbox/process-pdf"
-                            tooltip="Select PDF file"
-                            fileType="pdf"
-                            placeholder="Choose PDF file..."
-                            width="100%"
-                            class="sapUiSmallMarginBottom"
-                            uploadComplete="onPdfUploadComplete" />
+                        <core:HTML content="&lt;input type='file' id='pdfFileInput' accept='.pdf' style='width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;' /&gt;" class="sapUiSmallMarginBottom" />
                         
                         <Text text="After upload, the system will:" class="sapUiTinyMarginTop sapUiSmallMarginBottom" />
                         <VBox class="sapUiSmallMarginBegin">
