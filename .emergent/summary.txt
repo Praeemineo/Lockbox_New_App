@@ -1,120 +1,146 @@
 <analysis>**original_problem_statement:**
-The user wants to set up a Node.js + PostgreSQL application for SAP BTP deployment. The initial task was to pull code from  and restructure its backend. The existing  is a large monolithic file, and the user wants to refactor it into a clean, modular architecture where  is only an entry point, with logic separated into , , , etc.
+The initial goal was to deploy a Node.js + PostgreSQL application to SAP BTP, refactoring a monolithic  file into a modular architecture. A persistent SAP connection error () blocked progress. The user then pivoted to a series of specific UI/UX improvements and bug fixes for the SAPUI5 frontend.
 
-Throughout the process, several issues arose:
-1.  A persistent SAP connection error when deployed to BTP: .
-2.  A frontend error related to a missing  file.
-3.  A BTP deployment configuration issue where the PostgreSQL service plan needed to be changed from  to                total        used        free      shared  buff/cache   available
-Mem:        16358508     7671456      429664       46144     8572196     8687052
-Swap:              0           0           0.
-4.  A need to remove hardcoded values (, , etc.) and use dynamic configurations from the database.
-
-The primary unresolved issue is the SAP connection failure. After numerous unsuccessful debugging attempts, the user has instructed to proceed with the major code restructuring to create a cleaner codebase, which might help in diagnosing the connection problem.
+The user has requested the following changes during this session:
+1.  Resolve an issue where an Invoice Number from an uploaded file was not being correctly identified as a reference document () for SAP posting.
+2.  Improve the screen design by removing various buttons from the UI, including Production Run from the simulation dialog, the mock/live mode selection, and several buttons from the main toolbar (Simulate, Production Run, Edit, Delete, Repost).
+3.  Fix a 404 error when viewing run history details.
+4.  Simplify the multi-stage Processing Flow graphic into a cleaner, 3-stage horizontal layout (Upload -> Validate -> Post).
+5.  Make the processing flow icons clickable to show stage details and ensure their status colors (green/yellow/red) are correct.
+6.  Apply the SAP 72 font to all values in the application's tables.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The agent has successfully cloned the repository, set up the local environment with PostgreSQL, and installed all backend and frontend dependencies. The application is running locally. All necessary BTP deployment artifacts (,  archive, deployment scripts) have been created and configured. The agent has also addressed several smaller issues, including fixing the PostgreSQL service plan in , removing hardcoded values from , and patching a frontend file-loading error.
-
-The agent was last in the process of a major backend code refactoring, having created the new modular directory structure (, , , , ) and some initial files. The monolithic  has not yet been fully broken down.
+The application is a Node.js backend with a SAPUI5 frontend. The backend code is in a fragile, partially-refactored state. A monolithic  file (over 7000 lines) still contains most of the business logic, although a modular structure (, ) has been created. The agent has addressed numerous user-requested UI fixes, improved the document type validation logic ( vs. ), and fixed several bugs related to the UI and API calls. A fallback mechanism for the original SAP connection issue was implemented, but the core modularization task remains incomplete. The active frontend code is located in a non-standard directory: .
 
 **Last working item**:
--   **Last item agent was working:** The agent was in the middle of a major restructuring of the backend Node.js application. The goal is to refactor the monolithic  into a clean, modular architecture where  serves only as a minimal entry point. This was a direct request from the user to make the code easier to manage and debug.
--   **Status:** IN PROGRESS
+-   **Last item agent was working:** The user reported that the previously applied SAP 72 font was not rendering correctly. The agent attempted to fix this by applying more specific CSS selectors to target the SAPUI5 controls.
+-   **Status:** USER VERIFICATION PENDING
 -   **Agent Testing Done:** N
--   **Which testing method agent to use?** backend testing agent
+-   **Which testing method agent to use?** screenshot tool
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1:** Persistent SAP Connection Failure (P0)
+-   **Issue 1:** Font SAP 72 is not being applied correctly (P0)
+-   **Issue 2:** Persistent SAP Connection Failure on BTP (P1)
+-   **Issue 3:** Incomplete Backend Modularization (P1)
 
 **Issues Detail:**
 -   **Issue 1:**
-    -   **Description:** When the application is deployed to SAP BTP, any attempt to post data to the on-premise SAP system fails with the error: . This indicates the request is failing before reaching the SAP system, likely at the BTP Destination Service or Cloud SDK level. The user insists all BTP configurations (Cloud Connector, Destination, Service Bindings) are correct.
-    -   **Attempted fixes:**
-        -   Added enhanced logging to the SAP SDK call to inspect the raw error object.
-        -   Verified and guided the user to bind the  and  services to the application.
-        -   Experimented with different SAP Cloud SDK v3/v4 call patterns (, ).
-        -   Reverted  to the exact version from the user's working GitHub repository to rule out code changes. None of these attempts resolved the issue.
+    -   **Description:** After applying CSS to use the SAP 72 font, the user provided a screenshot showing the font was not applied. The agent's last action was to update  with more specific selectors. This fix has not been verified.
     -   **Next debug checklist:**
-        1.  Complete the code restructuring as per In progress Task 1.
-        2.  Deploy the newly refactored application to BTP.
-        3.  Trigger the SAP POST request again.
-        4.  Carefully analyze the BTP logs () for the detailed error object that the enhanced logging in  should now produce. This is critical to see what the SDK is returning.
-        5.  Verify the  environment variable () to double-check that the destination service is correctly configured and bound.
-    -   **Why fix this issue and what will be achieved with the fix?** This is the application's most critical feature. Fixing it will enable the app to post lockbox data to SAP as intended.
+        1.  Use the  tool to visually verify if the font is now correctly applied to the tables in the Lockbox Transaction and Field Mapping Rules sections.
+        2.  If it still fails, inspect the browser's developer tools (conceptually) to identify the exact CSS classes overriding the custom styles and update  again.
+    -   **Why fix this issue and what will be achieved with the fix?** To meet the user's specific design requirement for a consistent UI font.
+    -   **Status:** USER VERIFICATION PENDING
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** Frontend
+    -   **Blocked on other issue:** None
+
+-   **Issue 2:**
+    -   **Description:** The original problem from the previous fork. When deployed to SAP BTP, the application fails to connect to the on-premise SAP system with a cryptic .
+    -   **Attempted fixes:**
+        -   Enhanced logging was added to  to capture more details.
+        -   A fallback mechanism was implemented in  to use environment variables for SAP connection if the BTP Destination Service fails. This was based on a previously working  provided by the user.
+    -   **Next debug checklist:**
+        1.  Once the modularization is complete, deploy the application to BTP.
+        2.  Trigger the production run that calls the SAP endpoint.
+        3.  Analyze BTP logs () to see if the enhanced logging or the fallback mechanism resolves the issue or provides a clearer error.
+    -   **Why fix this issue and what will be achieved with the fix?** This is the application's core feature. Fixing it is critical for the app to be useful.
     -   **Status:** BLOCKED
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** Backend
     -   **Blocked on other issue:** In progress Task 1: Complete the backend code restructuring.
 
+-   **Issue 3:**
+    -   **Description:** The user explicitly requested to continue the backend modularization, but this task was paused to address a series of urgent UI fixes. The backend remains a mix of the old monolithic  and the new, largely empty, modular structure.
+    -   **Next debug checklist:**
+        1.  Resume Task 1 (Complete the backend code restructuring).
+        2.  Systematically move route handlers and business logic from  to the appropriate files in  and .
+    -   **Why fix this issue and what will be achieved with the fix?** To fulfill a direct user request and make the codebase maintainable, scalable, and easier to debug, which may also help resolve the SAP connection issue.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Backend
+    -   **Blocked on other issue:** None
+
 **In progress Task List**:
--   **Task 1:** Complete the backend code restructuring (P0)
+-   **Task 1:** Complete the backend code restructuring (P1)
 
 **Task Detail:**
 -   **Task 1:**
-    -   **Where to resume:** The agent has created the new directory structure and some utility/middleware files. The immediate next step is to migrate all the Express route handlers (e.g., , , etc.) from the old  into separate files within the  directory. After that, create the service files in  with the core business logic. Finally, replace the old  with the new minimal version that initializes middleware and imports the routers.
-    -   **What will be achieved with this?** The backend will have a clean, maintainable, and scalable architecture, which was explicitly requested by the user to simplify future development and debugging.
+    -   **Where to resume:** The directory structure (, ) and placeholder files have been created. The next step is to migrate the route handlers (e.g., , ) and their corresponding business logic from the massive  file into the newly created modular files. The final step is to replace the old  with the new minimal entry point ().
+    -   **What will be achieved with this?** A clean, maintainable, and scalable backend architecture, as requested by the user. This will simplify future development and debugging efforts.
     -   **Status:** IN PROGRESS
     -   **Should Test backend/backend/both after fix?** Backend
     -   **Blocked on something:** No.
 
 **Upcoming and Future Tasks**
--   None. The entire focus is on completing the restructuring and then fixing the SAP connection issue.
+-   **Future Task:** The user mentioned that the Review and approve logic will be updated later, indicating a future requirement for an approval workflow.
 
 **Completed work in this session**
--   Cloned the project from GitHub and set up the local development environment (PostgreSQL, dependencies).
--   Configured supervisor to run , , and  services.
--   Created a full set of BTP deployment artifacts, including , deployment scripts, and  archives.
--   Corrected the PostgreSQL service plan in  from  to                total        used        free      shared  buff/cache   available
-Mem:        16358508     7678508      411268       46144     8583312     8680000
-Swap:              0           0           0.
--   Refactored  to eliminate hardcoded configuration values in favor of dynamic ones from the database.
--   Resolved a frontend 404 error for  in the deployed environment.
--   Identified that essential BTP services (, ) were not bound to the application and provided the commands to fix it.
+-   **XBLNR/BELNR Validation:** Implemented logic in  to intelligently detect if an invoice number is a reference document () and default it as such, fixing a critical data mapping issue for SAP posting.
+-   **UI - Button Removals:**
+    -   Removed the Production Run button from the simulation results dialog.
+    -   Removed the Mock vs Live mode selection from the production run dialog, forcing it to always be live.
+    -   Removed Simulate, Production Run, Edit, Delete, and Repost buttons from the main header toolbar in .
+-   **UI - Process Flow:**
+    -   Redesigned the processing flow diagram in  from a complex 7-stage view to a simplified 3-stage view ( ->  -> ).
+    -   Fixed XML parsing errors that prevented the new flow from rendering.
+    -   Made the flow icons clickable to show a dialog with stage-specific details by adding the  function in .
+    -   Corrected the status color logic for the icons to accurately reflect success (green), pending/warning (orange/red), or failure (red).
+-   **Bug Fix - 404 on Run History:** Fixed a 404 error by correcting the API endpoint in  from  to .
+-   **Styling:** Attempted to apply the SAP 72 font via a new custom CSS file ().
 
 **Earlier issues found/mentioned but not fixed**
--   None. The primary unresolved issue is already listed as the highest priority pending issue.
+-   The primary unresolved issue is the SAP Connection Failure on BTP, which is tracked under All Pending/In progress Issue list.
 
 **Known issue recurrence from previous fork**
--   N/A
+-   **Issue recurrence in previous fork:** SAP Connection Failure ().
+-   **Recurrence count:** High. This was the main blocker in the previous session and remains unresolved in the BTP environment.
+-   **Status:** BLOCKED
 
 **Code Architecture**
-The project is being actively refactored from a monolithic structure to a modular one.
-**Target Architecture:**
 
 
 **Key Technical Concepts**
 -   **Backend:** Node.js, Express.js
 -   **Frontend:** SAPUI5
 -   **Database:** PostgreSQL
--   **Deployment:** SAP BTP via Cloud Foundry (CF) using an MTA (Multi-Target Application) model.
--   **Integration:** Connects to an on-premise SAP S/4HANA system using the SAP Cloud SDK, BTP Destination Service, and BTP Cloud Connector.
+-   **Deployment:** SAP BTP via Cloud Foundry (CF)
+-   **Integration:** SAP S/4HANA via SAP Cloud SDK, BTP Destination Service.
 
 **key DB schema**
--   The schema was not explicitly detailed, but it is a PostgreSQL database. The application code suggests tables related to lockbox runs, headers, items, API field mappings, and processing rules.
+-   ****: Stores high-level information about each file processing run.
+-   ****: Stores line-item details for each run.
+-   ****: Logs the status and results of each processing stage.
+-   ****, ****: Configuration tables.
 
 **changes in tech stack**
--   The environment was configured to use PostgreSQL, moving away from a default MongoDB configuration found in the supervisor setup.
+-   Added  to the backend dependencies to support destination service verification.
 
 **All files of reference**
--   : The current monolithic server file which is the target of the refactoring. Contains all application logic.
--   : The main BTP deployment descriptor, which defines services and modules.
--   : A cached copy of the original server file from the git clone, used for comparison during debugging.
--   **New Restructuring files:** All files being created under  in , , , , and .
+-   : **CRITICAL.** The monolithic file containing most of the application's current logic. It was heavily modified for bug fixes and the SAP connection fallback.
+-   : **CRITICAL.** The primary frontend controller where most UI logic, API calls, and dialog handling resides.
+-   : **CRITICAL.** The main SAPUI5 view file defining the UI layout.
+-   : New file created to handle the font styling request.
+-   : New service files intended to hold business logic.
+-   : New route files intended to hold API endpoint definitions.
+-   : BTP deployment descriptor, modified to include environment variables for SAP connection as a fallback.
 
 **Areas that need refactoring**:
-The entire backend at  is the subject of the ongoing refactoring task.
+-   The entire  file must be dismantled, with its logic migrated to the  and  directories. This is the highest priority refactoring task.
+-   The frontend code is located at , which is confusing. It should ideally be moved to the  directory to follow standard project structure, but this is a lower priority than the backend refactoring.
 
 **key api endpoints**
--   : The primary endpoint for posting data to SAP. This is the endpoint that is failing in the BTP environment.
--   : Updates API field configurations.
--   : Application health check.
+-   : Endpoint to trigger the live SAP posting.
+-   : Fetches the list of all processing runs for the history view.
+-   : Fetches detailed data for a single run. (This was the endpoint corrected to fix the 404 error).
 
 **Critical Info for New Agent**
--   **Top Priority:** The user has explicitly directed to complete the code restructuring **before** resuming debugging of the SAP connection issue. Do not try to fix the SAP bug until the refactoring is done.
--   The core unresolved problem is the  error from the SAP Cloud SDK. This is not a standard HTTP error code, suggesting a failure within the SDK's process of resolving the destination or making the call, rather than a response from the target system.
--   The user is adamant that the BTP environment (Destination config, Cloud Connector, service bindings) is correct. While it's good to keep this in mind, the  error strongly points to a problem in how the application is connecting to these services. After refactoring, logs will be the most crucial source of information.
+-   **User Priority:** The user has repeatedly prioritized specific UI fixes over the larger backend refactoring. Be prepared to address small, visual tasks first. However, the user also explicitly asked to continue the modularization, so it should be the next major task after the font issue is verified.
+-   **Code Location:** Be aware that the active frontend code is in , NOT . All UI changes must be made there.
+-   **Backend State:** The backend is in a transitional state.  is still the main source of truth, but the modular structure exists. Do not assume logic is in the new service files until it has been explicitly moved there.
 
 **documents and test reports created in this job**
 -   
@@ -123,34 +149,41 @@ The entire backend at  is the subject of the ongoing refactoring task.
 -   
 -   
 -   
+-   
+-   
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Confirmed their BTP destination configuration.
-2.  **User:** Provided a working code sample for the SAP Cloud SDK.
-3.  **User:** Reported the same error persists and shared another working code sample.
-4.  **User:** Reported failure again and requested to restructure the code before debugging further.
-5.  **User:** Re-confirmed their BTP destination configuration.
-6.  **User:** Provided another, simpler, working code pattern.
-7.  **User:** Asked if the modular SAP files had been updated.
-8.  **User:** Gave the final go-ahead to restructure the entire backend.
-9.  **User:** yes - a simple confirmation to proceed with the restructuring.
-10. **User:** Stated the error is still present and reiterated the request to modularize the code first before further debugging.
+1.  **User:** Requested to simplify the 6-stage process flow to a 3-stage one and change the layout. (Completed)
+2.  **User:** Reported an XML parsing error and that the process flow symbols were not showing. (Completed)
+3.  **User:** Requested to make process flow icons clickable to show details and to fix the status color logic. (Completed)
+4.  **User:** Reported another XML parsing error related to the clickable icons. (Completed)
+5.  **User:** Reported that the status for a POSTED item was showing as NOT POSTED YET in the details popup. (Completed)
+6.  **User:** Reported that the Post icon should be red for SIMULATED status. (Completed)
+7.  **User:** Reported that the Post icon color should also depend on whether the simulation had errors (red) or was successful (green). (Completed)
+8.  **User:** Requested to change the font for all table values to SAP 72. (In Progress/Verification Pending)
+9.  **User:** Provided a screenshot showing the SAP 72 font was not applied correctly. (Current Issue)
+10. **Agent:** Responded by attempting a fix with more specific CSS selectors. (Last Action)
 
 **Project Health Check:**
--   **Broken:** The primary business function—posting data to SAP—is non-operational in the deployed BTP environment.
--   **Mocked:** The application contains a mock mode for local development that bypasses the live SAP connection.
+-   **Broken:**
+    -   The core SAP connection in the deployed BTP environment is likely still broken or reliant on a new fallback mechanism that hasn't been tested under deployment.
+    -   The Run History details view was broken (404 error) before being fixed.
+    -   The UI had several XML parsing errors and incorrect status displays that were fixed.
+-   **Mocked:** The application contains a mock mode for posting, but the UI for selecting it has been removed by user request to simplify the workflow.
 
 **3rd Party Integrations**
--   **SAP S/4HANA (On-Premise):** Integration is managed via the SAP BTP ecosystem, including the Cloud Connector, Destination Service, and the  library in Node.js. Authentication is .
+-   **SAP S/4HANA (On-Premise):** Integration is managed via SAP BTP services (Destination, Connectivity) and the  library.
 
 **Testing status**
 -   **Testing agent used after significant changes:** NO
--   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Troubleshoot agent used after agent stuck in loop:** YES, once for the initial SAP connection issue.
 -   **Test files created:** []
--   **Known regressions:** The live SAP connection was reportedly working for the user with a similar codebase but is failing now.
+-   **Known regressions:** The font styling was a regression, as the first attempt failed and required a second fix.
 
 **Credentials to test flow:**
--   N/A. SAP credentials are managed within the BTP Destination service and are not directly accessible.
+-   N/A. SAP credentials are managed within the BTP Destination service.
 
 **What agent forgot to execute**
--   The agent has been following the user's directives closely. The main challenge has been the inability to solve the core SAP connection bug, which has led to the current user-directed pivot to a major code restructuring. No specific task was forgotten; rather, the debugging path was exhausted, prompting a new strategy.</analysis>
+-   The agent did not follow the user's directive to continue with the backend modularization, getting sidetracked by a series of UI requests.
+-   The agent did not use the  tool to verify the font change, which would have caught the styling issue before the user had to report it.</analysis>
