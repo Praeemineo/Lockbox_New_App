@@ -10872,21 +10872,33 @@ sap.ui.define([
             sContent += "              SIMULATION STAGE\n";
             sContent += "════════════════════════════════════════════════════════════════\n\n";
             
-            // Check simulation status
-            if (oRun.stages && oRun.stages.simulate) {
-                var simStatus = oRun.stages.simulate.status === "success" ? "✅ SUCCESS" : 
-                               oRun.stages.simulate.status === "error" ? "❌ FAILED" : "⚠️ PENDING";
-                sContent += "🧪 Simulation Status: " + simStatus + "\n\n";
-                
-                if (oRun.stages.simulate.message) {
-                    sContent += "Message: " + oRun.stages.simulate.message + "\n\n";
-                }
-            }
-            
-            // Check if simulated based on overallStatus
+            // Check if posted - if posted, simulation was successful
+            var isPosted = (oRun.overallStatus === 'posted' || oRun.overallStatus === 'POSTED');
             var isSimulated = (oRun.overallStatus === 'simulated' || oRun.overallStatus === 'SIMULATED');
             
-            if (isSimulated && oRun.simulationResult) {
+            // If posted, simulation must have been successful
+            if (isPosted) {
+                sContent += "✅ Simulation Status: SUCCESS\n\n";
+                sContent += "The simulation completed successfully and the document has been posted to SAP.\n\n";
+                
+                // Show simulation result if available
+                if (oRun.simulationResult && oRun.simulationResult.sapResponse) {
+                    var sapResp = oRun.simulationResult.sapResponse;
+                    sContent += "📄 Simulation Preview:\n";
+                    sContent += "  Payment Advice: " + (sapResp.paymentAdvice || "N/A") + "\n";
+                    if (sapResp.companyCode) {
+                        sContent += "  Company Code: " + sapResp.companyCode + "\n";
+                    }
+                    if (sapResp.fiscalYear) {
+                        sContent += "  Fiscal Year: " + sapResp.fiscalYear + "\n";
+                    }
+                    sContent += "\n";
+                }
+                
+                sContent += "✓ Status: Simulation passed, document successfully posted.\n";
+                
+            } else if (isSimulated && oRun.simulationResult) {
+                // Still in simulated state (not yet posted)
                 if (oRun.simulationResult.success) {
                     sContent += "✅ Simulation Result: SUCCESS\n\n";
                     
@@ -10932,10 +10944,21 @@ sap.ui.define([
                     
                     sContent += "❗ Please fix the errors before attempting Production Run.\n";
                 }
-            } else if (!isSimulated) {
-                sContent += "⚠️ Status: NOT YET SIMULATED\n\n";
-                sContent += "This run has not been simulated yet.\n";
-                sContent += "Click the 'Simulate' button to preview the SAP posting.\n";
+            } else {
+                // Check simulation stage status
+                if (oRun.stages && oRun.stages.simulate) {
+                    var simStatus = oRun.stages.simulate.status === "success" ? "✅ SUCCESS" : 
+                                   oRun.stages.simulate.status === "error" ? "❌ FAILED" : "⚠️ PENDING";
+                    sContent += "🧪 Simulation Status: " + simStatus + "\n\n";
+                    
+                    if (oRun.stages.simulate.message) {
+                        sContent += "Message: " + oRun.stages.simulate.message + "\n\n";
+                    }
+                } else {
+                    sContent += "⚠️ Status: NOT YET SIMULATED\n\n";
+                    sContent += "This run has not been simulated yet.\n";
+                    sContent += "Click the 'Simulate' button to preview the SAP posting.\n";
+                }
             }
             
             sContent += "\n════════════════════════════════════════════════════════════════\n";
