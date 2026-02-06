@@ -109,7 +109,6 @@ sap.ui.define([
             this._initFieldMappingRules();
             this._loadFieldMappingRules();
         },
-        },
         
         // Navigation: PDF Lockbox Tile Press
         onPdfLockboxTilePress: function () {
@@ -123,7 +122,7 @@ sap.ui.define([
             oModel.setProperty("/showRuleDetail", false);
             oModel.setProperty("/showNavButton", true);
             oModel.setProperty("/currentView", "pdfLockbox");
-
+        },
         
         // Navigation: Back Button Press
         onNavBack: function () {
