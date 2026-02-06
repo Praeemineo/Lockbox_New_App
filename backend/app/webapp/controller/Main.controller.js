@@ -8240,68 +8240,149 @@ sap.ui.define([
         },
         
         // Display Run Details Dialog
-        _showRunDetailsDialog: function (oData) {
-            var oRun = oData.run;
-            var aSapResponses = oData.sapResponses || [];
-            var aClearing = oData.lineLevelClearing || [];
-            
+        _showRunDetailsDialog: function (oRun) {
             var sContent = "";
             sContent += "════════════════════════════════════════════════════════════════\n";
             sContent += "              RUN DETAILS: " + oRun.runId + "\n";
             sContent += "════════════════════════════════════════════════════════════════\n\n";
             
-            // Run Header
+            // Run Header with Success/Failure Status
             sContent += "────────────────────────────────────────────────────────────────\n";
-            sContent += "                       RUN HEADER\n";
+            sContent += "                       RUN SUMMARY\n";
             sContent += "────────────────────────────────────────────────────────────────\n\n";
             sContent += "  Run ID:              " + oRun.runId + "\n";
-            sContent += "  Lockbox:             " + oRun.lockbox + "\n";
-            sContent += "  Company Code:        " + oRun.companyCode + "\n";
-            sContent += "  Mode:                " + oRun.mode + "\n";
-            sContent += "  Status:              " + oRun.status + "\n";
-            sContent += "  Amount:              " + oRun.amount + " " + (oRun.currency || "") + "\n";
+            sContent += "  File:                " + (oRun.filename || "N/A") + "\n";
+            sContent += "  Overall Status:      " + (oRun.overallStatus || "N/A").toUpperCase() + "\n";
+            
+            // Success/Failure Indicator
+            var statusIcon = "";
+            var statusMessage = "";
+            if (oRun.overallStatus === "posted" || oRun.overallStatus === "simulated") {
+                statusIcon = "✅ SUCCESS";
+                statusMessage = "Run completed successfully";
+            } else if (oRun.overallStatus === "failed" || oRun.overallStatus === "post_failed" || oRun.overallStatus === "error") {
+                statusIcon = "❌ FAILED";
+                statusMessage = "Run failed - " + (oRun.lastFailedStage || "Unknown stage");
+            } else if (oRun.overallStatus === "validated") {
+                statusIcon = "✅ READY";
+                statusMessage = "Ready for simulation or production";
+            } else {
+                statusIcon = "⚠️  IN PROGRESS";
+                statusMessage = "Current stage: " + (oRun.currentStage || "Unknown");
+            }
+            sContent += "  Status:              " + statusIcon + "\n";
+            sContent += "  Message:             " + statusMessage + "\n\n";
+            
             sContent += "  Started At:          " + (oRun.startedAt ? new Date(oRun.startedAt).toLocaleString() : "N/A") + "\n";
             sContent += "  Completed At:        " + (oRun.completedAt ? new Date(oRun.completedAt).toLocaleString() : "N/A") + "\n";
-            if (oRun.duration) {
-                sContent += "  Duration:            " + oRun.duration + " seconds\n";
+            
+            if (oRun.startedAt && oRun.completedAt) {
+                var duration = (new Date(oRun.completedAt) - new Date(oRun.startedAt)) / 1000;
+                sContent += "  Duration:            " + duration.toFixed(2) + " seconds\n";
             }
             sContent += "\n";
             
-            // SAP Response Entries
+            // Processing Stages
             sContent += "────────────────────────────────────────────────────────────────\n";
-            sContent += "               SAP RESPONSE LOG (" + aSapResponses.length + " entries)\n";
+            sContent += "                    PROCESSING STAGES\n";
             sContent += "────────────────────────────────────────────────────────────────\n\n";
             
-            if (aSapResponses.length > 0) {
-                aSapResponses.forEach(function (oResp, idx) {
-                    sContent += "  Entry " + (idx + 1) + ":\n";
-                    sContent += "    Payment Advice:      " + (oResp.paymentAdvice || "N/A") + "\n";
-                    sContent += "    Payment Advice Item: " + (oResp.paymentAdviceItem || "N/A") + "\n";
-                    sContent += "    Accounting Document: " + (oResp.accountingDocument || "N/A") + "\n";
-                    sContent += "    Fiscal Year:         " + (oResp.fiscalYear || "N/A") + "\n";
-                    sContent += "    Lockbox Batch:       " + (oResp.lockboxBatch || "N/A") + "\n";
-                    sContent += "    Amount:              " + (oResp.amount || "N/A") + " " + (oResp.currency || "") + "\n";
-                    sContent += "\n";
-                });
-            } else {
-                sContent += "  No SAP response entries available.\n\n";
+            if (oRun.stages) {
+                // Upload Stage
+                if (oRun.stages.upload) {
+                    var uploadStatus = oRun.stages.upload.status === "success" ? "✅" : 
+                                      oRun.stages.upload.status === "failed" ? "❌" : "⚠️";
+                    sContent += "  1. Upload:           " + uploadStatus + " " + (oRun.stages.upload.status || "N/A").toUpperCase() + "\n";
+                    if (oRun.stages.upload.message) {
+                        sContent += "     Message: " + oRun.stages.upload.message + "\n";
+                    }
+                }
+                
+                // Template Match Stage
+                if (oRun.stages.templateMatch) {
+                    var templateStatus = oRun.stages.templateMatch.status === "success" ? "✅" : 
+                                        oRun.stages.templateMatch.status === "failed" ? "❌" : "⚠️";
+                    sContent += "  2. Template Match:   " + templateStatus + " " + (oRun.stages.templateMatch.status || "N/A").toUpperCase() + "\n";
+                    if (oRun.stages.templateMatch.templateId) {
+                        sContent += "     Template: " + oRun.stages.templateMatch.templateId + "\n";
+                    }
+                    if (oRun.stages.templateMatch.message) {
+                        sContent += "     Message: " + oRun.stages.templateMatch.message + "\n";
+                    }
+                }
+                
+                // Extraction Stage
+                if (oRun.stages.extraction) {
+                    var extractStatus = oRun.stages.extraction.status === "success" ? "✅" : 
+                                       oRun.stages.extraction.status === "failed" ? "❌" : "⚠️";
+                    sContent += "  3. Extraction:       " + extractStatus + " " + (oRun.stages.extraction.status || "N/A").toUpperCase() + "\n";
+                    if (oRun.stages.extraction.rowCount) {
+                        sContent += "     Rows: " + oRun.stages.extraction.rowCount + "\n";
+                    }
+                    if (oRun.stages.extraction.message) {
+                        sContent += "     Message: " + oRun.stages.extraction.message + "\n";
+                    }
+                }
+                
+                // Validation Stage
+                if (oRun.stages.validation) {
+                    var validStatus = oRun.stages.validation.status === "success" ? "✅" : 
+                                     oRun.stages.validation.status === "failed" ? "❌" : "⚠️";
+                    sContent += "  4. Validation:       " + validStatus + " " + (oRun.stages.validation.status || "N/A").toUpperCase() + "\n";
+                    if (oRun.stages.validation.message) {
+                        sContent += "     Message: " + oRun.stages.validation.message + "\n";
+                    }
+                }
+                
+                // Mapping Stage
+                if (oRun.stages.mapping) {
+                    var mapStatus = oRun.stages.mapping.status === "success" ? "✅" : 
+                                   oRun.stages.mapping.status === "failed" ? "❌" : "⚠️";
+                    sContent += "  5. Mapping:          " + mapStatus + " " + (oRun.stages.mapping.status || "N/A").toUpperCase() + "\n";
+                    if (oRun.stages.mapping.message) {
+                        sContent += "     Message: " + oRun.stages.mapping.message + "\n";
+                    }
+                }
+            }
+            sContent += "\n";
+            
+            // Production Result (if available)
+            if (oRun.productionResult) {
+                sContent += "────────────────────────────────────────────────────────────────\n";
+                sContent += "                   PRODUCTION RESULT\n";
+                sContent += "────────────────────────────────────────────────────────────────\n\n";
+                
+                if (oRun.productionResult.success) {
+                    sContent += "  Status:              ✅ SUCCESS\n";
+                    if (oRun.productionResult.sapResponse) {
+                        var sapResp = oRun.productionResult.sapResponse;
+                        sContent += "  Accounting Document: " + (sapResp.accountingDocument || "N/A") + "\n";
+                        sContent += "  Payment Advice:      " + (sapResp.paymentAdvice || "N/A") + "\n";
+                        sContent += "  Fiscal Year:         " + (sapResp.fiscalYear || "N/A") + "\n";
+                    }
+                    if (oRun.productionResult.clearing) {
+                        sContent += "  Clearing Status:     " + (oRun.productionResult.clearing.status || "N/A") + "\n";
+                        sContent += "  Items Cleared:       " + (oRun.productionResult.clearing.clearedItems || 0) + "\n";
+                    }
+                } else {
+                    sContent += "  Status:              ❌ FAILED\n";
+                    if (oRun.productionResult.error) {
+                        sContent += "  Error Message:       " + (oRun.productionResult.error.message || "Unknown error") + "\n";
+                        if (oRun.productionResult.error.sapErrorMessage) {
+                            sContent += "  SAP Error:           " + oRun.productionResult.error.sapErrorMessage + "\n";
+                        }
+                    }
+                }
+                sContent += "\n";
             }
             
-            // Line Level Clearing
-            sContent += "────────────────────────────────────────────────────────────────\n";
-            sContent += "            LINE LEVEL CLEARING (" + aClearing.length + " entries)\n";
-            sContent += "────────────────────────────────────────────────────────────────\n\n";
-            
-            if (aClearing.length > 0) {
-                aClearing.forEach(function (oLine, idx) {
-                    sContent += "  Line " + (idx + 1) + ":\n";
-                    sContent += "    Payment Reference:   " + (oLine.paymentReference || "N/A") + "\n";
-                    sContent += "    Invoice:             " + (oLine.invoice || "N/A") + "\n";
-                    sContent += "    Cleared Amount:      " + (oLine.clearedAmount || "N/A") + " " + (oLine.currency || "") + "\n";
-                    sContent += "\n";
-                });
-            } else {
-                sContent += "  No line-level clearing entries available.\n\n";
+            // Simulation Result (if available)
+            if (oRun.simulationResult && oRun.overallStatus === "simulated") {
+                sContent += "────────────────────────────────────────────────────────────────\n";
+                sContent += "                   SIMULATION RESULT\n";
+                sContent += "────────────────────────────────────────────────────────────────\n\n";
+                sContent += "  Status:              ✅ SIMULATED\n";
+                sContent += "  Mock Data:           Available (View full details in Simulate dialog)\n\n";
             }
             
             sContent += "════════════════════════════════════════════════════════════════\n";
@@ -8310,7 +8391,7 @@ sap.ui.define([
             var oTextArea = new TextArea({
                 value: sContent,
                 width: "100%",
-                height: "400px",
+                height: "450px",
                 editable: false,
                 growing: false
             });
@@ -8319,8 +8400,8 @@ sap.ui.define([
             var oDialog = new Dialog({
                 title: "Run Details - " + oRun.runId,
                 icon: "sap-icon://detail-view",
-                contentWidth: "700px",
-                contentHeight: "500px",
+                contentWidth: "750px",
+                contentHeight: "550px",
                 content: [
                     new VBox({
                         items: [oTextArea]
