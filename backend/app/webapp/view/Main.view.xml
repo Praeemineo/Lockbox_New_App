@@ -255,13 +255,13 @@
                                             <!-- Stage 1: Upload & Parse - Green shield with checkmark -->
                                             <core:Icon src="sap-icon://sys-enter-2" size="1.2rem" 
                                                 color="{= ${app>stages/extraction} === 'success' ? '#107e3e' : ${app>stages/extraction} === 'error' || ${app>stages/upload} === 'error' || ${app>stages/templateMatch} === 'error' ? '#bb0000' : '#5b738b'}"
-                                                tooltip="Upload & Parse: File upload, template matching, and data extraction" />
+                                                tooltip="Upload &amp; Parse: File upload, template matching, and data extraction" />
                                             <Text text=" → " />
                                             
                                             <!-- Stage 2: Validate & Map - Orange shield with exclamation -->
                                             <core:Icon src="sap-icon://alert" size="1.2rem" 
                                                 color="{= ${app>stages/validation} === 'success' &amp;&amp; ${app>stages/mapping} === 'success' ? '#107e3e' : ${app>stages/validation} === 'warning' ? '#e78c07' : ${app>stages/validation} === 'error' || ${app>stages/mapping} === 'error' ? '#bb0000' : '#5b738b'}"
-                                                tooltip="Validate & Map: Data validation and API field mapping" />
+                                                tooltip="Validate &amp; Map: Data validation and API field mapping" />
                                             <Text text=" → " />
                                             
                                             <!-- Stage 3: Ready for Post - Grey square with document -->
