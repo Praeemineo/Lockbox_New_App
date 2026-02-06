@@ -1683,34 +1683,6 @@
                 </endButton>
             </Dialog>
 
-            
-            <!-- PDF Upload Dialog - Separate OCR Processing -->
-            <Dialog id="pdfUploadDialog" title="Upload PDF File with OCR" contentWidth="500px">
-                <content>
-                    <VBox class="sapUiSmallMargin">
-                        <Label text="Upload PDF File" class="sapUiSmallMarginBottom" />
-                        <Text text="This feature uses AI-powered OCR to extract payment data from PDF files." class="sapUiTinyMarginBottom" />
-                        <Text text="Supported: Invoices, payment remittances, bank statements" class="sapUiSmallMarginBottom" />
-                        
-                        <core:HTML content='&lt;input type="file" id="pdfFileInput" accept=".pdf" style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;" /&gt;' class="sapUiSmallMarginBottom" />
-                        
-                        <Text text="After upload, the system will:" class="sapUiTinyMarginTop sapUiSmallMarginBottom" />
-                        <VBox class="sapUiSmallMarginBegin">
-                            <Text text="1. Extract data using Claude AI OCR" />
-                            <Text text="2. Convert to structured table format" />
-                            <Text text="3. Display extracted payment records" />
-                            <Text text="4. Ready for simulation & posting" />
-                        </VBox>
-                    </VBox>
-                </content>
-                <beginButton>
-                    <Button text="Upload PDF" press="onUploadPdf" type="Emphasized" icon="sap-icon://upload" />
-                </beginButton>
-                <endButton>
-                    <Button text="Cancel" press="onClosePdfUploadDialog" />
-                </endButton>
-            </Dialog>
-
         </dependents>
     </Page>
 </mvc:View>
