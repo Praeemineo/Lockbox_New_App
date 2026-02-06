@@ -178,6 +178,12 @@
                                 press="onOpenUploadDialog"
                                 tooltip="Upload customer file - Auto processes: Template Match → Extract → Validate → Map" />
                             <Button
+                                text="Upload PDF (OCR)"
+                                icon="sap-icon://document"
+                                type="Default"
+                                press="onOpenPdfUploadDialog"
+                                tooltip="Upload PDF file - Uses AI OCR to extract payment data" />
+                            <Button
                                 text="Run History"
                                 icon="sap-icon://history"
                                 type="Ghost"
