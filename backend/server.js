@@ -6359,6 +6359,43 @@ app.get('/api/lockbox/runs/:runId', (req, res) => {
     res.json({ run });
 });
 
+
+// Delete a lockbox run (only unprocessed files)
+app.delete('/api/lockbox/runs/:runId', (req, res) => {
+    const runId = req.params.runId;
+    const runIndex = lockboxProcessingRuns.findIndex(r => r.runId === runId);
+    
+    if (runIndex === -1) {
+        return res.status(404).json({ 
+            success: false, 
+            message: 'Run not found' 
+        });
+    }
+    
+    const run = lockboxProcessingRuns[runIndex];
+    
+    // Prevent deletion of simulated or posted files
+    if (run.overallStatus === 'simulated' || run.overallStatus === 'SIMULATED' ||
+        run.overallStatus === 'posted' || run.overallStatus === 'POSTED') {
+        return res.status(400).json({
+            success: false,
+            message: 'Cannot delete files that have been simulated or posted'
+        });
+    }
+    
+    // Remove from array
+    lockboxProcessingRuns.splice(runIndex, 1);
+    
+    console.log(`Deleted run ${runId}. Status was: ${run.overallStatus}`);
+    
+    res.json({
+        success: true,
+        message: 'Run deleted successfully',
+        deletedRunId: runId
+    });
+});
+
+
 // Get production result with full error details (including XML)
 app.get('/api/lockbox/runs/:runId/production-result', (req, res) => {
     const run = lockboxProcessingRuns.find(r => r.runId === req.params.runId);
