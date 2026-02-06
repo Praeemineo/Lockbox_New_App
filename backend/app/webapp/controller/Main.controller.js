@@ -10726,17 +10726,22 @@ sap.ui.define([
             if (sStage === "upload") {
                 // Stage 1: Upload & Parse
                 sTitle = "Upload & Parse Details";
-                sIcon = "sap-icon://document-text";
+                sIcon = "sap-icon://write-new-document";
                 sContent = this._buildUploadStageContent(oRun);
             } else if (sStage === "validate") {
                 // Stage 2: Validate & Map
                 sTitle = "Validate & Map Details";
-                sIcon = "sap-icon://validate";
+                sIcon = "sap-icon://search";
                 sContent = this._buildValidateStageContent(oRun);
+            } else if (sStage === "simulate") {
+                // Stage 3: Simulation
+                sTitle = "Simulation Details";
+                sIcon = "sap-icon://document";
+                sContent = this._buildSimulateStageContent(oRun);
             } else if (sStage === "post") {
-                // Stage 3: Post
+                // Stage 4: Post
                 sTitle = "Post Details";
-                sIcon = "sap-icon://add-document";
+                sIcon = "sap-icon://receipt";
                 sContent = this._buildPostStageContent(oRun);
             }
             
