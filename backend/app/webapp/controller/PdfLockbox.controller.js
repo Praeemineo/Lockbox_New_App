@@ -7,20 +7,26 @@ sap.ui.define([
 ], function (Controller, JSONModel, MessageBox, MessageToast, BusyIndicator) {
     "use strict";
 
-    // API Base URL
-    const API_BASE = window.REACT_APP_BACKEND_URL || "";
+    // API Base URL - Use window.location or environment
+    const API_BASE = window.REACT_APP_BACKEND_URL || window.location.origin;
 
     return Controller.extend("lockbox.controller.PdfLockbox", {
 
         onInit: function () {
             console.log("PDF Lockbox Controller initialized");
             
-            // Initialize model
-            var oModel = new JSONModel({
-                pdfRuns: [],
-                pdfRunsCount: 0
-            });
-            this.getView().setModel(oModel, "app");
+            // Get parent component model instead of creating new one
+            var oModel = this.getOwnerComponent().getModel("app");
+            if (!oModel) {
+                console.error("Parent app model not found");
+                return;
+            }
+            
+            // Initialize PDF-specific properties if they don't exist
+            if (!oModel.getProperty("/pdfRuns")) {
+                oModel.setProperty("/pdfRuns", []);
+                oModel.setProperty("/pdfRunsCount", 0);
+            }
             
             // Load PDF runs
             this.loadPdfRuns();
@@ -28,8 +34,10 @@ sap.ui.define([
 
         onNavBack: function () {
             var oModel = this.getOwnerComponent().getModel("app");
-            oModel.setProperty("/showHome", true);
-            oModel.setProperty("/showPdfLockbox", false);
+            if (oModel) {
+                oModel.setProperty("/showHome", true);
+                oModel.setProperty("/showPdfLockbox", false);
+            }
         },
 
         loadPdfRuns: function () {
@@ -38,21 +46,30 @@ sap.ui.define([
             BusyIndicator.show(0);
             
             fetch(API_BASE + "/api/lockbox/runs")
-                .then(response => response.json())
-                .then(data => {
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
                     // Filter only PDF runs
-                    var pdfRuns = data.filter(run => run.fileType === 'PDF');
+                    var pdfRuns = data.filter(function(run) {
+                        return run.fileType === 'PDF';
+                    });
                     
-                    var oModel = that.getView().getModel("app");
-                    oModel.setProperty("/pdfRuns", pdfRuns);
-                    oModel.setProperty("/pdfRunsCount", pdfRuns.length);
+                    var oModel = that.getOwnerComponent().getModel("app");
+                    if (oModel) {
+                        oModel.setProperty("/pdfRuns", pdfRuns);
+                        oModel.setProperty("/pdfRunsCount", pdfRuns.length);
+                    }
                     
                     BusyIndicator.hide();
                 })
-                .catch(error => {
+                .catch(function(error) {
                     console.error("Error loading PDF runs:", error);
                     BusyIndicator.hide();
-                    MessageToast.show("Error loading data");
+                    MessageToast.show("Error loading data: " + error.message);
                 });
         },
 
@@ -149,13 +166,19 @@ sap.ui.define([
         onViewDetails: function (oEvent) {
             var oItem = oEvent.getSource().getParent().getParent();
             var oContext = oItem.getBindingContext("app");
+            
+            if (!oContext) {
+                MessageBox.error("Could not get run details");
+                return;
+            }
+            
             var oRun = oContext.getObject();
             
             MessageBox.information("Run Details:\n\n" +
                 "Run ID: " + oRun.runId + "\n" +
                 "File: " + oRun.filename + "\n" +
                 "Status: " + oRun.overallStatus + "\n" +
-                "Rows: " + (oRun.stages.extraction.rowCount || 0), {
+                "Rows: " + (oRun.stages && oRun.stages.extraction ? oRun.stages.extraction.rowCount || 0 : 0), {
                 title: "PDF Run Details"
             });
         },
@@ -163,6 +186,11 @@ sap.ui.define([
         onSimulate: function (oEvent) {
             var oItem = oEvent.getSource().getParent().getParent();
             var oContext = oItem.getBindingContext("app");
+            
+            if (!oContext) {
+                return;
+            }
+            
             var oRun = oContext.getObject();
             
             MessageBox.information("Simulation feature will be implemented here.\n\nRun ID: " + oRun.runId);
@@ -171,6 +199,11 @@ sap.ui.define([
         onProductionRun: function (oEvent) {
             var oItem = oEvent.getSource().getParent().getParent();
             var oContext = oItem.getBindingContext("app");
+            
+            if (!oContext) {
+                return;
+            }
+            
             var oRun = oContext.getObject();
             
             MessageBox.information("Production Run feature will be implemented here.\n\nRun ID: " + oRun.runId);
