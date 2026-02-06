@@ -10867,7 +10867,12 @@ sap.ui.define([
             sContent += "              POST TO SAP STAGE\n";
             sContent += "════════════════════════════════════════════════════════════════\n\n";
             
-            if (oRun.productionResult) {
+            // Check if posted based on overallStatus first
+            var isPosted = (oRun.overallStatus === 'posted' || oRun.overallStatus === 'POSTED');
+            var isSimulated = (oRun.overallStatus === 'simulated' || oRun.overallStatus === 'SIMULATED');
+            
+            if (isPosted && oRun.productionResult) {
+                // Posted with production result
                 if (oRun.productionResult.success) {
                     sContent += "✅ Status: SUCCESS\n\n";
                     
@@ -10905,7 +10910,31 @@ sap.ui.define([
                         sContent += "\n";
                     }
                 }
+            } else if (isPosted) {
+                // Posted but no detailed production result available
+                sContent += "✅ Status: POSTED\n\n";
+                sContent += "📄 Production Posting:\n";
+                sContent += "  This run has been successfully posted to SAP.\n";
+                sContent += "  Run ID: " + (oRun.runId || "N/A") + "\n";
+                if (oRun.lockbox) {
+                    sContent += "  Lockbox: " + oRun.lockbox + "\n";
+                }
+                if (oRun.amount) {
+                    sContent += "  Amount: " + oRun.amount + " " + (oRun.currency || "USD") + "\n";
+                }
+                sContent += "\n";
+                sContent += "ℹ️ Note: Detailed SAP response not available in cache.\n";
+                sContent += "   Check SAP system for accounting documents.\n\n";
+            } else if (isSimulated) {
+                // Simulated but not posted
+                sContent += "⚠️ Status: SIMULATED (Not Posted)\n\n";
+                sContent += "This run has been simulated but NOT posted to SAP.\n";
+                sContent += "Simulation shows a preview of what would be posted.\n\n";
+                sContent += "📋 Next Steps:\n";
+                sContent += "  1. Review simulation results\n";
+                sContent += "  2. Use Production Run action to post\n\n";
             } else if (oRun.stages && oRun.stages.posted) {
+                // Check stages.posted status
                 var postStatus = oRun.stages.posted.status === "success" ? "✅ SUCCESS" : 
                                 oRun.stages.posted.status === "error" ? "❌ FAILED" : "⚠️ NOT POSTED YET";
                 sContent += "Status: " + postStatus + "\n\n";
@@ -10914,9 +10943,18 @@ sap.ui.define([
                     sContent += "Message: " + oRun.stages.posted.message + "\n\n";
                 }
             } else {
+                // Not posted yet
                 sContent += "⚠️ Status: NOT POSTED YET\n\n";
                 sContent += "This run has not been posted to SAP.\n";
-                sContent += "Use the Production Run action to post.\n\n";
+                sContent += "Current Stage: " + (oRun.overallStatus || "Unknown").toUpperCase() + "\n\n";
+                sContent += "📋 Next Steps:\n";
+                if (!isSimulated) {
+                    sContent += "  1. Complete validation and mapping\n";
+                    sContent += "  2. Run simulation (optional)\n";
+                    sContent += "  3. Use Production Run action to post\n\n";
+                } else {
+                    sContent += "  1. Use Production Run action to post\n\n";
+                }
             }
             
             sContent += "════════════════════════════════════════════════════════════════\n";
