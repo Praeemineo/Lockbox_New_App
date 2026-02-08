@@ -37,6 +37,8 @@ sap.ui.define([
             this._initTreeData();
             // Initialize column visibility settings
             this._initColumnSettings();
+            // Initialize processing rules data
+            this._initProcessingRules();
         },
         
         // Initialize navigation state for tile-based navigation
