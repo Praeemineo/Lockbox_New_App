@@ -1,0 +1,292 @@
+<mvc:View
+    controllerName="lockbox.controller.ProcessingRules"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:table="sap.ui.table"
+    displayBlock="true"
+    height="100%">
+    
+    <Page id="processingRulesPage" title="Manage Lockbox Processing Rules" showHeader="true">
+        <customHeader>
+            <Toolbar design="Solid">
+                <Button icon="sap-icon://nav-back" press="onNavBack" tooltip="Back to Home" />
+                <ToolbarSpacer />
+                <Title text="Manage Lockbox Processing Rules" level="H2" />
+                <ToolbarSpacer />
+            </Toolbar>
+        </customHeader>
+        
+        <content>
+            <VBox class="sapUiSmallMargin">
+                
+                <!-- Header Toolbar with Actions -->
+                <l:VerticalLayout class="sapUiLargeMarginBottom">
+                    <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallMarginBottom">
+                        <Title text="Standard" level="H3" />
+                        <HBox>
+                            <Button text="Download" icon="sap-icon://download" press="onDownload" class="sapUiTinyMarginEnd" />
+                            <Button text="Create" icon="sap-icon://create" type="Emphasized" press="onCreateRule" class="sapUiTinyMarginEnd" />
+                            <Button text="Copy" icon="sap-icon://copy" press="onCopyRule" class="sapUiTinyMarginEnd" />
+                            <Button text="Delete" icon="sap-icon://delete" press="onDeleteRule" class="sapUiTinyMarginEnd" />
+                            <Button icon="sap-icon://refresh" press="onRefresh" tooltip="Refresh" />
+                        </HBox>
+                    </HBox>
+                </l:VerticalLayout>
+                
+                <!-- Rules Table -->
+                <Table
+                    id="rulesTable"
+                    items="{app>/processingRules}"
+                    growing="true"
+                    growingThreshold="20"
+                    sticky="ColumnHeaders,HeaderToolbar"
+                    mode="SingleSelectMaster"
+                    selectionChange="onRuleSelect">
+                    <headerToolbar>
+                        <OverflowToolbar>
+                            <Title text="Processing Rules" level="H4" />
+                            <ToolbarSpacer />
+                            <SearchField width="300px" search="onSearchRules" />
+                        </OverflowToolbar>
+                    </headerToolbar>
+                    <columns>
+                        <Column width="10%">
+                            <Text text="Rule ID" />
+                        </Column>
+                        <Column width="15%">
+                            <Text text="Rule Name" />
+                        </Column>
+                        <Column width="25%">
+                            <Text text="Description" />
+                        </Column>
+                        <Column width="12%">
+                            <Text text="File Type" />
+                        </Column>
+                        <Column width="18%">
+                            <Text text="Rule Type" />
+                        </Column>
+                        <Column width="10%">
+                            <Text text="Active" />
+                        </Column>
+                        <Column width="10%">
+                            <Text text="Actions" />
+                        </Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem type="Navigation" press="onRuleDetailsPress">
+                            <cells>
+                                <Text text="{app>ruleId}" />
+                                <Text text="{app>ruleName}" />
+                                <Text text="{app>description}" wrapping="true" />
+                                <Text text="{app>fileType}" />
+                                <Text text="{app>ruleType}" />
+                                <Switch state="{app>active}" change="onActiveToggle" />
+                                <HBox>
+                                    <Button icon="sap-icon://navigation-right-arrow" type="Transparent" press="onRuleDetailsPress" tooltip="View Details" />
+                                </HBox>
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+                
+            </VBox>
+            
+            <!-- Rule Details Dialog (3-Tab Interface) -->
+            <Dialog id="ruleDetailsDialog" contentWidth="90%" contentHeight="80%" resizable="true" draggable="true">
+                <customHeader>
+                    <Toolbar>
+                        <Title text="{app>/selectedRule/ruleName}" />
+                        <ToolbarSpacer />
+                        <Button icon="sap-icon://decline" press="onCloseRuleDetails" />
+                    </Toolbar>
+                </customHeader>
+                <content>
+                    <IconTabBar id="ruleDetailsTabs" select="onTabSelect" class="sapUiResponsiveContentPadding">
+                        
+                        <!-- Tab 1: Processing Rule -->
+                        <items>
+                            <IconTabFilter text="Processing Rule" key="processingRule">
+                                <VBox class="sapUiSmallMargin">
+                                    <f:Form editable="true">
+                                        <f:layout>
+                                            <f:ResponsiveGridLayout
+                                                labelSpanXL="4"
+                                                labelSpanL="4"
+                                                labelSpanM="4"
+                                                labelSpanS="12"
+                                                adjustLabelSpan="false"
+                                                emptySpanXL="0"
+                                                emptySpanL="0"
+                                                emptySpanM="0"
+                                                emptySpanS="0"
+                                                columnsXL="2"
+                                                columnsL="2"
+                                                columnsM="1"
+                                                singleContainerFullSize="false" />
+                                        </f:layout>
+                                        <f:formContainers>
+                                            <f:FormContainer>
+                                                <f:formElements>
+                                                    <f:FormElement label="Rule ID">
+                                                        <f:fields>
+                                                            <Input value="{app>/selectedRule/ruleId}" editable="false" />
+                                                        </f:fields>
+                                                    </f:FormElement>
+                                                    <f:FormElement label="Rule Name">
+                                                        <f:fields>
+                                                            <Input value="{app>/selectedRule/ruleName}" />
+                                                        </f:fields>
+                                                    </f:FormElement>
+                                                    <f:FormElement label="Description">
+                                                        <f:fields>
+                                                            <TextArea value="{app>/selectedRule/description}" rows="3" />
+                                                        </f:fields>
+                                                    </f:FormElement>
+                                                    <f:FormElement label="File Type">
+                                                        <f:fields>
+                                                            <ComboBox
+                                                                selectedKey="{app>/selectedRule/fileType}"
+                                                                items="{
+                                                                    path: 'app>/fileTypes'
+                                                                }">
+                                                                <core:Item key="{app>}" text="{app>}" />
+                                                            </ComboBox>
+                                                        </f:fields>
+                                                    </f:FormElement>
+                                                    <f:FormElement label="Rule Type">
+                                                        <f:fields>
+                                                            <ComboBox
+                                                                selectedKey="{app>/selectedRule/ruleType}"
+                                                                items="{
+                                                                    path: 'app>/ruleTypes'
+                                                                }">
+                                                                <core:Item key="{app>}" text="{app>}" />
+                                                            </ComboBox>
+                                                        </f:fields>
+                                                    </f:FormElement>
+                                                    <f:FormElement label="Active">
+                                                        <f:fields>
+                                                            <Switch state="{app>/selectedRule/active}" />
+                                                        </f:fields>
+                                                    </f:FormElement>
+                                                </f:formElements>
+                                            </f:FormContainer>
+                                        </f:formContainers>
+                                    </f:Form>
+                                </VBox>
+                            </IconTabFilter>
+                            
+                            <!-- Tab 2: Condition -->
+                            <IconTabFilter text="Condition" key="condition">
+                                <VBox class="sapUiSmallMargin">
+                                    <Toolbar>
+                                        <Title text="Rule Conditions" level="H5" />
+                                        <ToolbarSpacer />
+                                        <Button text="Add Condition" icon="sap-icon://add" press="onAddCondition" />
+                                    </Toolbar>
+                                    <Table
+                                        items="{app>/selectedRule/conditions}"
+                                        class="sapUiSmallMarginTop">
+                                        <columns>
+                                            <Column><Text text="Field" /></Column>
+                                            <Column><Text text="Operator" /></Column>
+                                            <Column><Text text="Value" /></Column>
+                                            <Column width="100px"><Text text="Actions" /></Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem>
+                                                <cells>
+                                                    <Input value="{app>field}" placeholder="Enter field name" />
+                                                    <ComboBox selectedKey="{app>operator}">
+                                                        <items>
+                                                            <core:Item key="equals" text="Equals" />
+                                                            <core:Item key="contains" text="Contains" />
+                                                            <core:Item key="startsWith" text="Starts With" />
+                                                            <core:Item key="endsWith" text="Ends With" />
+                                                            <core:Item key="isEmpty" text="Is Empty" />
+                                                            <core:Item key="isNotEmpty" text="Is Not Empty" />
+                                                        </items>
+                                                    </ComboBox>
+                                                    <Input value="{app>value}" placeholder="Enter value" />
+                                                    <Button icon="sap-icon://delete" type="Transparent" press="onDeleteCondition" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </VBox>
+                            </IconTabFilter>
+                            
+                            <!-- Tab 3: Action -->
+                            <IconTabFilter text="Action" key="action">
+                                <VBox class="sapUiSmallMargin">
+                                    <f:Form editable="true">
+                                        <f:layout>
+                                            <f:ResponsiveGridLayout
+                                                labelSpanXL="4"
+                                                labelSpanL="4"
+                                                labelSpanM="4"
+                                                labelSpanS="12"
+                                                adjustLabelSpan="false"
+                                                emptySpanXL="0"
+                                                emptySpanL="0"
+                                                emptySpanM="0"
+                                                emptySpanS="0"
+                                                columnsXL="1"
+                                                columnsL="1"
+                                                columnsM="1"
+                                                singleContainerFullSize="false" />
+                                        </f:layout>
+                                        <f:formContainers>
+                                            <f:FormContainer title="Action Configuration">
+                                                <f:formElements>
+                                                    <f:FormElement label="Action Type">
+                                                        <f:fields>
+                                                            <ComboBox selectedKey="{app>/selectedRule/action/type}">
+                                                                <items>
+                                                                    <core:Item key="transform" text="Transform Data" />
+                                                                    <core:Item key="validate" text="Validate Field" />
+                                                                    <core:Item key="split" text="Split Values" />
+                                                                    <core:Item key="expand" text="Expand Range" />
+                                                                    <core:Item key="api_call" text="API Call" />
+                                                                </items>
+                                                            </ComboBox>
+                                                        </f:fields>
+                                                    </f:FormElement>
+                                                    <f:FormElement label="API Endpoint">
+                                                        <f:fields>
+                                                            <Input value="{app>/selectedRule/action/apiEndpoint}" placeholder="/api/lockbox/..." />
+                                                        </f:fields>
+                                                    </f:FormElement>
+                                                    <f:FormElement label="OData Service">
+                                                        <f:fields>
+                                                            <Input value="{app>/selectedRule/action/odataService}" placeholder="Enter OData service URL" />
+                                                        </f:fields>
+                                                    </f:FormElement>
+                                                    <f:FormElement label="Action Parameters">
+                                                        <f:fields>
+                                                            <TextArea value="{app>/selectedRule/action/parameters}" rows="4" placeholder="JSON format parameters" />
+                                                        </f:fields>
+                                                    </f:FormElement>
+                                                </f:formElements>
+                                            </f:FormContainer>
+                                        </f:formContainers>
+                                    </f:Form>
+                                </VBox>
+                            </IconTabFilter>
+                        </items>
+                    </IconTabBar>
+                </content>
+                <beginButton>
+                    <Button text="Save" type="Emphasized" press="onSaveRule" />
+                </beginButton>
+                <endButton>
+                    <Button text="Close" press="onCloseRuleDetails" />
+                </endButton>
+            </Dialog>
+            
+        </content>
+    </Page>
+</mvc:View>
