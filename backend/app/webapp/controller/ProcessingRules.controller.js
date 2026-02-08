@@ -18,143 +18,148 @@ sap.ui.define([
                 return;
             }
             
-            // Initialize sample processing rules data
-            var sampleRules = [
+            // Initialize processing rules data if not exists
+            if (!oModel.getProperty("/processingRules")) {
+                this._initializeRulesData(oModel);
+            }
+            
+            // Initialize file types and rule types for dropdowns
+            this._initializeDropdownData(oModel);
+        },
+
+        /**
+         * Initialize sample processing rules data
+         */
+        _initializeRulesData: function (oModel) {
+            var aRules = [
                 {
-                    ruleId: "RUL-001",
-                    ruleName: "Document Type Resolution",
-                    description: "Identify if reference is Invoice / Accounting Doc / Sales Order and determine Accounting Document accordingly.",
-                    fileType: "EXCEL / CSV",
-                    ruleType: "DOCUMENT_TYPE_RULE",
+                    ruleId: "RULE-001",
+                    ruleName: "Invoice Split by Comma",
+                    description: "Split invoice numbers separated by commas into individual payment references",
+                    fileType: "Excel",
+                    ruleType: "Split",
                     active: true,
                     conditions: [
-                        { field: "ReferenceField", operator: "contains", value: "INV" },
-                        { field: "DocType", operator: "equals", value: "Invoice" }
-                    ],
-                    action: {
-                        type: "transform",
-                        apiEndpoint: "/api/lockbox/resolve-document-type",
-                        odataService: "",
-                        parameters: '{"targetField": "AccountingDocument"}'
-                    }
-                },
-                {
-                    ruleId: "RUL-002",
-                    ruleName: "Comma Split Rule",
-                    description: "Split comma-separated reference documents (e.g., INV1001,INV1002) and process individually.",
-                    fileType: "EXCEL / CSV",
-                    ruleType: "COMMA_SPLIT_RULE",
-                    active: true,
-                    conditions: [
-                        { field: "ReferenceDocument", operator: "contains", value: "," }
+                        { field: "Invoice Number", operator: "contains", value: "," }
                     ],
                     action: {
                         type: "split",
-                        apiEndpoint: "/api/lockbox/split-references",
+                        apiEndpoint: "/api/lockbox/process",
                         odataService: "",
-                        parameters: '{"delimiter": ",", "trimWhitespace": true}'
+                        parameters: '{"delimiter": ",", "trim": true}'
                     }
                 },
                 {
-                    ruleId: "RUL-003",
-                    ruleName: "Hyphen Range Rule",
-                    description: "Expand document ranges (e.g., INV1001–INV1010) into individual references.",
-                    fileType: "EXCEL / CSV",
-                    ruleType: "RANGE_EXPANSION_RULE",
+                    ruleId: "RULE-002",
+                    ruleName: "Invoice Range Expansion",
+                    description: "Expand invoice number ranges (e.g., 95015001 to 010) into individual invoices",
+                    fileType: "Excel",
+                    ruleType: "Expand",
                     active: true,
                     conditions: [
-                        { field: "ReferenceDocument", operator: "contains", value: "–" },
-                        { field: "ReferenceDocument", operator: "contains", value: "-" }
+                        { field: "Invoice Number", operator: "contains", value: "to" }
                     ],
                     action: {
                         type: "expand",
-                        apiEndpoint: "/api/lockbox/expand-range",
+                        apiEndpoint: "/api/lockbox/process",
                         odataService: "",
-                        parameters: '{"rangeDelimiter": ["-", "–"], "generateSequence": true}'
+                        parameters: '{"rangePattern": "to"}'
                     }
                 },
                 {
-                    ruleId: "RUL-004",
-                    ruleName: "Multiple Sheets Rule",
-                    description: "Process Header and Item sheets together and validate cross-sheet totals before posting.",
-                    fileType: "EXCEL",
-                    ruleType: "MULTI_SHEET_RULE",
+                    ruleId: "RULE-003",
+                    ruleName: "Amount Validation",
+                    description: "Validate that invoice amounts are numeric and within acceptable range",
+                    fileType: "All",
+                    ruleType: "Validate",
                     active: true,
                     conditions: [
-                        { field: "FileType", operator: "equals", value: "EXCEL" },
-                        { field: "SheetCount", operator: "equals", value: ">1" }
+                        { field: "Amount", operator: "isNotEmpty", value: "" }
                     ],
                     action: {
                         type: "validate",
-                        apiEndpoint: "/api/lockbox/validate-multi-sheet",
+                        apiEndpoint: "/api/lockbox/validate",
                         odataService: "",
-                        parameters: '{"validateTotals": true, "requiredSheets": ["Header", "Items"]}'
+                        parameters: '{"dataType": "numeric", "min": 0, "max": 999999999}'
+                    }
+                },
+                {
+                    ruleId: "RULE-004",
+                    ruleName: "Date Format Transformation",
+                    description: "Convert various date formats to ISO 8601 standard (YYYY-MM-DD)",
+                    fileType: "CSV",
+                    ruleType: "Transform",
+                    active: true,
+                    conditions: [
+                        { field: "Date", operator: "isNotEmpty", value: "" }
+                    ],
+                    action: {
+                        type: "transform",
+                        apiEndpoint: "/api/lockbox/transform",
+                        odataService: "",
+                        parameters: '{"outputFormat": "ISO8601"}'
+                    }
+                },
+                {
+                    ruleId: "RULE-005",
+                    ruleName: "Cheque Number Padding",
+                    description: "Pad cheque numbers with leading zeros to ensure 10-digit format",
+                    fileType: "Excel",
+                    ruleType: "Transform",
+                    active: false,
+                    conditions: [
+                        { field: "Cheque Number", operator: "isNotEmpty", value: "" }
+                    ],
+                    action: {
+                        type: "transform",
+                        apiEndpoint: "/api/lockbox/transform",
+                        odataService: "",
+                        parameters: '{"padTo": 10, "padChar": "0", "padDirection": "left"}'
                     }
                 }
             ];
             
-            // Set model properties
-            if (!oModel.getProperty("/processingRules")) {
-                oModel.setProperty("/processingRules", sampleRules);
-            }
-            
-            // Set dropdown options
-            oModel.setProperty("/fileTypes", ["EXCEL", "CSV", "EXCEL / CSV", "PDF", "XML", "JSON"]);
-            oModel.setProperty("/ruleTypes", [
-                "DOCUMENT_TYPE_RULE",
-                "COMMA_SPLIT_RULE",
-                "RANGE_EXPANSION_RULE",
-                "MULTI_SHEET_RULE",
-                "VALIDATION_RULE",
-                "TRANSFORMATION_RULE",
-                "API_CALL_RULE"
-            ]);
+            oModel.setProperty("/processingRules", aRules);
         },
 
+        /**
+         * Initialize dropdown data for file types and rule types
+         */
+        _initializeDropdownData: function (oModel) {
+            var aFileTypes = ["Excel", "CSV", "PDF", "BAI2", "All"];
+            var aRuleTypes = ["Split", "Expand", "Transform", "Validate", "API Call"];
+            
+            oModel.setProperty("/fileTypes", aFileTypes);
+            oModel.setProperty("/ruleTypes", aRuleTypes);
+        },
+
+        /**
+         * Navigate back to home screen
+         */
         onNavBack: function () {
             var oModel = this.getOwnerComponent().getModel("app");
             if (oModel) {
                 oModel.setProperty("/showHome", true);
                 oModel.setProperty("/showProcessingRules", false);
+                oModel.setProperty("/showNavButton", false);
+                oModel.setProperty("/currentView", "home");
             }
         },
 
-        onRefresh: function () {
-            MessageToast.show("Processing Rules refreshed");
-        },
-
-        onSearchRules: function (oEvent) {
-            var sQuery = oEvent.getParameter("query");
-            var oTable = this.byId("rulesTable");
-            var oBinding = oTable.getBinding("items");
-            
-            if (oBinding) {
-                var aFilters = [];
-                if (sQuery) {
-                    aFilters.push(new sap.ui.model.Filter({
-                        filters: [
-                            new sap.ui.model.Filter("ruleId", sap.ui.model.FilterOperator.Contains, sQuery),
-                            new sap.ui.model.Filter("ruleName", sap.ui.model.FilterOperator.Contains, sQuery),
-                            new sap.ui.model.Filter("description", sap.ui.model.FilterOperator.Contains, sQuery)
-                        ],
-                        and: false
-                    }));
-                }
-                oBinding.filter(aFilters);
-            }
-        },
-
+        /**
+         * Create new rule button handler
+         */
         onCreateRule: function () {
             var oModel = this.getOwnerComponent().getModel("app");
             
-            // Create new empty rule
-            var newRule = {
-                ruleId: "RUL-" + String(Math.floor(Math.random() * 1000)).padStart(3, '0'),
+            // Create empty rule template
+            var oNewRule = {
+                ruleId: "RULE-" + String(Date.now()).slice(-3),
                 ruleName: "New Rule",
                 description: "",
-                fileType: "EXCEL / CSV",
-                ruleType: "VALIDATION_RULE",
-                active: false,
+                fileType: "Excel",
+                ruleType: "Transform",
+                active: true,
                 conditions: [],
                 action: {
                     type: "transform",
@@ -164,10 +169,20 @@ sap.ui.define([
                 }
             };
             
-            oModel.setProperty("/selectedRule", newRule);
-            this.byId("ruleDetailsDialog").open();
+            oModel.setProperty("/selectedRule", oNewRule);
+            
+            // Open details dialog
+            var oDialog = this.byId("ruleDetailsDialog");
+            if (oDialog) {
+                oDialog.open();
+            }
+            
+            MessageToast.show("Create new processing rule");
         },
 
+        /**
+         * Copy selected rule
+         */
         onCopyRule: function () {
             var oTable = this.byId("rulesTable");
             var oSelectedItem = oTable.getSelectedItem();
@@ -179,21 +194,25 @@ sap.ui.define([
             
             var oContext = oSelectedItem.getBindingContext("app");
             var oRule = oContext.getObject();
-            
-            // Create a copy
-            var copiedRule = JSON.parse(JSON.stringify(oRule));
-            copiedRule.ruleId = "RUL-" + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-            copiedRule.ruleName = oRule.ruleName + " (Copy)";
-            
             var oModel = this.getOwnerComponent().getModel("app");
             var aRules = oModel.getProperty("/processingRules");
-            aRules.push(copiedRule);
+            
+            // Create copy with new ID
+            var oCopiedRule = JSON.parse(JSON.stringify(oRule));
+            oCopiedRule.ruleId = "RULE-" + String(Date.now()).slice(-3);
+            oCopiedRule.ruleName = oRule.ruleName + " (Copy)";
+            
+            aRules.push(oCopiedRule);
             oModel.setProperty("/processingRules", aRules);
             
             MessageToast.show("Rule copied successfully");
         },
 
+        /**
+         * Delete selected rule
+         */
         onDeleteRule: function () {
+            var that = this;
             var oTable = this.byId("rulesTable");
             var oSelectedItem = oTable.getSelectedItem();
             
@@ -204,20 +223,20 @@ sap.ui.define([
             
             var oContext = oSelectedItem.getBindingContext("app");
             var oRule = oContext.getObject();
-            var that = this;
             
             MessageBox.confirm(
                 "Are you sure you want to delete rule '" + oRule.ruleName + "'?",
                 {
-                    title: "Confirm Delete",
                     onClose: function (sAction) {
                         if (sAction === MessageBox.Action.OK) {
                             var oModel = that.getOwnerComponent().getModel("app");
                             var aRules = oModel.getProperty("/processingRules");
-                            var index = aRules.findIndex(function(r) { return r.ruleId === oRule.ruleId; });
+                            var iIndex = aRules.findIndex(function (r) {
+                                return r.ruleId === oRule.ruleId;
+                            });
                             
-                            if (index > -1) {
-                                aRules.splice(index, 1);
+                            if (iIndex > -1) {
+                                aRules.splice(iIndex, 1);
                                 oModel.setProperty("/processingRules", aRules);
                                 MessageToast.show("Rule deleted successfully");
                             }
@@ -227,93 +246,170 @@ sap.ui.define([
             );
         },
 
-        onDownload: function () {
-            MessageBox.information("Download functionality will export rules to Excel/CSV format");
+        /**
+         * Refresh rules list
+         */
+        onRefresh: function () {
+            MessageToast.show("Rules refreshed");
+            // In production, this would reload from backend
         },
 
-        onRuleDetailsPress: function (oEvent) {
-            var oItem = oEvent.getSource();
-            var oContext = oItem.getBindingContext("app");
+        /**
+         * Download rules
+         */
+        onDownload: function () {
+            MessageToast.show("Download feature coming soon");
+        },
+
+        /**
+         * Search rules
+         */
+        onSearchRules: function (oEvent) {
+            var sQuery = oEvent.getParameter("query");
+            var oTable = this.byId("rulesTable");
+            var oBinding = oTable.getBinding("items");
             
-            if (!oContext) {
-                return;
+            if (sQuery) {
+                var aFilters = [
+                    new sap.ui.model.Filter({
+                        filters: [
+                            new sap.ui.model.Filter("ruleId", sap.ui.model.FilterOperator.Contains, sQuery),
+                            new sap.ui.model.Filter("ruleName", sap.ui.model.FilterOperator.Contains, sQuery),
+                            new sap.ui.model.Filter("description", sap.ui.model.FilterOperator.Contains, sQuery)
+                        ],
+                        and: false
+                    })
+                ];
+                oBinding.filter(aFilters);
+            } else {
+                oBinding.filter([]);
             }
-            
+        },
+
+        /**
+         * Handle rule selection
+         */
+        onRuleSelect: function (oEvent) {
+            var oSelectedItem = oEvent.getParameter("listItem");
+            if (oSelectedItem) {
+                console.log("Rule selected:", oSelectedItem.getBindingContext("app").getObject());
+            }
+        },
+
+        /**
+         * Handle active toggle
+         */
+        onActiveToggle: function (oEvent) {
+            var bState = oEvent.getParameter("state");
+            MessageToast.show(bState ? "Rule activated" : "Rule deactivated");
+        },
+
+        /**
+         * Open rule details dialog
+         */
+        onRuleDetailsPress: function (oEvent) {
+            var oContext = oEvent.getSource().getBindingContext("app");
             var oRule = oContext.getObject();
             var oModel = this.getOwnerComponent().getModel("app");
             
-            // Create a deep copy for editing
-            oModel.setProperty("/selectedRule", JSON.parse(JSON.stringify(oRule)));
+            // Set selected rule
+            oModel.setProperty("/selectedRule", oRule);
             
-            this.byId("ruleDetailsDialog").open();
+            // Open dialog
+            var oDialog = this.byId("ruleDetailsDialog");
+            if (oDialog) {
+                oDialog.open();
+            }
         },
 
-        onRuleSelect: function (oEvent) {
-            // Handle selection change if needed
-        },
-
-        onActiveToggle: function (oEvent) {
-            var bState = oEvent.getParameter("state");
-            MessageToast.show("Rule " + (bState ? "activated" : "deactivated"));
-        },
-
+        /**
+         * Close rule details dialog
+         */
         onCloseRuleDetails: function () {
-            this.byId("ruleDetailsDialog").close();
+            var oDialog = this.byId("ruleDetailsDialog");
+            if (oDialog) {
+                oDialog.close();
+            }
         },
 
+        /**
+         * Tab select handler in details dialog
+         */
         onTabSelect: function (oEvent) {
             var sKey = oEvent.getParameter("key");
             console.log("Tab selected:", sKey);
         },
 
+        /**
+         * Add condition to rule
+         */
         onAddCondition: function () {
             var oModel = this.getOwnerComponent().getModel("app");
-            var aConditions = oModel.getProperty("/selectedRule/conditions");
+            var oRule = oModel.getProperty("/selectedRule");
             
-            aConditions.push({
+            if (!oRule.conditions) {
+                oRule.conditions = [];
+            }
+            
+            oRule.conditions.push({
                 field: "",
                 operator: "equals",
                 value: ""
             });
             
-            oModel.setProperty("/selectedRule/conditions", aConditions);
+            oModel.setProperty("/selectedRule", oRule);
+            MessageToast.show("Condition added");
         },
 
+        /**
+         * Delete condition from rule
+         */
         onDeleteCondition: function (oEvent) {
-            var oButton = oEvent.getSource();
-            var oItem = oButton.getParent();
-            var oContext = oItem.getBindingContext("app");
+            var that = this;
+            var oContext = oEvent.getSource().getBindingContext("app");
             var sPath = oContext.getPath();
-            
             var oModel = this.getOwnerComponent().getModel("app");
-            var aConditions = oModel.getProperty("/selectedRule/conditions");
-            var index = parseInt(sPath.split("/").pop());
             
-            aConditions.splice(index, 1);
-            oModel.setProperty("/selectedRule/conditions", aConditions);
+            MessageBox.confirm("Delete this condition?", {
+                onClose: function (sAction) {
+                    if (sAction === MessageBox.Action.OK) {
+                        var aConditions = oModel.getProperty("/selectedRule/conditions");
+                        var iIndex = parseInt(sPath.split("/").pop());
+                        aConditions.splice(iIndex, 1);
+                        oModel.setProperty("/selectedRule/conditions", aConditions);
+                        MessageToast.show("Condition deleted");
+                    }
+                }
+            });
         },
 
+        /**
+         * Save rule changes
+         */
         onSaveRule: function () {
             var oModel = this.getOwnerComponent().getModel("app");
             var oSelectedRule = oModel.getProperty("/selectedRule");
             var aRules = oModel.getProperty("/processingRules");
             
             // Find if rule exists
-            var index = aRules.findIndex(function(r) { return r.ruleId === oSelectedRule.ruleId; });
+            var iIndex = aRules.findIndex(function (r) {
+                return r.ruleId === oSelectedRule.ruleId;
+            });
             
-            if (index > -1) {
+            if (iIndex > -1) {
                 // Update existing rule
-                aRules[index] = oSelectedRule;
+                aRules[iIndex] = oSelectedRule;
+                MessageToast.show("Rule updated successfully");
             } else {
                 // Add new rule
                 aRules.push(oSelectedRule);
+                MessageToast.show("Rule created successfully");
             }
             
             oModel.setProperty("/processingRules", aRules);
             
-            MessageToast.show("Rule saved successfully");
+            // Close dialog
             this.onCloseRuleDetails();
         }
-
     });
 });
