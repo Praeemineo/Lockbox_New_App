@@ -1,30 +1,30 @@
 /* Processing Rules App - SAP 72 Font Styling */
-/* IMPORTANT: Only apply to text elements, NOT to icons */
+/* IMPORTANT: Only apply to text elements in Processing Rules section, NOT to icons */
 
-/* Apply SAP 72 font to all text in Processing Rules view */
-#processingRulesPage .sapMText,
-#processingRulesPage .sapMLabel,
-#processingRulesPage .sapMTitle,
-#processingRulesPage .sapMInput input,
-#processingRulesPage .sapMTextArea textarea,
-#processingRulesPage .sapMComboBox input,
-#processingRulesPage .sapMSelect .sapMSelectListItem,
-#processingRulesPage .sapMColumnListItem,
-#ruleDetailsDialog .sapMText,
-#ruleDetailsDialog .sapMLabel,
-#ruleDetailsDialog .sapMTitle,
-#ruleDetailsDialog .sapMInput input,
-#ruleDetailsDialog .sapMTextArea textarea,
-#ruleDetailsDialog .sapMComboBox input,
-#ruleDetailsDialog .sapMSelect .sapMSelectListItem {
+/* Apply SAP 72 font to all text in Processing Rules content */
+#processingRulesContent .sapMText,
+#processingRulesContent .sapMLabel,
+#processingRulesContent .sapMTitle,
+#processingRulesContent .sapMInput input,
+#processingRulesContent .sapMTextArea textarea,
+#processingRulesContent .sapMComboBox input,
+#processingRulesContent .sapMSelect .sapMSelectListItem,
+#processingRulesContent .sapMColumnListItem,
+#processingRulesContent .sapMBtn .sapMBtnContent,
+#processingRulesContent .sapMSFF,
+#processingRulesContent td,
+#processingRulesContent th {
     font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
 }
 
-/* Ensure buttons also use SAP 72 font */
-#processingRulesPage .sapMBtn .sapMBtnContent,
-#ruleDetailsDialog .sapMBtn .sapMBtnContent {
+/* Apply to text with custom class as well */
+.processingRulesText,
+.processingRulesTitle {
     font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
 }
 
 /* DO NOT apply font to icons - they need their special icon font */
 /* Icons use class .sapUiIcon and should NOT be styled with font-family */
+#processingRulesContent .sapUiIcon {
+    font-family: "SAP-icons" !important;
+}
