@@ -32,6 +32,25 @@
                 <Text text="Select an application to get started" class="sapUiTinyMarginBottom" />
                 
                 <HBox wrap="Wrap" class="sapUiLargeMarginTop">
+                    <!-- Manage Lockbox Processing Rules Tile - FIRST TILE -->
+                    <VBox class="sapUiSmallMargin">
+                        <GenericTile
+                            id="tileProcessingRules"
+                            header="Manage Lockbox Processing Rules"
+                            subheader="Configure Processing Rules"
+                            press="onProcessingRulesTilePress"
+                            frameType="TwoByOne"
+                            class="sapUiTinyMarginBegin sapUiTinyMarginEnd">
+                            <tileContent>
+                                <TileContent>
+                                    <content>
+                                        <ImageContent src="sap-icon://decision" />
+                                    </content>
+                                </TileContent>
+                            </tileContent>
+                        </GenericTile>
+                    </VBox>
+                    
                     <!-- Lockbox Transaction Tile -->
                     <VBox class="sapUiSmallMargin">
                         <GenericTile
