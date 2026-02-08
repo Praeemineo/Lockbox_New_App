@@ -9,6 +9,11 @@
     displayBlock="true"
     height="100%">
     
+    <!-- Load SAP 72 Font CSS for Processing Rules -->
+    <mvc:dependents>
+        <core:HTML content="&lt;link rel=&quot;stylesheet&quot; href=&quot;css/processingRules.css&quot;&gt;" />
+    </mvc:dependents>
+    
     <Page id="processingRulesPage" title="Manage Lockbox Processing Rules" showHeader="true">
         <customHeader>
             <Toolbar design="Solid">
