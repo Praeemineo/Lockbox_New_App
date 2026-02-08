@@ -161,6 +161,7 @@ sap.ui.define([
             oModel.setProperty("/showLockbox", false);
             oModel.setProperty("/showFieldMappingRules", false);
             oModel.setProperty("/showRuleDetail", false);
+            oModel.setProperty("/showProcessingRules", false);
             oModel.setProperty("/showNavButton", false);
             oModel.setProperty("/currentView", "home");
         },
