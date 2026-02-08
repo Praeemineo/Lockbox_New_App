@@ -121,8 +121,24 @@ sap.ui.define([
             oModel.setProperty("/showFieldMappingRules", false);
             oModel.setProperty("/showPdfLockbox", true);
             oModel.setProperty("/showRuleDetail", false);
+            oModel.setProperty("/showProcessingRules", false);
             oModel.setProperty("/showNavButton", true);
             oModel.setProperty("/currentView", "pdfLockbox");
+        },
+        
+        // Navigation: Processing Rules Tile Press
+        onProcessingRulesTilePress: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            oModel.setProperty("/showHome", false);
+            oModel.setProperty("/showConfig", false);
+            oModel.setProperty("/showTemplateBuilder", false);
+            oModel.setProperty("/showLockbox", false);
+            oModel.setProperty("/showFieldMappingRules", false);
+            oModel.setProperty("/showPdfLockbox", false);
+            oModel.setProperty("/showRuleDetail", false);
+            oModel.setProperty("/showProcessingRules", true);
+            oModel.setProperty("/showNavButton", true);
+            oModel.setProperty("/currentView", "processingRules");
         },
         
         // Navigation: Back Button Press
