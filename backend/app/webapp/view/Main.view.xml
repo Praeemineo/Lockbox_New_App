@@ -1463,6 +1463,20 @@
                     </items>
                 </IconTabBar>
             </VBox>
+            
+            <!-- ============================================================ -->
+            <!-- PDF LOCKBOX CONTENT (AI OCR Processing) -->
+            <!-- ============================================================ -->
+            <VBox id="pdfLockboxContent" visible="{app>/showPdfLockbox}">
+                <mvc:XMLView viewName="lockbox.view.PdfLockbox" />
+            </VBox>
+            
+            <!-- ============================================================ -->
+            <!-- PROCESSING RULES CONTENT -->
+            <!-- ============================================================ -->
+            <VBox id="processingRulesContent" visible="{app>/showProcessingRules}">
+                <mvc:XMLView viewName="lockbox.view.ProcessingRules" />
+            </VBox>
         </content>
         
         <!-- ============================================================ -->
