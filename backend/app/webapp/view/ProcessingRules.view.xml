@@ -99,7 +99,7 @@
                         </f:SimpleForm>
                         
                         <!-- Filter Actions -->
-                        <HBox justifyContent="End" class="sapUiSmallMarginTop sapUiSmallMarginEnd">
+                        <HBox justifyContent="End" class="sapUiSmallMarginTop">
                             <Button text="Go" type="Emphasized" press="onFilterGo" class="sapUiTinyMarginEnd" />
                             <Button text="Adapt Filters (2)" press="onAdaptFilters" />
                         </HBox>
