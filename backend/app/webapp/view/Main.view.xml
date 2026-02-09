@@ -1725,70 +1725,8 @@
             <!-- ============================================================ -->
             <!-- PROCESSING RULES CONTENT -->
             <!-- ============================================================ -->
-            <VBox id="processingRulesContent" visible="{app>/showProcessingRules}" class="sapUiSmallMargin">
-                <!-- Page Header -->
-                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                    <core:Icon src="sap-icon://decision" size="1.5rem" color="#0854a0" class="sapUiSmallMarginEnd" />
-                    <Title text="Manage Lockbox Processing Rules" level="H2" />
-                </HBox>
-                
-                <!-- Header Toolbar with Actions -->
-                <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallMarginBottom">
-                    <Title text="Standard" level="H3" />
-                    <HBox>
-                        <Button text="Download" icon="sap-icon://download" press="onDownloadRules" class="sapUiTinyMarginEnd" />
-                        <Button text="Create" icon="sap-icon://create" type="Emphasized" press="onCreateProcessingRule" class="sapUiTinyMarginEnd" />
-                        <Button text="Copy" icon="sap-icon://copy" press="onCopyProcessingRule" class="sapUiTinyMarginEnd" />
-                        <Button text="Delete" icon="sap-icon://delete" press="onDeleteProcessingRule" class="sapUiTinyMarginEnd" />
-                        <Button icon="sap-icon://refresh" press="onRefreshProcessingRules" tooltip="Refresh" />
-                    </HBox>
-                </HBox>
-                
-                <!-- Rules Table -->
-                <Panel expandable="false">
-                    <headerToolbar>
-                        <OverflowToolbar>
-                            <Title text="Processing Rules" level="H4" />
-                            <ToolbarSpacer />
-                            <SearchField width="300px" search="onSearchProcessingRules" />
-                        </OverflowToolbar>
-                    </headerToolbar>
-                    <content>
-                        <Table
-                            id="processingRulesTable"
-                            items="{app>/processingRules}"
-                            growing="true"
-                            growingThreshold="20"
-                            sticky="ColumnHeaders,HeaderToolbar"
-                            mode="SingleSelectMaster"
-                            selectionChange="onProcessingRuleSelect">
-                            <columns>
-                                <Column width="10%"><Text text="Rule ID" /></Column>
-                                <Column width="15%"><Text text="Rule Name" /></Column>
-                                <Column width="25%"><Text text="Description" /></Column>
-                                <Column width="12%"><Text text="File Type" /></Column>
-                                <Column width="18%"><Text text="Rule Type" /></Column>
-                                <Column width="10%"><Text text="Active" /></Column>
-                                <Column width="10%"><Text text="Actions" /></Column>
-                            </columns>
-                            <items>
-                                <ColumnListItem type="Navigation" press="onProcessingRuleDetailsPress">
-                                    <cells>
-                                        <Text text="{app>ruleId}" />
-                                        <Text text="{app>ruleName}" />
-                                        <Text text="{app>description}" wrapping="true" />
-                                        <Text text="{app>fileType}" />
-                                        <Text text="{app>ruleType}" />
-                                        <Switch state="{app>active}" change="onProcessingRuleActiveToggle" />
-                                        <HBox>
-                                            <Button icon="sap-icon://navigation-right-arrow" type="Transparent" press="onProcessingRuleDetailsPress" tooltip="View Details" />
-                                        </HBox>
-                                    </cells>
-                                </ColumnListItem>
-                            </items>
-                        </Table>
-                    </content>
-                </Panel>
+            <VBox id="processingRulesContent" visible="{app>/showProcessingRules}">
+                <mvc:XMLView viewName="lockbox.view.ProcessingRules" />
             </VBox>
 
                 </content>
