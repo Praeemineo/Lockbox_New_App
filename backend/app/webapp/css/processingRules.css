@@ -17,12 +17,6 @@
     font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
 }
 
-/* Apply to text with custom class as well */
-.processingRulesText,
-.processingRulesTitle {
-    font-family: "72", "72full", Arial, Helvetica, sans-serif !important;
-}
-
 /* DO NOT apply font to icons - they need their special icon font */
 /* Icons use class .sapUiIcon and should NOT be styled with font-family */
 #processingRulesContent .sapUiIcon {
