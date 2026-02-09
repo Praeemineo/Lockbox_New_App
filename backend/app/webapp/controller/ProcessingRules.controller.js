@@ -2,13 +2,9 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
     "sap/m/MessageBox",
-    "sap/m/MessageToast",
-    "sap/ui/core/BusyIndicator"
-], function (Controller, JSONModel, MessageBox, MessageToast, BusyIndicator) {
+    "sap/m/MessageToast"
+], function (Controller, JSONModel, MessageBox, MessageToast) {
     "use strict";
-
-    // API Base URL
-    const API_BASE = window.REACT_APP_BACKEND_URL || window.location.origin;
 
     return Controller.extend("lockbox.controller.ProcessingRules", {
 
@@ -22,10 +18,12 @@ sap.ui.define([
                 return;
             }
             
-            // Initialize processing rules data
-            this._initializeRulesData(oModel);
+            // Initialize processing rules data if not exists
+            if (!oModel.getProperty("/processingRules")) {
+                this._initializeRulesData(oModel);
+            }
             
-            // Initialize filter data
+            // Initialize filters
             this._initializeFilters(oModel);
         },
 
@@ -86,25 +84,20 @@ sap.ui.define([
             ];
             
             oModel.setProperty("/processingRules", aRules);
-            oModel.setProperty("/selectedRules", []);
+            oModel.setProperty("/selectedProcessingRule", null);
         },
 
         /**
          * Initialize filter data
          */
         _initializeFilters: function (oModel) {
-            oModel.setProperty("/filters", {
-                editingStatus: "",
-                description: "",
-                procedureType: "",
-                journalEntryType: "",
-                ruleId: "",
-                templateId: "",
-                companyCode: "",
-                createdOn: null,
-                applicationType: [],
-                direction: ""
-            });
+            if (!oModel.getProperty("/processingRuleFilters")) {
+                oModel.setProperty("/processingRuleFilters", {
+                    fileType: "",
+                    ruleType: "",
+                    active: ""
+                });
+            }
         },
 
         /**
@@ -115,103 +108,126 @@ sap.ui.define([
             if (oModel) {
                 oModel.setProperty("/showHome", true);
                 oModel.setProperty("/showProcessingRules", false);
+                oModel.setProperty("/showNavButton", false);
             }
-        },
-
-        /**
-         * Refresh rules list
-         */
-        onRefreshRules: function () {
-            MessageToast.show("Rules refreshed");
-            // In production: reload from backend
-        },
-
-        /**
-         * Tab selection
-         */
-        onTabSelect: function (oEvent) {
-            var sKey = oEvent.getParameter("key");
-            MessageToast.show("Selected tab: " + sKey);
         },
 
         /**
          * Filter Go button
          */
-        onFilterGo: function () {
+        onProcessingRuleFilterGo: function () {
             MessageToast.show("Filters applied");
-            // TODO: Apply filters to table
+            // In production: apply filters to table binding
         },
 
         /**
-         * Adapt filters
+         * Clear filters
          */
-        onAdaptFilters: function () {
-            MessageToast.show("Adapt filters dialog");
-        },
-
-        /**
-         * Upload button
-         */
-        onUpload: function () {
-            MessageToast.show("Upload functionality");
-        },
-
-        /**
-         * Download button
-         */
-        onDownload: function () {
-            MessageToast.show("Download functionality");
+        onClearProcessingRuleFilters: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            oModel.setProperty("/processingRuleFilters", {
+                fileType: "",
+                ruleType: "",
+                active: ""
+            });
+            this.byId("filterRuleId").setValue("");
+            MessageToast.show("Filters cleared");
         },
 
         /**
          * Create new rule
          */
-        onCreateRule: function () {
-            MessageToast.show("Create new rule - Opening dialog");
-        },
-
-        /**
-         * Automate button
-         */
-        onAutomate: function () {
-            MessageToast.show("Automate functionality");
-        },
-
-        /**
-         * Copy selected rules
-         */
-        onCopyRule: function () {
+        onCreateProcessingRule: function () {
             var oModel = this.getOwnerComponent().getModel("app");
-            var aSelectedRules = oModel.getProperty("/selectedRules");
+            oModel.setProperty("/editingProcessingRule", {
+                ruleId: "",
+                fileType: "Excel",
+                ruleType: "Transform",
+                description: "",
+                active: true
+            });
             
-            if (!aSelectedRules || aSelectedRules.length === 0) {
-                MessageBox.warning("Please select at least one rule to copy");
+            var oDialog = this.byId("processingRuleDialog");
+            if (oDialog) {
+                oDialog.open();
+            }
+        },
+
+        /**
+         * Edit selected rule
+         */
+        onEditProcessingRule: function (oEvent) {
+            var oContext = oEvent.getSource().getBindingContext("app");
+            if (!oContext) {
+                // Handle case when button is clicked
+                var oItem = oEvent.getSource().getParent();
+                oContext = oItem.getBindingContext("app");
+            }
+            
+            var oRule = oContext.getObject();
+            var oModel = this.getOwnerComponent().getModel("app");
+            
+            // Clone the rule for editing
+            oModel.setProperty("/editingProcessingRule", JSON.parse(JSON.stringify(oRule)));
+            
+            var oDialog = this.byId("processingRuleDialog");
+            if (oDialog) {
+                oDialog.open();
+            }
+        },
+
+        /**
+         * Copy selected rule
+         */
+        onCopyProcessingRule: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oSelectedRule = oModel.getProperty("/selectedProcessingRule");
+            
+            if (!oSelectedRule) {
+                MessageBox.warning("Please select a rule to copy");
                 return;
             }
             
-            MessageToast.show(aSelectedRules.length + " rule(s) copied");
+            var aRules = oModel.getProperty("/processingRules");
+            var oCopiedRule = JSON.parse(JSON.stringify(oSelectedRule));
+            oCopiedRule.ruleId = "LB-RULE-" + String(Date.now()).slice(-3);
+            oCopiedRule.description = oSelectedRule.description + " (Copy)";
+            
+            aRules.push(oCopiedRule);
+            oModel.setProperty("/processingRules", aRules);
+            
+            MessageToast.show("Rule copied successfully");
         },
 
         /**
-         * Delete selected rules
+         * Delete selected rule
          */
-        onDeleteRule: function () {
+        onDeleteProcessingRule: function () {
             var that = this;
             var oModel = this.getOwnerComponent().getModel("app");
-            var aSelectedRules = oModel.getProperty("/selectedRules");
+            var oSelectedRule = oModel.getProperty("/selectedProcessingRule");
             
-            if (!aSelectedRules || aSelectedRules.length === 0) {
-                MessageBox.warning("Please select at least one rule to delete");
+            if (!oSelectedRule) {
+                MessageBox.warning("Please select a rule to delete");
                 return;
             }
             
             MessageBox.confirm(
-                "Are you sure you want to delete " + aSelectedRules.length + " rule(s)?",
+                "Are you sure you want to delete rule '" + oSelectedRule.ruleId + "'?",
                 {
                     onClose: function (sAction) {
                         if (sAction === MessageBox.Action.OK) {
-                            MessageToast.show(aSelectedRules.length + " rule(s) deleted successfully");
-                            oModel.setProperty("/selectedRules", []);
+                            var aRules = oModel.getProperty("/processingRules");
+                            var iIndex = aRules.findIndex(function (r) {
+                                return r.ruleId === oSelectedRule.ruleId;
+                            });
+                            
+                            if (iIndex > -1) {
+                                aRules.splice(iIndex, 1);
+                                oModel.setProperty("/processingRules", aRules);
+                                oModel.setProperty("/selectedProcessingRule", null);
+                                MessageToast.show("Rule deleted successfully");
+                            }
                         }
                     }
                 }
@@ -219,76 +235,78 @@ sap.ui.define([
         },
 
         /**
-         * Settings button
+         * Refresh rules
          */
-        onSettings: function () {
-            MessageToast.show("Settings");
-        },
-
-        /**
-         * Table settings
-         */
-        onTableSettings: function () {
-            MessageToast.show("Table settings");
-        },
-
-        /**
-         * Sort button
-         */
-        onSort: function () {
-            MessageToast.show("Sort options");
-        },
-
-        /**
-         * Filter table button
-         */
-        onFilterTable: function () {
-            MessageToast.show("Filter table");
-        },
-
-        /**
-         * More options
-         */
-        onMore: function () {
-            MessageToast.show("More options");
+        onRefreshProcessingRules: function () {
+            MessageToast.show("Rules refreshed");
+            // In production: reload from backend
         },
 
         /**
          * Rule selection changed
          */
-        onRuleSelectionChange: function (oEvent) {
-            var oTable = oEvent.getSource();
-            var aSelectedItems = oTable.getSelectedItems();
-            var aSelectedRules = [];
+        onProcessingRuleSelectionChange: function (oEvent) {
+            var oSelectedItem = oEvent.getParameter("listItem");
+            if (oSelectedItem) {
+                var oContext = oSelectedItem.getBindingContext("app");
+                var oRule = oContext.getObject();
+                var oModel = this.getOwnerComponent().getModel("app");
+                oModel.setProperty("/selectedProcessingRule", oRule);
+            }
+        },
+
+        /**
+         * Rule active toggle
+         */
+        onProcessingRuleActiveToggle: function (oEvent) {
+            var bState = oEvent.getParameter("state");
+            MessageToast.show(bState ? "Rule activated" : "Rule deactivated");
+        },
+
+        /**
+         * Save rule
+         */
+        onSaveProcessingRule: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oEditingRule = oModel.getProperty("/editingProcessingRule");
             
-            aSelectedItems.forEach(function (oItem) {
-                var oContext = oItem.getBindingContext("app");
-                aSelectedRules.push(oContext.getObject());
+            // Validate required fields
+            if (!oEditingRule.ruleId || !oEditingRule.description) {
+                MessageBox.error("Please fill in all required fields");
+                return;
+            }
+            
+            var aRules = oModel.getProperty("/processingRules");
+            
+            // Check if rule exists
+            var iIndex = aRules.findIndex(function (r) {
+                return r.ruleId === oEditingRule.ruleId;
             });
             
-            var oModel = this.getOwnerComponent().getModel("app");
-            oModel.setProperty("/selectedRules", aSelectedRules);
+            if (iIndex > -1) {
+                // Update existing rule
+                aRules[iIndex] = oEditingRule;
+                MessageToast.show("Rule updated successfully");
+            } else {
+                // Add new rule
+                aRules.push(oEditingRule);
+                MessageToast.show("Rule created successfully");
+            }
+            
+            oModel.setProperty("/processingRules", aRules);
+            
+            // Close dialog
+            this.onCloseProcessingRuleDialog();
         },
 
         /**
-         * Rule item press
+         * Close dialog
          */
-        onRuleItemPress: function (oEvent) {
-            var oContext = oEvent.getSource().getBindingContext("app");
-            var oRule = oContext.getObject();
-            
-            MessageToast.show("Opening details for: " + oRule.ruleId);
-            // TODO: Open rule details dialog/page
-        },
-
-        /**
-         * Rule ID press
-         */
-        onRuleIdPress: function (oEvent) {
-            var oContext = oEvent.getSource().getBindingContext("app");
-            var oRule = oContext.getObject();
-            
-            MessageToast.show("Rule ID clicked: " + oRule.ruleId);
+        onCloseProcessingRuleDialog: function () {
+            var oDialog = this.byId("processingRuleDialog");
+            if (oDialog) {
+                oDialog.close();
+            }
         }
     });
 });
