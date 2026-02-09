@@ -35,100 +35,75 @@ sap.ui.define([
         _initializeRulesData: function (oModel) {
             var aRules = [
                 {
-                    ruleId: "RULE-001",
-                    ruleName: "Invoice Split by Comma",
-                    description: "Split invoice numbers separated by commas into individual payment references",
+                    ruleId: "LB-RULE-001",
                     fileType: "Excel",
                     ruleType: "Split",
-                    active: true,
-                    conditions: [
-                        { field: "Invoice Number", operator: "contains", value: "," }
-                    ],
-                    action: {
-                        type: "split",
-                        apiEndpoint: "/api/lockbox/process",
-                        parameters: '{"delimiter": ",", "trim": true}'
-                    }
+                    description: "Split invoice numbers separated by commas into individual payment references",
+                    active: true
                 },
                 {
-                    ruleId: "RULE-002",
-                    ruleName: "Invoice Range Expansion",
-                    description: "Expand invoice number ranges (e.g., 95015001 to 010) into individual invoices",
+                    ruleId: "LB-RULE-002",
                     fileType: "Excel",
                     ruleType: "Expand",
-                    active: true,
-                    conditions: [
-                        { field: "Invoice Number", operator: "contains", value: "to" }
-                    ],
-                    action: {
-                        type: "expand",
-                        apiEndpoint: "/api/lockbox/process",
-                        parameters: '{"rangePattern": "to"}'
-                    }
+                    description: "Expand invoice number ranges (e.g., 95015001 to 010) into individual invoices",
+                    active: true
                 },
                 {
-                    ruleId: "RULE-003",
-                    ruleName: "Amount Validation",
-                    description: "Validate that invoice amounts are numeric and within acceptable range",
+                    ruleId: "LB-RULE-003",
                     fileType: "All",
                     ruleType: "Validate",
-                    active: true,
-                    conditions: [
-                        { field: "Amount", operator: "isNotEmpty", value: "" }
-                    ],
-                    action: {
-                        type: "validate",
-                        apiEndpoint: "/api/lockbox/validate",
-                        parameters: '{"dataType": "numeric", "min": 0, "max": 999999999}'
-                    }
+                    description: "Validate that invoice amounts are numeric and within acceptable range",
+                    active: true
                 },
                 {
-                    ruleId: "RULE-004",
-                    ruleName: "Date Format Transformation",
-                    description: "Convert various date formats to ISO 8601 standard (YYYY-MM-DD)",
+                    ruleId: "LB-RULE-004",
                     fileType: "CSV",
                     ruleType: "Transform",
-                    active: true,
-                    conditions: [
-                        { field: "Date", operator: "isNotEmpty", value: "" }
-                    ],
-                    action: {
-                        type: "transform",
-                        apiEndpoint: "/api/lockbox/transform",
-                        parameters: '{"outputFormat": "ISO8601"}'
-                    }
+                    description: "Convert various date formats to ISO 8601 standard (YYYY-MM-DD)",
+                    active: true
                 },
                 {
-                    ruleId: "RULE-005",
-                    ruleName: "Cheque Number Padding",
-                    description: "Pad cheque numbers with leading zeros to ensure 10-digit format",
+                    ruleId: "LB-RULE-005",
                     fileType: "Excel",
                     ruleType: "Transform",
-                    active: false,
-                    conditions: [
-                        { field: "Cheque Number", operator: "isNotEmpty", value: "" }
-                    ],
-                    action: {
-                        type: "transform",
-                        apiEndpoint: "/api/lockbox/transform",
-                        parameters: '{"padTo": 10, "padChar": "0", "padDirection": "left"}'
-                    }
+                    description: "Pad cheque numbers with leading zeros to ensure 10-digit format",
+                    active: false
+                },
+                {
+                    ruleId: "LB-RULE-006",
+                    fileType: "BAI2",
+                    ruleType: "Parse",
+                    description: "Parse BAI2 format files and extract transaction details",
+                    active: true
+                },
+                {
+                    ruleId: "LB-RULE-007",
+                    fileType: "PDF",
+                    ruleType: "Extract",
+                    description: "Extract payment information from PDF documents using OCR",
+                    active: false
                 }
             ];
             
             oModel.setProperty("/processingRules", aRules);
-            oModel.setProperty("/ruleDetailExpanded", false);
-            oModel.setProperty("/selectedRule", null);
+            oModel.setProperty("/selectedRules", []);
         },
 
         /**
          * Initialize filter data
          */
         _initializeFilters: function (oModel) {
-            oModel.setProperty("/ruleFilters", {
-                fileFormat: "",
-                ruleType: "",
-                active: ""
+            oModel.setProperty("/filters", {
+                editingStatus: "",
+                description: "",
+                procedureType: "",
+                journalEntryType: "",
+                ruleId: "",
+                templateId: "",
+                companyCode: "",
+                createdOn: null,
+                applicationType: [],
+                direction: ""
             });
         },
 
