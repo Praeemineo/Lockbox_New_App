@@ -3,196 +3,157 @@
     xmlns="sap.m"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:core="sap.ui.core"
-    xmlns:f="sap.ui.layout.form"
     displayBlock="true"
     height="100%">
     
-    <Page id="processingRulesPage" showHeader="false">
+    <!-- Simple inline content - no separate Page wrapper -->
+    <VBox class="sapUiSmallMargin">
+        <!-- Page Header -->
+        <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+            <core:Icon src="sap-icon://decision" size="1.5rem" color="#0854a0" class="sapUiSmallMarginEnd" />
+            <Title text="Manage Lockbox Processing Rules" level="H2" />
+        </HBox>
+        
+        <!-- Filter Bar -->
+        <Panel headerText="Filters" expandable="true" expanded="true" class="sapUiSmallMarginBottom">
+            <VBox class="sapUiSmallMargin">
+                <HBox alignItems="End" wrap="Wrap">
+                    <!-- File Type Filter -->
+                    <VBox class="sapUiSmallMarginEnd" width="150px">
+                        <Label text="File Type" />
+                        <Select id="filterFileType" selectedKey="{app>/processingRuleFilters/fileType}" width="100%">
+                            <core:Item key="" text="All" />
+                            <core:Item key="EXCEL" text="Excel" />
+                            <core:Item key="CSV" text="CSV" />
+                            <core:Item key="BAI2" text="BAI2" />
+                            <core:Item key="PDF" text="PDF" />
+                        </Select>
+                    </VBox>
+                    
+                    <!-- Rule Type Filter -->
+                    <VBox class="sapUiSmallMarginEnd" width="150px">
+                        <Label text="Rule Type" />
+                        <Select id="filterRuleType" selectedKey="{app>/processingRuleFilters/ruleType}" width="100%">
+                            <core:Item key="" text="All" />
+                            <core:Item key="SPLIT" text="Split" />
+                            <core:Item key="EXPAND" text="Expand" />
+                            <core:Item key="TRANSFORM" text="Transform" />
+                            <core:Item key="VALIDATE" text="Validate" />
+                            <core:Item key="PARSE" text="Parse" />
+                            <core:Item key="EXTRACT" text="Extract" />
+                        </Select>
+                    </VBox>
+                    
+                    <!-- Active Filter -->
+                    <VBox class="sapUiSmallMarginEnd" width="100px">
+                        <Label text="Status" />
+                        <Select id="filterActive" selectedKey="{app>/processingRuleFilters/active}" width="100%">
+                            <core:Item key="" text="All" />
+                            <core:Item key="true" text="Active" />
+                            <core:Item key="false" text="Inactive" />
+                        </Select>
+                    </VBox>
+                    
+                    <!-- Rule ID Search -->
+                    <VBox class="sapUiSmallMarginEnd" width="200px">
+                        <Label text="Rule ID" />
+                        <SearchField id="filterRuleId" placeholder="Search by Rule ID..." search="onProcessingRuleFilterGo" width="100%" />
+                    </VBox>
+                    
+                    <!-- Filter Actions -->
+                    <Button text="Go" type="Emphasized" press="onProcessingRuleFilterGo" class="sapUiSmallMarginEnd" />
+                    <Button text="Clear" press="onClearProcessingRuleFilters" />
+                </HBox>
+            </VBox>
+        </Panel>
+        
+        <!-- Processing Rules Table -->
+        <Panel expandable="false">
+            <headerToolbar>
+                <OverflowToolbar>
+                    <Title text="Processing Rules ({= ${app>/processingRules}.length})" />
+                    <ToolbarSpacer />
+                    <Button text="Create" icon="sap-icon://add" type="Emphasized" press="onCreateProcessingRule" />
+                    <Button text="Copy" icon="sap-icon://copy" press="onCopyProcessingRule" enabled="{= !!${app>/selectedProcessingRule}}" />
+                    <Button text="Delete" icon="sap-icon://delete" press="onDeleteProcessingRule" enabled="{= !!${app>/selectedProcessingRule}}" />
+                    <Button icon="sap-icon://refresh" press="onRefreshProcessingRules" tooltip="Refresh" />
+                </OverflowToolbar>
+            </headerToolbar>
+            <content>
+                <Table
+                    id="processingRulesTable"
+                    items="{app>/processingRules}"
+                    mode="SingleSelectMaster"
+                    selectionChange="onProcessingRuleSelectionChange"
+                    fixedLayout="false">
+                    <columns>
+                        <Column width="120px"><Text text="Rule ID" /></Column>
+                        <Column width="120px"><Text text="File Type" /></Column>
+                        <Column width="120px"><Text text="Rule Type" /></Column>
+                        <Column><Text text="Description" /></Column>
+                        <Column width="100px" hAlign="Center"><Text text="Status" /></Column>
+                        <Column width="100px" hAlign="Center"><Text text="Actions" /></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem type="Active" press="onEditProcessingRule">
+                            <cells>
+                                <ObjectIdentifier title="{app>ruleId}" />
+                                <Text text="{app>fileType}" />
+                                <ObjectStatus text="{app>ruleType}" state="Information" />
+                                <Text text="{app>description}" wrapping="true" />
+                                <Switch state="{app>active}" change="onProcessingRuleActiveToggle" customTextOn="Yes" customTextOff="No" />
+                                <Button icon="sap-icon://edit" type="Transparent" press="onEditProcessingRule" tooltip="Edit Rule" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </content>
+        </Panel>
+    </VBox>
+    
+    <!-- Add/Edit Processing Rule Dialog -->
+    <Dialog id="processingRuleDialog" title="{= ${app>/editingProcessingRule/ruleId} ? 'Edit Rule' : 'Create New Processing Rule'}" contentWidth="700px">
         <content>
             <VBox class="sapUiSmallMargin">
-                <!-- Page Title -->
-                <HBox alignItems="Center" class="sapUiMediumMarginBottom">
-                    <core:Icon src="sap-icon://decision" size="1.5rem" color="#0854a0" class="sapUiSmallMarginEnd" />
-                    <Title text="Manage Lockbox Processing Rules" level="H2" />
-                </HBox>
-                
-                <!-- Filter Section -->
-                <Panel 
-                    headerText="Standard" 
-                    expandable="true" 
-                    expanded="true" 
-                    class="sapUiMediumMarginBottom"
-                    backgroundDesign="Transparent">
-                    <content>
-                        <f:SimpleForm 
-                            editable="true"
-                            layout="ResponsiveGridLayout"
-                            labelSpanXL="3"
-                            labelSpanL="3"
-                            labelSpanM="3"
-                            labelSpanS="12"
-                            adjustLabelSpan="false"
-                            emptySpanXL="0"
-                            emptySpanL="0"
-                            emptySpanM="0"
-                            emptySpanS="0"
-                            columnsXL="2"
-                            columnsL="2"
-                            columnsM="2"
-                            singleContainerFullSize="false"
-                            class="sapUiSmallMargin">
-                            <f:content>
-                                <!-- Row 1 -->
-                                <Label text="Editing Status:" />
-                                <Select selectedKey="{app>/filters/editingStatus}" width="100%">
-                                    <core:Item key="" text="All" />
-                                    <core:Item key="DRAFT" text="Draft" />
-                                    <core:Item key="PUBLISHED" text="Published" />
-                                </Select>
-                                
-                                <Label text="Description:" />
-                                <Input value="{app>/filters/description}" placeholder="Search by description..." />
-                                
-                                <!-- Row 2 -->
-                                <Label text="Procedure Type:" />
-                                <Select selectedKey="{app>/filters/procedureType}" width="100%">
-                                    <core:Item key="" text="All" />
-                                    <core:Item key="STANDARD" text="Standard" />
-                                    <core:Item key="CUSTOM" text="Custom" />
-                                </Select>
-                                
-                                <Label text="Journal Entry Type:" />
-                                <Select selectedKey="{app>/filters/journalEntryType}" width="100%">
-                                    <core:Item key="" text="All" />
-                                </Select>
-                                
-                                <!-- Row 3 -->
-                                <Label text="Processing Rule ID:" />
-                                <Input value="{app>/filters/ruleId}" placeholder="Search by Rule ID..." />
-                                
-                                <Label text="Template ID:" />
-                                <Input value="{app>/filters/templateId}" placeholder="Enter Template ID..." />
-                                
-                                <!-- Row 4 -->
-                                <Label text="Company Code:" />
-                                <Input value="{app>/filters/companyCode}" placeholder="Enter Company Code..." />
-                                
-                                <Label text="Created On:" />
-                                <DatePicker value="{app>/filters/createdOn}" />
-                                
-                                <!-- Row 5 -->
-                                <Label text="Processing Rule Application Type:" />
-                                <MultiComboBox 
-                                    selectedKeys="{app>/filters/applicationType}"
-                                    width="100%">
-                                    <core:Item key="LOCKBOX" text="Lockbox" />
-                                    <core:Item key="PAYMENT" text="Payment" />
-                                </MultiComboBox>
-                                
-                                <Label text="Incoming/Outgoing:" />
-                                <Select selectedKey="{app>/filters/direction}" width="100%">
-                                    <core:Item key="" text="All" />
-                                    <core:Item key="INCOMING" text="Incoming Payment Rules" />
-                                    <core:Item key="OUTGOING" text="Outgoing Payment Rules" />
-                                </Select>
-                            </f:content>
-                        </f:SimpleForm>
-                        
-                        <!-- Filter Actions -->
-                        <HBox justifyContent="End" class="sapUiSmallMarginTop">
-                            <Button text="Go" type="Emphasized" press="onFilterGo" class="sapUiTinyMarginEnd" />
-                            <Button text="Adapt Filters (2)" press="onAdaptFilters" />
-                        </HBox>
-                    </content>
-                </Panel>
-                
-                <!-- Tabs Section -->
-                <IconTabBar 
-                    id="rulesTabBar" 
-                    select="onTabSelect"
-                    class="sapUiResponsiveContentPadding">
-                    <items>
-                        <IconTabFilter text="My Rules" key="myRules" />
-                        <IconTabFilter text="Shared Rules" key="sharedRules" />
-                        <IconTabFilter text="Automated Rules" key="automatedRules" />
-                    </items>
-                    <content>
-                        <!-- Rules Table -->
-                        <Panel headerText="Processing Rules" class="sapUiNoContentPadding">
-                            <headerToolbar>
-                                <OverflowToolbar design="Transparent">
-                                    <Title text="Processing Rules" level="H4" />
-                                    <Select selectedKey="Standard" width="150px" class="sapUiTinyMarginBegin">
-                                        <core:Item key="Standard" text="Standard" />
-                                        <core:Item key="Custom" text="Custom" />
-                                    </Select>
-                                    <ToolbarSpacer />
-                                    
-                                    <!-- Action Buttons -->
-                                    <Button text="Upload" press="onUpload" />
-                                    <Button text="Download" press="onDownload" enabled="false" />
-                                    <Button text="Create" icon="sap-icon://create" type="Emphasized" press="onCreateRule" />
-                                    <Button text="Automate" press="onAutomate" enabled="false" />
-                                    <Button text="Copy" press="onCopyRule" enabled="{= ${app>/selectedRules}.length > 0}" />
-                                    <Button text="Delete" press="onDeleteRule" enabled="{= ${app>/selectedRules}.length > 0}" />
-                                    <Button icon="sap-icon://action-settings" press="onSettings" tooltip="Settings" />
-                                    <Button icon="sap-icon://table-view" press="onTableSettings" tooltip="Table Settings" />
-                                    <Button icon="sap-icon://sort" press="onSort" tooltip="Sort" />
-                                    <Button icon="sap-icon://filter" press="onFilterTable" tooltip="Filter" />
-                                    <Button icon="sap-icon://overflow" press="onMore" tooltip="More" />
-                                </OverflowToolbar>
-                            </headerToolbar>
-                            
-                            <content>
-                                <Table
-                                    id="processingRulesTable"
-                                    items="{app>/processingRules}"
-                                    mode="MultiSelect"
-                                    selectionChange="onRuleSelectionChange"
-                                    itemPress="onRulePress"
-                                    growing="true"
-                                    growingThreshold="20"
-                                    sticky="ColumnHeaders,HeaderToolbar">
-                                    <columns>
-                                        <Column width="15%">
-                                            <Text text="Rule ID" />
-                                        </Column>
-                                        <Column width="15%">
-                                            <Text text="File Type" />
-                                        </Column>
-                                        <Column width="15%">
-                                            <Text text="Rule Type" />
-                                        </Column>
-                                        <Column width="35%">
-                                            <Text text="Description" />
-                                        </Column>
-                                        <Column width="20%" hAlign="Center">
-                                            <Text text="Status" />
-                                        </Column>
-                                    </columns>
-                                    
-                                    <items>
-                                        <ColumnListItem type="Navigation" press="onRuleItemPress">
-                                            <cells>
-                                                <ObjectIdentifier 
-                                                    title="{app>ruleId}"
-                                                    titleActive="true"
-                                                    titlePress="onRuleIdPress" />
-                                                <Text text="{app>fileType}" />
-                                                <Text text="{app>ruleType}" />
-                                                <Text text="{app>description}" />
-                                                <ObjectStatus 
-                                                    text="{= ${app>active} ? 'Active' : 'Inactive'}"
-                                                    state="{= ${app>active} ? 'Success' : 'Error'}" />
-                                            </cells>
-                                        </ColumnListItem>
-                                    </items>
-                                </Table>
-                            </content>
-                        </Panel>
-                    </content>
-                </IconTabBar>
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Rule ID" required="true" />
+                    <Input value="{app>/editingProcessingRule/ruleId}" placeholder="e.g., LB-RULE-008" width="100%" enabled="{= !${app>/editingProcessingRule/ruleId}}" />
+                </VBox>
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="File Type" required="true" />
+                    <Select selectedKey="{app>/editingProcessingRule/fileType}" width="100%">
+                        <core:Item key="Excel" text="Excel" />
+                        <core:Item key="CSV" text="CSV" />
+                        <core:Item key="BAI2" text="BAI2" />
+                        <core:Item key="PDF" text="PDF" />
+                        <core:Item key="All" text="All File Types" />
+                    </Select>
+                </VBox>
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Rule Type" required="true" />
+                    <Select selectedKey="{app>/editingProcessingRule/ruleType}" width="100%">
+                        <core:Item key="Split" text="Split" />
+                        <core:Item key="Expand" text="Expand" />
+                        <core:Item key="Transform" text="Transform" />
+                        <core:Item key="Validate" text="Validate" />
+                        <core:Item key="Parse" text="Parse" />
+                        <core:Item key="Extract" text="Extract" />
+                    </Select>
+                </VBox>
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Description" required="true" />
+                    <TextArea value="{app>/editingProcessingRule/description}" rows="3" width="100%" placeholder="Enter rule description..." />
+                </VBox>
+                <VBox>
+                    <CheckBox text="Active" selected="{app>/editingProcessingRule/active}" />
+                </VBox>
             </VBox>
         </content>
-    </Page>
+        <beginButton>
+            <Button text="Save" type="Emphasized" press="onSaveProcessingRule" />
+        </beginButton>
+        <endButton>
+            <Button text="Cancel" press="onCloseProcessingRuleDialog" />
+        </endButton>
+    </Dialog>
 </mvc:View>
