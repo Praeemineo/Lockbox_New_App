@@ -1301,13 +1301,13 @@ async function getLockboxBatchItemDetails(internalKey, batch, item) {
 }
 
 // ============================================================================
-// PRE-CLEARING: Get Belnr (DocumentNumber) from Invoice Number via OData API
+// PRE-CLEARING: Get Belnr (DocumentNumber) and CompanyCode from Invoice Number via OData API
 // ============================================================================
 // API: GET /sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT
 // Input: P_DocumentNumber (Invoice Number)
-// Output: DocumentNumber (Belnr - Accounting Document Number)
+// Output: { documentNumber: Belnr, companyCode: CompanyCode }
 async function getDocumentNumberFromInvoice(invoiceNumber) {
-    console.log('=== GET DocumentNumber from Invoice ===');
+    console.log('=== GET DocumentNumber and CompanyCode from Invoice ===');
     console.log('Invoice Number (P_DocumentNumber):', invoiceNumber);
     
     if (!invoiceNumber || invoiceNumber.trim() === '') {
@@ -1336,14 +1336,19 @@ async function getDocumentNumberFromInvoice(invoiceNumber) {
         console.log('DocumentNumber API Response Status:', response.status);
         console.log('DocumentNumber API Response Data:', JSON.stringify(response.data, null, 2));
         
-        // Extract DocumentNumber from response
+        // Extract DocumentNumber and CompanyCode from response
         // OData v4 typically returns data in "value" array
         const data = response.data?.value?.[0] || response.data?.d?.results?.[0] || response.data?.d || response.data;
         const documentNumber = data?.DocumentNumber || data?.Belnr || null;
+        const companyCode = data?.CompanyCode || null;
         
         console.log('Extracted DocumentNumber (Belnr):', documentNumber);
+        console.log('Extracted CompanyCode:', companyCode);
         
-        return documentNumber;
+        return {
+            documentNumber: documentNumber,
+            companyCode: companyCode
+        };
         
     } catch (error) {
         console.error('Error fetching DocumentNumber for invoice', invoiceNumber, ':', error.message);
