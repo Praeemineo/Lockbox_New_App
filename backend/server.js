@@ -2032,7 +2032,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                             type: 'Posting Document',
                             description: 'AR Posting Document (Accounting Document)',
                             documentNumber: accountingDocNum || 'N/A',
-                            companyCode: firstClearing.CompanyCode || DEFAULT_COMPANY_CODE,
+                            companyCode: firstClearing.CompanyCode || RUNTIME_COMPANY_CODE,
                             fiscalYear: firstClearing.FiscalYear || fiscalYear,
                             entries: clearingData.map(c => ({
                                 accountingDocument: c.AccountingDocument,
@@ -2050,7 +2050,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                             type: 'Payment Advice',
                             description: 'Payment Advice Document',
                             documentNumber: paymentAdviceNum || 'N/A',
-                            companyCode: firstClearing.CompanyCode || DEFAULT_COMPANY_CODE,
+                            companyCode: firstClearing.CompanyCode || RUNTIME_COMPANY_CODE,
                             entries: clearingData.map(c => ({
                                 paymentAdvice: c.PaymentAdvice,
                                 paymentAdviceItem: c.PaymentAdviceItem,
@@ -2068,7 +2068,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                             type: 'Clearing Document',
                             description: 'Clearing Document (Accounting Document)',
                             documentNumber: accountingDocNum || 'N/A',
-                            companyCode: firstClearing.CompanyCode || DEFAULT_COMPANY_CODE,
+                            companyCode: firstClearing.CompanyCode || RUNTIME_COMPANY_CODE,
                             fiscalYear: firstClearing.FiscalYear || fiscalYear,
                             entries: clearingData.map(c => ({
                                 accountingDocument: c.AccountingDocument,
