@@ -4280,25 +4280,24 @@ const defaultProcessingRules = [
         ruleType: "Document Type",
         ruleDescription: "Validate and map document type based on input file data before posting to SAP",
         active: true,
-        description: "Process New Rule",
-        journalEntryType: "ZV (Payment Clearing)",
-        ruleFor: "Incoming Payment",
-        actionType: "G/L Posting",
-        shareRule: false,
-        ignoreProcessor: false,
+        priority: 10,
+        conditionLogic: "AND",
         conditions: [{
-            attribute: "Lockbox Destination",
-            option: "contains",
-            from: "LOCKBOXDES",
-            to: ""
+            attribute: "LockboxDestination",
+            operator: "contains",
+            value: "LOCKBOXDES",
+            value2: ""
         }],
-        glAccounts: [{
-            account: "21180000",
-            profitCenter: "YB911",
-            costCenter: "",
-            taxCode: "",
-            segment: "",
-            functionalArea: ""
+        actions: [{
+            actionType: "odata_call",
+            target: "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT",
+            configSummary: "GET OData - Fetch Document Number",
+            config: {
+                method: "GET",
+                endpoint: "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT",
+                params: { "sap-client": "100", "P_DocumentNumber": "{{PaymentReference}}" },
+                responseMapping: "value[0].DocumentNumber"
+            }
         }]
     },
     {
@@ -4307,14 +4306,25 @@ const defaultProcessingRules = [
         ruleType: "Comma Handling",
         ruleDescription: "Remove comma separators from numeric fields before processing",
         active: true,
-        description: "Comma Handling Rule",
-        journalEntryType: "ZV (Payment Clearing)",
-        ruleFor: "Incoming Payment",
-        actionType: "G/L Posting",
-        shareRule: false,
-        ignoreProcessor: false,
-        conditions: [],
-        glAccounts: []
+        priority: 20,
+        conditionLogic: "OR",
+        conditions: [{
+            attribute: "Amount",
+            operator: "contains",
+            value: ",",
+            value2: ""
+        }],
+        actions: [{
+            actionType: "transformation",
+            target: "Amount",
+            configSummary: "Replace: Remove commas from amount",
+            config: {
+                transformType: "replace",
+                sourceFields: "Amount",
+                targetField: "Amount",
+                transformConfig: { "find": ",", "replace": "" }
+            }
+        }]
     },
     {
         ruleId: "Rule_003",
@@ -4322,14 +4332,25 @@ const defaultProcessingRules = [
         ruleType: "Hyphen Handling",
         ruleDescription: "Handle hyphen-separated reference values based on configured pattern",
         active: true,
-        description: "Hyphen Handling Rule",
-        journalEntryType: "ZV (Payment Clearing)",
-        ruleFor: "Incoming Payment",
-        actionType: "G/L Posting",
-        shareRule: false,
-        ignoreProcessor: false,
-        conditions: [],
-        glAccounts: []
+        priority: 30,
+        conditionLogic: "AND",
+        conditions: [{
+            attribute: "PaymentReference",
+            operator: "contains",
+            value: "-",
+            value2: ""
+        }],
+        actions: [{
+            actionType: "transformation",
+            target: "PaymentReference",
+            configSummary: "Split: Extract before hyphen",
+            config: {
+                transformType: "split",
+                sourceFields: "PaymentReference",
+                targetField: "ProcessedReference",
+                transformConfig: { "delimiter": "-", "index": 0 }
+            }
+        }]
     },
     {
         ruleId: "Rule_004",
@@ -4337,14 +4358,25 @@ const defaultProcessingRules = [
         ruleType: "Multiple Sheet Processing",
         ruleDescription: "Process and validate each sheet separately when file contains multiple sheets",
         active: true,
-        description: "Multi-Sheet Processing Rule",
-        journalEntryType: "ZV (Payment Clearing)",
-        ruleFor: "Incoming Payment",
-        actionType: "G/L Posting",
-        shareRule: false,
-        ignoreProcessor: false,
-        conditions: [],
-        glAccounts: []
+        priority: 40,
+        conditionLogic: "AND",
+        conditions: [{
+            attribute: "FileType",
+            operator: "equals",
+            value: "xlsx",
+            value2: ""
+        }],
+        actions: [{
+            actionType: "validation",
+            target: "SheetCount",
+            configSummary: "Validate: Check sheet count",
+            config: {
+                validationType: "range",
+                validationField: "SheetCount",
+                validationRule: { "min": 1, "max": 10 },
+                errorMessage: "File must contain 1-10 sheets"
+            }
+        }]
     },
     {
         ruleId: "Rule_005",
@@ -4352,14 +4384,25 @@ const defaultProcessingRules = [
         ruleType: "Positive/Negative Posting",
         ruleDescription: "Post positive and negative amounts as separate line items during SAP posting",
         active: true,
-        description: "Positive/Negative Posting Rule",
-        journalEntryType: "ZV (Payment Clearing)",
-        ruleFor: "Incoming Payment",
-        actionType: "G/L Posting",
-        shareRule: false,
-        ignoreProcessor: false,
-        conditions: [],
-        glAccounts: []
+        priority: 50,
+        conditionLogic: "OR",
+        conditions: [{
+            attribute: "Amount",
+            operator: "lessThan",
+            value: "0",
+            value2: ""
+        }],
+        actions: [{
+            actionType: "post_gl",
+            target: "21180000",
+            configSummary: "G/L: 21180000 with profit center",
+            config: {
+                glAccount: "21180000",
+                profitCenter: "YB911",
+                costCenter: "",
+                additionalFields: { "TaxCode": "", "Segment": "" }
+            }
+        }]
     }
 ];
 
