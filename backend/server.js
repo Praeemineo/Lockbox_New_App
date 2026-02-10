@@ -402,8 +402,8 @@ app.get('/api/lockbox/template', (req, res) => {
         'Lockbox': '1234',  // Fixed lockbox number for all batches
         'DepositDateTime': '2024-01-15T10:30:00',
         'AmountInTransactionCurrency': '25000.00',
-        'LockboxBatchOrigin': 'EMERGENT',  // Emergent AI Platform origin
-        'LockboxBatchDestination': 'SAMPLEDEST',
+        'LockboxBatchOrigin': 'LOCKBOXORI',  // Default lockbox origin
+        'LockboxBatchDestination': 'LOCKBOXDES',
         'CompanyCode': '1710',
         // Cheques
         'LockboxBatch': '001',
