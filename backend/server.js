@@ -2221,7 +2221,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                 runId,
                 headerId,
                 header.lockbox,
-                DEFAULT_COMPANY_CODE,
+                RUNTIME_COMPANY_CODE,
                 'PRODUCTION',
                 finalStatus,
                 parseFloat(payload.AmountInTransactionCurrency) || 0,
@@ -2247,7 +2247,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                 await persistLineLevelClearing(
                     runId,
                     clearingData,
-                    DEFAULT_COMPANY_CODE
+                    RUNTIME_COMPANY_CODE
                 );
                 console.log('✅ Line-level clearing log persisted');
             }
