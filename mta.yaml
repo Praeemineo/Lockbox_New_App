@@ -43,8 +43,6 @@ modules:
         - node_modules/
         - "*.py"
         - "__pycache__/"
-        - app/dist/
-        - app/webapp/
 
 resources:
   # PostgreSQL Database Service (Using existing service)
