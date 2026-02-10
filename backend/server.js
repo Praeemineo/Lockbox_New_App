@@ -1837,6 +1837,41 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
         
         try {
             // ========================================================
+            // STEP 0: PRE-CLEARING - Enrich PaymentReferences with Belnr (DocumentNumber)
+            // ========================================================
+            console.log('=== STEP 0: PRE-CLEARING - Fetch Belnr from Invoice Numbers ===');
+            
+            // Extract all clearing entries from payload
+            const allClearingEntries = [];
+            for (const item of payload.to_Item?.results || []) {
+                if (item.to_LockboxClearing?.results) {
+                    allClearingEntries.push(...item.to_LockboxClearing.results);
+                }
+            }
+            
+            console.log('Total clearing entries before enrichment:', allClearingEntries.length);
+            
+            if (allClearingEntries.length > 0) {
+                // Call the enrichment function to replace PaymentReference with DocumentNumber (Belnr)
+                const enrichedClearingEntries = await enrichPaymentReferencesWithBelnr(allClearingEntries);
+                
+                // Update the payload with enriched clearing data
+                let enrichedIndex = 0;
+                for (const item of payload.to_Item?.results || []) {
+                    if (item.to_LockboxClearing?.results) {
+                        const clearingCount = item.to_LockboxClearing.results.length;
+                        item.to_LockboxClearing.results = enrichedClearingEntries.slice(enrichedIndex, enrichedIndex + clearingCount);
+                        enrichedIndex += clearingCount;
+                    }
+                }
+                
+                console.log('Payload enriched with DocumentNumbers (Belnr)');
+                console.log('Updated payload:', JSON.stringify(payload, null, 2));
+            } else {
+                console.log('No clearing entries found in payload, skipping enrichment');
+            }
+            
+            // ========================================================
             // STEP 1: POST /LockboxBatch - Trigger posting to SAP
             // ========================================================
             console.log('=== STEP 1: POST /LockboxBatch ===');
