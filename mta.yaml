@@ -4,46 +4,9 @@ version: 1.0.0
 description: SAP Lockbox Application - Upload, Review and Post to SAP
 parameters:
   enable-parallel-deployments: true
-  deploy_mode: html5-repo
 
 modules:
-  # ============================================================
-  # FRONTEND UI5 MODULE - For HTML5 Repository
-  # ============================================================
-  - name: lockbox-ui
-    type: html5
-    path: backend/app
-    build-parameters:
-      build-result: dist
-      builder: custom
-      commands:
-        - npm install
-        - npx ui5 build --clean-dest --dest dist
-      supported-platforms: []
-    requires:
-      - name: lockbox-html5-repo-runtime
-
-  # ============================================================
-  # UI DEPLOYER MODULE - Deploys UI to HTML5 Repository
-  # ============================================================
-  - name: lockbox-ui-deployer
-    type: com.sap.application.content
-    path: deployer
-    requires:
-      - name: lockbox-html5-repo-host
-        parameters:
-          content-target: true
-    build-parameters:
-      build-result: resources
-      requires:
-        - artifacts:
-            - lockbox-ui.zip
-          name: lockbox-ui
-          target-path: resources/
-
-  # ============================================================
   # Backend Service Module
-  # ============================================================
   - name: lockbox-srv
     type: nodejs
     path: backend
@@ -70,7 +33,6 @@ modules:
       - name: lockbox-destination
       - name: lockbox-xsuaa
       - name: lockbox-connectivity
-      - name: lockbox-html5-repo-runtime
     provides:
       - name: lockbox-srv-api
         properties:
@@ -84,52 +46,8 @@ modules:
         - app/dist/
         - app/webapp/
 
-  # ============================================================
-  # Frontend Approuter Module
-  # ============================================================
-  - name: lockbox-approuter
-    type: approuter.nodejs
-    path: approuter
-    parameters:
-      memory: 256M
-      disk-quota: 512M
-      keep-existing-routes: true
-    properties:
-      TENANT_HOST_PATTERN: "^(.*)-${default-uri}"
-    requires:
-      - name: lockbox-xsuaa
-      - name: lockbox-destination
-      - name: lockbox-html5-repo-runtime
-      - name: lockbox-srv-api
-        group: destinations
-        properties:
-          name: backend
-          url: ~{srv-url}
-          forwardAuthToken: true
-          timeout: 600000
-
 resources:
-  # ============================================================
-  # HTML5 Application Repository - Host (for deployment)
-  # ============================================================
-  - name: lockbox-html5-repo-host
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: html5-apps-repo
-      service-plan: app-host
-
-  # ============================================================
-  # HTML5 Application Repository - Runtime (for serving apps)
-  # ============================================================
-  - name: lockbox-html5-repo-runtime
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: html5-apps-repo
-      service-plan: app-runtime
-
-  # ============================================================
   # PostgreSQL Database Service (Using existing service)
-  # ============================================================
   - name: postgresql-db
     type: org.cloudfoundry.existing-service
     parameters:
@@ -142,7 +60,7 @@ resources:
       service: destination
       service-plan: lite
       config:
-        HTML5Runtime_enabled: true
+        HTML5Runtime_enabled: false
         init_data:
           instance:
             destinations:
@@ -154,10 +72,9 @@ resources:
                 URL: http://s4fnd:443
                 User: S4H_FIN
                 Password: Welcome1
-                HTML5.DynamicDestination: true
-                WebIDEEnabled: true
                 sap-client: "100"
-                WebIDEUsage: odata_abap,odata_gen,bsp_execute_abap,odata_abap,ui5_execute_abap,dev_abap
+                WebIDEEnabled: true
+                WebIDEUsage: odata_abap,odata_gen,bsp_execute_abap,ui5_execute_abap,dev_abap
             existing_destinations_policy: update
 
   # SAP Cloud Connector (Connectivity Service)
@@ -177,6 +94,17 @@ resources:
       config:
         xsappname: lockbox-app-${org}-${space}
         tenant-mode: dedicated
+        description: Lockbox Application Security
         oauth2-configuration:
           redirect-uris:
             - https://*.cfapps.*.hana.ondemand.com/**
+            - https://*.*.applicationstudio.cloud.sap/**
+        role-collections:
+          - name: LockboxAdmin
+            description: Lockbox Administrator
+            role-template-references:
+              - $XSAPPNAME.Admin
+          - name: LockboxUser
+            description: Lockbox User
+            role-template-references:
+              - $XSAPPNAME.User
