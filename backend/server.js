@@ -353,8 +353,30 @@ async function initTables() {
             )
         `);
         
+        // Processing Rules table - Stores lockbox processing rules with conditions and actions
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS processing_rule (
+                id UUID PRIMARY KEY,
+                rule_id VARCHAR(30) NOT NULL UNIQUE,
+                file_type VARCHAR(50) NOT NULL,
+                rule_type VARCHAR(50) NOT NULL,
+                rule_description TEXT NOT NULL,
+                active BOOLEAN DEFAULT true,
+                description TEXT,
+                journal_entry_type VARCHAR(50),
+                rule_for VARCHAR(50),
+                action_type VARCHAR(50),
+                share_rule BOOLEAN DEFAULT false,
+                ignore_processor BOOLEAN DEFAULT false,
+                conditions JSONB,
+                gl_accounts JSONB,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        
         console.log('Database tables initialized (CREATE IF NOT EXISTS)');
-        console.log('Tables created: lockbox_run_log, sap_response_log, line_level_clearing, lockbox_processing_run, file_pattern, odata_service');
+        console.log('Tables created: lockbox_run_log, sap_response_log, line_level_clearing, lockbox_processing_run, file_pattern, odata_service, processing_rule');
     } catch (tableErr) {
         console.error('Error creating tables:', tableErr.message);
         // Tables might already exist, that's ok - db is still available
