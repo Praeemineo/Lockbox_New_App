@@ -4413,21 +4413,17 @@ app.get('/api/processing-rules', async (req, res) => {
             return res.json(defaultProcessingRules);
         }
         
-        const result = await pool.query('SELECT * FROM processing_rule ORDER BY rule_id');
+        const result = await pool.query('SELECT * FROM processing_rule ORDER BY priority, rule_id');
         const rules = result.rows.map(row => ({
             ruleId: row.rule_id,
             fileType: row.file_type,
             ruleType: row.rule_type,
             ruleDescription: row.rule_description,
             active: row.active,
-            description: row.description,
-            journalEntryType: row.journal_entry_type,
-            ruleFor: row.rule_for,
-            actionType: row.action_type,
-            shareRule: row.share_rule,
-            ignoreProcessor: row.ignore_processor,
+            priority: row.priority,
+            conditionLogic: row.condition_logic || 'AND',
             conditions: row.conditions || [],
-            glAccounts: row.gl_accounts || [],
+            actions: row.actions || [],
             createdAt: row.created_at,
             updatedAt: row.updated_at
         }));
@@ -4467,14 +4463,10 @@ app.get('/api/processing-rules/:ruleId', async (req, res) => {
             ruleType: row.rule_type,
             ruleDescription: row.rule_description,
             active: row.active,
-            description: row.description,
-            journalEntryType: row.journal_entry_type,
-            ruleFor: row.rule_for,
-            actionType: row.action_type,
-            shareRule: row.share_rule,
-            ignoreProcessor: row.ignore_processor,
+            priority: row.priority,
+            conditionLogic: row.condition_logic || 'AND',
             conditions: row.conditions || [],
-            glAccounts: row.gl_accounts || [],
+            actions: row.actions || [],
             createdAt: row.created_at,
             updatedAt: row.updated_at
         };
@@ -4498,15 +4490,15 @@ app.post('/api/processing-rules', async (req, res) => {
         const id = require('crypto').randomUUID();
         await pool.query(`
             INSERT INTO processing_rule 
-            (id, rule_id, file_type, rule_type, rule_description, active, description, 
-             journal_entry_type, rule_for, action_type, share_rule, ignore_processor, 
-             conditions, gl_accounts)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+            (id, rule_id, file_type, rule_type, rule_description, active, priority,
+             condition_logic, conditions, actions)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         `, [
             id, rule.ruleId, rule.fileType, rule.ruleType, rule.ruleDescription,
-            rule.active !== false, rule.description, rule.journalEntryType, rule.ruleFor,
-            rule.actionType, rule.shareRule || false, rule.ignoreProcessor || false,
-            JSON.stringify(rule.conditions || []), JSON.stringify(rule.glAccounts || [])
+            rule.active !== false, rule.priority || 10,
+            rule.conditionLogic || 'AND',
+            JSON.stringify(rule.conditions || []),
+            JSON.stringify(rule.actions || [])
         ]);
         
         res.json({ success: true, ruleId: rule.ruleId });
@@ -4528,15 +4520,14 @@ app.put('/api/processing-rules/:ruleId', async (req, res) => {
         await pool.query(`
             UPDATE processing_rule 
             SET file_type = $1, rule_type = $2, rule_description = $3, active = $4,
-                description = $5, journal_entry_type = $6, rule_for = $7, action_type = $8,
-                share_rule = $9, ignore_processor = $10, conditions = $11, gl_accounts = $12,
+                priority = $5, condition_logic = $6, conditions = $7, actions = $8,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE rule_id = $13
+            WHERE rule_id = $9
         `, [
             rule.fileType, rule.ruleType, rule.ruleDescription, rule.active,
-            rule.description, rule.journalEntryType, rule.ruleFor, rule.actionType,
-            rule.shareRule, rule.ignoreProcessor,
-            JSON.stringify(rule.conditions || []), JSON.stringify(rule.glAccounts || []),
+            rule.priority || 10, rule.conditionLogic || 'AND',
+            JSON.stringify(rule.conditions || []),
+            JSON.stringify(rule.actions || []),
             req.params.ruleId
         ]);
         
