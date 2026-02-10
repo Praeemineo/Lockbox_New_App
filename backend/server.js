@@ -4272,6 +4272,297 @@ app.patch('/api/field-mapping/odata-services/:serviceId/toggle', async (req, res
 });
 
 // ============================================================================
+// PROCESSING RULES API ENDPOINTS
+// For managing lockbox processing rules with conditions and G/L account actions
+// ============================================================================
+
+// Initialize default processing rules
+const defaultProcessingRules = [
+    {
+        ruleId: "Rule_001",
+        fileType: "Excel/CSV",
+        ruleType: "Document Type",
+        ruleDescription: "Validate and map document type based on input file data before posting to SAP",
+        active: true,
+        description: "Process New Rule",
+        journalEntryType: "ZV (Payment Clearing)",
+        ruleFor: "Incoming Payment",
+        actionType: "G/L Posting",
+        shareRule: false,
+        ignoreProcessor: false,
+        conditions: [{
+            attribute: "Lockbox Destination",
+            option: "contains",
+            from: "LOCKBOXDES",
+            to: ""
+        }],
+        glAccounts: [{
+            account: "21180000",
+            profitCenter: "YB911",
+            costCenter: "",
+            taxCode: "",
+            segment: "",
+            functionalArea: ""
+        }]
+    },
+    {
+        ruleId: "Rule_002",
+        fileType: "Excel/CSV",
+        ruleType: "Comma Handling",
+        ruleDescription: "Remove comma separators from numeric fields before processing",
+        active: true,
+        description: "Comma Handling Rule",
+        journalEntryType: "ZV (Payment Clearing)",
+        ruleFor: "Incoming Payment",
+        actionType: "G/L Posting",
+        shareRule: false,
+        ignoreProcessor: false,
+        conditions: [],
+        glAccounts: []
+    },
+    {
+        ruleId: "Rule_003",
+        fileType: "Excel/CSV",
+        ruleType: "Hyphen Handling",
+        ruleDescription: "Handle hyphen-separated reference values based on configured pattern",
+        active: true,
+        description: "Hyphen Handling Rule",
+        journalEntryType: "ZV (Payment Clearing)",
+        ruleFor: "Incoming Payment",
+        actionType: "G/L Posting",
+        shareRule: false,
+        ignoreProcessor: false,
+        conditions: [],
+        glAccounts: []
+    },
+    {
+        ruleId: "Rule_004",
+        fileType: "Excel (Multi-Sheet)",
+        ruleType: "Multiple Sheet Processing",
+        ruleDescription: "Process and validate each sheet separately when file contains multiple sheets",
+        active: true,
+        description: "Multi-Sheet Processing Rule",
+        journalEntryType: "ZV (Payment Clearing)",
+        ruleFor: "Incoming Payment",
+        actionType: "G/L Posting",
+        shareRule: false,
+        ignoreProcessor: false,
+        conditions: [],
+        glAccounts: []
+    },
+    {
+        ruleId: "Rule_005",
+        fileType: "Excel/CSV",
+        ruleType: "Positive/Negative Posting",
+        ruleDescription: "Post positive and negative amounts as separate line items during SAP posting",
+        active: true,
+        description: "Positive/Negative Posting Rule",
+        journalEntryType: "ZV (Payment Clearing)",
+        ruleFor: "Incoming Payment",
+        actionType: "G/L Posting",
+        shareRule: false,
+        ignoreProcessor: false,
+        conditions: [],
+        glAccounts: []
+    }
+];
+
+// GET all processing rules
+app.get('/api/processing-rules', async (req, res) => {
+    try {
+        if (!dbAvailable) {
+            return res.json(defaultProcessingRules);
+        }
+        
+        const result = await pool.query('SELECT * FROM processing_rule ORDER BY rule_id');
+        const rules = result.rows.map(row => ({
+            ruleId: row.rule_id,
+            fileType: row.file_type,
+            ruleType: row.rule_type,
+            ruleDescription: row.rule_description,
+            active: row.active,
+            description: row.description,
+            journalEntryType: row.journal_entry_type,
+            ruleFor: row.rule_for,
+            actionType: row.action_type,
+            shareRule: row.share_rule,
+            ignoreProcessor: row.ignore_processor,
+            conditions: row.conditions || [],
+            glAccounts: row.gl_accounts || [],
+            createdAt: row.created_at,
+            updatedAt: row.updated_at
+        }));
+        
+        // If no rules in DB, return defaults
+        if (rules.length === 0) {
+            return res.json(defaultProcessingRules);
+        }
+        
+        res.json(rules);
+    } catch (err) {
+        console.error('Error fetching processing rules:', err);
+        res.status(500).json({ error: 'Failed to fetch processing rules', message: err.message });
+    }
+});
+
+// GET single processing rule
+app.get('/api/processing-rules/:ruleId', async (req, res) => {
+    try {
+        if (!dbAvailable) {
+            const rule = defaultProcessingRules.find(r => r.ruleId === req.params.ruleId);
+            if (!rule) {
+                return res.status(404).json({ error: 'Rule not found' });
+            }
+            return res.json(rule);
+        }
+        
+        const result = await pool.query('SELECT * FROM processing_rule WHERE rule_id = $1', [req.params.ruleId]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Rule not found' });
+        }
+        
+        const row = result.rows[0];
+        const rule = {
+            ruleId: row.rule_id,
+            fileType: row.file_type,
+            ruleType: row.rule_type,
+            ruleDescription: row.rule_description,
+            active: row.active,
+            description: row.description,
+            journalEntryType: row.journal_entry_type,
+            ruleFor: row.rule_for,
+            actionType: row.action_type,
+            shareRule: row.share_rule,
+            ignoreProcessor: row.ignore_processor,
+            conditions: row.conditions || [],
+            glAccounts: row.gl_accounts || [],
+            createdAt: row.created_at,
+            updatedAt: row.updated_at
+        };
+        
+        res.json(rule);
+    } catch (err) {
+        console.error('Error fetching processing rule:', err);
+        res.status(500).json({ error: 'Failed to fetch processing rule', message: err.message });
+    }
+});
+
+// POST create new processing rule
+app.post('/api/processing-rules', async (req, res) => {
+    try {
+        const rule = req.body;
+        
+        if (!dbAvailable) {
+            return res.status(503).json({ error: 'Database not available' });
+        }
+        
+        const id = require('crypto').randomUUID();
+        await pool.query(`
+            INSERT INTO processing_rule 
+            (id, rule_id, file_type, rule_type, rule_description, active, description, 
+             journal_entry_type, rule_for, action_type, share_rule, ignore_processor, 
+             conditions, gl_accounts)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        `, [
+            id, rule.ruleId, rule.fileType, rule.ruleType, rule.ruleDescription,
+            rule.active !== false, rule.description, rule.journalEntryType, rule.ruleFor,
+            rule.actionType, rule.shareRule || false, rule.ignoreProcessor || false,
+            JSON.stringify(rule.conditions || []), JSON.stringify(rule.glAccounts || [])
+        ]);
+        
+        res.json({ success: true, ruleId: rule.ruleId });
+    } catch (err) {
+        console.error('Error creating processing rule:', err);
+        res.status(500).json({ error: 'Failed to create processing rule', message: err.message });
+    }
+});
+
+// PUT update processing rule
+app.put('/api/processing-rules/:ruleId', async (req, res) => {
+    try {
+        const rule = req.body;
+        
+        if (!dbAvailable) {
+            return res.status(503).json({ error: 'Database not available' });
+        }
+        
+        await pool.query(`
+            UPDATE processing_rule 
+            SET file_type = $1, rule_type = $2, rule_description = $3, active = $4,
+                description = $5, journal_entry_type = $6, rule_for = $7, action_type = $8,
+                share_rule = $9, ignore_processor = $10, conditions = $11, gl_accounts = $12,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE rule_id = $13
+        `, [
+            rule.fileType, rule.ruleType, rule.ruleDescription, rule.active,
+            rule.description, rule.journalEntryType, rule.ruleFor, rule.actionType,
+            rule.shareRule, rule.ignoreProcessor,
+            JSON.stringify(rule.conditions || []), JSON.stringify(rule.glAccounts || []),
+            req.params.ruleId
+        ]);
+        
+        res.json({ success: true, ruleId: req.params.ruleId });
+    } catch (err) {
+        console.error('Error updating processing rule:', err);
+        res.status(500).json({ error: 'Failed to update processing rule', message: err.message });
+    }
+});
+
+// DELETE processing rule
+app.delete('/api/processing-rules/:ruleId', async (req, res) => {
+    try {
+        if (!dbAvailable) {
+            return res.status(503).json({ error: 'Database not available' });
+        }
+        
+        await pool.query('DELETE FROM processing_rule WHERE rule_id = $1', [req.params.ruleId]);
+        
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error deleting processing rule:', err);
+        res.status(500).json({ error: 'Failed to delete processing rule', message: err.message });
+    }
+});
+
+// Initialize processing rules in database on startup
+async function initializeProcessingRules() {
+    if (!dbAvailable) {
+        console.log('Database not available, skipping processing rules initialization');
+        return;
+    }
+    
+    try {
+        const result = await pool.query('SELECT COUNT(*) FROM processing_rule');
+        const count = parseInt(result.rows[0].count);
+        
+        if (count === 0) {
+            console.log('Initializing default processing rules...');
+            for (const rule of defaultProcessingRules) {
+                const id = require('crypto').randomUUID();
+                await pool.query(`
+                    INSERT INTO processing_rule 
+                    (id, rule_id, file_type, rule_type, rule_description, active, description, 
+                     journal_entry_type, rule_for, action_type, share_rule, ignore_processor, 
+                     conditions, gl_accounts)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                `, [
+                    id, rule.ruleId, rule.fileType, rule.ruleType, rule.ruleDescription,
+                    rule.active, rule.description, rule.journalEntryType, rule.ruleFor,
+                    rule.actionType, rule.shareRule, rule.ignoreProcessor,
+                    JSON.stringify(rule.conditions), JSON.stringify(rule.glAccounts)
+                ]);
+            }
+            console.log('Processing rules initialized:', defaultProcessingRules.length);
+        }
+    } catch (err) {
+        console.error('Error initializing processing rules:', err.message);
+    }
+}
+
+// Call initialization after database is ready
+setTimeout(() => initializeProcessingRules(), 3000);
+
+// ============================================================================
 // REFERENCE DOCUMENT RULES API ENDPOINTS
 // For determining clearing document number during lockbox processing
 // ============================================================================
