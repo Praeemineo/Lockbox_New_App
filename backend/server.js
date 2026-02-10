@@ -39,6 +39,14 @@ app.use(express.json());
 // Serve static UI files from /app directory
 app.use(express.static(path.join(__dirname, 'app')));
 
+// Explicitly serve webapp files (for BTP compatibility)
+app.use('/webapp', express.static(path.join(__dirname, 'app/webapp')));
+
+// Serve index.html at root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'index.html'));
+});
+
 // Multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
