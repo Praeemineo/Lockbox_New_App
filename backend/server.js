@@ -1300,6 +1300,106 @@ async function getLockboxBatchItemDetails(internalKey, batch, item) {
     return response;
 }
 
+// ============================================================================
+// PRE-CLEARING: Get Belnr (DocumentNumber) from Invoice Number via OData API
+// ============================================================================
+// API: GET /sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT
+// Input: P_DocumentNumber (Invoice Number)
+// Output: DocumentNumber (Belnr - Accounting Document Number)
+async function getDocumentNumberFromInvoice(invoiceNumber) {
+    console.log('=== GET DocumentNumber from Invoice ===');
+    console.log('Invoice Number (P_DocumentNumber):', invoiceNumber);
+    
+    if (!invoiceNumber || invoiceNumber.trim() === '') {
+        console.log('Empty invoice number, skipping API call');
+        return null;
+    }
+    
+    const oDataPath = '/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT';
+    
+    try {
+        const response = await executeHttpRequest(
+            { destinationName: SAP_DESTINATION_NAME },
+            {
+                method: 'GET',
+                url: oDataPath,
+                params: {
+                    'sap-client': SAP_CLIENT,
+                    'P_DocumentNumber': invoiceNumber
+                },
+                headers: {
+                    'Accept': 'application/json'
+                }
+            }
+        );
+        
+        console.log('DocumentNumber API Response Status:', response.status);
+        console.log('DocumentNumber API Response Data:', JSON.stringify(response.data, null, 2));
+        
+        // Extract DocumentNumber from response
+        // OData v4 typically returns data in "value" array
+        const data = response.data?.value?.[0] || response.data?.d?.results?.[0] || response.data?.d || response.data;
+        const documentNumber = data?.DocumentNumber || data?.Belnr || null;
+        
+        console.log('Extracted DocumentNumber (Belnr):', documentNumber);
+        
+        return documentNumber;
+        
+    } catch (error) {
+        console.error('Error fetching DocumentNumber for invoice', invoiceNumber, ':', error.message);
+        return null; // Return null on error, will use PaymentReference as fallback
+    }
+}
+
+// Helper function to enrich PaymentReferences with DocumentNumbers (batch processing)
+// Tries to call API in batch mode first, falls back to individual calls if needed
+async function enrichPaymentReferencesWithBelnr(clearingEntries) {
+    console.log('=== ENRICHING PaymentReferences with Belnr (DocumentNumber) ===');
+    console.log('Total clearing entries to process:', clearingEntries.length);
+    
+    const enrichedEntries = [];
+    
+    // Extract unique invoice numbers
+    const invoiceNumbers = [...new Set(clearingEntries.map(c => c.PaymentReference).filter(ref => ref && ref.trim() !== ''))];
+    console.log('Unique invoice numbers:', invoiceNumbers.length);
+    
+    // Map to store invoice -> documentNumber mapping
+    const invoiceToDocNumberMap = new Map();
+    
+    // Try batch processing first (if SAP API supports it)
+    // For now, we'll process individually as batch support depends on SAP configuration
+    console.log('Processing invoices individually...');
+    
+    for (const invoiceNum of invoiceNumbers) {
+        const documentNumber = await getDocumentNumberFromInvoice(invoiceNum);
+        if (documentNumber) {
+            invoiceToDocNumberMap.set(invoiceNum, documentNumber);
+            console.log(`✓ Invoice ${invoiceNum} -> DocumentNumber ${documentNumber}`);
+        } else {
+            console.log(`✗ Invoice ${invoiceNum} -> No DocumentNumber found (will use PaymentReference as fallback)`);
+            // Keep original PaymentReference as fallback
+            invoiceToDocNumberMap.set(invoiceNum, invoiceNum);
+        }
+    }
+    
+    // Apply the mapping to all clearing entries
+    for (const entry of clearingEntries) {
+        const originalRef = entry.PaymentReference;
+        const derivedBelnr = invoiceToDocNumberMap.get(originalRef);
+        
+        enrichedEntries.push({
+            ...entry,
+            PaymentReference: derivedBelnr || originalRef, // Use derived Belnr or fallback to original
+            OriginalInvoiceNumber: originalRef // Keep original for reference
+        });
+    }
+    
+    console.log('=== ENRICHMENT COMPLETE ===');
+    console.log('Successfully enriched:', enrichedEntries.filter(e => e.PaymentReference !== e.OriginalInvoiceNumber).length, '/', clearingEntries.length);
+    
+    return enrichedEntries;
+}
+
 // Helper function to GET LockboxClearing from SAP using SAP Cloud SDK via BTP Destination
 // API: GET /sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxClearing
 // Required params: PaymentAdvice, PaymentAdviceItem, PaymentAdviceAccount (Customer), PaymentAdviceAccountType (D), CompanyCode
