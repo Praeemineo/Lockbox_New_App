@@ -1,5 +1,7 @@
 ---
-- name: lockbox-ui
-  appName: lockbox
-  appVersion: 1.0.0
-  path: resources/lockbox-ui.zip
+apps:
+  - name: lockbox
+    appVersion: 1.0.0
+    description: SAP Lockbox Application
+    path: lockbox-ui.zip
+
