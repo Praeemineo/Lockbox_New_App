@@ -1356,10 +1356,10 @@ async function getDocumentNumberFromInvoice(invoiceNumber) {
     }
 }
 
-// Helper function to enrich PaymentReferences with DocumentNumbers (batch processing)
+// Helper function to enrich PaymentReferences with DocumentNumbers and CompanyCode (batch processing)
 // Tries to call API in batch mode first, falls back to individual calls if needed
 async function enrichPaymentReferencesWithBelnr(clearingEntries) {
-    console.log('=== ENRICHING PaymentReferences with Belnr (DocumentNumber) ===');
+    console.log('=== ENRICHING PaymentReferences with Belnr (DocumentNumber) and CompanyCode ===');
     console.log('Total clearing entries to process:', clearingEntries.length);
     
     const enrichedEntries = [];
@@ -1368,33 +1368,34 @@ async function enrichPaymentReferencesWithBelnr(clearingEntries) {
     const invoiceNumbers = [...new Set(clearingEntries.map(c => c.PaymentReference).filter(ref => ref && ref.trim() !== ''))];
     console.log('Unique invoice numbers:', invoiceNumbers.length);
     
-    // Map to store invoice -> documentNumber mapping
-    const invoiceToDocNumberMap = new Map();
+    // Map to store invoice -> {documentNumber, companyCode} mapping
+    const invoiceToDataMap = new Map();
     
     // Try batch processing first (if SAP API supports it)
     // For now, we'll process individually as batch support depends on SAP configuration
     console.log('Processing invoices individually...');
     
     for (const invoiceNum of invoiceNumbers) {
-        const documentNumber = await getDocumentNumberFromInvoice(invoiceNum);
-        if (documentNumber) {
-            invoiceToDocNumberMap.set(invoiceNum, documentNumber);
-            console.log(`✓ Invoice ${invoiceNum} -> DocumentNumber ${documentNumber}`);
+        const result = await getDocumentNumberFromInvoice(invoiceNum);
+        if (result && result.documentNumber) {
+            invoiceToDataMap.set(invoiceNum, result);
+            console.log(`✓ Invoice ${invoiceNum} -> DocumentNumber ${result.documentNumber}, CompanyCode ${result.companyCode || 'N/A'}`);
         } else {
             console.log(`✗ Invoice ${invoiceNum} -> No DocumentNumber found (will use PaymentReference as fallback)`);
             // Keep original PaymentReference as fallback
-            invoiceToDocNumberMap.set(invoiceNum, invoiceNum);
+            invoiceToDataMap.set(invoiceNum, { documentNumber: invoiceNum, companyCode: null });
         }
     }
     
     // Apply the mapping to all clearing entries
     for (const entry of clearingEntries) {
         const originalRef = entry.PaymentReference;
-        const derivedBelnr = invoiceToDocNumberMap.get(originalRef);
+        const derivedData = invoiceToDataMap.get(originalRef);
         
         enrichedEntries.push({
             ...entry,
-            PaymentReference: derivedBelnr || originalRef, // Use derived Belnr or fallback to original
+            PaymentReference: derivedData?.documentNumber || originalRef, // Use derived Belnr or fallback to original
+            CompanyCode: derivedData?.companyCode || entry.CompanyCode, // Use derived CompanyCode if available
             OriginalInvoiceNumber: originalRef // Keep original for reference
         });
     }
