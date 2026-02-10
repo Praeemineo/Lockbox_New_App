@@ -101,3 +101,82 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Implement pre-clearing step to call SAP OData API and derive Belnr (Accounting Document Number) from Invoice Number before lockbox clearing/posting process"
+
+backend:
+  - task: "Pre-clearing SAP OData API integration"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Implemented three new functions in server.js:
+          1. getDocumentNumberFromInvoice(invoiceNumber) - Calls SAP OData API at /sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT with P_DocumentNumber parameter, extracts DocumentNumber (Belnr) from response
+          2. enrichPaymentReferencesWithBelnr(clearingEntries) - Processes all clearing entries, calls API for each unique invoice number, creates mapping of invoice->DocumentNumber, returns enriched entries with Belnr replacing PaymentReference
+          3. Modified /api/lockbox/post/:headerId endpoint to add STEP 0 (PRE-CLEARING) before posting to SAP
+          
+          Implementation details:
+          - API is called using BTP Destination (S4HANA_SYSTEM_DESTINATION) with sap-client=100
+          - Processes invoices individually (batch approach ready but not used as SAP config unknown)
+          - Uses PaymentReference as fallback if DocumentNumber not found or API fails
+          - Keeps OriginalInvoiceNumber field for reference
+          - Enriches payload before posting to SAP in STEP 1
+          
+          Needs testing with actual lockbox data to verify:
+          - API connectivity and response format
+          - DocumentNumber extraction logic
+          - Payload enrichment before SAP posting
+          - Fallback behavior when API fails
+
+frontend:
+  - task: "No frontend changes required"
+    implemented: true
+    working: true
+    file: "N/A"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Pre-clearing is a backend-only feature, no UI changes needed"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Pre-clearing SAP OData API integration"
+  stuck_tasks: []
+  test_priority: "high_first"
+  test_approach: |
+    1. Use curl to test the /api/lockbox/post/:headerId endpoint with existing lockbox data
+    2. Check backend logs for STEP 0 execution and DocumentNumber derivation
+    3. Verify API is called with correct parameters (P_DocumentNumber)
+    4. Verify DocumentNumber is extracted and replaces PaymentReference in payload
+    5. Verify fallback to PaymentReference if API fails
+    6. Check if SAP posting succeeds with enriched payload
+
+agent_communication:
+  - agent: "main"
+    message: |
+      I have implemented the pre-clearing SAP OData API call as requested. The implementation adds a new STEP 0 before posting to SAP that:
+      1. Extracts all PaymentReference values (invoice numbers) from the lockbox payload
+      2. Calls the SAP OData API for each unique invoice to get DocumentNumber (Belnr)
+      3. Replaces PaymentReference with DocumentNumber in the payload
+      4. Falls back to original PaymentReference if API fails
+      
+      The code is syntactically correct and the backend server started successfully. However, I cannot fully test this without:
+      - An actual lockbox with data to post
+      - Access to the SAP OData API endpoint
+      
+      Recommendation: Use the testing agent to perform integration testing with real data, or provide test credentials/data for manual testing.
