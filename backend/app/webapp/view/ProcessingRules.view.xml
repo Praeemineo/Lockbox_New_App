@@ -299,7 +299,7 @@
                             <core:Item key="uppercase" text="Convert to Uppercase" />
                             <core:Item key="lowercase" text="Convert to Lowercase" />
                             <core:Item key="trim" text="Trim Whitespace" />
-                            <core:Item key="replace" text="Find & Replace" />
+                            <core:Item key="replace" text="Find &amp; Replace" />
                             <core:Item key="format" text="Format (Date/Number)" />
                             <core:Item key="calculate" text="Calculate" />
                         </Select>
