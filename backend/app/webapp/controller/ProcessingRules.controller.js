@@ -67,15 +67,11 @@ sap.ui.define([
                 ruleType: "Document Type",
                 ruleDescription: "",
                 active: true,
-                description: "",
-                journalEntryType: "ZV (Payment Clearing)",
-                ruleFor: "Incoming Payment",
-                ruleForIndex: 0,
-                actionType: "G/L Posting",
-                shareRule: false,
-                ignoreProcessor: false,
+                priority: 10,
+                conditionLogic: "AND",
                 conditions: [],
-                glAccounts: []
+                actions: [],
+                _isEdit: false
             });
             
             var oDialog = this.byId("processingRuleDialog");
@@ -90,7 +86,7 @@ sap.ui.define([
         },
 
         /**
-         * Edit selected rule or row press
+         * Edit selected rule
          */
         onEditProcessingRule: function () {
             var oModel = this.getOwnerComponent().getModel("app");
@@ -121,17 +117,24 @@ sap.ui.define([
             
             // Clone the rule for editing
             var oEditingRule = JSON.parse(JSON.stringify(oRule));
-            
-            // Set ruleForIndex based on ruleFor value
-            oEditingRule.ruleForIndex = oEditingRule.ruleFor === "Incoming Payment" ? 0 : 1;
+            oEditingRule._isEdit = true;
             
             // Ensure arrays exist
             if (!oEditingRule.conditions) {
                 oEditingRule.conditions = [];
             }
-            if (!oEditingRule.glAccounts) {
-                oEditingRule.glAccounts = [];
+            if (!oEditingRule.actions) {
+                oEditingRule.actions = [];
             }
+            if (!oEditingRule.conditionLogic) {
+                oEditingRule.conditionLogic = "AND";
+            }
+            
+            // Update action config summaries
+            oEditingRule.actions = oEditingRule.actions.map(function (action) {
+                action.configSummary = this._getActionConfigSummary(action);
+                return action;
+            }.bind(this));
             
             oModel.setProperty("/editingProcessingRule", oEditingRule);
             
@@ -139,6 +142,33 @@ sap.ui.define([
             if (oDialog) {
                 oDialog.open();
             }
+        },
+
+        /**
+         * Get action configuration summary
+         */
+        _getActionConfigSummary: function (action) {
+            var summary = "";
+            
+            switch (action.actionType) {
+                case "api_call":
+                case "odata_call":
+                    summary = (action.method || "GET") + " " + (action.endpoint || "Not configured");
+                    break;
+                case "transformation":
+                    summary = (action.transformType || "Not configured") + ": " + (action.sourceFields || "");
+                    break;
+                case "validation":
+                    summary = (action.validationType || "Not configured") + " on " + (action.validationField || "");
+                    break;
+                case "post_gl":
+                    summary = "G/L: " + (action.glAccount || "Not configured");
+                    break;
+                default:
+                    summary = "Configure action...";
+            }
+            
+            return summary;
         },
 
         /**
@@ -247,6 +277,10 @@ sap.ui.define([
             });
         },
 
+        // ========================================================================
+        // CONDITION HANDLERS
+        // ========================================================================
+
         /**
          * Add condition
          */
@@ -255,10 +289,10 @@ sap.ui.define([
             var aConditions = oModel.getProperty("/editingProcessingRule/conditions") || [];
             
             aConditions.push({
-                attribute: "",
-                option: "equals",
-                from: "",
-                to: ""
+                attribute: "Lockbox",
+                operator: "equals",
+                value: "",
+                value2: ""
             });
             
             oModel.setProperty("/editingProcessingRule/conditions", aConditions);
@@ -279,39 +313,164 @@ sap.ui.define([
             oModel.setProperty("/editingProcessingRule/conditions", aConditions);
         },
 
+        // ========================================================================
+        // ACTION HANDLERS
+        // ========================================================================
+
         /**
-         * Add G/L Account
+         * Add action
          */
-        onAddGLAccount: function () {
+        onAddAction: function () {
             var oModel = this.getOwnerComponent().getModel("app");
-            var aGLAccounts = oModel.getProperty("/editingProcessingRule/glAccounts") || [];
+            var aActions = oModel.getProperty("/editingProcessingRule/actions") || [];
             
-            aGLAccounts.push({
-                account: "",
-                profitCenter: "",
-                costCenter: "",
-                taxCode: "",
-                segment: "",
-                functionalArea: ""
+            aActions.push({
+                actionType: "api_call",
+                target: "",
+                configSummary: "Not configured",
+                config: {}
             });
             
-            oModel.setProperty("/editingProcessingRule/glAccounts", aGLAccounts);
+            oModel.setProperty("/editingProcessingRule/actions", aActions);
         },
 
         /**
-         * Delete G/L Account
+         * Delete action
          */
-        onDeleteGLAccount: function (oEvent) {
+        onDeleteAction: function (oEvent) {
             var oModel = this.getOwnerComponent().getModel("app");
             var oItem = oEvent.getParameter("listItem");
             var oContext = oItem.getBindingContext("app");
             var sPath = oContext.getPath();
             var iIndex = parseInt(sPath.substring(sPath.lastIndexOf("/") + 1));
             
-            var aGLAccounts = oModel.getProperty("/editingProcessingRule/glAccounts");
-            aGLAccounts.splice(iIndex, 1);
-            oModel.setProperty("/editingProcessingRule/glAccounts", aGLAccounts);
+            var aActions = oModel.getProperty("/editingProcessingRule/actions");
+            aActions.splice(iIndex, 1);
+            oModel.setProperty("/editingProcessingRule/actions", aActions);
         },
+
+        /**
+         * Action type changed
+         */
+        onActionTypeChange: function (oEvent) {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oContext = oEvent.getSource().getBindingContext("app");
+            var oAction = oContext.getObject();
+            
+            // Update config summary
+            oAction.configSummary = "Configure " + oAction.actionType + "...";
+            oModel.updateBindings(true);
+        },
+
+        /**
+         * Configure action - open configuration dialog
+         */
+        onConfigureAction: function (oEvent) {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oItem = oEvent.getSource().getParent();
+            var oContext = oItem.getBindingContext("app");
+            var oAction = oContext.getObject();
+            var sPath = oContext.getPath();
+            var iIndex = parseInt(sPath.substring(sPath.lastIndexOf("/") + 1));
+            
+            // Clone action for editing
+            var oEditingAction = JSON.parse(JSON.stringify(oAction));
+            oEditingAction._index = iIndex;
+            
+            // Flatten config into editing action
+            if (oAction.config) {
+                Object.assign(oEditingAction, oAction.config);
+            }
+            
+            // Convert JSON objects to strings for text areas
+            if (oEditingAction.headers && typeof oEditingAction.headers === "object") {
+                oEditingAction.headers = JSON.stringify(oEditingAction.headers, null, 2);
+            }
+            if (oEditingAction.params && typeof oEditingAction.params === "object") {
+                oEditingAction.params = JSON.stringify(oEditingAction.params, null, 2);
+            }
+            if (oEditingAction.bodyTemplate && typeof oEditingAction.bodyTemplate === "object") {
+                oEditingAction.bodyTemplate = JSON.stringify(oEditingAction.bodyTemplate, null, 2);
+            }
+            if (oEditingAction.transformConfig && typeof oEditingAction.transformConfig === "object") {
+                oEditingAction.transformConfig = JSON.stringify(oEditingAction.transformConfig, null, 2);
+            }
+            if (oEditingAction.additionalFields && typeof oEditingAction.additionalFields === "object") {
+                oEditingAction.additionalFields = JSON.stringify(oEditingAction.additionalFields, null, 2);
+            }
+            
+            oModel.setProperty("/editingAction", oEditingAction);
+            
+            var oDialog = this.byId("actionConfigDialog");
+            if (oDialog) {
+                oDialog.open();
+            }
+        },
+
+        /**
+         * Save action configuration
+         */
+        onSaveActionConfig: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oEditingAction = oModel.getProperty("/editingAction");
+            var iIndex = oEditingAction._index;
+            
+            // Parse JSON strings back to objects
+            var config = {};
+            
+            try {
+                if (oEditingAction.headers) {
+                    config.headers = JSON.parse(oEditingAction.headers);
+                }
+                if (oEditingAction.params) {
+                    config.params = JSON.parse(oEditingAction.params);
+                }
+                if (oEditingAction.bodyTemplate) {
+                    config.bodyTemplate = JSON.parse(oEditingAction.bodyTemplate);
+                }
+                if (oEditingAction.transformConfig) {
+                    config.transformConfig = JSON.parse(oEditingAction.transformConfig);
+                }
+                if (oEditingAction.additionalFields) {
+                    config.additionalFields = JSON.parse(oEditingAction.additionalFields);
+                }
+            } catch (e) {
+                MessageBox.error("Invalid JSON in configuration fields: " + e.message);
+                return;
+            }
+            
+            // Copy all fields from editing action to config
+            Object.keys(oEditingAction).forEach(function (key) {
+                if (key !== "_index" && key !== "actionType" && key !== "target" && key !== "configSummary") {
+                    config[key] = oEditingAction[key];
+                }
+            });
+            
+            // Update the action in the actions array
+            var aActions = oModel.getProperty("/editingProcessingRule/actions");
+            aActions[iIndex].config = config;
+            aActions[iIndex].target = oEditingAction.target || oEditingAction.endpoint;
+            aActions[iIndex].configSummary = this._getActionConfigSummary(aActions[iIndex]);
+            
+            oModel.setProperty("/editingProcessingRule/actions", aActions);
+            
+            this.onCloseActionConfigDialog();
+            MessageToast.show("Action configuration saved");
+        },
+
+        /**
+         * Close action config dialog
+         */
+        onCloseActionConfigDialog: function () {
+            var oDialog = this.byId("actionConfigDialog");
+            if (oDialog) {
+                oDialog.close();
+            }
+        },
+
+        // ========================================================================
+        // SAVE RULE
+        // ========================================================================
 
         /**
          * Save rule
@@ -320,11 +479,6 @@ sap.ui.define([
             var that = this;
             var oModel = this.getOwnerComponent().getModel("app");
             var oEditingRule = oModel.getProperty("/editingProcessingRule");
-            
-            // Update ruleFor based on ruleForIndex
-            if (oEditingRule.ruleForIndex !== undefined) {
-                oEditingRule.ruleFor = oEditingRule.ruleForIndex === 0 ? "Incoming Payment" : "Outgoing Payment";
-            }
             
             // Validate required fields
             if (!oEditingRule.ruleId || !oEditingRule.ruleDescription) {
@@ -340,6 +494,9 @@ sap.ui.define([
             
             var sMethod = bExists ? "PUT" : "POST";
             var sUrl = bExists ? "/api/processing-rules/" + oEditingRule.ruleId : "/api/processing-rules";
+            
+            // Clean up temporary fields
+            delete oEditingRule._isEdit;
             
             fetch(sUrl, {
                 method: sMethod,
