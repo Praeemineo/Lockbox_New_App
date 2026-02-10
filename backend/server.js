@@ -362,14 +362,10 @@ async function initTables() {
                 rule_type VARCHAR(50) NOT NULL,
                 rule_description TEXT NOT NULL,
                 active BOOLEAN DEFAULT true,
-                description TEXT,
-                journal_entry_type VARCHAR(50),
-                rule_for VARCHAR(50),
-                action_type VARCHAR(50),
-                share_rule BOOLEAN DEFAULT false,
-                ignore_processor BOOLEAN DEFAULT false,
+                priority INTEGER DEFAULT 10,
+                condition_logic VARCHAR(10) DEFAULT 'AND',
                 conditions JSONB,
-                gl_accounts JSONB,
+                actions JSONB,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
