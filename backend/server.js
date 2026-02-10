@@ -1946,7 +1946,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                         internalKey: internalKey,
                         batch: batch,
                         paymentAdvice: paymentAdviceFromPost,
-                        companyCode: DEFAULT_COMPANY_CODE
+                        companyCode: RUNTIME_COMPANY_CODE
                     });
                     
                     console.log('Raw clearing response:', JSON.stringify(clearingResponse.data, null, 2));
