@@ -7,14 +7,50 @@ parameters:
   deploy_mode: html5-repo
 
 modules:
+  # ============================================================
+  # FRONTEND UI5 MODULE - For HTML5 Repository
+  # ============================================================
+  - name: lockbox-ui
+    type: html5
+    path: backend/app
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npx ui5 build --clean-dest --dest dist
+      supported-platforms: []
+    requires:
+      - name: lockbox-html5-repo-runtime
+
+  # ============================================================
+  # UI DEPLOYER MODULE - Deploys UI to HTML5 Repository
+  # ============================================================
+  - name: lockbox-ui-deployer
+    type: com.sap.application.content
+    path: deployer
+    requires:
+      - name: lockbox-html5-repo-host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: resources
+      requires:
+        - artifacts:
+            - lockbox-ui.zip
+          name: lockbox-ui
+          target-path: resources/
+
+  # ============================================================
   # Backend Service Module
+  # ============================================================
   - name: lockbox-srv
     type: nodejs
     path: backend
     parameters:
       buildpack: nodejs_buildpack
-      memory: 256M
-      disk-quota: 512M
+      memory: 512M
+      disk-quota: 1024M
       health-check-type: http
       health-check-http-endpoint: /api/health
     properties:
@@ -34,6 +70,7 @@ modules:
       - name: lockbox-destination
       - name: lockbox-xsuaa
       - name: lockbox-connectivity
+      - name: lockbox-html5-repo-runtime
     provides:
       - name: lockbox-srv-api
         properties:
@@ -44,23 +81,32 @@ modules:
         - node_modules/
         - "*.py"
         - "__pycache__/"
+        - app/dist/
+        - app/webapp/
 
-  # Frontend Approuter Module (Optional - for authentication)
-  # Uncomment if you need authentication proxy
-  # - name: lockbox-approuter
-  #   type: approuter.nodejs
-  #   path: approuter
-  #   parameters:
-  #     memory: 256M
-  #     disk-quota: 512M
-  #   requires:
-  #     - name: lockbox-xsuaa
-  #     - name: lockbox-srv-api
-  #       group: destinations
-  #       properties:
-  #         name: backend
-  #         url: ~{srv-url}
-  #         forwardAuthToken: true
+  # ============================================================
+  # Frontend Approuter Module
+  # ============================================================
+  - name: lockbox-approuter
+    type: approuter.nodejs
+    path: approuter
+    parameters:
+      memory: 256M
+      disk-quota: 512M
+      keep-existing-routes: true
+    properties:
+      TENANT_HOST_PATTERN: "^(.*)-${default-uri}"
+    requires:
+      - name: lockbox-xsuaa
+      - name: lockbox-destination
+      - name: lockbox-html5-repo-runtime
+      - name: lockbox-srv-api
+        group: destinations
+        properties:
+          name: backend
+          url: ~{srv-url}
+          forwardAuthToken: true
+          timeout: 600000
 
 resources:
   # PostgreSQL Database Service (Using existing service)
