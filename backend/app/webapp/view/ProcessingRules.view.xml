@@ -60,77 +60,63 @@
     <Dialog 
         id="processingRuleDialog" 
         title="{= ${app>/editingProcessingRule/ruleId} ? ('Rule: ' + ${app>/editingProcessingRule/ruleId}) : 'Create New Processing Rule'}" 
-        contentWidth="950px"
-        contentHeight="650px"
-        resizable="true"
-        draggable="true">
+        contentWidth="900px"
+        contentHeight="600px">
         <content>
             <IconTabBar id="ruleTabBar" class="sapUiResponsiveContentPadding">
+                <!-- Tab 1: Processing Rule -->
                 <items>
-                    <!-- Tab 1: Processing Rule -->
-                    <IconTabFilter text="Processing Rule" key="processingRule" icon="sap-icon://settings">
+                    <IconTabFilter text="Processing Rule" key="processingRule">
                         <l:Grid defaultSpan="L6 M6 S12" width="auto" class="sapUiSmallMargin">
                             <l:content>
                                 <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Rule ID" required="true" />
-                                    <Input value="{app>/editingProcessingRule/ruleId}" placeholder="e.g., Rule_006" enabled="{= !${app>/editingProcessingRule/_isEdit}}" />
+                                    <Label text="Description" required="true" />
+                                    <Input value="{app>/editingProcessingRule/description}" placeholder="Process New Rule" />
                                 </VBox>
                                 <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="File Type" required="true" />
-                                    <Select selectedKey="{app>/editingProcessingRule/fileType}">
-                                        <core:Item key="Excel/CSV" text="Excel/CSV" />
-                                        <core:Item key="Excel" text="Excel" />
-                                        <core:Item key="CSV" text="CSV" />
-                                        <core:Item key="PDF" text="PDF" />
-                                        <core:Item key="BAI2" text="BAI2" />
-                                        <core:Item key="XML" text="XML" />
-                                        <core:Item key="All" text="All File Types" />
+                                    <Label text="Journal Entry Type" />
+                                    <Input value="{app>/editingProcessingRule/journalEntryType}" placeholder="ZV (Payment Clearing)" />
+                                </VBox>
+                                <VBox class="sapUiSmallMarginBottom">
+                                    <Label text="Rule For" required="true" />
+                                    <RadioButtonGroup selectedIndex="{app>/editingProcessingRule/ruleForIndex}">
+                                        <RadioButton text="Incoming Payment" />
+                                        <RadioButton text="Outgoing Payment" />
+                                    </RadioButtonGroup>
+                                </VBox>
+                                <VBox class="sapUiSmallMarginBottom">
+                                    <Label text="Action Type" />
+                                    <Select selectedKey="{app>/editingProcessingRule/actionType}">
+                                        <core:Item key="G/L Posting" text="G/L Posting" />
+                                        <core:Item key="Customer Posting" text="Customer Posting" />
+                                        <core:Item key="Vendor Posting" text="Vendor Posting" />
                                     </Select>
                                 </VBox>
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Rule Type" required="true" />
-                                    <Select selectedKey="{app>/editingProcessingRule/ruleType}">
-                                        <core:Item key="Document Type" text="Document Type" />
-                                        <core:Item key="Comma Handling" text="Comma Handling" />
-                                        <core:Item key="Hyphen Handling" text="Hyphen Handling" />
-                                        <core:Item key="Multiple Sheet Processing" text="Multiple Sheet Processing" />
-                                        <core:Item key="Positive/Negative Posting" text="Positive/Negative Posting" />
-                                        <core:Item key="Split" text="Split" />
-                                        <core:Item key="Expand" text="Expand" />
-                                        <core:Item key="Transform" text="Transform" />
-                                        <core:Item key="Validate" text="Validate" />
-                                        <core:Item key="Enrich" text="Enrich" />
-                                        <core:Item key="Custom" text="Custom" />
-                                    </Select>
-                                </VBox>
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Rule Description" required="true" />
-                                    <TextArea value="{app>/editingProcessingRule/ruleDescription}" rows="3" placeholder="Describe what this rule does..." />
-                                </VBox>
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Priority (Lower = Higher Priority)" />
-                                    <Input value="{app>/editingProcessingRule/priority}" type="Number" placeholder="10" />
-                                </VBox>
-                                <VBox>
-                                    <CheckBox text="Active" selected="{app>/editingProcessingRule/active}" />
-                                </VBox>
+                                <HBox class="sapUiSmallMarginBottom">
+                                    <VBox class="sapUiSmallMarginEnd">
+                                        <Label text="Share Rule" />
+                                        <Switch state="{app>/editingProcessingRule/shareRule}" customTextOn="YES" customTextOff="NO" />
+                                    </VBox>
+                                    <VBox>
+                                        <Label text="Ignore Processor" />
+                                        <Switch state="{app>/editingProcessingRule/ignoreProcessor}" customTextOn="YES" customTextOff="NO" />
+                                    </VBox>
+                                </HBox>
                             </l:content>
                         </l:Grid>
                     </IconTabFilter>
                     
-                    <!-- Tab 2: Conditions -->
-                    <IconTabFilter text="Conditions" key="conditions" icon="sap-icon://filter">
+                    <!-- Tab 2: Condition -->
+                    <IconTabFilter text="Condition" key="condition">
                         <VBox class="sapUiSmallMargin">
                             <HBox justifyContent="SpaceBetween" class="sapUiSmallMarginBottom">
-                                <VBox>
-                                    <Title text="Conditions" level="H5" />
-                                    <Text text="Define when this rule should be executed" class="sapUiTinyMarginTop" />
-                                </VBox>
+                                <Title text="Condition (1)" level="H5" />
                                 <HBox>
-                                    <Select selectedKey="{app>/editingProcessingRule/conditionLogic}" class="sapUiSmallMarginEnd">
-                                        <core:Item key="AND" text="ALL conditions must match (AND)" />
-                                        <core:Item key="OR" text="ANY condition must match (OR)" />
+                                    <Select selectedKey="Standard" class="sapUiSmallMarginEnd">
+                                        <core:Item key="Standard" text="Standard" />
+                                        <core:Item key="Expert" text="Expert" />
                                     </Select>
+                                    <SearchField placeholder="Search" width="200px" />
                                 </HBox>
                             </HBox>
                             <Table
@@ -141,43 +127,27 @@
                                 <headerToolbar>
                                     <OverflowToolbar>
                                         <ToolbarSpacer />
-                                        <Button text="Add Condition" icon="sap-icon://add" type="Emphasized" press="onAddCondition" />
+                                        <Button text="Add Condition" icon="sap-icon://add" press="onAddCondition" />
                                     </OverflowToolbar>
                                 </headerToolbar>
                                 <columns>
-                                    <Column width="30%"><Text text="Field/Attribute" /></Column>
-                                    <Column width="20%"><Text text="Operator" /></Column>
-                                    <Column width="25%"><Text text="Value" /></Column>
-                                    <Column width="25%"><Text text="Value 2 (for BETWEEN)" /></Column>
+                                    <Column width="25%"><Text text="Attribute" /></Column>
+                                    <Column width="20%"><Text text="Option" /></Column>
+                                    <Column width="25%"><Text text="From" /></Column>
+                                    <Column width="25%"><Text text="To" /></Column>
                                 </columns>
                                 <items>
                                     <ColumnListItem>
                                         <cells>
-                                            <Select selectedKey="{app>attribute}">
-                                                <core:Item key="Lockbox" text="Lockbox" />
-                                                <core:Item key="LockboxDestination" text="Lockbox Destination" />
-                                                <core:Item key="LockboxOrigin" text="Lockbox Origin" />
-                                                <core:Item key="FileType" text="File Type" />
-                                                <core:Item key="FileName" text="File Name" />
-                                                <core:Item key="Amount" text="Amount" />
-                                                <core:Item key="Currency" text="Currency" />
-                                                <core:Item key="CompanyCode" text="Company Code" />
-                                                <core:Item key="CustomField" text="Custom Field" />
+                                            <Input value="{app>attribute}" placeholder="Lockbox Destination" />
+                                            <Select selectedKey="{app>option}">
+                                                <core:Item key="equals" text="equals" />
+                                                <core:Item key="contains" text="contains" />
+                                                <core:Item key="startsWith" text="starts with" />
+                                                <core:Item key="endsWith" text="ends with" />
                                             </Select>
-                                            <Select selectedKey="{app>operator}">
-                                                <core:Item key="equals" text="Equals" />
-                                                <core:Item key="notEquals" text="Not Equals" />
-                                                <core:Item key="contains" text="Contains" />
-                                                <core:Item key="startsWith" text="Starts With" />
-                                                <core:Item key="endsWith" text="Ends With" />
-                                                <core:Item key="greaterThan" text="Greater Than" />
-                                                <core:Item key="lessThan" text="Less Than" />
-                                                <core:Item key="between" text="Between" />
-                                                <core:Item key="isEmpty" text="Is Empty" />
-                                                <core:Item key="isNotEmpty" text="Is Not Empty" />
-                                            </Select>
-                                            <Input value="{app>value}" placeholder="Enter value..." />
-                                            <Input value="{app>value2}" placeholder="For BETWEEN operator" enabled="{= ${app>operator} === 'between'}" />
+                                            <Input value="{app>from}" placeholder="LOCKBOXDES" />
+                                            <Input value="{app>to}" placeholder="" />
                                         </cells>
                                     </ColumnListItem>
                                 </items>
@@ -185,51 +155,44 @@
                         </VBox>
                     </IconTabFilter>
                     
-                    <!-- Tab 3: Actions -->
-                    <IconTabFilter text="Actions" key="actions" icon="sap-icon://action">
+                    <!-- Tab 3: Post to G/L Account -->
+                    <IconTabFilter text="Post to G/L Account" key="glAccount">
                         <VBox class="sapUiSmallMargin">
                             <HBox justifyContent="SpaceBetween" class="sapUiSmallMarginBottom">
-                                <VBox>
-                                    <Title text="Actions" level="H5" />
-                                    <Text text="Define what should happen when conditions are met" class="sapUiTinyMarginTop" />
-                                </VBox>
+                                <Title text="Post to G/L Account (1)" level="H5" />
+                                <Select selectedKey="Standard">
+                                    <core:Item key="Standard" text="Standard" />
+                                    <core:Item key="Expert" text="Expert" />
+                                </Select>
                             </HBox>
-                            
                             <Table
-                                id="actionsTable"
-                                items="{app>/editingProcessingRule/actions}"
+                                id="glAccountsTable"
+                                items="{app>/editingProcessingRule/glAccounts}"
                                 mode="Delete"
-                                delete="onDeleteAction">
+                                delete="onDeleteGLAccount">
                                 <headerToolbar>
                                     <OverflowToolbar>
                                         <ToolbarSpacer />
-                                        <Button text="Add Action" icon="sap-icon://add" type="Emphasized" press="onAddAction" />
+                                        <Button text="Add G/L Account" icon="sap-icon://add" press="onAddGLAccount" />
                                     </OverflowToolbar>
                                 </headerToolbar>
                                 <columns>
-                                    <Column width="20%"><Text text="Action Type" /></Column>
-                                    <Column width="25%"><Text text="Target" /></Column>
-                                    <Column><Text text="Configuration" /></Column>
-                                    <Column width="80px" hAlign="Center"><Text text="Configure" /></Column>
+                                    <Column><Text text="Account" /></Column>
+                                    <Column><Text text="Profit Center" /></Column>
+                                    <Column><Text text="Cost Center" /></Column>
+                                    <Column><Text text="Tax Code" /></Column>
+                                    <Column><Text text="Segment" /></Column>
+                                    <Column><Text text="Functional Area" /></Column>
                                 </columns>
                                 <items>
                                     <ColumnListItem>
                                         <cells>
-                                            <Select selectedKey="{app>actionType}" change="onActionTypeChange">
-                                                <core:Item key="api_call" text="API Call" />
-                                                <core:Item key="odata_call" text="OData Call" />
-                                                <core:Item key="transformation" text="Transform Data" />
-                                                <core:Item key="validation" text="Validate Data" />
-                                                <core:Item key="enrichment" text="Enrich Data" />
-                                                <core:Item key="post_gl" text="Post to G/L" />
-                                                <core:Item key="clear_invoice" text="Clear Invoice" />
-                                                <core:Item key="custom" text="Custom Logic" />
-                                            </Select>
-                                            <Input value="{app>target}" placeholder="API endpoint or OData service..." />
-                                            <VBox>
-                                                <Text text="{app>configSummary}" wrapping="false" />
-                                            </VBox>
-                                            <Button icon="sap-icon://action-settings" type="Transparent" press="onConfigureAction" tooltip="Configure Action" />
+                                            <Input value="{app>account}" placeholder="21180000" />
+                                            <Input value="{app>profitCenter}" placeholder="YB911" />
+                                            <Input value="{app>costCenter}" placeholder="" />
+                                            <Input value="{app>taxCode}" placeholder="" />
+                                            <Input value="{app>segment}" placeholder="" />
+                                            <Input value="{app>functionalArea}" placeholder="" />
                                         </cells>
                                     </ColumnListItem>
                                 </items>
@@ -244,132 +207,6 @@
         </beginButton>
         <endButton>
             <Button text="Cancel" press="onCloseProcessingRuleDialog" />
-        </endButton>
-    </Dialog>
-    
-    <!-- Action Configuration Dialog -->
-    <Dialog 
-        id="actionConfigDialog" 
-        title="Configure Action: {app>/editingAction/actionType}" 
-        contentWidth="700px"
-        contentHeight="500px">
-        <content>
-            <VBox class="sapUiSmallMargin">
-                <!-- API Call Configuration -->
-                <VBox visible="{= ${app>/editingAction/actionType} === 'api_call' || ${app>/editingAction/actionType} === 'odata_call'}">
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="HTTP Method" />
-                        <Select selectedKey="{app>/editingAction/method}">
-                            <core:Item key="GET" text="GET" />
-                            <core:Item key="POST" text="POST" />
-                            <core:Item key="PUT" text="PUT" />
-                            <core:Item key="PATCH" text="PATCH" />
-                            <core:Item key="DELETE" text="DELETE" />
-                        </Select>
-                    </VBox>
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Endpoint/URL" required="true" />
-                        <Input value="{app>/editingAction/endpoint}" placeholder="/sap/opu/odata4/sap/service/0001/Entity" />
-                    </VBox>
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Headers (JSON)" />
-                        <TextArea value="{app>/editingAction/headers}" rows="3" placeholder='{"Content-Type": "application/json"}' />
-                    </VBox>
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Query Parameters (JSON)" />
-                        <TextArea value="{app>/editingAction/params}" rows="3" placeholder='{"sap-client": "100", "$filter": "..."}' />
-                    </VBox>
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Request Body Template (JSON)" />
-                        <TextArea value="{app>/editingAction/bodyTemplate}" rows="4" placeholder='{"field": "{{variable}}"}' />
-                    </VBox>
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Response Mapping (Extract field from response)" />
-                        <Input value="{app>/editingAction/responseMapping}" placeholder="data.result.DocumentNumber" />
-                    </VBox>
-                </VBox>
-                
-                <!-- Transformation Configuration -->
-                <VBox visible="{= ${app>/editingAction/actionType} === 'transformation'}">
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Transformation Type" />
-                        <Select selectedKey="{app>/editingAction/transformType}">
-                            <core:Item key="split" text="Split Field" />
-                            <core:Item key="concat" text="Concatenate Fields" />
-                            <core:Item key="uppercase" text="Convert to Uppercase" />
-                            <core:Item key="lowercase" text="Convert to Lowercase" />
-                            <core:Item key="trim" text="Trim Whitespace" />
-                            <core:Item key="replace" text="Find &amp; Replace" />
-                            <core:Item key="format" text="Format (Date/Number)" />
-                            <core:Item key="calculate" text="Calculate" />
-                        </Select>
-                    </VBox>
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Source Field(s)" />
-                        <Input value="{app>/editingAction/sourceFields}" placeholder="PaymentReference" />
-                    </VBox>
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Target Field" />
-                        <Input value="{app>/editingAction/targetField}" placeholder="ProcessedReference" />
-                    </VBox>
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Configuration (JSON)" />
-                        <TextArea value="{app>/editingAction/transformConfig}" rows="4" placeholder='{"delimiter": ",", "pattern": "..."}' />
-                    </VBox>
-                </VBox>
-                
-                <!-- Validation Configuration -->
-                <VBox visible="{= ${app>/editingAction/actionType} === 'validation'}">
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Validation Type" />
-                        <Select selectedKey="{app>/editingAction/validationType}">
-                            <core:Item key="required" text="Required Field" />
-                            <core:Item key="format" text="Format Check" />
-                            <core:Item key="range" text="Range Check" />
-                            <core:Item key="regex" text="Regular Expression" />
-                            <core:Item key="custom" text="Custom Validation" />
-                        </Select>
-                    </VBox>
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Field to Validate" />
-                        <Input value="{app>/editingAction/validationField}" placeholder="Amount" />
-                    </VBox>
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Validation Rule" />
-                        <TextArea value="{app>/editingAction/validationRule}" rows="3" placeholder='Example: {"min": 0, "max": 999999}' />
-                    </VBox>
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Error Message" />
-                        <Input value="{app>/editingAction/errorMessage}" placeholder="Validation failed" />
-                    </VBox>
-                </VBox>
-                
-                <!-- G/L Posting Configuration -->
-                <VBox visible="{= ${app>/editingAction/actionType} === 'post_gl'}">
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="G/L Account" required="true" />
-                        <Input value="{app>/editingAction/glAccount}" placeholder="21180000" />
-                    </VBox>
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Profit Center" />
-                        <Input value="{app>/editingAction/profitCenter}" placeholder="YB911" />
-                    </VBox>
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Cost Center" />
-                        <Input value="{app>/editingAction/costCenter}" placeholder="" />
-                    </VBox>
-                    <VBox class="sapUiSmallMarginBottom">
-                        <Label text="Additional Fields (JSON)" />
-                        <TextArea value="{app>/editingAction/additionalFields}" rows="3" placeholder='{"TaxCode": "", "Segment": ""}' />
-                    </VBox>
-                </VBox>
-            </VBox>
-        </content>
-        <beginButton>
-            <Button text="Save" type="Emphasized" press="onSaveActionConfig" />
-        </beginButton>
-        <endButton>
-            <Button text="Cancel" press="onCloseActionConfigDialog" />
         </endButton>
     </Dialog>
 </mvc:View>
