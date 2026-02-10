@@ -18,86 +18,30 @@ sap.ui.define([
                 return;
             }
             
-            // Initialize processing rules data if not exists
-            if (!oModel.getProperty("/processingRules")) {
-                this._initializeRulesData(oModel);
-            }
-            
-            // Initialize filters
-            this._initializeFilters(oModel);
+            // Load processing rules from backend
+            this.loadProcessingRules();
         },
 
         /**
-         * Initialize sample processing rules data
+         * Load processing rules from backend
          */
-        _initializeRulesData: function (oModel) {
-            var aRules = [
-                {
-                    ruleId: "LB-RULE-001",
-                    fileType: "Excel",
-                    ruleType: "Split",
-                    description: "Split invoice numbers separated by commas into individual payment references",
-                    active: true
-                },
-                {
-                    ruleId: "LB-RULE-002",
-                    fileType: "Excel",
-                    ruleType: "Expand",
-                    description: "Expand invoice number ranges (e.g., 95015001 to 010) into individual invoices",
-                    active: true
-                },
-                {
-                    ruleId: "LB-RULE-003",
-                    fileType: "All",
-                    ruleType: "Validate",
-                    description: "Validate that invoice amounts are numeric and within acceptable range",
-                    active: true
-                },
-                {
-                    ruleId: "LB-RULE-004",
-                    fileType: "CSV",
-                    ruleType: "Transform",
-                    description: "Convert various date formats to ISO 8601 standard (YYYY-MM-DD)",
-                    active: true
-                },
-                {
-                    ruleId: "LB-RULE-005",
-                    fileType: "Excel",
-                    ruleType: "Transform",
-                    description: "Pad cheque numbers with leading zeros to ensure 10-digit format",
-                    active: false
-                },
-                {
-                    ruleId: "LB-RULE-006",
-                    fileType: "BAI2",
-                    ruleType: "Parse",
-                    description: "Parse BAI2 format files and extract transaction details",
-                    active: true
-                },
-                {
-                    ruleId: "LB-RULE-007",
-                    fileType: "PDF",
-                    ruleType: "Extract",
-                    description: "Extract payment information from PDF documents using OCR",
-                    active: false
-                }
-            ];
+        loadProcessingRules: function () {
+            var that = this;
+            var oModel = this.getOwnerComponent().getModel("app");
             
-            oModel.setProperty("/processingRules", aRules);
-            oModel.setProperty("/selectedProcessingRule", null);
-        },
-
-        /**
-         * Initialize filter data
-         */
-        _initializeFilters: function (oModel) {
-            if (!oModel.getProperty("/processingRuleFilters")) {
-                oModel.setProperty("/processingRuleFilters", {
-                    fileType: "",
-                    ruleType: "",
-                    active: ""
+            fetch("/api/processing-rules")
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    oModel.setProperty("/processingRules", data);
+                    oModel.setProperty("/selectedProcessingRule", null);
+                    console.log("Loaded", data.length, "processing rules");
+                })
+                .catch(function (error) {
+                    console.error("Error loading processing rules:", error);
+                    MessageBox.error("Failed to load processing rules");
                 });
-            }
         },
 
         /**
@@ -113,90 +57,88 @@ sap.ui.define([
         },
 
         /**
-         * Filter Go button
-         */
-        onProcessingRuleFilterGo: function () {
-            MessageToast.show("Filters applied");
-            // In production: apply filters to table binding
-        },
-
-        /**
-         * Clear filters
-         */
-        onClearProcessingRuleFilters: function () {
-            var oModel = this.getOwnerComponent().getModel("app");
-            oModel.setProperty("/processingRuleFilters", {
-                fileType: "",
-                ruleType: "",
-                active: ""
-            });
-            this.byId("filterRuleId").setValue("");
-            MessageToast.show("Filters cleared");
-        },
-
-        /**
          * Create new rule
          */
         onCreateProcessingRule: function () {
             var oModel = this.getOwnerComponent().getModel("app");
             oModel.setProperty("/editingProcessingRule", {
                 ruleId: "",
-                fileType: "Excel",
-                ruleType: "Transform",
+                fileType: "Excel/CSV",
+                ruleType: "Document Type",
+                ruleDescription: "",
+                active: true,
                 description: "",
-                active: true
+                journalEntryType: "ZV (Payment Clearing)",
+                ruleFor: "Incoming Payment",
+                ruleForIndex: 0,
+                actionType: "G/L Posting",
+                shareRule: false,
+                ignoreProcessor: false,
+                conditions: [],
+                glAccounts: []
             });
             
             var oDialog = this.byId("processingRuleDialog");
             if (oDialog) {
                 oDialog.open();
+                // Switch to first tab
+                var oTabBar = this.byId("ruleTabBar");
+                if (oTabBar) {
+                    oTabBar.setSelectedKey("processingRule");
+                }
             }
         },
 
         /**
-         * Edit selected rule
+         * Edit selected rule or row press
          */
-        onEditProcessingRule: function (oEvent) {
-            var oContext = oEvent.getSource().getBindingContext("app");
-            if (!oContext) {
-                // Handle case when button is clicked
-                var oItem = oEvent.getSource().getParent();
-                oContext = oItem.getBindingContext("app");
+        onEditProcessingRule: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oSelectedRule = oModel.getProperty("/selectedProcessingRule");
+            
+            if (!oSelectedRule) {
+                MessageBox.warning("Please select a rule to edit");
+                return;
             }
             
+            this._openEditDialog(oSelectedRule);
+        },
+
+        /**
+         * Row press handler
+         */
+        onRowPress: function (oEvent) {
+            var oContext = oEvent.getSource().getBindingContext("app");
             var oRule = oContext.getObject();
+            this._openEditDialog(oRule);
+        },
+
+        /**
+         * Open edit dialog
+         */
+        _openEditDialog: function (oRule) {
             var oModel = this.getOwnerComponent().getModel("app");
             
             // Clone the rule for editing
-            oModel.setProperty("/editingProcessingRule", JSON.parse(JSON.stringify(oRule)));
+            var oEditingRule = JSON.parse(JSON.stringify(oRule));
+            
+            // Set ruleForIndex based on ruleFor value
+            oEditingRule.ruleForIndex = oEditingRule.ruleFor === "Incoming Payment" ? 0 : 1;
+            
+            // Ensure arrays exist
+            if (!oEditingRule.conditions) {
+                oEditingRule.conditions = [];
+            }
+            if (!oEditingRule.glAccounts) {
+                oEditingRule.glAccounts = [];
+            }
+            
+            oModel.setProperty("/editingProcessingRule", oEditingRule);
             
             var oDialog = this.byId("processingRuleDialog");
             if (oDialog) {
                 oDialog.open();
             }
-        },
-
-        /**
-         * Copy selected rule
-         */
-        onCopyProcessingRule: function () {
-            var oModel = this.getOwnerComponent().getModel("app");
-            var oSelectedRule = oModel.getProperty("/selectedProcessingRule");
-            
-            if (!oSelectedRule) {
-                MessageBox.warning("Please select a rule to copy");
-                return;
-            }
-            
-            var aRules = oModel.getProperty("/processingRules");
-            var oCopiedRule = JSON.parse(JSON.stringify(oSelectedRule));
-            oCopiedRule.ruleId = "LB-RULE-" + String(Date.now()).slice(-3);
-            oCopiedRule.description = oSelectedRule.description + " (Copy)";
-            
-            aRules.push(oCopiedRule);
-            oModel.setProperty("/processingRules", aRules);
-            
-            MessageToast.show("Rule copied successfully");
         },
 
         /**
@@ -217,17 +159,7 @@ sap.ui.define([
                 {
                     onClose: function (sAction) {
                         if (sAction === MessageBox.Action.OK) {
-                            var aRules = oModel.getProperty("/processingRules");
-                            var iIndex = aRules.findIndex(function (r) {
-                                return r.ruleId === oSelectedRule.ruleId;
-                            });
-                            
-                            if (iIndex > -1) {
-                                aRules.splice(iIndex, 1);
-                                oModel.setProperty("/processingRules", aRules);
-                                oModel.setProperty("/selectedProcessingRule", null);
-                                MessageToast.show("Rule deleted successfully");
-                            }
+                            that._deleteRule(oSelectedRule.ruleId);
                         }
                     }
                 }
@@ -235,11 +167,37 @@ sap.ui.define([
         },
 
         /**
+         * Delete rule via API
+         */
+        _deleteRule: function (ruleId) {
+            var that = this;
+            
+            fetch("/api/processing-rules/" + ruleId, {
+                method: "DELETE"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                if (data.success) {
+                    MessageToast.show("Rule deleted successfully");
+                    that.loadProcessingRules();
+                } else {
+                    MessageBox.error("Failed to delete rule");
+                }
+            })
+            .catch(function (error) {
+                console.error("Error deleting rule:", error);
+                MessageBox.error("Failed to delete rule");
+            });
+        },
+
+        /**
          * Refresh rules
          */
         onRefreshProcessingRules: function () {
+            this.loadProcessingRules();
             MessageToast.show("Rules refreshed");
-            // In production: reload from backend
         },
 
         /**
@@ -259,44 +217,151 @@ sap.ui.define([
          * Rule active toggle
          */
         onProcessingRuleActiveToggle: function (oEvent) {
+            var that = this;
             var bState = oEvent.getParameter("state");
-            MessageToast.show(bState ? "Rule activated" : "Rule deactivated");
+            var oContext = oEvent.getSource().getBindingContext("app");
+            var oRule = oContext.getObject();
+            
+            // Update rule active state
+            oRule.active = bState;
+            
+            // Save to backend
+            fetch("/api/processing-rules/" + oRule.ruleId, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(oRule)
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                if (data.success) {
+                    MessageToast.show(bState ? "Rule activated" : "Rule deactivated");
+                } else {
+                    MessageBox.error("Failed to update rule");
+                }
+            })
+            .catch(function (error) {
+                console.error("Error updating rule:", error);
+                MessageBox.error("Failed to update rule");
+            });
+        },
+
+        /**
+         * Add condition
+         */
+        onAddCondition: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var aConditions = oModel.getProperty("/editingProcessingRule/conditions") || [];
+            
+            aConditions.push({
+                attribute: "",
+                option: "equals",
+                from: "",
+                to: ""
+            });
+            
+            oModel.setProperty("/editingProcessingRule/conditions", aConditions);
+        },
+
+        /**
+         * Delete condition
+         */
+        onDeleteCondition: function (oEvent) {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oItem = oEvent.getParameter("listItem");
+            var oContext = oItem.getBindingContext("app");
+            var sPath = oContext.getPath();
+            var iIndex = parseInt(sPath.substring(sPath.lastIndexOf("/") + 1));
+            
+            var aConditions = oModel.getProperty("/editingProcessingRule/conditions");
+            aConditions.splice(iIndex, 1);
+            oModel.setProperty("/editingProcessingRule/conditions", aConditions);
+        },
+
+        /**
+         * Add G/L Account
+         */
+        onAddGLAccount: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var aGLAccounts = oModel.getProperty("/editingProcessingRule/glAccounts") || [];
+            
+            aGLAccounts.push({
+                account: "",
+                profitCenter: "",
+                costCenter: "",
+                taxCode: "",
+                segment: "",
+                functionalArea: ""
+            });
+            
+            oModel.setProperty("/editingProcessingRule/glAccounts", aGLAccounts);
+        },
+
+        /**
+         * Delete G/L Account
+         */
+        onDeleteGLAccount: function (oEvent) {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oItem = oEvent.getParameter("listItem");
+            var oContext = oItem.getBindingContext("app");
+            var sPath = oContext.getPath();
+            var iIndex = parseInt(sPath.substring(sPath.lastIndexOf("/") + 1));
+            
+            var aGLAccounts = oModel.getProperty("/editingProcessingRule/glAccounts");
+            aGLAccounts.splice(iIndex, 1);
+            oModel.setProperty("/editingProcessingRule/glAccounts", aGLAccounts);
         },
 
         /**
          * Save rule
          */
         onSaveProcessingRule: function () {
+            var that = this;
             var oModel = this.getOwnerComponent().getModel("app");
             var oEditingRule = oModel.getProperty("/editingProcessingRule");
             
+            // Update ruleFor based on ruleForIndex
+            if (oEditingRule.ruleForIndex !== undefined) {
+                oEditingRule.ruleFor = oEditingRule.ruleForIndex === 0 ? "Incoming Payment" : "Outgoing Payment";
+            }
+            
             // Validate required fields
-            if (!oEditingRule.ruleId || !oEditingRule.description) {
-                MessageBox.error("Please fill in all required fields");
+            if (!oEditingRule.ruleId || !oEditingRule.ruleDescription) {
+                MessageBox.error("Please fill in Rule ID and Rule Description");
                 return;
             }
             
-            var aRules = oModel.getProperty("/processingRules");
-            
             // Check if rule exists
-            var iIndex = aRules.findIndex(function (r) {
+            var aRules = oModel.getProperty("/processingRules") || [];
+            var bExists = aRules.some(function (r) {
                 return r.ruleId === oEditingRule.ruleId;
             });
             
-            if (iIndex > -1) {
-                // Update existing rule
-                aRules[iIndex] = oEditingRule;
-                MessageToast.show("Rule updated successfully");
-            } else {
-                // Add new rule
-                aRules.push(oEditingRule);
-                MessageToast.show("Rule created successfully");
-            }
+            var sMethod = bExists ? "PUT" : "POST";
+            var sUrl = bExists ? "/api/processing-rules/" + oEditingRule.ruleId : "/api/processing-rules";
             
-            oModel.setProperty("/processingRules", aRules);
-            
-            // Close dialog
-            this.onCloseProcessingRuleDialog();
+            fetch(sUrl, {
+                method: sMethod,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(oEditingRule)
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                if (data.success) {
+                    MessageToast.show(bExists ? "Rule updated successfully" : "Rule created successfully");
+                    that.loadProcessingRules();
+                    that.onCloseProcessingRuleDialog();
+                } else {
+                    MessageBox.error(data.error || "Failed to save rule");
+                }
+            })
+            .catch(function (error) {
+                console.error("Error saving rule:", error);
+                MessageBox.error("Failed to save rule");
+            });
         },
 
         /**
