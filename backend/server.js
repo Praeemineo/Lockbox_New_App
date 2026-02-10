@@ -1979,7 +1979,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                         if (paymentAdviceFromPost) {
                             clearingResponse = await getLockboxClearing({
                                 paymentAdvice: paymentAdviceFromPost,
-                                companyCode: DEFAULT_COMPANY_CODE
+                                companyCode: RUNTIME_COMPANY_CODE
                             });
                             clearingData = clearingResponse.data?.d?.results || 
                                            clearingResponse.data?.d || 
