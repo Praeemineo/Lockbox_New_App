@@ -4571,15 +4571,13 @@ async function initializeProcessingRules() {
                 const id = require('crypto').randomUUID();
                 await pool.query(`
                     INSERT INTO processing_rule 
-                    (id, rule_id, file_type, rule_type, rule_description, active, description, 
-                     journal_entry_type, rule_for, action_type, share_rule, ignore_processor, 
-                     conditions, gl_accounts)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                    (id, rule_id, file_type, rule_type, rule_description, active, priority,
+                     condition_logic, conditions, actions)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                 `, [
                     id, rule.ruleId, rule.fileType, rule.ruleType, rule.ruleDescription,
-                    rule.active, rule.description, rule.journalEntryType, rule.ruleFor,
-                    rule.actionType, rule.shareRule, rule.ignoreProcessor,
-                    JSON.stringify(rule.conditions), JSON.stringify(rule.glAccounts)
+                    rule.active, rule.priority, rule.conditionLogic,
+                    JSON.stringify(rule.conditions), JSON.stringify(rule.actions)
                 ]);
             }
             console.log('Processing rules initialized:', defaultProcessingRules.length);
