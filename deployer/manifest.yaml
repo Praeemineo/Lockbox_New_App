@@ -1,0 +1,5 @@
+---
+- name: lockbox-ui
+  appName: lockbox
+  appVersion: 1.0.0
+  path: resources/lockbox-ui.zip
