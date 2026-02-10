@@ -256,7 +256,7 @@
         <content>
             <VBox class="sapUiSmallMargin">
                 <!-- API Call Configuration -->
-                <VBox visible="{= ${app>/editingAction/actionType} === 'api_call' or ${app>/editingAction/actionType} === 'odata_call'}">
+                <VBox visible="{= ${app>/editingAction/actionType} === 'api_call' || ${app>/editingAction/actionType} === 'odata_call'}">
                     <VBox class="sapUiSmallMarginBottom">
                         <Label text="HTTP Method" />
                         <Select selectedKey="{app>/editingAction/method}">
