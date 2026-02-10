@@ -1843,9 +1843,9 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
         
         try {
             // ========================================================
-            // STEP 0: PRE-CLEARING - Enrich PaymentReferences with Belnr (DocumentNumber)
+            // STEP 0: PRE-CLEARING - Enrich PaymentReferences with Belnr (DocumentNumber) and CompanyCode
             // ========================================================
-            console.log('=== STEP 0: PRE-CLEARING - Fetch Belnr from Invoice Numbers ===');
+            console.log('=== STEP 0: PRE-CLEARING - Fetch Belnr and CompanyCode from Invoice Numbers ===');
             
             // Extract all clearing entries from payload
             const allClearingEntries = [];
@@ -1857,25 +1857,43 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
             
             console.log('Total clearing entries before enrichment:', allClearingEntries.length);
             
+            // Variable to store the derived CompanyCode
+            let derivedCompanyCode = DEFAULT_COMPANY_CODE; // Fallback to default
+            
             if (allClearingEntries.length > 0) {
-                // Call the enrichment function to replace PaymentReference with DocumentNumber (Belnr)
+                // Call the enrichment function to replace PaymentReference with DocumentNumber (Belnr) and extract CompanyCode
                 const enrichedClearingEntries = await enrichPaymentReferencesWithBelnr(allClearingEntries);
+                
+                // Extract CompanyCode from the first enriched entry (assuming all entries have the same company code)
+                const companyCodeFromAPI = enrichedClearingEntries.find(e => e.CompanyCode)?.CompanyCode;
+                if (companyCodeFromAPI) {
+                    derivedCompanyCode = companyCodeFromAPI;
+                    console.log('✓ Using CompanyCode from API:', derivedCompanyCode);
+                } else {
+                    console.log('⚠ No CompanyCode found in API response, using default:', derivedCompanyCode);
+                }
                 
                 // Update the payload with enriched clearing data
                 let enrichedIndex = 0;
                 for (const item of payload.to_Item?.results || []) {
                     if (item.to_LockboxClearing?.results) {
                         const clearingCount = item.to_LockboxClearing.results.length;
-                        item.to_LockboxClearing.results = enrichedClearingEntries.slice(enrichedIndex, enrichedIndex + clearingCount);
+                        // Remove CompanyCode from individual clearing entries as it's not part of the SAP payload structure
+                        const clearingForPayload = enrichedClearingEntries.slice(enrichedIndex, enrichedIndex + clearingCount).map(({ CompanyCode, ...rest }) => rest);
+                        item.to_LockboxClearing.results = clearingForPayload;
                         enrichedIndex += clearingCount;
                     }
                 }
                 
-                console.log('Payload enriched with DocumentNumbers (Belnr)');
+                console.log('Payload enriched with DocumentNumbers (Belnr) and CompanyCode extracted');
                 console.log('Updated payload:', JSON.stringify(payload, null, 2));
             } else {
                 console.log('No clearing entries found in payload, skipping enrichment');
             }
+            
+            // Use derivedCompanyCode for all subsequent operations instead of DEFAULT_COMPANY_CODE
+            const RUNTIME_COMPANY_CODE = derivedCompanyCode;
+            console.log('=== USING COMPANY CODE FOR THIS RUN:', RUNTIME_COMPANY_CODE, '===');
             
             // ========================================================
             // STEP 1: POST /LockboxBatch - Trigger posting to SAP
