@@ -22,4 +22,4 @@ builder:
       configuration:
         archiveName: lockbox-ui
         additionalFiles:
-          - xs-app.json
+          - webapp/xs-app.json
