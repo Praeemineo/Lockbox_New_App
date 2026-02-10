@@ -1963,7 +1963,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                         if (batch) {
                             clearingResponse = await getLockboxClearing({
                                 batch: batch,
-                                companyCode: DEFAULT_COMPANY_CODE
+                                companyCode: RUNTIME_COMPANY_CODE
                             });
                             clearingData = clearingResponse.data?.d?.results || 
                                            clearingResponse.data?.d || 
