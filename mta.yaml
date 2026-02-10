@@ -109,7 +109,27 @@ modules:
           timeout: 600000
 
 resources:
+  # ============================================================
+  # HTML5 Application Repository - Host (for deployment)
+  # ============================================================
+  - name: lockbox-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+
+  # ============================================================
+  # HTML5 Application Repository - Runtime (for serving apps)
+  # ============================================================
+  - name: lockbox-html5-repo-runtime
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-runtime
+
+  # ============================================================
   # PostgreSQL Database Service (Using existing service)
+  # ============================================================
   - name: postgresql-db
     type: org.cloudfoundry.existing-service
     parameters:
