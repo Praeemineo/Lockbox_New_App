@@ -5023,8 +5023,8 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
     // ═══════════════════════════════════════════════════════════════════
     
     const currency = getApiFieldDefault('Currency') || 'USD';
-    const lockboxBatchDestination = getApiFieldDefault('LockboxBatchDestination') || 'SAMPLEDEST';
-    const lockboxBatchOrigin = getApiFieldDefault('LockboxBatchOrigin') || '1234567890';
+    const lockboxBatchDestination = getApiFieldDefault('LockboxBatchDestination') || 'LOCKBOXDES';
+    const lockboxBatchOrigin = getApiFieldDefault('LockboxBatchOrigin') || 'LOCKBOXORI';
     
     // Generate UNIQUE Lockbox ID for each run to avoid "lockbox file already exists" error
     // If lockboxId is provided (from previous processing), use it; otherwise generate new
@@ -5936,8 +5936,8 @@ function buildSapPayloadFromHierarchy(hierarchy) {
     const DEFAULT_PARTNER_BANK_COUNTRY = getApiFieldDefault('PartnerBankCountry') || 'US';
     
     const currency = getApiFieldDefault('Currency') || 'USD';
-    const lockboxBatchDestination = getApiFieldDefault('LockboxBatchDestination') || 'SAMPLEDEST';
-    const lockboxBatchOrigin = getApiFieldDefault('LockboxBatchOrigin') || '1234567890';
+    const lockboxBatchDestination = getApiFieldDefault('LockboxBatchDestination') || 'LOCKBOXDES';
+    const lockboxBatchOrigin = getApiFieldDefault('LockboxBatchOrigin') || 'LOCKBOXORI';
     
     // Flatten hierarchy to items for SAP
     const items = [];
