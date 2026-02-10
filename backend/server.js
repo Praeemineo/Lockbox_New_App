@@ -2118,7 +2118,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                     type: 'Posting Document',
                     description: 'FI Document (Lockbox Posting)',
                     documentNumber: sapData.ClearingAccountingDocument || sapData.AccountingDocument || internalKey || 'Pending',
-                    companyCode: DEFAULT_COMPANY_CODE,
+                    companyCode: RUNTIME_COMPANY_CODE,
                     fiscalYear: fiscalYear,
                     entries: []
                 };
@@ -2127,7 +2127,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                     type: 'Payment Advice',
                     description: 'Incoming Customer Payment',
                     documentNumber: sapData.PaymentAdvice || internalKey || 'Pending',
-                    companyCode: DEFAULT_COMPANY_CODE,
+                    companyCode: RUNTIME_COMPANY_CODE,
                     entries: []
                 };
                 
@@ -2135,7 +2135,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                     type: 'Customer Posting',
                     description: 'Customer Incoming Payment (Posting Area 1)',
                     documentNumber: sapData.AccountingDocument || internalKey || 'Pending',
-                    companyCode: DEFAULT_COMPANY_CODE,
+                    companyCode: RUNTIME_COMPANY_CODE,
                     fiscalYear: fiscalYear,
                     entries: []
                 };
@@ -7257,7 +7257,7 @@ app.post('/api/lockbox/runs/:runId/production', async (req, res) => {
                     clearingPath: SAP_CLEARING_PATH,
                     destination: SAP_DESTINATION_NAME,
                     sapClient: SAP_CLIENT,
-                    companyCode: DEFAULT_COMPANY_CODE,
+                    companyCode: RUNTIME_COMPANY_CODE,
                     note: 'MOCK MODE - No actual SAP connection. Deploy to BTP and set useMock=false for live SAP posting.'
                 },
                 timing: {
@@ -7543,7 +7543,7 @@ app.post('/api/lockbox/runs/:runId/production', async (req, res) => {
                             // PaymentAdviceAccountType = "D" (CONSTANT)
                             paymentAdviceAccountType: 'D',
                             // CompanyCode = "1710" (CONSTANT)
-                            companyCode: DEFAULT_COMPANY_CODE,
+                            companyCode: RUNTIME_COMPANY_CODE,
                             rawResponse: step3Data
                         };
                         
