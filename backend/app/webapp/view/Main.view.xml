@@ -1746,6 +1746,238 @@
                     <Button text="Close" press="onCloseFieldMappingPreview" />
                 </endButton>
             </Dialog>
+            
+            <!-- ============================================================ -->
+            <!-- TRANSACTION DETAILS DIALOG -->
+            <!-- ============================================================ -->
+            <Dialog
+                id="transactionDetailsDialog"
+                title="Transaction Details: {app>/selectedTransaction/runId}"
+                contentWidth="900px"
+                contentHeight="700px"
+                resizable="true"
+                draggable="true">
+                <content>
+                    <VBox class="sapUiSmallMargin">
+                        <!-- Header Information -->
+                        <Panel headerText="Overview" expandable="true" expanded="true" class="sapUiSmallMarginBottom">
+                            <VBox class="sapUiSmallMargin">
+                                <l:Grid defaultSpan="L6 M6 S12" hSpacing="2" vSpacing="1">
+                                    <l:content>
+                                        <VBox>
+                                            <Label text="Run ID" design="Bold" />
+                                            <Text text="{app>/selectedTransaction/runId}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Lockbox Batch" design="Bold" />
+                                            <Text text="{app>/selectedTransaction/lockboxBatch}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Deposit Date" design="Bold" />
+                                            <Text text="{path: 'app>/selectedTransaction/depositDate', formatter: '.formatDateTime'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Source File" design="Bold" />
+                                            <Link text="{app>/selectedTransaction/sourceFile}" press="onDownloadSourceFile" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Processed Date" design="Bold" />
+                                            <Text text="{path: 'app>/selectedTransaction/processedDate', formatter: '.formatDateTime'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Last Updated" design="Bold" />
+                                            <Text text="{path: 'app>/selectedTransaction/lastUpdated', formatter: '.formatDateTime'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Overall Status" design="Bold" />
+                                            <ObjectStatus text="{app>/selectedTransaction/status}" state="{path: 'app>/selectedTransaction/status', formatter: '.formatStatusState'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Amount" design="Bold" />
+                                            <ObjectNumber number="{app>/selectedTransaction/amount}" unit="{= ${app>/selectedTransaction/currency} || 'USD'}" emphasized="true" />
+                                        </VBox>
+                                    </l:content>
+                                </l:Grid>
+                            </VBox>
+                        </Panel>
+                        
+                        <!-- Upload Phase Details -->
+                        <Panel headerText="📤 Upload Phase" expandable="true" expanded="false" class="sapUiSmallMarginBottom">
+                            <VBox class="sapUiSmallMargin">
+                                <l:Grid defaultSpan="L6 M6 S12" hSpacing="2" vSpacing="1">
+                                    <l:content>
+                                        <VBox>
+                                            <Label text="Upload Stage" design="Bold" />
+                                            <ObjectStatus text="{app>/selectedTransaction/stages/upload}" state="{path: 'app>/selectedTransaction/stages/upload', formatter: '.formatStatusState'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Template Match Stage" design="Bold" />
+                                            <ObjectStatus text="{app>/selectedTransaction/stages/templateMatch}" state="{path: 'app>/selectedTransaction/stages/templateMatch', formatter: '.formatStatusState'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Data Extraction Stage" design="Bold" />
+                                            <ObjectStatus text="{app>/selectedTransaction/stages/extraction}" state="{path: 'app>/selectedTransaction/stages/extraction', formatter: '.formatStatusState'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Rows Extracted" design="Bold" />
+                                            <Text text="{app>/selectedTransaction/rowsExtracted}" />
+                                        </VBox>
+                                    </l:content>
+                                </l:Grid>
+                            </VBox>
+                        </Panel>
+                        
+                        <!-- Validation Phase Details -->
+                        <Panel headerText="✅ Validation Phase" expandable="true" expanded="false" class="sapUiSmallMarginBottom">
+                            <VBox class="sapUiSmallMargin">
+                                <l:Grid defaultSpan="L6 M6 S12" hSpacing="2" vSpacing="1">
+                                    <l:content>
+                                        <VBox>
+                                            <Label text="Validation Stage" design="Bold" />
+                                            <ObjectStatus text="{app>/selectedTransaction/stages/validation}" state="{path: 'app>/selectedTransaction/stages/validation', formatter: '.formatStatusState'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="API Field Mapping Stage" design="Bold" />
+                                            <ObjectStatus text="{app>/selectedTransaction/stages/mapping}" state="{path: 'app>/selectedTransaction/stages/mapping', formatter: '.formatStatusState'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Validation Message" design="Bold" />
+                                            <Text text="{app>/selectedTransaction/validationMessage}" />
+                                        </VBox>
+                                    </l:content>
+                                </l:Grid>
+                            </VBox>
+                        </Panel>
+                        
+                        <!-- Post to SAP Phase Details -->
+                        <Panel headerText="🚀 Post to SAP" expandable="true" expanded="true" class="sapUiSmallMarginBottom">
+                            <VBox class="sapUiSmallMargin">
+                                <l:Grid defaultSpan="L6 M6 S12" hSpacing="2" vSpacing="1">
+                                    <l:content>
+                                        <VBox>
+                                            <Label text="Simulation State" design="Bold" />
+                                            <ObjectStatus text="{app>/selectedTransaction/stages/simulate}" state="{path: 'app>/selectedTransaction/stages/simulate', formatter: '.formatStatusState'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Posted State" design="Bold" />
+                                            <ObjectStatus text="{app>/selectedTransaction/stages/posted}" state="{path: 'app>/selectedTransaction/stages/posted', formatter: '.formatStatusState'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Mode" design="Bold" />
+                                            <Text text="{= ${app>/selectedTransaction/mode} || 'SIMULATION'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Service" design="Bold" />
+                                            <Text text="S4HANA On Premise" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="💰 AR Posting Document" design="Bold" />
+                                            <Text text="{= ${app>/selectedTransaction/arPostingDoc} || 'Not Posted'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="💳 Payment Advice" design="Bold" />
+                                            <Text text="{= ${app>/selectedTransaction/paymentAdvice} || 'Not Generated'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="📄 Check Posting Document" design="Bold" />
+                                            <Text text="{= ${app>/selectedTransaction/clearingDoc} || 'Not Posted'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="📅 Fiscal Year" design="Bold" />
+                                            <Text text="{= ${app>/selectedTransaction/fiscalYear} || 'N/A'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="🏢 Company Code" design="Bold" />
+                                            <Text text="{= ${app>/selectedTransaction/companyCode} || 'N/A'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="✅ Clearing Status" design="Bold" />
+                                            <ObjectStatus text="{= ${app>/selectedTransaction/clearingStatus} || 'UNAPPLIED'}" state="{= ${app>/selectedTransaction/clearingStatus} === 'CLEARED' ? 'Success' : 'Warning'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="📊 Items Cleared" design="Bold" />
+                                            <Text text="{= ${app>/selectedTransaction/itemsCleared} || 0}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Lockbox Origin" design="Bold" />
+                                            <Text text="{= ${app>/selectedTransaction/lockboxOrigin} || 'N/A'}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Label text="Lockbox Destination" design="Bold" />
+                                            <Text text="{= ${app>/selectedTransaction/lockboxDestination} || 'N/A'}" />
+                                        </VBox>
+                                    </l:content>
+                                </l:Grid>
+                            </VBox>
+                        </Panel>
+                        
+                        <!-- Lockbox Data Section -->
+                        <Panel headerText="📋 Lockbox Data" expandable="true" expanded="false" class="sapUiSmallMarginBottom">
+                            <VBox class="sapUiSmallMargin">
+                                <Title text="Header Data" level="H5" class="sapUiSmallMarginBottom" />
+                                <Table items="{app>/selectedTransaction/headerData}" class="sapUiSmallMarginBottom">
+                                    <columns>
+                                        <Column><Text text="Field" /></Column>
+                                        <Column><Text text="Value" /></Column>
+                                    </columns>
+                                    <items>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text text="{app>field}" />
+                                                <Text text="{app>value}" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
+                                </Table>
+                                
+                                <Title text="Check Data" level="H5" class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
+                                <Table items="{app>/selectedTransaction/checkData}" class="sapUiSmallMarginBottom">
+                                    <columns>
+                                        <Column><Text text="Field" /></Column>
+                                        <Column><Text text="Value" /></Column>
+                                    </columns>
+                                    <items>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text text="{app>field}" />
+                                                <Text text="{app>value}" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
+                                </Table>
+                                
+                                <Title text="Payment Reference Data" level="H5" class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
+                                <Table items="{app>/selectedTransaction/paymentReferenceData}">
+                                    <columns>
+                                        <Column><Text text="Field" /></Column>
+                                        <Column><Text text="Value" /></Column>
+                                    </columns>
+                                    <items>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text text="{app>field}" />
+                                                <Text text="{app>value}" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
+                                </Table>
+                            </VBox>
+                        </Panel>
+                        
+                        <!-- Error Details (if any) -->
+                        <Panel headerText="⚠️ Errors &amp; Warnings" expandable="true" expanded="{= !!${app>/selectedTransaction/errors} &amp;&amp; ${app>/selectedTransaction/errors}.length > 0}" visible="{= !!${app>/selectedTransaction/errors} &amp;&amp; ${app>/selectedTransaction/errors}.length > 0}" class="sapUiSmallMarginBottom">
+                            <VBox class="sapUiSmallMargin">
+                                <List items="{app>/selectedTransaction/errors}">
+                                    <StandardListItem title="{app>message}" description="{app>detail}" icon="sap-icon://message-warning" iconInset="false" />
+                                </List>
+                            </VBox>
+                        </Panel>
+                    </VBox>
+                </content>
+                <endButton>
+                    <Button text="Close" press="onCloseTransactionDetails" />
+                </endButton>
+            </Dialog>
 
         </dependents>
     </Page>
