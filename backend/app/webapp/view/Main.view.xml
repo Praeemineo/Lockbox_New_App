@@ -1752,95 +1752,101 @@
             <!-- ============================================================ -->
             <Dialog
                 id="transactionDetailsDialog"
-                title="{app>/selectedTransaction/runId}"
                 contentWidth="98%"
                 contentHeight="90%"
                 resizable="true"
                 draggable="true">
+                <customHeader>
+                    <Bar>
+                        <contentLeft>
+                            <Title text="Lockbox-{app>/selectedTransaction/runId}" level="H3" class="sapUiTinyMarginBegin" />
+                        </contentLeft>
+                        <contentRight>
+                            <Button text="View File" icon="sap-icon://document" press="onViewTransactionFile" />
+                            <Button text="Log" icon="sap-icon://menu2" />
+                            <Button icon="sap-icon://decline" press="onCloseTransactionDetails" tooltip="Close" />
+                        </contentRight>
+                    </Bar>
+                </customHeader>
                 <content>
                     <VBox>
-                        <!-- Top Status Bar with Overview and Action Buttons -->
-                        <HBox justifyContent="SpaceBetween" alignItems="Start" class="sapUiSmallPadding" style="background-color: #f7f7f7; border-bottom: 1px solid #e0e0e0;">
-                            <VBox width="70%">
-                                <Title text="{app>/selectedTransaction/runId}" level="H3" class="sapUiTinyMarginBottom" />
-                                <HBox wrap="Wrap">
-                                    <VBox class="sapUiTinyMarginEnd sapUiTinyMarginBottom" width="200px">
-                                        <Label text="Company Code:" />
+                        <!-- Metadata Section with proper spacing -->
+                        <VBox class="sapUiSmallPadding" style="background-color: #f7f7f7; border-bottom: 1px solid #d9d9d9;">
+                            <l:Grid defaultSpan="L3 M6 S12" hSpacing="2" vSpacing="1">
+                                <l:content>
+                                    <VBox class="sapUiTinyMarginBottom">
+                                        <Label text="Company Code:" class="sapUiTinyMarginBottom" />
                                         <Text text="{= ${app>/selectedTransaction/companyCode} || 'N/A'}" />
                                     </VBox>
-                                    <VBox class="sapUiTinyMarginEnd sapUiTinyMarginBottom" width="250px">
-                                        <Label text="Source File:" />
+                                    <VBox class="sapUiTinyMarginBottom">
+                                        <Label text="Source File:" class="sapUiTinyMarginBottom" />
                                         <Link text="{app>/selectedTransaction/sourceFile}" press="onDownloadSourceFile" />
                                     </VBox>
-                                    <VBox class="sapUiTinyMarginEnd sapUiTinyMarginBottom" width="180px">
-                                        <Label text="Lockbox Batch:" />
+                                    <VBox class="sapUiTinyMarginBottom">
+                                        <Label text="Lockbox Batch:" class="sapUiTinyMarginBottom" />
                                         <Text text="{app>/selectedTransaction/lockboxBatch}" />
                                     </VBox>
-                                    <VBox class="sapUiTinyMarginEnd sapUiTinyMarginBottom" width="180px">
-                                        <Label text="Last Changed By:" />
+                                    <VBox class="sapUiTinyMarginBottom">
+                                        <Label text="Last Changed By:" class="sapUiTinyMarginBottom" />
                                         <Text text="System" />
                                     </VBox>
-                                    <VBox class="sapUiTinyMarginEnd sapUiTinyMarginBottom" width="200px">
-                                        <Label text="Last Changed On:" />
+                                    <VBox class="sapUiTinyMarginBottom">
+                                        <Label text="Last Changed On:" class="sapUiTinyMarginBottom" />
                                         <Text text="{path: 'app>/selectedTransaction/lastUpdated', formatter: '.formatDateTime'}" />
                                     </VBox>
-                                    <VBox class="sapUiTinyMarginEnd sapUiTinyMarginBottom" width="180px">
-                                        <Label text="Created By:" />
+                                    <VBox class="sapUiTinyMarginBottom">
+                                        <Label text="Created By:" class="sapUiTinyMarginBottom" />
                                         <Text text="System" />
                                     </VBox>
-                                    <VBox class="sapUiTinyMarginEnd sapUiTinyMarginBottom" width="200px">
-                                        <Label text="Created On:" />
+                                    <VBox class="sapUiTinyMarginBottom">
+                                        <Label text="Created On:" class="sapUiTinyMarginBottom" />
                                         <Text text="{path: 'app>/selectedTransaction/processedDate', formatter: '.formatDateTime'}" />
                                     </VBox>
-                                    <VBox class="sapUiTinyMarginEnd sapUiTinyMarginBottom" width="200px">
-                                        <Label text="Last Simulated On:" />
+                                    <VBox class="sapUiTinyMarginBottom">
+                                        <Label text="Last Simulated On:" class="sapUiTinyMarginBottom" />
                                         <Text text="{path: 'app>/selectedTransaction/lastUpdated', formatter: '.formatDateTime'}" />
                                     </VBox>
-                                </HBox>
-                            </VBox>
-                            <VBox width="30%" class="sapUiTinyMarginTop">
-                                <HBox justifyContent="End" class="sapUiTinyMarginBottom">
-                                    <Button text="View File" icon="sap-icon://document" class="sapUiTinyMarginEnd" />
-                                    <Button text="Log" icon="sap-icon://menu2" />
-                                </HBox>
-                            </VBox>
-                        </HBox>
+                                </l:content>
+                            </l:Grid>
+                        </VBox>
                         
-                        <!-- Processing Status Summary Bar -->
-                        <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallPadding" style="background-color: #fafafa; border-bottom: 2px solid #e0e0e0; min-height: 60px;">
-                            <HBox alignItems="Center" spacing="40px">
-                                <VBox alignItems="Start">
-                                    <Label text="Processing Status" class="sapUiTinyMarginBottom" />
-                                    <ObjectStatus 
-                                        text="{app>/selectedTransaction/status}" 
-                                        state="{path: 'app>/selectedTransaction/status', formatter: '.formatStatusState'}"
-                                        emphasized="true" />
-                                </VBox>
-                                <VBox alignItems="Start">
-                                    <Label text="Order Simulation" class="sapUiTinyMarginBottom" />
-                                    <ObjectStatus 
-                                        text="{= ${app>/selectedTransaction/mode} === 'PRODUCTION' ? 'Posted' : 'Successful'}" 
-                                        state="Success"
-                                        emphasized="true" />
-                                </VBox>
-                                <VBox alignItems="Start">
-                                    <Label text="Extracted Net Value" class="sapUiTinyMarginBottom" />
-                                    <ObjectNumber 
-                                        number="{app>/selectedTransaction/amount}" 
-                                        unit="{= ${app>/selectedTransaction/currency} || 'USD'}"
-                                        emphasized="true"
-                                        state="Success" />
-                                </VBox>
-                                <VBox alignItems="Start" visible="{= ${app>/selectedTransaction/mode} !== 'UPLOAD'}">
-                                    <Label text="Simulated Net Value" class="sapUiTinyMarginBottom" />
-                                    <ObjectNumber 
-                                        number="{app>/selectedTransaction/amount}" 
-                                        unit="{= ${app>/selectedTransaction/currency} || 'USD'}"
-                                        emphasized="true"
-                                        state="Success" />
-                                </VBox>
-                            </HBox>
-                        </HBox>
+                        <!-- Processing Status Summary Bar - Properly Spaced -->
+                        <VBox class="sapUiSmallPadding" style="background-color: #fafafa; border-bottom: 2px solid #d9d9d9;">
+                            <l:Grid defaultSpan="L3 M6 S12" hSpacing="3" vSpacing="1">
+                                <l:content>
+                                    <VBox>
+                                        <Label text="Processing Status:" class="sapUiTinyMarginBottom" />
+                                        <ObjectStatus 
+                                            text="{app>/selectedTransaction/status}" 
+                                            state="{path: 'app>/selectedTransaction/status', formatter: '.formatStatusState'}"
+                                            emphasized="false" />
+                                    </VBox>
+                                    <VBox>
+                                        <Label text="Order Simulation:" class="sapUiTinyMarginBottom" />
+                                        <ObjectStatus 
+                                            text="{= ${app>/selectedTransaction/mode} === 'PRODUCTION' ? 'Posted' : 'Successful'}" 
+                                            state="Success"
+                                            emphasized="false" />
+                                    </VBox>
+                                    <VBox>
+                                        <Label text="Extracted Net Value:" class="sapUiTinyMarginBottom" />
+                                        <ObjectNumber 
+                                            number="{app>/selectedTransaction/amount}" 
+                                            unit="{= ${app>/selectedTransaction/currency} || 'USD'}"
+                                            emphasized="false"
+                                            state="Success" />
+                                    </VBox>
+                                    <VBox visible="{= ${app>/selectedTransaction/mode} !== 'UPLOAD'}">
+                                        <Label text="Simulated Net Value:" class="sapUiTinyMarginBottom" />
+                                        <ObjectNumber 
+                                            number="{app>/selectedTransaction/amount}" 
+                                            unit="{= ${app>/selectedTransaction/currency} || 'USD'}"
+                                            emphasized="false"
+                                            state="Success" />
+                                    </VBox>
+                                </l:content>
+                            </l:Grid>
+                        </VBox>
                         
                         <!-- Tab Navigation -->
                         <IconTabBar id="transactionTabBar" class="sapUiResponsiveContentPadding" select="onTransactionTabSelect">
@@ -2028,9 +2034,6 @@
                         </IconTabBar>
                     </VBox>
                 </content>
-                <endButton>
-                    <Button text="Close" press="onCloseTransactionDetails" />
-                </endButton>
             </Dialog>
 
         </dependents>
