@@ -1972,10 +1972,11 @@
                                     </VBox>
                                 </VBox>
                             </HBox>
-                        </VBox>
+                            </content>
+                        </Panel>
                         
                         <!-- Lockbox Hierarchy Section (Expandable) -->
-                        <Panel class="sapUiMediumMargin" headerText="Lockbox Hierarchy" expandable="true" expanded="false">
+                        <Panel class="sapUiMediumMargin lockboxHierarchyPanel" headerText="Lockbox Hierarchy" expandable="true" expanded="false">
                             <HBox wrap="Wrap">
                                 <!-- Lockbox Header Data -->
                                 <VBox width="33%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
