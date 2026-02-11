@@ -1916,32 +1916,23 @@
                                 items="{app>/selectedTransaction/lockboxItems}"
                                 mode="None">
                                 <columns>
-                                    <Column width="8%">
+                                    <Column width="12%">
                                         <Text text="Company Code" />
                                     </Column>
-                                    <Column width="10%">
+                                    <Column width="15%">
                                         <Text text="Lockbox ID" />
                                     </Column>
-                                    <Column width="12%">
+                                    <Column width="18%">
                                         <Text text="Lockbox Dest" />
                                     </Column>
-                                    <Column width="12%">
+                                    <Column width="18%">
                                         <Text text="Lockbox Origin" />
                                     </Column>
-                                    <Column width="8%">
+                                    <Column width="12%">
                                         <Text text="Item" />
                                     </Column>
-                                    <Column width="10%">
+                                    <Column width="25%">
                                         <Text text="Amount(USD)" />
-                                    </Column>
-                                    <Column width="12%">
-                                        <Text text="Payt Advice" />
-                                    </Column>
-                                    <Column width="12%">
-                                        <Text text="Posting Doc" />
-                                    </Column>
-                                    <Column width="12%">
-                                        <Text text="Clearing Doc" />
                                     </Column>
                                 </columns>
                                 <items>
@@ -1953,9 +1944,6 @@
                                             <Text text="{app>lockboxOrigin}" />
                                             <Text text="{app>item}" />
                                             <ObjectNumber number="{app>amount}" unit="USD" />
-                                            <Text text="{app>paytAdvice}" />
-                                            <Text text="{app>postingDoc}" />
-                                            <Text text="{app>clearingDoc}" />
                                         </cells>
                                     </ColumnListItem>
                                 </items>
