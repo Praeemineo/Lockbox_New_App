@@ -7829,6 +7829,9 @@ sap.ui.define([
                             // Item Details (for Item Data tab)
                             itemDetails: data.run.itemDetails || [],
                             
+                            // SAP Payload with checks and payments hierarchy
+                            sapPayload: data.run.sapPayload || oItem.sapPayload || {},
+                            
                             // Lockbox Data (legacy structure for compatibility)
                             headerData: that._buildLockboxHeaderData(data.run),
                             checkData: that._buildLockboxCheckData(data.run),
@@ -7837,6 +7840,42 @@ sap.ui.define([
                             // Errors
                             errors: data.run.errors || []
                         };
+                        
+                        // Parse checks and payments from sapPayload if available
+                        var aChecks = [];
+                        if (oTransaction.sapPayload && oTransaction.sapPayload.checks) {
+                            aChecks = oTransaction.sapPayload.checks.map(function(check, checkIndex) {
+                                var oCheck = {
+                                    checkIndex: checkIndex,
+                                    Cheque: check.Cheque || '',
+                                    AmountInTransactionCurrency: check.AmountInTransactionCurrency || '0',
+                                    Currency: check.Currency || 'USD',
+                                    PartnerBank: check.PartnerBank || '',
+                                    PartnerBankAccount: check.PartnerBankAccount || '',
+                                    PartnerBankCountry: check.PartnerBankCountry || '',
+                                    payments: []
+                                };
+                                
+                                // Parse payments for this check
+                                if (check.payments && Array.isArray(check.payments)) {
+                                    oCheck.payments = check.payments.map(function(payment, paymentIndex) {
+                                        return {
+                                            paymentIndex: paymentIndex,
+                                            PaymentReference: payment.PaymentReference || '',
+                                            NetPaymentAmountInPaytCurrency: payment.NetPaymentAmountInPaytCurrency || '0',
+                                            DeductionAmountInPaytCurrency: payment.DeductionAmountInPaytCurrency || '0',
+                                            PaymentDifferenceReason: payment.PaymentDifferenceReason || '',
+                                            Currency: payment.Currency || 'USD'
+                                        };
+                                    });
+                                }
+                                
+                                return oCheck;
+                            });
+                        }
+                        
+                        // Add checks array to transaction object
+                        oTransaction.checks = aChecks;
                         
                         // Set in model
                         var oModel = that.getView().getModel("app");
