@@ -106,47 +106,51 @@
     font-weight: 700;
 }
 
-/* Metadata Section Styling */
+/* Metadata Section Styling - Compact & Professional */
 .metadataSection {
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    padding: 1.5rem;
+    padding: 1rem;
     border-bottom: 2px solid #dee2e6;
 }
 
 .metadataField {
-    background: rgba(255, 255, 255, 0.7);
-    padding: 0.75rem;
-    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0.5rem;
+    border-radius: 4px;
     border: 1px solid rgba(255, 255, 255, 0.9);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    min-height: 45px;
 }
 
 .metadataField:hover {
     background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .metadataLabel {
-    font-size: 12px;
+    font-size: 11px;
     color: #6c757d;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
+    margin-bottom: 2px;
+    line-height: 1;
 }
 
 .metadataValue {
-    font-size: 14px;
+    font-size: 13px;
     color: #212529;
     font-weight: 500;
+    line-height: 1.2;
+    margin-top: 2px;
 }
 
 .metadataLink {
-    font-size: 14px;
+    font-size: 13px;
     color: #667eea !important;
     font-weight: 500;
     text-decoration: none !important;
+    line-height: 1.2;
 }
 
 .metadataLink:hover {
