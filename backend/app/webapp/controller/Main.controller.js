@@ -7877,6 +7877,40 @@ sap.ui.define([
                         // Add checks array to transaction object
                         oTransaction.checks = aChecks;
                         
+                        // Build lockbox items for the data table from checks
+                        var aLockboxItems = [];
+                        if (aChecks && aChecks.length > 0) {
+                            aChecks.forEach(function(check, idx) {
+                                aLockboxItems.push({
+                                    companyCode: oTransaction.companyCode || data.run.company_code || '',
+                                    lockboxId: oTransaction.sapPayload.Lockbox || oTransaction.lockbox || '',
+                                    lockboxDest: oTransaction.sapPayload.LockboxBatchDestination || oTransaction.lockboxDestination || '',
+                                    lockboxOrigin: oTransaction.sapPayload.LockboxBatchOrigin || oTransaction.lockboxOrigin || '',
+                                    item: (idx + 1).toString().padStart(4, '0'),
+                                    amount: check.AmountInTransactionCurrency || '0',
+                                    paytAdvice: oTransaction.paymentAdvice || data.run.payment_advice_doc || '',
+                                    postingDoc: oTransaction.arPostingDoc || data.run.ar_posting_doc || '',
+                                    clearingDoc: oTransaction.clearingDoc || data.run.clearing_doc || ''
+                                });
+                            });
+                        } else {
+                            // Fallback: create a single item if no checks data
+                            aLockboxItems.push({
+                                companyCode: oTransaction.companyCode || data.run.company_code || '',
+                                lockboxId: oTransaction.sapPayload.Lockbox || oTransaction.lockbox || '',
+                                lockboxDest: oTransaction.sapPayload.LockboxBatchDestination || oTransaction.lockboxDestination || '',
+                                lockboxOrigin: oTransaction.sapPayload.LockboxBatchOrigin || oTransaction.lockboxOrigin || '',
+                                item: '0001',
+                                amount: oTransaction.amount || '0',
+                                paytAdvice: oTransaction.paymentAdvice || data.run.payment_advice_doc || '',
+                                postingDoc: oTransaction.arPostingDoc || data.run.ar_posting_doc || '',
+                                clearingDoc: oTransaction.clearingDoc || data.run.clearing_doc || ''
+                            });
+                        }
+                        
+                        // Add lockbox items to transaction
+                        oTransaction.lockboxItems = aLockboxItems;
+                        
                         // Set in model
                         var oModel = that.getView().getModel("app");
                         oModel.setProperty("/selectedTransaction", oTransaction);
