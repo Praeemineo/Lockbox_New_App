@@ -82,6 +82,92 @@
     font-weight: bold !important;
 }
 
+/* Hierarchy Level Panels - Nested Structure */
+.hierarchyLevelPanel {
+    margin: 0.5rem;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Lockbox Header Panel (Level 1) */
+.lockboxHeaderPanel .sapMPanelHdr {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white !important;
+    font-weight: 600;
+    padding: 0.75rem;
+    border-radius: 6px 6px 0 0;
+}
+
+.lockboxHeaderPanel .sapMPanelExpandableIcon,
+.lockboxHeaderPanel .sapMPanelHdrText {
+    color: white !important;
+}
+
+/* Check Data Panel (Level 2) */
+.checkDataPanel {
+    margin-left: 1.5rem;
+    border-left: 3px solid #4caf50;
+}
+
+.checkDataPanel .sapMPanelHdr {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+    color: white !important;
+    font-weight: 600;
+    padding: 0.65rem;
+    border-radius: 6px 6px 0 0;
+}
+
+.checkDataPanel .sapMPanelExpandableIcon,
+.checkDataPanel .sapMPanelHdrText {
+    color: white !important;
+}
+
+/* Payment Data Panel (Level 3) */
+.paymentDataPanel {
+    margin-left: 1.5rem;
+    border-left: 3px solid #ff9800;
+}
+
+.paymentDataPanel .sapMPanelHdr {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white !important;
+    font-weight: 600;
+    padding: 0.5rem;
+    border-radius: 6px 6px 0 0;
+}
+
+.paymentDataPanel .sapMPanelExpandableIcon,
+.paymentDataPanel .sapMPanelHdrText {
+    color: white !important;
+}
+
+/* Hierarchy Field Styling */
+.hierarchyField {
+    background: rgba(255, 255, 255, 0.7);
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+    min-height: 45px;
+}
+
+.hierarchyLabel {
+    font-size: 11px;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.hierarchyValue {
+    font-size: 13px;
+    color: #212529;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-top: 2px;
+}
+
 /* Panel Content Padding */
 .lockboxProcessingBox .sapMPanelContent,
 .lockboxHierarchyPanel .sapMPanelContent {
