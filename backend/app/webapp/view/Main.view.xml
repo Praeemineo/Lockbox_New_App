@@ -1780,14 +1780,14 @@
                 resizable="true"
                 draggable="true">
                 <customHeader>
-                    <Bar>
+                    <Bar class="dialogHeaderBar">
                         <contentLeft>
-                            <Title text="Lockbox-{app>/selectedTransaction/runId}" level="H3" class="sapUiTinyMarginBegin" />
+                            <Title text="Lockbox-{app>/selectedTransaction/runId}" level="H3" class="dialogHeaderTitle" />
                         </contentLeft>
                         <contentRight>
-                            <Button text="View File" icon="sap-icon://document" press="onViewTransactionFile" />
-                            <Button text="Log" icon="sap-icon://menu2" />
-                            <Button icon="sap-icon://decline" press="onCloseTransactionDetails" tooltip="Close" />
+                            <Button text="View File" icon="sap-icon://document" press="onViewTransactionFile" class="dialogHeaderButton" />
+                            <Button text="Log" icon="sap-icon://menu2" class="dialogHeaderButton" />
+                            <Button icon="sap-icon://decline" press="onCloseTransactionDetails" tooltip="Close" class="dialogHeaderButton" />
                         </contentRight>
                     </Bar>
                 </customHeader>
