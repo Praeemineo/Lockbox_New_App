@@ -1795,38 +1795,38 @@
                     <VBox>
                         <!-- Metadata Section with Professional Styling -->
                         <VBox class="metadataSection">
-                            <l:Grid defaultSpan="L3 M6 S12" hSpacing="2" vSpacing="1">
+                            <l:Grid defaultSpan="L3 M6 S12" hSpacing="1" vSpacing="0.5">
                                 <l:content>
-                                    <VBox class="sapUiTinyMarginBottom metadataField">
-                                        <Label text="Company Code:" class="sapUiTinyMarginBottom metadataLabel" />
+                                    <VBox class="metadataField">
+                                        <Label text="Company Code:" class="metadataLabel" />
                                         <Text text="{= ${app>/selectedTransaction/companyCode} || 'N/A'}" class="metadataValue" />
                                     </VBox>
-                                    <VBox class="sapUiTinyMarginBottom metadataField">
-                                        <Label text="Source File:" class="sapUiTinyMarginBottom metadataLabel" />
+                                    <VBox class="metadataField">
+                                        <Label text="Source File:" class="metadataLabel" />
                                         <Link text="{app>/selectedTransaction/sourceFile}" press="onDownloadSourceFile" class="metadataLink" />
                                     </VBox>
-                                    <VBox class="sapUiTinyMarginBottom metadataField">
-                                        <Label text="Lockbox Batch:" class="sapUiTinyMarginBottom metadataLabel" />
+                                    <VBox class="metadataField">
+                                        <Label text="Lockbox Batch:" class="metadataLabel" />
                                         <Text text="{app>/selectedTransaction/lockboxBatch}" class="metadataValue" />
                                     </VBox>
-                                    <VBox class="sapUiTinyMarginBottom metadataField">
-                                        <Label text="Last Changed By:" class="sapUiTinyMarginBottom metadataLabel" />
+                                    <VBox class="metadataField">
+                                        <Label text="Last Changed By:" class="metadataLabel" />
                                         <Text text="System" class="metadataValue" />
                                     </VBox>
-                                    <VBox class="sapUiTinyMarginBottom metadataField">
-                                        <Label text="Last Changed On:" class="sapUiTinyMarginBottom metadataLabel" />
+                                    <VBox class="metadataField">
+                                        <Label text="Last Changed On:" class="metadataLabel" />
                                         <Text text="{path: 'app>/selectedTransaction/lastUpdated', formatter: '.formatDateTime'}" class="metadataValue" />
                                     </VBox>
-                                    <VBox class="sapUiTinyMarginBottom metadataField">
-                                        <Label text="Created By:" class="sapUiTinyMarginBottom metadataLabel" />
+                                    <VBox class="metadataField">
+                                        <Label text="Created By:" class="metadataLabel" />
                                         <Text text="System" class="metadataValue" />
                                     </VBox>
-                                    <VBox class="sapUiTinyMarginBottom metadataField">
-                                        <Label text="Created On:" class="sapUiTinyMarginBottom metadataLabel" />
+                                    <VBox class="metadataField">
+                                        <Label text="Created On:" class="metadataLabel" />
                                         <Text text="{path: 'app>/selectedTransaction/processedDate', formatter: '.formatDateTime'}" class="metadataValue" />
                                     </VBox>
-                                    <VBox class="sapUiTinyMarginBottom metadataField">
-                                        <Label text="Last Simulated On:" class="sapUiTinyMarginBottom metadataLabel" />
+                                    <VBox class="metadataField">
+                                        <Label text="Last Simulated On:" class="metadataLabel" />
                                         <Text text="{path: 'app>/selectedTransaction/lastUpdated', formatter: '.formatDateTime'}" class="metadataValue" />
                                     </VBox>
                                 </l:content>
