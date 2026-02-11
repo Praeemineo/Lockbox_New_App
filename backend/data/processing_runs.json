@@ -1,1 +1,114 @@
-[]
+[
+  {
+    "runId": "RUN-2026-00126",
+    "filename": "Customer Payments upload 9.xlsx",
+    "created_at": "2026-02-11T10:30:00Z",
+    "updated_at": "2026-02-11T10:35:00Z",
+    "overall_status": "SUCCESS",
+    "mode": "LIVE",
+    "lockbox": "LOCKBOX123",
+    "lockbox_origin": "LOCKBOXORI",
+    "lockbox_destination": "LOCKBOXDES",
+    "deposit_datetime": "2026-02-11T09:00:00Z",
+    "amount": 5000.00,
+    "currency": "USD",
+    "rowsExtracted": 1,
+    "stages": {
+      "upload": "SUCCESS",
+      "templateMatch": "SUCCESS",
+      "extraction": "SUCCESS",
+      "validation": "WARNING",
+      "mapping": "SUCCESS",
+      "simulate": "SUCCESS",
+      "posted": "SUCCESS"
+    },
+    "validationMessage": "Some validation warnings",
+    "ar_posting_doc": "4900012345",
+    "payment_advice_doc": "5100067890",
+    "clearing_doc": "4900012346",
+    "fiscal_year": "2026",
+    "company_code": "1010",
+    "clearing_status": "UNAPPLIED",
+    "items_cleared": 0,
+    "check_number": "CHK-123456",
+    "check_date": "2026-02-10",
+    "check_amount": 5000.00,
+    "bank_account": "1234567890",
+    "bank_routing": "021000021",
+    "bank_name": "Chase Bank",
+    "payment_reference": "PAY-REF-001",
+    "invoice_number": "INV-2026-001",
+    "customer_number": "CUST-12345",
+    "customer_name": "Acme Corporation",
+    "payment_method": "Check",
+    "payment_date": "2026-02-10",
+    "itemDetails": [
+      {
+        "item": "1",
+        "invoice": "INV-2026-001",
+        "amount": 5000.00,
+        "status": "Cleared"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "runId": "RUN-2026-00125",
+    "filename": "Customer Payments upload 8.xlsx",
+    "created_at": "2026-02-10T14:20:00Z",
+    "updated_at": "2026-02-10T14:25:00Z",
+    "overall_status": "SUCCESS",
+    "mode": "SIMULATION",
+    "lockbox": "LOCKBOX456",
+    "lockbox_origin": "LOCKBOXORI",
+    "lockbox_destination": "LOCKBOXDES",
+    "deposit_datetime": "2026-02-10T12:00:00Z",
+    "amount": 7500.50,
+    "currency": "EUR",
+    "rowsExtracted": 2,
+    "stages": {
+      "upload": "SUCCESS",
+      "templateMatch": "SUCCESS",
+      "extraction": "SUCCESS",
+      "validation": "SUCCESS",
+      "mapping": "SUCCESS",
+      "simulate": "SUCCESS",
+      "posted": "NOT_POSTED"
+    },
+    "validationMessage": "",
+    "ar_posting_doc": "4900012347",
+    "payment_advice_doc": "5100067891",
+    "clearing_doc": "4900012348",
+    "fiscal_year": "2026",
+    "company_code": "2020",
+    "clearing_status": "CLEARED",
+    "items_cleared": 2,
+    "check_number": "CHK-789012",
+    "check_date": "2026-02-09",
+    "check_amount": 7500.50,
+    "bank_account": "9876543210",
+    "bank_routing": "111000025",
+    "bank_name": "Bank of America",
+    "payment_reference": "PAY-REF-002",
+    "invoice_number": "INV-2026-002",
+    "customer_number": "CUST-67890",
+    "customer_name": "Global Tech Inc",
+    "payment_method": "Wire Transfer",
+    "payment_date": "2026-02-09",
+    "itemDetails": [
+      {
+        "item": "1",
+        "invoice": "INV-2026-002",
+        "amount": 3750.25,
+        "status": "Cleared"
+      },
+      {
+        "item": "2",
+        "invoice": "INV-2026-003",
+        "amount": 3750.25,
+        "status": "Cleared"
+      }
+    ],
+    "errors": []
+  }
+]
