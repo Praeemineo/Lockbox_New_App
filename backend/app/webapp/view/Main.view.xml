@@ -1853,12 +1853,15 @@
                             </l:Grid>
                         </VBox>
                         
-                        <!-- Lockbox Processing Status Section -->
-                        <VBox class="lockboxProcessingBox">
-                            <Title text="Lockbox Processing Status" level="H4" class="sapUiSmallMarginBottom boldTitle" titleStyle="H4" />
-                            
-                            <!-- Phase Columns Layout -->
-                            <HBox wrap="Wrap" class="sapUiSmallMarginTop">
+                        <!-- Lockbox Processing Status Section - Expandable Panel -->
+                        <Panel 
+                            class="lockboxProcessingBox" 
+                            expandable="true" 
+                            expanded="true"
+                            headerText="Lockbox Processing Status">
+                            <content>
+                                <!-- Phase Columns Layout -->
+                                <HBox wrap="Wrap" class="sapUiSmallMarginTop">
                                 <!-- Upload Phase Column -->
                                 <VBox width="25%" class="phaseColumn">
                                     <HBox class="sapUiTinyMarginBottom phaseHeaderGreen">
