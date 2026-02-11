@@ -394,7 +394,7 @@
 
 /* Page Header with Icon */
 .lockboxPageHeader {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #0854a0;
     padding: 1.5rem;
     border-radius: 8px;
     margin-bottom: 1rem;
