@@ -244,6 +244,113 @@
     text-decoration: underline !important;
 }
 
+/* Status Card Styling */
+.statusCard {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.statusCardHeader {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1rem;
+    align-items: center;
+}
+
+.statusCardHeader .sapMTitle {
+    color: white !important;
+}
+
+.statusCardHeader .sapUiIcon {
+    color: white !important;
+}
+
+.statusCardContent {
+    padding: 1.5rem;
+}
+
+.statusItem {
+    background: rgba(102, 126, 234, 0.05);
+    padding: 0.75rem;
+    border-radius: 6px;
+    border-left: 3px solid #667eea;
+    min-height: 60px;
+}
+
+.statusItemLabel {
+    font-size: 11px;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 4px;
+    line-height: 1;
+}
+
+.statusItemValue {
+    font-size: 13px;
+    color: #212529;
+    font-weight: 500;
+    line-height: 1.3;
+    margin-top: 4px;
+}
+
+/* Data Table Card Styling */
+.dataTableCard {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.dataTableHeader {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    padding: 1rem;
+    align-items: center;
+}
+
+.dataTableHeader .sapMTitle {
+    color: white !important;
+}
+
+.dataTableHeader .sapUiIcon {
+    color: white !important;
+}
+
+/* Lockbox Data Table */
+.lockboxDataTable {
+    border-top: none;
+}
+
+.lockboxDataTable .sapMListTblHeaderCell {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white !important;
+    font-weight: 600;
+    padding: 0.75rem;
+}
+
+.lockboxDataTable .sapMListTblHeaderCell .sapMText,
+.lockboxDataTable .sapMListTblHeaderCell .sapMLabel {
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+.lockboxDataTable .sapMListTblRow {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.lockboxDataTable .sapMListTblRow:hover {
+    background-color: #f8f9ff !important;
+}
+
+.lockboxDataTable .sapMListTblCell {
+    padding: 0.75rem 0.5rem;
+    font-size: 13px;
+}
+
 /* Bold Title */
 .boldTitle {
     font-weight: bold !important;
