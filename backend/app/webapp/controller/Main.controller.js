@@ -7773,6 +7773,7 @@ sap.ui.define([
                         // Build comprehensive transaction details object
                         var oTransaction = {
                             runId: data.run.runId || oItem.runId,
+                            lockbox: oItem.lockbox,
                             lockboxBatch: oItem.lockbox + "-" + (oItem.item || "0"),
                             depositDate: data.run.deposit_datetime || oItem.deposit_datetime,
                             sourceFile: data.run.filename || oItem.filename,
@@ -7782,6 +7783,7 @@ sap.ui.define([
                             amount: data.run.amount || oItem.amount,
                             currency: data.run.currency || oItem.currency || "USD",
                             rowsExtracted: data.run.rowsExtracted || 1,
+                            mode: data.run.mode || oItem.mode || "SIMULATION",
                             
                             // Stages
                             stages: data.run.stages || {
@@ -7798,18 +7800,36 @@ sap.ui.define([
                             validationMessage: data.run.validationMessage || oItem.validationMessage || "",
                             
                             // SAP Posting Details
-                            mode: data.run.mode || "SIMULATION",
                             arPostingDoc: oItem.ar_posting_doc || data.run.ar_posting_doc,
                             paymentAdvice: oItem.payment_advice_doc || data.run.payment_advice_doc,
                             clearingDoc: oItem.clearing_doc || data.run.clearing_doc,
-                            fiscalYear: data.run.fiscal_year,
-                            companyCode: data.run.company_code,
+                            fiscalYear: data.run.fiscal_year || oItem.fiscal_year,
+                            companyCode: data.run.company_code || oItem.company_code,
                             clearingStatus: data.run.clearing_status || "UNAPPLIED",
                             itemsCleared: data.run.items_cleared || 0,
-                            lockboxOrigin: data.run.lockbox_origin,
-                            lockboxDestination: data.run.lockbox_destination,
+                            lockboxOrigin: data.run.lockbox_origin || oItem.lockbox_origin,
+                            lockboxDestination: data.run.lockbox_destination || oItem.lockbox_destination,
                             
-                            // Lockbox Data
+                            // Check Data
+                            checkNumber: oItem.check_number || data.run.check_number,
+                            checkDate: oItem.check_date || data.run.check_date,
+                            checkAmount: oItem.check_amount || data.run.check_amount,
+                            bankAccount: oItem.bank_account || data.run.bank_account,
+                            bankRouting: oItem.bank_routing || data.run.bank_routing,
+                            bankName: oItem.bank_name || data.run.bank_name,
+                            
+                            // Payment Reference Data
+                            paymentReference: oItem.payment_reference || data.run.payment_reference,
+                            invoiceNumber: oItem.invoice_number || data.run.invoice_number,
+                            customerNumber: oItem.customer_number || data.run.customer_number,
+                            customerName: oItem.customer_name || data.run.customer_name,
+                            paymentMethod: oItem.payment_method || data.run.payment_method,
+                            paymentDate: oItem.payment_date || data.run.payment_date,
+                            
+                            // Item Details (for Item Data tab)
+                            itemDetails: data.run.itemDetails || [],
+                            
+                            // Lockbox Data (legacy structure for compatibility)
                             headerData: that._buildLockboxHeaderData(data.run),
                             checkData: that._buildLockboxCheckData(data.run),
                             paymentReferenceData: that._buildPaymentReferenceData(data.run),
