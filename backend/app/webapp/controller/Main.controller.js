@@ -7900,6 +7900,15 @@ sap.ui.define([
             this.byId("transactionDetailsDialog").close();
         },
         
+        /**
+         * Handle tab selection in transaction details dialog
+         */
+        onTransactionTabSelect: function (oEvent) {
+            var sKey = oEvent.getParameter("key");
+            console.log("Selected tab:", sKey);
+            // Additional logic if needed when switching tabs
+        },
+        
         // Delete item
         onDeleteItem: function (oEvent) {
             var that = this;
