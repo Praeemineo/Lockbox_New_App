@@ -1811,17 +1811,15 @@
                         </VBox>
                         
                         <!-- Processing Status Summary Bar - Right Aligned to match Company Code -->
-                        <VBox class="sapUiSmallPadding" style="background-color: #fafafa; border-bottom: 2px solid #d9d9d9;">
-                            <HBox justifyContent="End" width="100%">
-                                <VBox alignItems="End">
-                                    <Label text="Processing Status:" class="sapUiTinyMarginBottom" />
-                                    <ObjectStatus 
-                                        text="{app>/selectedTransaction/status}" 
-                                        state="{path: 'app>/selectedTransaction/status', formatter: '.formatStatusState'}"
-                                        emphasized="false" />
-                                </VBox>
-                            </HBox>
-                        </VBox>
+                        <HBox class="sapUiSmallPadding" justifyContent="End" width="100%" style="background-color: #fafafa; border-bottom: 2px solid #d9d9d9;">
+                            <VBox alignItems="End" class="sapUiSmallMarginEnd">
+                                <Label text="Processing Status:" class="sapUiTinyMarginBottom" design="Bold" />
+                                <ObjectStatus 
+                                    text="{app>/selectedTransaction/status}" 
+                                    state="{path: 'app>/selectedTransaction/status', formatter: '.formatStatusState'}"
+                                    emphasized="false" />
+                            </VBox>
+                        </HBox>
                         
                         <!-- Lockbox Processing Status Section -->
                         <VBox class="sapUiMediumMargin" style="background-color: #ffffff; border: 1px solid #d9d9d9; padding: 1rem;">
