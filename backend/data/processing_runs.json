@@ -6,6 +6,11 @@
     "updated_at": "2026-02-11T10:35:00Z",
     "overallStatus": "posted",
     "mode": "PRODUCTION",
+    "sapPayload": {
+      "Lockbox": "LOCKBOX123",
+      "LockboxBatch": "001",
+      "LockboxBatchItem": "00001"
+    },
     "lockbox": "LOCKBOX123",
     "lockbox_origin": "LOCKBOXORI",
     "lockbox_destination": "LOCKBOXDES",
@@ -59,6 +64,11 @@
     "updated_at": "2026-02-10T14:25:00Z",
     "overallStatus": "simulated",
     "mode": "SIMULATION",
+    "sapPayload": {
+      "Lockbox": "LOCKBOX456",
+      "LockboxBatch": "002",
+      "LockboxBatchItem": "00001"
+    },
     "lockbox": "LOCKBOX456",
     "lockbox_origin": "LOCKBOXORI",
     "lockbox_destination": "LOCKBOXDES",
