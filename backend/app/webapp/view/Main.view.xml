@@ -1822,15 +1822,15 @@
                         </HBox>
                         
                         <!-- Lockbox Processing Status Section -->
-                        <VBox class="sapUiMediumMargin" style="background-color: #ffffff; border: 1px solid #d9d9d9; padding: 1rem;">
-                            <Title text="Lockbox Processing Status" level="H4" class="sapUiSmallMarginBottom" titleStyle="H4" />
+                        <VBox class="lockboxProcessingBox">
+                            <Title text="Lockbox Processing Status" level="H4" class="sapUiSmallMarginBottom boldTitle" titleStyle="H4" />
                             
                             <!-- Phase Columns Layout -->
                             <HBox wrap="Wrap" class="sapUiSmallMarginTop">
                                 <!-- Upload Phase Column -->
-                                <VBox width="25%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
-                                    <HBox class="sapUiTinyMarginBottom" style="background-color: #4caf50; padding: 0.5rem;">
-                                        <Title text="Upload Phase" level="H5" class="sapUiTinyMarginBegin" style="color: white;" />
+                                <VBox width="25%" class="phaseColumn">
+                                    <HBox class="sapUiTinyMarginBottom phaseHeaderGreen">
+                                        <Title text="Upload Phase" level="H5" class="sapUiTinyMarginBegin" />
                                     </HBox>
                                     <VBox class="sapUiTinyMarginTop">
                                         <Label text="Upload Stage:" class="sapUiTinyMarginBottom" />
@@ -1859,9 +1859,9 @@
                                 </VBox>
                                 
                                 <!-- Validation Phase Column -->
-                                <VBox width="25%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
-                                    <HBox class="sapUiTinyMarginBottom" style="background-color: #ff9800; padding: 0.5rem;">
-                                        <Title text="Validation Phase" level="H5" class="sapUiTinyMarginBegin" style="color: white;" />
+                                <VBox width="25%" class="phaseColumn">
+                                    <HBox class="sapUiTinyMarginBottom phaseHeaderYellow">
+                                        <Title text="Validation Phase" level="H5" class="sapUiTinyMarginBegin" />
                                     </HBox>
                                     <VBox class="sapUiTinyMarginTop">
                                         <Label text="Validation Stage:" class="sapUiTinyMarginBottom" />
@@ -1874,9 +1874,9 @@
                                 </VBox>
                                 
                                 <!-- Simulation Phase Column -->
-                                <VBox width="25%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
-                                    <HBox class="sapUiTinyMarginBottom" style="background-color: #4caf50; padding: 0.5rem;">
-                                        <Title text="Simulation Phase" level="H5" class="sapUiTinyMarginBegin" style="color: white;" />
+                                <VBox width="25%" class="phaseColumn">
+                                    <HBox class="sapUiTinyMarginBottom phaseHeaderGreen">
+                                        <Title text="Simulation Phase" level="H5" class="sapUiTinyMarginBegin" />
                                     </HBox>
                                     <VBox class="sapUiTinyMarginTop">
                                         <Label text="Simulation Status:" class="sapUiTinyMarginBottom" />
@@ -1897,9 +1897,9 @@
                                 </VBox>
                                 
                                 <!-- Post to SAP Column -->
-                                <VBox width="24%" class="sapUiSmallPadding">
-                                    <HBox class="sapUiTinyMarginBottom" style="background-color: #ff9800; padding: 0.5rem;">
-                                        <Title text="Post to SAP" level="H5" class="sapUiTinyMarginBegin" style="color: white;" />
+                                <VBox width="24%" class="phaseColumnLast">
+                                    <HBox class="sapUiTinyMarginBottom phaseHeaderYellow">
+                                        <Title text="Post to SAP" level="H5" class="sapUiTinyMarginBegin" />
                                     </HBox>
                                     <VBox class="sapUiTinyMarginTop">
                                         <Label text="Mode:" class="sapUiTinyMarginBottom" />
