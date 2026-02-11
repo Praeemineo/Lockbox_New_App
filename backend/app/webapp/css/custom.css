@@ -1,0 +1,48 @@
+/* Custom CSS for Transaction Details Dialog */
+
+/* Phase Headers with Colors */
+.phaseHeaderGreen {
+    background-color: #4caf50 !important;
+    padding: 0.5rem !important;
+    color: white !important;
+}
+
+.phaseHeaderYellow {
+    background-color: #ff9800 !important;
+    padding: 0.5rem !important;
+    color: white !important;
+}
+
+.phaseHeaderGreen .sapMTitle,
+.phaseHeaderYellow .sapMTitle {
+    color: white !important;
+}
+
+/* Phase Column Borders */
+.phaseColumn {
+    border-right: 1px solid #e0e0e0;
+    padding: 1rem;
+}
+
+.phaseColumnLast {
+    padding: 1rem;
+}
+
+/* Lockbox Processing Status Box */
+.lockboxProcessingBox {
+    background-color: #ffffff;
+    border: 1px solid #d9d9d9;
+    padding: 1rem;
+    margin: 1rem;
+}
+
+/* Processing Status Right Aligned */
+.processingStatusBar {
+    background-color: #fafafa;
+    border-bottom: 2px solid #d9d9d9;
+}
+
+/* Bold Title */
+.boldTitle {
+    font-weight: bold !important;
+}
