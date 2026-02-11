@@ -7747,6 +7747,139 @@ sap.ui.define([
                 });
         },
         
+        /**
+         * Show comprehensive transaction details dialog
+         */
+        onShowTransactionDetails: function (oEvent) {
+            var that = this;
+            var oButton = oEvent.getSource();
+            var oContext = oButton.getBindingContext("app");
+            var oItem = oContext.getObject();
+            
+            if (!oItem.runId) {
+                MessageBox.warning("No run ID associated with this item");
+                return;
+            }
+            
+            BusyIndicator.show(0);
+            
+            // Fetch full run details
+            fetch(API_BASE + "/lockbox/runs/" + oItem.runId)
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    BusyIndicator.hide();
+                    
+                    if (data.run) {
+                        // Build comprehensive transaction details object
+                        var oTransaction = {
+                            runId: data.run.runId || oItem.runId,
+                            lockboxBatch: oItem.lockbox + "-" + (oItem.item || "0"),
+                            depositDate: data.run.deposit_datetime || oItem.deposit_datetime,
+                            sourceFile: data.run.filename || oItem.filename,
+                            processedDate: data.run.created_at || oItem.created_at,
+                            lastUpdated: data.run.updated_at || oItem.updated_at,
+                            status: data.run.overall_status || oItem.status,
+                            amount: data.run.amount || oItem.amount,
+                            currency: data.run.currency || oItem.currency || "USD",
+                            rowsExtracted: data.run.rowsExtracted || 1,
+                            
+                            // Stages
+                            stages: data.run.stages || {
+                                upload: oItem.stages?.upload || "unknown",
+                                templateMatch: oItem.stages?.templateMatch || "unknown",
+                                extraction: oItem.stages?.extraction || "unknown",
+                                validation: oItem.stages?.validation || "unknown",
+                                mapping: oItem.stages?.mapping || "unknown",
+                                simulate: oItem.stages?.simulate || "unknown",
+                                posted: oItem.stages?.posted || "unknown"
+                            },
+                            
+                            // Validation
+                            validationMessage: data.run.validationMessage || oItem.validationMessage || "",
+                            
+                            // SAP Posting Details
+                            mode: data.run.mode || "SIMULATION",
+                            arPostingDoc: oItem.ar_posting_doc || data.run.ar_posting_doc,
+                            paymentAdvice: oItem.payment_advice_doc || data.run.payment_advice_doc,
+                            clearingDoc: oItem.clearing_doc || data.run.clearing_doc,
+                            fiscalYear: data.run.fiscal_year,
+                            companyCode: data.run.company_code,
+                            clearingStatus: data.run.clearing_status || "UNAPPLIED",
+                            itemsCleared: data.run.items_cleared || 0,
+                            lockboxOrigin: data.run.lockbox_origin,
+                            lockboxDestination: data.run.lockbox_destination,
+                            
+                            // Lockbox Data
+                            headerData: that._buildLockboxHeaderData(data.run),
+                            checkData: that._buildLockboxCheckData(data.run),
+                            paymentReferenceData: that._buildPaymentReferenceData(data.run),
+                            
+                            // Errors
+                            errors: data.run.errors || []
+                        };
+                        
+                        // Set in model
+                        var oModel = that.getView().getModel("app");
+                        oModel.setProperty("/selectedTransaction", oTransaction);
+                        
+                        // Open dialog
+                        that.byId("transactionDetailsDialog").open();
+                    }
+                })
+                .catch(function (err) {
+                    BusyIndicator.hide();
+                    MessageBox.error("Error loading transaction details: " + err.message);
+                });
+        },
+        
+        /**
+         * Build header data table
+         */
+        _buildLockboxHeaderData: function (run) {
+            return [
+                { field: "Lockbox", value: run.lockbox || "" },
+                { field: "Lockbox Batch Origin", value: run.lockbox_origin || "" },
+                { field: "Lockbox Batch Destination", value: run.lockbox_destination || "" },
+                { field: "Deposit Date/Time", value: run.deposit_datetime || "" },
+                { field: "Total Amount", value: run.amount || "" },
+                { field: "Currency", value: run.currency || "USD" }
+            ];
+        },
+        
+        /**
+         * Build check data table
+         */
+        _buildLockboxCheckData: function (run) {
+            return [
+                { field: "Check Number", value: run.check_number || "" },
+                { field: "Check Date", value: run.check_date || "" },
+                { field: "Check Amount", value: run.check_amount || "" },
+                { field: "Bank Account", value: run.bank_account || "" },
+                { field: "Bank Routing", value: run.bank_routing || "" }
+            ];
+        },
+        
+        /**
+         * Build payment reference data table
+         */
+        _buildPaymentReferenceData: function (run) {
+            return [
+                { field: "Payment Reference", value: run.payment_reference || "" },
+                { field: "Invoice Number", value: run.invoice_number || "" },
+                { field: "Customer Number", value: run.customer_number || "" },
+                { field: "Customer Name", value: run.customer_name || "" },
+                { field: "Payment Method", value: run.payment_method || "" },
+                { field: "Payment Date", value: run.payment_date || "" }
+            ];
+        },
+        
+        /**
+         * Close transaction details dialog
+         */
+        onCloseTransactionDetails: function () {
+            this.byId("transactionDetailsDialog").close();
+        },
+        
         // Delete item
         onDeleteItem: function (oEvent) {
             var that = this;
