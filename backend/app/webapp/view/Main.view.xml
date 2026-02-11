@@ -114,15 +114,17 @@
             <!-- LOCKBOX TRANSACTION CONTENT (Hidden by default) -->
             <!-- ============================================================ -->
             <VBox id="lockboxContent" visible="{app>/showLockbox}" class="sapUiSmallMargin">
-                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                    <core:Icon src="sap-icon://money-bills" size="1.5rem" color="#0854a0" class="sapUiSmallMarginEnd" />
-                    <Title text="Lockbox Transaction" level="H2" />
-                </HBox>
+                <VBox class="lockboxPageHeader">
+                    <HBox alignItems="Center">
+                        <core:Icon src="sap-icon://money-bills" size="2rem" class="sapUiSmallMarginEnd" />
+                        <Title text="Lockbox Transaction" level="H2" />
+                    </HBox>
+                </VBox>
                 
                 <!-- Filter Bar Section -->
-                <Panel expandable="false" class="sapUiNoContentPadding">
+                <Panel expandable="false" class="sapUiNoContentPadding filterPanel">
                     <headerToolbar>
-                        <Toolbar>
+                        <Toolbar class="panelHeader">
                             <Title text="Standard" level="H4" />
                             <ToolbarSpacer />
                         </Toolbar>
@@ -179,10 +181,11 @@
                                     text="Go"
                                     type="Emphasized"
                                     press="onFilterGo"
-                                    class="sapUiSmallMarginEnd" />
+                                    class="sapUiSmallMarginEnd goButton" />
                                 <Button
                                     text="Adapt Filters"
-                                    press="onAdaptFilters" />
+                                    press="onAdaptFilters"
+                                    class="adaptFiltersButton" />
                             </HBox>
                         </VBox>
                     </content>
@@ -192,7 +195,7 @@
                 <IconTabBar
                     id="statusTabBarLockbox"
                     select="onStatusFilterChange"
-                    class="sapUiSmallMarginTop sapUiSmallMarginBottom"
+                    class="sapUiSmallMarginTop sapUiSmallMarginBottom statusTabBar"
                     headerMode="Inline"
                     expandable="false">
                     <items>
@@ -204,30 +207,48 @@
                 </IconTabBar>
                 
                 <!-- Data Panel with TreeTable -->
-                <Panel expandable="false">
+                <Panel expandable="false" class="dataPanel">
                     <headerToolbar>
-                        <OverflowToolbar>
-                            <Title text="Lockbox Data ({= ${app>/processingRuns} ? ${app>/processingRuns}.length : 0} runs)" />
+                        <OverflowToolbar class="panelHeader">
+                            <Title text="Lockbox Data ({= ${app>/processingRuns} ? ${app>/processingRuns}.length : 0})" />
                             <ToolbarSpacer />
                             <Button
                                 text="Upload File"
                                 icon="sap-icon://upload"
                                 type="Emphasized"
                                 press="onOpenUploadDialog"
+                                class="uploadButton"
                                 tooltip="Upload customer file - Auto processes: Template Match → Extract → Validate → Map" />
+                            <Button
+                                text="Simulate"
+                                icon="sap-icon://simulate"
+                                type="Ghost"
+                                press="onSimulate"
+                                class="simulateButton"
+                                tooltip="Run simulation mode" />
+                            <Button
+                                text="Production Run"
+                                icon="sap-icon://accept"
+                                type="Accept"
+                                press="onProductionRun"
+                                class="productionButton"
+                                tooltip="Run production posting" />
                             <Button
                                 text="Run History"
                                 icon="sap-icon://history"
                                 type="Ghost"
                                 press="onRunHistory"
+                                class="historyButton"
                                 tooltip="View processing runs with stage status (🔴/🟢)" />
                             <Button
                                 icon="sap-icon://action-settings"
                                 press="onOpenTableSettings"
+                                class="iconButton"
                                 tooltip="Table Settings - Show/Hide Columns" />
                             <Button
                                 icon="sap-icon://refresh"
                                 press="onRefreshHeaders"
+                                class="iconButton"
                                 tooltip="Refresh" />
                         </OverflowToolbar>
                     </headerToolbar>
@@ -235,6 +256,7 @@
                         <!-- sap.ui.table.TreeTable for hierarchical display -->
                         <table:TreeTable
                             id="lockboxTreeTable"
+                            class="lockboxTreeTable"
                             rows="{path: 'app>/treeData', parameters: {arrayNames: ['children']}}"
                             selectionMode="Single"
                             enableSelectAll="false"
