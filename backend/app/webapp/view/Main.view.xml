@@ -1838,26 +1838,70 @@
                             </l:Grid>
                         </VBox>
                         
-                        <!-- Processing Status Summary Bar - Aligned with Grid Layout -->
-                        <VBox class="sapUiSmallPadding processingStatusBar">
-                            <l:Grid defaultSpan="L3 M6 S12" hSpacing="2" vSpacing="1">
-                                <l:content>
-                                    <!-- First 3 empty columns -->
-                                    <VBox></VBox>
-                                    <VBox></VBox>
-                                    <VBox></VBox>
-                                    <!-- Processing Status in 4th column - properly formatted -->
-                                    <VBox class="sapUiTinyMarginBottom">
-                                        <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                                            <Label text="Processing Status:" class="sapUiSmallMarginEnd boldTitle" />
+                        <!-- Lockbox Processing Status Card -->
+                        <VBox class="statusCard sapUiMediumMargin">
+                            <HBox class="statusCardHeader">
+                                <core:Icon src="sap-icon://status-positive" size="1.5rem" class="sapUiTinyMarginEnd" />
+                                <Title text="Lockbox Processing Status" level="H4" />
+                            </HBox>
+                            <VBox class="statusCardContent">
+                                <l:Grid defaultSpan="L3 M4 S6" hSpacing="1" vSpacing="0.5">
+                                    <l:content>
+                                        <!-- File Pattern/Rule -->
+                                        <VBox class="statusItem">
+                                            <Label text="File Pattern/Rule" class="statusItemLabel" />
+                                            <Text text="RuleID001: Standard Pattern" class="statusItemValue" />
+                                        </VBox>
+                                        <!-- Extract File -->
+                                        <VBox class="statusItem">
+                                            <Label text="Extract File" class="statusItemLabel" />
+                                            <Text text="Rows Extracted: {app>/selectedTransaction/rowsExtracted}" class="statusItemValue" />
+                                        </VBox>
+                                        <!-- Validation & Mapping -->
+                                        <VBox class="statusItem">
+                                            <Label text="Validation &amp; Mapping" class="statusItemLabel" />
+                                            <ObjectStatus text="API Field Mapping Success" state="Success" class="statusItemValue" />
+                                        </VBox>
+                                        <!-- Simulation Run -->
+                                        <VBox class="statusItem">
+                                            <Label text="Simulation Run" class="statusItemLabel" />
+                                            <ObjectStatus 
+                                                text="{app>/selectedTransaction/stages/simulate}" 
+                                                state="{path: 'app>/selectedTransaction/stages/simulate', formatter: '.formatStatusState'}" 
+                                                class="statusItemValue" />
+                                        </VBox>
+                                        <!-- Pattern Identified -->
+                                        <VBox class="statusItem">
+                                            <Label text="Pattern Identified" class="statusItemLabel" />
+                                            <ObjectStatus 
+                                                text="{app>/selectedTransaction/stages/templateMatch}" 
+                                                state="{path: 'app>/selectedTransaction/stages/templateMatch', formatter: '.formatStatusState'}" 
+                                                class="statusItemValue" />
+                                        </VBox>
+                                        <!-- Overall Processing Status -->
+                                        <VBox class="statusItem">
+                                            <Label text="Overall Processing Status" class="statusItemLabel" />
                                             <ObjectStatus 
                                                 text="{app>/selectedTransaction/status}" 
-                                                state="{path: 'app>/selectedTransaction/status', formatter: '.formatStatusState'}"
-                                                emphasized="false" />
-                                        </HBox>
-                                    </VBox>
-                                </l:content>
-                            </l:Grid>
+                                                state="{path: 'app>/selectedTransaction/status', formatter: '.formatStatusState'}" 
+                                                class="statusItemValue" />
+                                        </VBox>
+                                        <!-- Number of Checks -->
+                                        <VBox class="statusItem">
+                                            <Label text="Number of Checks" class="statusItemLabel" />
+                                            <Text text="{= ${app>/selectedTransaction/checks} ? ${app>/selectedTransaction/checks}.length : '0'}" class="statusItemValue" />
+                                        </VBox>
+                                        <!-- Production Run -->
+                                        <VBox class="statusItem">
+                                            <Label text="Production Run" class="statusItemLabel" />
+                                            <ObjectStatus 
+                                                text="{= ${app>/selectedTransaction/mode} === 'PRODUCTION' ? 'Posted' : 'Not Posted'}" 
+                                                state="{= ${app>/selectedTransaction/mode} === 'PRODUCTION' ? 'Success' : 'None'}" 
+                                                class="statusItemValue" />
+                                        </VBox>
+                                    </l:content>
+                                </l:Grid>
+                            </VBox>
                         </VBox>
                         
                         <!-- Lockbox Processing Status Section - Expandable Panel -->
