@@ -1810,228 +1810,228 @@
                             </l:Grid>
                         </VBox>
                         
-                        <!-- Processing Status Summary Bar - Properly Spaced -->
+                        <!-- Processing Status Summary Bar - Right Aligned to match Company Code -->
                         <VBox class="sapUiSmallPadding" style="background-color: #fafafa; border-bottom: 2px solid #d9d9d9;">
-                            <l:Grid defaultSpan="L3 M6 S12" hSpacing="3" vSpacing="1">
-                                <l:content>
-                                    <VBox>
-                                        <Label text="Processing Status:" class="sapUiTinyMarginBottom" />
-                                        <ObjectStatus 
-                                            text="{app>/selectedTransaction/status}" 
-                                            state="{path: 'app>/selectedTransaction/status', formatter: '.formatStatusState'}"
-                                            emphasized="false" />
-                                    </VBox>
-                                    <VBox>
-                                        <Label text="Order Simulation:" class="sapUiTinyMarginBottom" />
-                                        <ObjectStatus 
-                                            text="{= ${app>/selectedTransaction/mode} === 'PRODUCTION' ? 'Posted' : 'Successful'}" 
-                                            state="Success"
-                                            emphasized="false" />
-                                    </VBox>
-                                    <VBox>
-                                        <Label text="Extracted Net Value:" class="sapUiTinyMarginBottom" />
-                                        <ObjectNumber 
-                                            number="{app>/selectedTransaction/amount}" 
-                                            unit="{= ${app>/selectedTransaction/currency} || 'USD'}"
-                                            emphasized="false"
-                                            state="Success" />
-                                    </VBox>
-                                    <VBox visible="{= ${app>/selectedTransaction/mode} !== 'UPLOAD'}">
-                                        <Label text="Simulated Net Value:" class="sapUiTinyMarginBottom" />
-                                        <ObjectNumber 
-                                            number="{app>/selectedTransaction/amount}" 
-                                            unit="{= ${app>/selectedTransaction/currency} || 'USD'}"
-                                            emphasized="false"
-                                            state="Success" />
-                                    </VBox>
-                                </l:content>
-                            </l:Grid>
+                            <HBox justifyContent="End" width="100%">
+                                <VBox alignItems="End">
+                                    <Label text="Processing Status:" class="sapUiTinyMarginBottom" />
+                                    <ObjectStatus 
+                                        text="{app>/selectedTransaction/status}" 
+                                        state="{path: 'app>/selectedTransaction/status', formatter: '.formatStatusState'}"
+                                        emphasized="false" />
+                                </VBox>
+                            </HBox>
                         </VBox>
                         
-                        <!-- Tab Navigation -->
-                        <IconTabBar id="transactionTabBar" class="sapUiResponsiveContentPadding" select="onTransactionTabSelect">
-                            <items>
-                                <!-- Header Data Tab -->
-                                <IconTabFilter text="Header Data" key="headerData" icon="sap-icon://document">
-                                    <VBox class="sapUiSmallMargin">
-                                        <!-- Data displayed in horizontal grid format -->
-                                        <HBox wrap="Wrap" class="sapUiSmallMarginTop">
-                                            <!-- Column 1: Basic Lockbox Data -->
-                                            <VBox width="20%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
-                                                <Title text="Basic Lockbox Data" level="H6" class="sapUiTinyMarginBottom" wrapping="true" />
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Lockbox:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/lockbox} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Lockbox Origin:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/lockboxOrigin} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Lockbox Destination:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/lockboxDestination} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Deposit Date/Time:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{path: 'app>/selectedTransaction/depositDate', formatter: '.formatDateTime'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Total Amount:" class="sapUiTinyMarginBottom" />
-                                                    <ObjectNumber number="{app>/selectedTransaction/amount}" unit="{= ${app>/selectedTransaction/currency} || 'USD'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Currency:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/currency} || 'USD'}" />
-                                                </VBox>
-                                            </VBox>
-                                            
-                                            <!-- Column 2: Lockbox Header Data -->
-                                            <VBox width="20%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
-                                                <Title text="Lockbox Header Data" level="H6" class="sapUiTinyMarginBottom" wrapping="true" />
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="💰 AR Posting Document:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/arPostingDoc} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="💳 Payment Advice:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/paymentAdvice} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="📄 Clearing Document:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/clearingDoc} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="📅 Fiscal Year:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/fiscalYear} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="🏢 Company Code:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/companyCode} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="✅ Clearing Status:" class="sapUiTinyMarginBottom" />
-                                                    <ObjectStatus 
-                                                        text="{= ${app>/selectedTransaction/clearingStatus} || 'UNAPPLIED'}" 
-                                                        state="{= ${app>/selectedTransaction/clearingStatus} === 'CLEARED' ? 'Success' : 'Warning'}" />
-                                                </VBox>
-                                            </VBox>
-                                            
-                                            <!-- Column 3: Check Data -->
-                                            <VBox width="20%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
-                                                <Title text="Check Data" level="H6" class="sapUiTinyMarginBottom" wrapping="true" />
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Check Number:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/checkNumber} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Check Date:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/checkDate} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Check Amount:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/checkAmount} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Bank Account:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/bankAccount} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Bank Routing:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/bankRouting} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Bank Name:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/bankName} || '-'}" />
-                                                </VBox>
-                                            </VBox>
-                                            
-                                            <!-- Column 4: Payment Reference Data -->
-                                            <VBox width="20%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
-                                                <Title text="Payment Reference Data" level="H6" class="sapUiTinyMarginBottom" wrapping="true" />
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Payment Reference:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/paymentReference} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Invoice Number:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/invoiceNumber} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Customer Number:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/customerNumber} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Customer Name:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/customerName} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Payment Method:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/paymentMethod} || '-'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Payment Date:" class="sapUiTinyMarginBottom" />
-                                                    <Text text="{= ${app>/selectedTransaction/paymentDate} || '-'}" />
-                                                </VBox>
-                                            </VBox>
-                                            
-                                            <!-- Column 5: Processing Stages -->
-                                            <VBox width="19%" class="sapUiSmallPadding">
-                                                <Title text="Processing Stages" level="H6" class="sapUiTinyMarginBottom" wrapping="true" />
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Upload:" class="sapUiTinyMarginBottom" />
-                                                    <ObjectStatus text="{app>/selectedTransaction/stages/upload}" state="{path: 'app>/selectedTransaction/stages/upload', formatter: '.formatStatusState'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Template Match:" class="sapUiTinyMarginBottom" />
-                                                    <ObjectStatus text="{app>/selectedTransaction/stages/templateMatch}" state="{path: 'app>/selectedTransaction/stages/templateMatch', formatter: '.formatStatusState'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Extraction:" class="sapUiTinyMarginBottom" />
-                                                    <ObjectStatus text="{app>/selectedTransaction/stages/extraction}" state="{path: 'app>/selectedTransaction/stages/extraction', formatter: '.formatStatusState'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Validation:" class="sapUiTinyMarginBottom" />
-                                                    <ObjectStatus text="{app>/selectedTransaction/stages/validation}" state="{path: 'app>/selectedTransaction/stages/validation', formatter: '.formatStatusState'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Simulation:" class="sapUiTinyMarginBottom" />
-                                                    <ObjectStatus text="{app>/selectedTransaction/stages/simulate}" state="{path: 'app>/selectedTransaction/stages/simulate', formatter: '.formatStatusState'}" class="sapUiSmallMarginBottom" />
-                                                </VBox>
-                                                <VBox class="sapUiTinyMarginTop">
-                                                    <Label text="Posted:" class="sapUiTinyMarginBottom" />
-                                                    <ObjectStatus text="{app>/selectedTransaction/stages/posted}" state="{path: 'app>/selectedTransaction/stages/posted', formatter: '.formatStatusState'}" />
-                                                </VBox>
-                                            </VBox>
-                                        </HBox>
+                        <!-- Lockbox Processing Status Section -->
+                        <VBox class="sapUiMediumMargin" style="background-color: #ffffff; border: 1px solid #d9d9d9; padding: 1rem;">
+                            <Title text="Lockbox Processing Status" level="H4" class="sapUiSmallMarginBottom" titleStyle="H4" />
+                            
+                            <!-- Phase Columns Layout -->
+                            <HBox wrap="Wrap" class="sapUiSmallMarginTop">
+                                <!-- Upload Phase Column -->
+                                <VBox width="25%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
+                                    <HBox class="sapUiTinyMarginBottom" style="background-color: #4caf50; padding: 0.5rem;">
+                                        <Title text="Upload Phase" level="H5" class="sapUiTinyMarginBegin" style="color: white;" />
+                                    </HBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Upload Stage:" class="sapUiTinyMarginBottom" />
+                                        <Text text="Upload Stage" class="sapUiSmallMarginBottom" />
                                     </VBox>
-                                </IconTabFilter>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Status:" class="sapUiTinyMarginBottom" />
+                                        <ObjectStatus text="{app>/selectedTransaction/stages/upload}" state="{path: 'app>/selectedTransaction/stages/upload', formatter: '.formatStatusState'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="File:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{app>/selectedTransaction/sourceFile}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Template Match - Which Pattern" class="sapUiTinyMarginBottom" />
+                                        <ObjectStatus text="{app>/selectedTransaction/stages/templateMatch}" state="{path: 'app>/selectedTransaction/stages/templateMatch', formatter: '.formatStatusState'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Data Extraction Stage:" class="sapUiTinyMarginBottom" />
+                                        <ObjectStatus text="{app>/selectedTransaction/stages/extraction}" state="{path: 'app>/selectedTransaction/stages/extraction', formatter: '.formatStatusState'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Rows Extracted:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{app>/selectedTransaction/rowsExtracted}" />
+                                    </VBox>
+                                </VBox>
                                 
-                                <!-- Item Data Tab -->
-                                <IconTabFilter text="Item Data" key="itemData" icon="sap-icon://product">
-                                    <VBox class="sapUiSmallMargin">
-                                        <Text text="Item-level clearing details will be displayed here" class="sapUiSmallMarginTop" />
-                                        <Table items="{app>/selectedTransaction/itemDetails}">
-                                            <columns>
-                                                <Column><Text text="Item" /></Column>
-                                                <Column><Text text="Invoice" /></Column>
-                                                <Column><Text text="Amount" /></Column>
-                                                <Column><Text text="Status" /></Column>
-                                            </columns>
-                                            <items>
-                                                <ColumnListItem>
-                                                    <cells>
-                                                        <Text text="{app>item}" />
-                                                        <Text text="{app>invoice}" />
-                                                        <ObjectNumber number="{app>amount}" unit="USD" />
-                                                        <ObjectStatus text="{app>status}" state="{path: 'app>status', formatter: '.formatStatusState'}" />
-                                                    </cells>
-                                                </ColumnListItem>
-                                            </items>
-                                        </Table>
+                                <!-- Validation Phase Column -->
+                                <VBox width="25%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
+                                    <HBox class="sapUiTinyMarginBottom" style="background-color: #ff9800; padding: 0.5rem;">
+                                        <Title text="Validation Phase" level="H5" class="sapUiTinyMarginBegin" style="color: white;" />
+                                    </HBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Validation Stage:" class="sapUiTinyMarginBottom" />
+                                        <ObjectStatus text="{app>/selectedTransaction/stages/validation}" state="{path: 'app>/selectedTransaction/stages/validation', formatter: '.formatStatusState'}" class="sapUiSmallMarginBottom" />
                                     </VBox>
-                                </IconTabFilter>
-                            </items>
-                        </IconTabBar>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="API Field Mapping Stage:" class="sapUiTinyMarginBottom" />
+                                        <ObjectStatus text="{app>/selectedTransaction/stages/mapping}" state="{path: 'app>/selectedTransaction/stages/mapping', formatter: '.formatStatusState'}" />
+                                    </VBox>
+                                </VBox>
+                                
+                                <!-- Simulation Phase Column -->
+                                <VBox width="25%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
+                                    <HBox class="sapUiTinyMarginBottom" style="background-color: #4caf50; padding: 0.5rem;">
+                                        <Title text="Simulation Phase" level="H5" class="sapUiTinyMarginBegin" style="color: white;" />
+                                    </HBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Simulation Status:" class="sapUiTinyMarginBottom" />
+                                        <ObjectStatus text="{app>/selectedTransaction/stages/simulate}" state="{path: 'app>/selectedTransaction/stages/simulate', formatter: '.formatStatusState'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Status:" class="sapUiTinyMarginBottom" />
+                                        <Text text="Simulation passed, document successfully posted." class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Production Posting:" class="sapUiTinyMarginBottom" />
+                                        <Text text="This run has been successfully" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Run ID:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{app>/selectedTransaction/runId}" />
+                                    </VBox>
+                                </VBox>
+                                
+                                <!-- Post to SAP Column -->
+                                <VBox width="24%" class="sapUiSmallPadding">
+                                    <HBox class="sapUiTinyMarginBottom" style="background-color: #ff9800; padding: 0.5rem;">
+                                        <Title text="Post to SAP" level="H5" class="sapUiTinyMarginBegin" style="color: white;" />
+                                    </HBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Mode:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{app>/selectedTransaction/mode}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Service:" class="sapUiTinyMarginBottom" />
+                                        <Text text="S4HANA On Premise" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="📄 AR Posting Document:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/arPostingDoc} || 'undefined'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="💳 Payment Advice:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/paymentAdvice} || 'undefined'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="📄 Check Posting document:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/clearingDoc} || 'undefined'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="📅 Fiscal Year:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/fiscalYear} || 'undefined'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="🏢 Company Code:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/companyCode} || 'undefined'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="✅ Clearing Status:" class="sapUiTinyMarginBottom" />
+                                        <ObjectStatus 
+                                            text="{= ${app>/selectedTransaction/clearingStatus} || 'UNAPPLIED'}" 
+                                            state="{= ${app>/selectedTransaction/clearingStatus} === 'CLEARED' ? 'Success' : 'Warning'}" />
+                                    </VBox>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                        
+                        <!-- Lockbox Hierarchy Section (Expandable) -->
+                        <Panel class="sapUiMediumMargin" headerText="Lockbox Hierarchy" expandable="true" expanded="false">
+                            <HBox wrap="Wrap">
+                                <!-- Lockbox Header Data -->
+                                <VBox width="33%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
+                                    <Title text="Lockbox Header" level="H6" class="sapUiTinyMarginBottom" wrapping="true" />
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Lockbox:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/lockbox} || '-'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Lockbox Origin:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/lockboxOrigin} || '-'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Lockbox Destination:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/lockboxDestination} || '-'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Deposit Date/Time:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{path: 'app>/selectedTransaction/depositDate', formatter: '.formatDateTime'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Total Amount:" class="sapUiTinyMarginBottom" />
+                                        <ObjectNumber number="{app>/selectedTransaction/amount}" unit="{= ${app>/selectedTransaction/currency} || 'USD'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Currency:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/currency} || 'USD'}" />
+                                    </VBox>
+                                </VBox>
+                                
+                                <!-- Check Data -->
+                                <VBox width="33%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
+                                    <Title text="Check Data" level="H6" class="sapUiTinyMarginBottom" wrapping="true" />
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Check Number:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/checkNumber} || '-'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Check Date:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/checkDate} || '-'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Check Amount:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/checkAmount} || '-'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Bank Account:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/bankAccount} || '-'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Bank Routing:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/bankRouting} || '-'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Bank Name:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/bankName} || '-'}" />
+                                    </VBox>
+                                </VBox>
+                                
+                                <!-- Payment Reference Data -->
+                                <VBox width="33%" class="sapUiSmallPadding">
+                                    <Title text="Payment Reference Data" level="H6" class="sapUiTinyMarginBottom" wrapping="true" />
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Payment Reference:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/paymentReference} || '-'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Invoice Number:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/invoiceNumber} || '-'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Customer Number:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/customerNumber} || '-'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Customer Name:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/customerName} || '-'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Payment Method:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/paymentMethod} || '-'}" class="sapUiSmallMarginBottom" />
+                                    </VBox>
+                                    <VBox class="sapUiTinyMarginTop">
+                                        <Label text="Payment Date:" class="sapUiTinyMarginBottom" />
+                                        <Text text="{= ${app>/selectedTransaction/paymentDate} || '-'}" />
+                                    </VBox>
+                                </VBox>
+                            </HBox>
+                        </Panel>
                     </VBox>
                 </content>
             </Dialog>
