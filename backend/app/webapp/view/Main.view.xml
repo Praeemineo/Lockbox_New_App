@@ -408,6 +408,17 @@
                                         <Text text="{app>clearing_doc}" />
                                     </table:template>
                                 </table:Column>
+                                <table:Column width="5%" hAlign="Center">
+                                    <Label text="" />
+                                    <table:template>
+                                        <Button 
+                                            icon="sap-icon://navigation-right-arrow" 
+                                            type="Transparent"
+                                            press="onShowTransactionDetails"
+                                            visible="{= ${app>type} === 'HEADER' || ${app>type} === 'LOCKBOX'}"
+                                            tooltip="View Transaction Details" />
+                                    </table:template>
+                                </table:Column>
                             </table:columns>
                         </table:TreeTable>
                     </content>
