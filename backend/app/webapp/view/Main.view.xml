@@ -1793,7 +1793,7 @@
                 </customHeader>
                 <content>
                     <VBox>
-                        <!-- Metadata Section with Professional Styling -->
+                        <!-- Metadata Section - Compact -->
                         <VBox class="metadataSection">
                             <l:Grid defaultSpan="L3 M6 S12" hSpacing="1" vSpacing="0.5">
                                 <l:content>
@@ -1810,24 +1810,29 @@
                                         <Text text="{app>/selectedTransaction/lockboxBatch}" class="metadataValue" />
                                     </VBox>
                                     <VBox class="metadataField">
-                                        <Label text="Last Changed By:" class="metadataLabel" />
-                                        <Text text="System" class="metadataValue" />
-                                    </VBox>
-                                    <VBox class="metadataField">
-                                        <Label text="Last Changed On:" class="metadataLabel" />
-                                        <Text text="{path: 'app>/selectedTransaction/lastUpdated', formatter: '.formatDateTime'}" class="metadataValue" />
+                                        <Label text="Created On:" class="metadataLabel" />
+                                        <Text text="{path: 'app>/selectedTransaction/processedDate', formatter: '.formatDateTime'}" class="metadataValue" />
                                     </VBox>
                                     <VBox class="metadataField">
                                         <Label text="Created By:" class="metadataLabel" />
                                         <Text text="System" class="metadataValue" />
                                     </VBox>
                                     <VBox class="metadataField">
-                                        <Label text="Created On:" class="metadataLabel" />
-                                        <Text text="{path: 'app>/selectedTransaction/processedDate', formatter: '.formatDateTime'}" class="metadataValue" />
+                                        <Label text="Overall Processing Status:" class="metadataLabel" />
+                                        <ObjectStatus 
+                                            text="{app>/selectedTransaction/status}" 
+                                            state="{path: 'app>/selectedTransaction/status', formatter: '.formatStatusState'}" />
                                     </VBox>
                                     <VBox class="metadataField">
-                                        <Label text="Last Simulated On:" class="metadataLabel" />
-                                        <Text text="{path: 'app>/selectedTransaction/lastUpdated', formatter: '.formatDateTime'}" class="metadataValue" />
+                                        <Label text="Deposit Date/Time:" class="metadataLabel" />
+                                        <Text text="{path: 'app>/selectedTransaction/depositDate', formatter: '.formatDateTime'}" class="metadataValue" />
+                                    </VBox>
+                                    <VBox class="metadataField">
+                                        <Label text="Total Amount:" class="metadataLabel" />
+                                        <ObjectNumber 
+                                            number="{app>/selectedTransaction/amount}" 
+                                            unit="{= ${app>/selectedTransaction/currency} || 'USD'}" 
+                                            class="metadataValue" />
                                     </VBox>
                                 </l:content>
                             </l:Grid>
