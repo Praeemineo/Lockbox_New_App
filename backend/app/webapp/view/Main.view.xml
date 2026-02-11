@@ -1835,6 +1835,7 @@
                         
                         <!-- Processing Status Summary Bar - Right Aligned to match Company Code -->
                         <HBox class="sapUiSmallPadding processingStatusBar" justifyContent="End" width="100%">
+                            <ToolbarSpacer />
                             <VBox alignItems="End" class="sapUiSmallMarginEnd">
                                 <Label text="Processing Status:" class="sapUiTinyMarginBottom boldTitle" />
                                 <ObjectStatus 
