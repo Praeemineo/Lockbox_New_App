@@ -32,8 +32,60 @@
 .lockboxProcessingBox {
     background-color: #ffffff;
     border: 1px solid #d9d9d9;
-    padding: 1rem;
+    padding: 0;
     margin: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.lockboxProcessingBox .sapMPanelHdr {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 1rem;
+    border-radius: 8px 8px 0 0;
+}
+
+.lockboxProcessingBox .sapMPanelExpandableIcon {
+    color: white !important;
+}
+
+.lockboxProcessingBox .sapMPanelHdrText {
+    color: white !important;
+    font-weight: bold !important;
+}
+
+/* Lockbox Hierarchy Panel */
+.lockboxHierarchyPanel {
+    background-color: #ffffff;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.lockboxHierarchyPanel .sapMPanelHdr {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 1rem;
+    border-radius: 8px 8px 0 0;
+}
+
+.lockboxHierarchyPanel .sapMPanelExpandableIcon {
+    color: white !important;
+}
+
+.lockboxHierarchyPanel .sapMPanelHdrText {
+    color: white !important;
+    font-weight: bold !important;
+}
+
+/* Panel Content Padding */
+.lockboxProcessingBox .sapMPanelContent,
+.lockboxHierarchyPanel .sapMPanelContent {
+    padding: 1rem;
 }
 
 /* Processing Status Right Aligned */
