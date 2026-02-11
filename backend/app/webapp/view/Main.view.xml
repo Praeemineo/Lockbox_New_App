@@ -1977,96 +1977,142 @@
                             </content>
                         </Panel>
                         
-                        <!-- Lockbox Hierarchy Section (Expandable) -->
+                        <!-- Lockbox Hierarchy Section (Expandable with Nested Structure) -->
                         <Panel class="sapUiMediumMargin lockboxHierarchyPanel" headerText="Lockbox Hierarchy" expandable="true" expanded="false">
-                            <HBox wrap="Wrap">
-                                <!-- Lockbox Header Data -->
-                                <VBox width="33%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
-                                    <Title text="Lockbox Header" level="H6" class="sapUiTinyMarginBottom" wrapping="true" />
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Lockbox:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/lockbox} || '-'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Lockbox Origin:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/lockboxOrigin} || '-'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Lockbox Destination:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/lockboxDestination} || '-'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Deposit Date/Time:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{path: 'app>/selectedTransaction/depositDate', formatter: '.formatDateTime'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Total Amount:" class="sapUiTinyMarginBottom" />
-                                        <ObjectNumber number="{app>/selectedTransaction/amount}" unit="{= ${app>/selectedTransaction/currency} || 'USD'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Currency:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/currency} || 'USD'}" />
-                                    </VBox>
-                                </VBox>
-                                
-                                <!-- Check Data -->
-                                <VBox width="33%" class="sapUiSmallPadding" style="border-right: 1px solid #e0e0e0;">
-                                    <Title text="Check Data" level="H6" class="sapUiTinyMarginBottom" wrapping="true" />
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Check Number:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/checkNumber} || '-'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Check Date:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/checkDate} || '-'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Check Amount:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/checkAmount} || '-'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Bank Account:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/bankAccount} || '-'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Bank Routing:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/bankRouting} || '-'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Bank Name:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/bankName} || '-'}" />
-                                    </VBox>
-                                </VBox>
-                                
-                                <!-- Payment Reference Data -->
-                                <VBox width="33%" class="sapUiSmallPadding">
-                                    <Title text="Payment Reference Data" level="H6" class="sapUiTinyMarginBottom" wrapping="true" />
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Payment Reference:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/paymentReference} || '-'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Invoice Number:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/invoiceNumber} || '-'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Customer Number:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/customerNumber} || '-'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Customer Name:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/customerName} || '-'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Payment Method:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/paymentMethod} || '-'}" class="sapUiSmallMarginBottom" />
-                                    </VBox>
-                                    <VBox class="sapUiTinyMarginTop">
-                                        <Label text="Payment Date:" class="sapUiTinyMarginBottom" />
-                                        <Text text="{= ${app>/selectedTransaction/paymentDate} || '-'}" />
-                                    </VBox>
-                                </VBox>
-                            </HBox>
+                            <content>
+                                <!-- Lockbox Header Data Panel -->
+                                <Panel 
+                                    class="hierarchyLevelPanel lockboxHeaderPanel" 
+                                    headerText="📦 Lockbox Header Data" 
+                                    expandable="true" 
+                                    expanded="true">
+                                    <content>
+                                        <VBox class="sapUiSmallPadding">
+                                            <l:Grid defaultSpan="L4 M6 S12" hSpacing="1" vSpacing="0.5">
+                                                <l:content>
+                                                    <VBox class="hierarchyField">
+                                                        <Label text="Lockbox:" class="hierarchyLabel" />
+                                                        <Text text="{= ${app>/selectedTransaction/sapPayload/Lockbox} || '-'}" class="hierarchyValue" />
+                                                    </VBox>
+                                                    <VBox class="hierarchyField">
+                                                        <Label text="Deposit Date/Time:" class="hierarchyLabel" />
+                                                        <Text text="{= ${app>/selectedTransaction/sapPayload/DepositDateTime} || '-'}" class="hierarchyValue" />
+                                                    </VBox>
+                                                    <VBox class="hierarchyField">
+                                                        <Label text="Amount:" class="hierarchyLabel" />
+                                                        <ObjectNumber 
+                                                            number="{= ${app>/selectedTransaction/sapPayload/AmountInTransactionCurrency} || '0'}" 
+                                                            unit="{= ${app>/selectedTransaction/currency} || 'USD'}" 
+                                                            class="hierarchyValue" />
+                                                    </VBox>
+                                                    <VBox class="hierarchyField">
+                                                        <Label text="Batch Origin:" class="hierarchyLabel" />
+                                                        <Text text="{= ${app>/selectedTransaction/sapPayload/LockboxBatchOrigin} || '-'}" class="hierarchyValue" />
+                                                    </VBox>
+                                                    <VBox class="hierarchyField">
+                                                        <Label text="Batch Destination:" class="hierarchyLabel" />
+                                                        <Text text="{= ${app>/selectedTransaction/sapPayload/LockboxBatchDestination} || '-'}" class="hierarchyValue" />
+                                                    </VBox>
+                                                </l:content>
+                                            </l:Grid>
+                                        </VBox>
+                                        
+                                        <!-- Check Data - Multiple Checks (Nested Expandable) -->
+                                        <VBox class="sapUiSmallMarginTop">
+                                            <VBox items="{path: 'app>/selectedTransaction/checks'}">
+                                                <Panel 
+                                                    class="hierarchyLevelPanel checkDataPanel" 
+                                                    headerText="💳 Check #{= ${app>checkIndex} + 1}: {= ${app>Cheque} || 'N/A'}" 
+                                                    expandable="true" 
+                                                    expanded="false">
+                                                    <content>
+                                                        <VBox class="sapUiSmallPadding">
+                                                            <l:Grid defaultSpan="L4 M6 S12" hSpacing="1" vSpacing="0.5">
+                                                                <l:content>
+                                                                    <VBox class="hierarchyField">
+                                                                        <Label text="Check Number:" class="hierarchyLabel" />
+                                                                        <Text text="{app>Cheque}" class="hierarchyValue" />
+                                                                    </VBox>
+                                                                    <VBox class="hierarchyField">
+                                                                        <Label text="Amount:" class="hierarchyLabel" />
+                                                                        <ObjectNumber 
+                                                                            number="{app>AmountInTransactionCurrency}" 
+                                                                            unit="{app>Currency}" 
+                                                                            class="hierarchyValue" />
+                                                                    </VBox>
+                                                                    <VBox class="hierarchyField">
+                                                                        <Label text="Currency:" class="hierarchyLabel" />
+                                                                        <Text text="{app>Currency}" class="hierarchyValue" />
+                                                                    </VBox>
+                                                                    <VBox class="hierarchyField">
+                                                                        <Label text="Partner Bank:" class="hierarchyLabel" />
+                                                                        <Text text="{app>PartnerBank}" class="hierarchyValue" />
+                                                                    </VBox>
+                                                                    <VBox class="hierarchyField">
+                                                                        <Label text="Partner Bank Account:" class="hierarchyLabel" />
+                                                                        <Text text="{app>PartnerBankAccount}" class="hierarchyValue" />
+                                                                    </VBox>
+                                                                    <VBox class="hierarchyField">
+                                                                        <Label text="Partner Bank Country:" class="hierarchyLabel" />
+                                                                        <Text text="{app>PartnerBankCountry}" class="hierarchyValue" />
+                                                                    </VBox>
+                                                                </l:content>
+                                                            </l:Grid>
+                                                            
+                                                            <!-- Payment Reference Data - Multiple Payments under each Check (Nested) -->
+                                                            <VBox class="sapUiSmallMarginTop">
+                                                                <VBox items="{path: 'app>payments'}">
+                                                                    <Panel 
+                                                                        class="hierarchyLevelPanel paymentDataPanel" 
+                                                                        headerText="💰 Payment #{= ${app>paymentIndex} + 1}: Ref {= ${app>PaymentReference} || 'N/A'}" 
+                                                                        expandable="true" 
+                                                                        expanded="false">
+                                                                        <content>
+                                                                            <VBox class="sapUiSmallPadding">
+                                                                                <l:Grid defaultSpan="L4 M6 S12" hSpacing="1" vSpacing="0.5">
+                                                                                    <l:content>
+                                                                                        <VBox class="hierarchyField">
+                                                                                            <Label text="Payment Reference:" class="hierarchyLabel" />
+                                                                                            <Text text="{app>PaymentReference}" class="hierarchyValue" />
+                                                                                        </VBox>
+                                                                                        <VBox class="hierarchyField">
+                                                                                            <Label text="Net Payment Amount:" class="hierarchyLabel" />
+                                                                                            <ObjectNumber 
+                                                                                                number="{app>NetPaymentAmountInPaytCurrency}" 
+                                                                                                unit="{app>Currency}" 
+                                                                                                class="hierarchyValue" />
+                                                                                        </VBox>
+                                                                                        <VBox class="hierarchyField">
+                                                                                            <Label text="Deduction Amount:" class="hierarchyLabel" />
+                                                                                            <ObjectNumber 
+                                                                                                number="{app>DeductionAmountInPaytCurrency}" 
+                                                                                                unit="{app>Currency}" 
+                                                                                                state="Warning"
+                                                                                                class="hierarchyValue" />
+                                                                                        </VBox>
+                                                                                        <VBox class="hierarchyField">
+                                                                                            <Label text="Payment Difference Reason:" class="hierarchyLabel" />
+                                                                                            <Text text="{app>PaymentDifferenceReason}" class="hierarchyValue" />
+                                                                                        </VBox>
+                                                                                        <VBox class="hierarchyField">
+                                                                                            <Label text="Currency:" class="hierarchyLabel" />
+                                                                                            <Text text="{app>Currency}" class="hierarchyValue" />
+                                                                                        </VBox>
+                                                                                    </l:content>
+                                                                                </l:Grid>
+                                                                            </VBox>
+                                                                        </content>
+                                                                    </Panel>
+                                                                </VBox>
+                                                            </VBox>
+                                                        </VBox>
+                                                    </content>
+                                                </Panel>
+                                            </VBox>
+                                        </VBox>
+                                    </content>
+                                </Panel>
+                            </content>
                         </Panel>
                     </VBox>
                 </content>
