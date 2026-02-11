@@ -8077,9 +8077,22 @@ app.post('/api/lockbox/runs/:runId/production', async (req, res) => {
                     details: clearingResults
                 };
                 
-                // Update sapResponse with final accounting document
-                if (clearedItems.length > 0 && clearedItems[0].accountingDocument) {
-                    productionResult.sapResponse.accountingDocument = clearedItems[0].accountingDocument;
+                // Update sapResponse with final values from clearing
+                if (clearedItems.length > 0) {
+                    if (clearedItems[0].accountingDocument) {
+                        productionResult.sapResponse.accountingDocument = clearedItems[0].accountingDocument;
+                    }
+                    if (clearedItems[0].fiscalYear) {
+                        productionResult.sapResponse.fiscalYear = clearedItems[0].fiscalYear;
+                    }
+                    if (clearedItems[0].companyCode) {
+                        productionResult.sapResponse.companyCode = clearedItems[0].companyCode;
+                    }
+                }
+                
+                // Add paymentAdvice from first batch item
+                if (batchItems.length > 0 && batchItems[0].paymentAdvice) {
+                    productionResult.sapResponse.paymentAdvice = batchItems[0].paymentAdvice;
                 }
                 
                 // ════════════════════════════════════════════════════════════════════
