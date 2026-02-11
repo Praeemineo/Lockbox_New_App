@@ -90,18 +90,68 @@
 
 /* Processing Status Right Aligned */
 .processingStatusBar {
-    background-color: #fafafa;
-    border-bottom: 2px solid #d9d9d9;
-    display: flex !important;
-    justify-content: flex-end !important;
-    align-items: center !important;
+    background: linear-gradient(to right, #f8f9fa, #e9ecef);
+    border-bottom: 2px solid #dee2e6;
+    padding: 1rem;
 }
 
-.processingStatusBar > div {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-end !important;
-    text-align: right !important;
+.processingStatusBar .sapMLabel {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.processingStatusBar .sapMObjectStatus {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* Metadata Section Styling */
+.metadataSection {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 1.5rem;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.metadataField {
+    background: rgba(255, 255, 255, 0.7);
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.metadataField:hover {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.metadataLabel {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metadataValue {
+    font-size: 14px;
+    color: #212529;
+    font-weight: 500;
+}
+
+.metadataLink {
+    font-size: 14px;
+    color: #667eea !important;
+    font-weight: 500;
+    text-decoration: none !important;
+}
+
+.metadataLink:hover {
+    color: #764ba2 !important;
+    text-decoration: underline !important;
 }
 
 /* Bold Title */
