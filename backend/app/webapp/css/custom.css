@@ -40,6 +40,16 @@
 .processingStatusBar {
     background-color: #fafafa;
     border-bottom: 2px solid #d9d9d9;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+}
+
+.processingStatusBar > div {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    text-align: right !important;
 }
 
 /* Bold Title */
