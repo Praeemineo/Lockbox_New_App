@@ -437,6 +437,7 @@
                                             icon="sap-icon://navigation-right-arrow" 
                                             type="Transparent"
                                             press="onShowTransactionDetails"
+                                            class="actionButton"
                                             visible="{= ${app>type} === 'HEADER' || ${app>type} === 'LOCKBOX'}"
                                             tooltip="View Transaction Details" />
                                     </table:template>
