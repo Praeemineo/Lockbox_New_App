@@ -1833,21 +1833,23 @@
                             </l:Grid>
                         </VBox>
                         
-                        <!-- Processing Status Summary Bar - Aligned with Company Code position -->
+                        <!-- Processing Status Summary Bar - Aligned with Grid Layout -->
                         <VBox class="sapUiSmallPadding processingStatusBar">
                             <l:Grid defaultSpan="L3 M6 S12" hSpacing="2" vSpacing="1">
                                 <l:content>
-                                    <!-- Empty spacers to align with Company Code column (4th position) -->
+                                    <!-- First 3 empty columns -->
                                     <VBox></VBox>
                                     <VBox></VBox>
                                     <VBox></VBox>
-                                    <!-- Processing Status in 4th column position matching Company Code -->
+                                    <!-- Processing Status in 4th column - properly formatted -->
                                     <VBox class="sapUiTinyMarginBottom">
-                                        <Label text="Processing Status:" class="sapUiTinyMarginBottom boldTitle" />
-                                        <ObjectStatus 
-                                            text="{app>/selectedTransaction/status}" 
-                                            state="{path: 'app>/selectedTransaction/status', formatter: '.formatStatusState'}"
-                                            emphasized="false" />
+                                        <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                            <Label text="Processing Status:" class="sapUiSmallMarginEnd boldTitle" />
+                                            <ObjectStatus 
+                                                text="{app>/selectedTransaction/status}" 
+                                                state="{path: 'app>/selectedTransaction/status', formatter: '.formatStatusState'}"
+                                                emphasized="false" />
+                                        </HBox>
                                     </VBox>
                                 </l:content>
                             </l:Grid>
