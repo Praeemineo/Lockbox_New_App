@@ -254,7 +254,7 @@
 }
 
 .statusCardHeader {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #0854a0;
     padding: 1rem;
     align-items: center;
 }
@@ -307,7 +307,7 @@
 }
 
 .dataTableHeader {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    background: #0854a0;
     padding: 1rem;
     align-items: center;
 }
@@ -326,7 +326,7 @@
 }
 
 .lockboxDataTable .sapMListTblHeaderCell {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #0854a0;
     color: white !important;
     font-weight: 600;
     padding: 0.75rem;
@@ -529,11 +529,11 @@
     font-weight: 600 !important;
 }
 
-/* Action Button in Table */
+/* Action Button in Table - Transparent with Blue Icon */
 .actionButton {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: transparent !important;
     border: none !important;
-    color: white !important;
+    color: #0854a0 !important;
     border-radius: 50% !important;
     width: 32px !important;
     height: 32px !important;
@@ -541,8 +541,12 @@
 }
 
 .actionButton:hover {
+    background: rgba(8, 84, 160, 0.1) !important;
     transform: scale(1.1) !important;
-    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4) !important;
+}
+
+.actionButton .sapUiIcon {
+    color: #0854a0 !important;
 }
 
 /* Adapt Filters Button */
