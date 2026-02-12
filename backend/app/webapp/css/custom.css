@@ -479,8 +479,17 @@
 }
 
 .dataPanel .sapMTitle {
-    color: #212529;
+    color: white !important;
     font-weight: 600;
+}
+
+.dataPanel .sapMTB {
+    background: #0854a0 !important;
+    padding: 1rem;
+}
+
+.dataPanel .sapMBtn {
+    margin-left: 0.5rem;
 }
 
 /* Upload Button Styling */
