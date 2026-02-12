@@ -394,7 +394,7 @@
 
 /* Page Header with Icon */
 .lockboxPageHeader {
-    background: #0854a0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 1.5rem;
     border-radius: 8px;
     margin-bottom: 1rem;
@@ -479,17 +479,8 @@
 }
 
 .dataPanel .sapMTitle {
-    color: white !important;
+    color: #212529;
     font-weight: 600;
-}
-
-.dataPanel .sapMTB {
-    background: #0854a0 !important;
-    padding: 1rem;
-}
-
-.dataPanel .sapMBtn {
-    margin-left: 0.5rem;
 }
 
 /* Upload Button Styling */
@@ -535,7 +526,7 @@
 
 /* Table Header */
 .lockboxTreeTable .sapUiTableColHdrCnt {
-    background: #0854a0 !important;
+    background: linear-gradient(to bottom, #667eea, #764ba2);
     color: white !important;
     font-weight: 600;
 }
@@ -545,8 +536,8 @@
 }
 
 .lockboxTreeTable .sapUiTableColHdr {
-    background: #0854a0 !important;
-    border-bottom: 2px solid #0854a0 !important;
+    background: linear-gradient(to bottom, #667eea, #764ba2) !important;
+    border-bottom: 2px solid #764ba2 !important;
 }
 
 .lockboxTreeTable .sapUiTableColHdrCnt .sapMText,
@@ -631,14 +622,9 @@
 
 /* Panel Headers */
 .panelHeader {
-    background: #0854a0;
-    border-bottom: 2px solid #0854a0;
+    background: linear-gradient(to right, #f8f9fa, #ffffff);
+    border-bottom: 2px solid #e9ecef;
     padding: 0.75rem;
-}
-
-.panelHeader .sapMTitle {
-    color: white !important;
-    font-weight: 600;
 }
 
 /* Toolbar Spacing */
