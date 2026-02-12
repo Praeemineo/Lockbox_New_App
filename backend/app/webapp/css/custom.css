@@ -535,13 +535,18 @@
 
 /* Table Header */
 .lockboxTreeTable .sapUiTableColHdrCnt {
-    background: linear-gradient(to bottom, #667eea, #764ba2);
+    background: #0854a0;
     color: white !important;
     font-weight: 600;
 }
 
 .lockboxTreeTable .sapMLabel {
     color: white !important;
+}
+
+.lockboxTreeTable .sapUiTableColHdr {
+    background: #0854a0 !important;
+    border-bottom: 2px solid #0854a0 !important;
 }
 
 /* Table Row Hover */
