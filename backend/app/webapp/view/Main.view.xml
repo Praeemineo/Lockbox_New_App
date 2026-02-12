@@ -412,24 +412,6 @@
                                         </HBox>
                                     </table:template>
                                 </table:Column>
-                                <table:Column width="8%">
-                                    <Label text="AR Posting Doc" />
-                                    <table:template>
-                                        <Text text="{app>ar_posting_doc}" />
-                                    </table:template>
-                                </table:Column>
-                                <table:Column width="8%">
-                                    <Label text="Payment Advice" />
-                                    <table:template>
-                                        <Text text="{app>payment_advice_doc}" />
-                                    </table:template>
-                                </table:Column>
-                                <table:Column width="8%">
-                                    <Label text="Clearing Doc" />
-                                    <table:template>
-                                        <Text text="{app>clearing_doc}" />
-                                    </table:template>
-                                </table:Column>
                                 <table:Column width="5%" hAlign="Center">
                                     <Label text="" />
                                     <table:template>
