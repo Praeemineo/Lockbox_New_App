@@ -1485,12 +1485,6 @@
                 <mvc:XMLView viewName="lockbox.view.PdfLockbox" />
             </VBox>
             
-            <!-- ============================================================ -->
-            <!-- PROCESSING RULES CONTENT -->
-            <!-- ============================================================ -->
-            <VBox id="processingRulesContent" visible="{app>/showProcessingRules}">
-                <mvc:XMLView viewName="lockbox.view.ProcessingRules" />
-            </VBox>
         </content>
         
         <!-- ============================================================ -->
