@@ -219,7 +219,7 @@
   {
     "patternId": "PAT-007",
     "patternName": "BAI2 Bank Format",
-    "fileType": "BAI2",
+    "fileType": "EXCEL",
     "patternType": "BAI2_BANK",
     "category": "BANK",
     "description": "Standard BAI2 bank file format with record types 01, 02, 03, 16, 88, 49.",
@@ -270,7 +270,7 @@
   {
     "patternId": "PAT-008",
     "patternName": "PDF Payment Advice",
-    "fileType": "PDF",
+    "fileType": "EXCEL",
     "patternType": "PDF_EXTRACTION",
     "category": "EXTRACTION",
     "description": "Payment advice in PDF format. Uses OCR and pattern matching to extract payment details.",
@@ -345,7 +345,7 @@
   {
     "patternId": "PAT-009",
     "patternName": "Payment Advice Split",
-    "fileType": "PAYMENT_ADVICE",
+    "fileType": "EXCEL",
     "patternType": "PAYMENT_ADVICE_SPLIT",
     "category": "INVOICE",
     "description": "Payment advice with split conditions for invoice matching and amount distribution.",
@@ -396,7 +396,7 @@
   {
     "patternId": "PAT-010",
     "patternName": "CSV Standard Format",
-    "fileType": "CSV",
+    "fileType": "EXCEL",
     "patternType": "SINGLE_CHECK_MULTI_INVOICE",
     "category": "CHECK",
     "description": "Standard CSV format with comma-separated fields.",
