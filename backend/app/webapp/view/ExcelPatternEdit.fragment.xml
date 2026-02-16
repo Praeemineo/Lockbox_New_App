@@ -1,0 +1,125 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form">
+    
+    <Dialog
+        id="excelPatternEditDialog"
+        title="{= ${excelPatternEdit>/mode} === 'create' ? 'Create Excel File Pattern' : 'Edit Excel File Pattern'}"
+        contentWidth="900px"
+        contentHeight="85%"
+        resizable="true"
+        draggable="true">
+        
+        <content>
+            <VBox class="sapUiSmallMargin">
+                <!-- Basic Pattern Info -->
+                <Panel headerText="Pattern Information" expandable="false" class="sapUiSmallMarginBottom">
+                    <content>
+                        <f:SimpleForm
+                            editable="true"
+                            layout="ResponsiveGridLayout"
+                            labelSpanXL="3"
+                            labelSpanL="3"
+                            labelSpanM="3"
+                            labelSpanS="12"
+                            adjustLabelSpan="false"
+                            emptySpanXL="0"
+                            emptySpanL="0"
+                            emptySpanM="0"
+                            emptySpanS="0"
+                            columnsXL="1"
+                            columnsL="1"
+                            columnsM="1"
+                            singleContainerFullSize="false">
+                            <f:content>
+                                <Label text="Pattern ID" required="true" />
+                                <Input id="patternIdInput" value="{excelPatternEdit>/pattern/patternId}" placeholder="e.g., PAT0001" />
+                                
+                                <Label text="Description" required="true" />
+                                <TextArea id="descriptionInput" value="{excelPatternEdit>/pattern/description}" rows="2" placeholder="e.g., Single Check, Multiple Invoice" />
+                            </f:content>
+                        </f:SimpleForm>
+                    </content>
+                </Panel>
+                
+                <!-- Conditions and Actions -->
+                <Panel headerText="Conditions &amp; Actions" expandable="false">
+                    <content>
+                        <Toolbar>
+                            <Title text="Condition/Action Rules" level="H5" />
+                            <ToolbarSpacer />
+                            <Button text="Add Row" icon="sap-icon://add" press="onAddConditionRow" />
+                        </Toolbar>
+                        
+                        <Table
+                            id="conditionsTable"
+                            items="{excelPatternEdit>/pattern/conditions}"
+                            class="sapUiSizeCompact">
+                            <columns>
+                                <Column width="20%">
+                                    <Text text="Document/Date Format" />
+                                </Column>
+                                <Column width="20%">
+                                    <Text text="Condition" />
+                                </Column>
+                                <Column width="25%">
+                                    <Text text="Action" />
+                                </Column>
+                                <Column width="25%">
+                                    <Text text="Related API/Field Reference" />
+                                </Column>
+                                <Column width="10%" hAlign="Center">
+                                    <Text text="" />
+                                </Column>
+                            </columns>
+                            <items>
+                                <ColumnListItem>
+                                    <cells>
+                                        <!-- Document Format -->
+                                        <Input 
+                                            value="{excelPatternEdit>documentFormat}" 
+                                            placeholder="e.g., Check, Check Amount" />
+                                        
+                                        <!-- Condition -->
+                                        <Input 
+                                            value="{excelPatternEdit>condition}" 
+                                            placeholder="e.g., One check, Amount per Check" />
+                                        
+                                        <!-- Action -->
+                                        <Input 
+                                            value="{excelPatternEdit>action}" 
+                                            placeholder="e.g., One batch item per check" />
+                                        
+                                        <!-- API Field Reference -->
+                                        <Input 
+                                            value="{excelPatternEdit>apiFieldReference}" 
+                                            placeholder="e.g., Cheque, AmountInTransactionCurrency" />
+                                        
+                                        <!-- Delete Button -->
+                                        <Button 
+                                            icon="sap-icon://delete" 
+                                            type="Reject" 
+                                            press="onDeleteConditionRow" 
+                                            tooltip="Delete Row" />
+                                    </cells>
+                                </ColumnListItem>
+                            </items>
+                        </Table>
+                    </content>
+                </Panel>
+            </VBox>
+        </content>
+        
+        <beginButton>
+            <Button 
+                text="{= ${excelPatternEdit>/mode} === 'create' ? 'Create' : 'Save'}" 
+                type="Emphasized" 
+                press="onSaveExcelPattern" />
+        </beginButton>
+        <endButton>
+            <Button text="Cancel" press="onCancelExcelPatternEdit" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>
