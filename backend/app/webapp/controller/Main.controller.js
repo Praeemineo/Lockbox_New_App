@@ -9646,6 +9646,484 @@ sap.ui.define([
         },
         
         // ============================================================================
+        // EXCEL FILE PATTERNS DIALOG FUNCTIONS
+        // ============================================================================
+        
+        // Open Excel File Patterns Dialog
+        onOpenExcelFilePatternsDialog: function () {
+            var that = this;
+            
+            // Initialize Excel patterns model if not exists
+            if (!this.getView().getModel("excelPatterns")) {
+                var oExcelPatternsModel = new JSONModel({
+                    patterns: []
+                });
+                this.getView().setModel(oExcelPatternsModel, "excelPatterns");
+            }
+            
+            // Load sample data based on the Excel sheet provided
+            this._loadExcelPatterns();
+            
+            // Load and open the fragment
+            if (!this._excelFilePatternsDialog) {
+                sap.ui.core.Fragment.load({
+                    id: this.getView().getId(),
+                    name: "lockbox.view.ExcelFilePatterns",
+                    controller: this
+                }).then(function (oDialog) {
+                    that._excelFilePatternsDialog = oDialog;
+                    that.getView().addDependent(oDialog);
+                    oDialog.open();
+                });
+            } else {
+                this._excelFilePatternsDialog.open();
+            }
+        },
+        
+        // Load Excel Patterns (with sample data from the Excel sheet)
+        _loadExcelPatterns: function () {
+            var oModel = this.getView().getModel("excelPatterns");
+            
+            // Sample data based on the provided Excel sheet
+            var aPatterns = [
+                {
+                    patternId: "PAT0001",
+                    description: "Single Check, Multiple Invoice",
+                    conditions: [
+                        {
+                            documentFormat: "One check Multiple Invo Check",
+                            condition: "One check",
+                            action: "One batch item per check",
+                            apiFieldReference: "Cheque"
+                        },
+                        {
+                            documentFormat: "Check Amount",
+                            condition: "Amount per Check",
+                            action: "Per check item",
+                            apiFieldReference: "AmountInTransactionCurrency"
+                        },
+                        {
+                            documentFormat: "Invoice/Document number",
+                            condition: "Per Check",
+                            action: "Invoice/Doc number per Check",
+                            apiFieldReference: "PaymentReference"
+                        },
+                        {
+                            documentFormat: "Invoice/Document Amount",
+                            condition: "Amount per Invoice/Document",
+                            action: "Invoice/Doc number amount",
+                            apiFieldReference: "NetPaymentAmountInPayCurrency"
+                        }
+                    ]
+                },
+                {
+                    patternId: "PAT0002",
+                    description: "Multiple Check, Multiple Invoice",
+                    conditions: [
+                        {
+                            documentFormat: "Multiple Check Multiple Check",
+                            condition: ">1",
+                            action: "Multiple Batch item based on Check",
+                            apiFieldReference: "Cheque"
+                        },
+                        {
+                            documentFormat: "Check Amount",
+                            condition: ">1",
+                            action: "Check amount per batch item",
+                            apiFieldReference: "AmountInTransactionCurrency"
+                        },
+                        {
+                            documentFormat: "Invoice/Document number",
+                            condition: "Per Check",
+                            action: "Invoice/Doc number per Check",
+                            apiFieldReference: "PaymentReference"
+                        },
+                        {
+                            documentFormat: "Invoice/Document Amount",
+                            condition: "Amount per Invoice/Document",
+                            action: "Invoice/Doc number amount",
+                            apiFieldReference: "NetPaymentAmountInPayCurrency"
+                        }
+                    ]
+                },
+                {
+                    patternId: "PAT0003",
+                    description: "File Containing Comma",
+                    conditions: [
+                        {
+                            documentFormat: "Comma delimited files Check",
+                            condition: "With Comma Separator",
+                            action: "Check Split based on Comma",
+                            apiFieldReference: "Cheque"
+                        },
+                        {
+                            documentFormat: "Check Amount",
+                            condition: "With Comma Separator",
+                            action: "Check Amount split per check",
+                            apiFieldReference: "AmountInTransactionCurrency"
+                        },
+                        {
+                            documentFormat: "Invoice/Document number",
+                            condition: "With Comma Separator",
+                            action: "Invoice/Doc number split with complete 10 Digit",
+                            apiFieldReference: "PaymentReference"
+                        },
+                        {
+                            documentFormat: "Invoice/Document Amount",
+                            condition: "With Comma Separator",
+                            action: "Invoice/Document Amount Split with logic per invoice",
+                            apiFieldReference: "NetPaymentAmountInPayCurrency"
+                        }
+                    ]
+                },
+                {
+                    patternId: "PAT0004",
+                    description: "File Containing Comma",
+                    conditions: [
+                        {
+                            documentFormat: "Comma delimited files Check",
+                            condition: "Hyphen Range",
+                            action: "Check Split based on Range",
+                            apiFieldReference: "Cheque"
+                        },
+                        {
+                            documentFormat: "Check Amount",
+                            condition: "Hyphen Range",
+                            action: "Check Amount split per check",
+                            apiFieldReference: "AmountInTransactionCurrency"
+                        },
+                        {
+                            documentFormat: "Invoice/Document number",
+                            condition: "Hyphen Range",
+                            action: "Invoice/Doc number split base on Range",
+                            apiFieldReference: "PaymentReference"
+                        },
+                        {
+                            documentFormat: "Invoice/Document Amount",
+                            condition: "Hyphen Range",
+                            action: "Invoice/Document Amount Split with logic per invoice",
+                            apiFieldReference: "NetPaymentAmountInPayCurrency"
+                        },
+                        {
+                            documentFormat: "",
+                            condition: "",
+                            action: "API Standard",
+                            apiFieldReference: ""
+                        }
+                    ]
+                },
+                {
+                    patternId: "PAT0005",
+                    description: "Date Pattern",
+                    conditions: [
+                        {
+                            documentFormat: "Date Pattern Matching MMDDYYYY",
+                            condition: "Comma, Dot, Hyphen, Slash",
+                            action: "YYYY-MM-DD",
+                            apiFieldReference: "DepositDateTime"
+                        },
+                        {
+                            documentFormat: "DDMMYYYY",
+                            condition: "Comma, Dot, Hyphen, Slash",
+                            action: "YYYY-MM-DD",
+                            apiFieldReference: "DepositDateTime"
+                        },
+                        {
+                            documentFormat: "YYYYMMDD",
+                            condition: "Comma, Dot, Hyphen, Slash",
+                            action: "YYYY-MM-DD",
+                            apiFieldReference: "DepositDateTime"
+                        },
+                        {
+                            documentFormat: "MMDDYY",
+                            condition: "Comma, Dot, Hyphen, Slash",
+                            action: "YYYY-MM-DD",
+                            apiFieldReference: "DepositDateTime"
+                        },
+                        {
+                            documentFormat: "DDMMYY",
+                            condition: "Comma, Dot, Hyphen, Slash",
+                            action: "YYYY-MM-DD",
+                            apiFieldReference: "DepositDateTime"
+                        },
+                        {
+                            documentFormat: "YYMMDD",
+                            condition: "Comma, Dot, Hyphen, Slash",
+                            action: "YYYY-MM-DD",
+                            apiFieldReference: "DepositDateTime"
+                        }
+                    ]
+                },
+                {
+                    patternId: "PAT0006",
+                    description: "File containing multiple Sheets",
+                    conditions: [
+                        {
+                            documentFormat: "Header, Item data split Check Data",
+                            condition: "Multiple Sheet",
+                            action: "Build Heirarchy of 50 Items per Batch",
+                            apiFieldReference: "Reference API reference Fields Table"
+                        },
+                        {
+                            documentFormat: "Invoice /Document data",
+                            condition: "Multiple Sheet",
+                            action: "Build Heirarchy of 50 Items per Batch",
+                            apiFieldReference: "Reference API reference Fields Table"
+                        }
+                    ]
+                }
+            ];
+            
+            oModel.setProperty("/patterns", aPatterns);
+        },
+        
+        // Close Excel File Patterns Dialog
+        onCloseExcelPatternsDialog: function () {
+            if (this._excelFilePatternsDialog) {
+                this._excelFilePatternsDialog.close();
+            }
+        },
+        
+        // Add new Excel pattern
+        onAddExcelPattern: function () {
+            var that = this;
+            
+            // Initialize the edit model
+            if (!this.getView().getModel("excelPatternEdit")) {
+                var oEditModel = new JSONModel({
+                    mode: "create",
+                    pattern: {
+                        patternId: "",
+                        description: "",
+                        conditions: []
+                    }
+                });
+                this.getView().setModel(oEditModel, "excelPatternEdit");
+            }
+            
+            // Set mode to create and clear pattern
+            var oEditModel = this.getView().getModel("excelPatternEdit");
+            oEditModel.setProperty("/mode", "create");
+            oEditModel.setProperty("/pattern", {
+                patternId: "",
+                description: "",
+                conditions: [
+                    {
+                        documentFormat: "",
+                        condition: "",
+                        action: "",
+                        apiFieldReference: ""
+                    }
+                ]
+            });
+            
+            // Load and open the edit fragment
+            if (!this._excelPatternEditDialog) {
+                sap.ui.core.Fragment.load({
+                    id: this.getView().getId(),
+                    name: "lockbox.view.ExcelPatternEdit",
+                    controller: this
+                }).then(function (oDialog) {
+                    that._excelPatternEditDialog = oDialog;
+                    that.getView().addDependent(oDialog);
+                    oDialog.open();
+                });
+            } else {
+                this._excelPatternEditDialog.open();
+            }
+        },
+        
+        // Edit Excel pattern
+        onEditExcelPattern: function (oEvent) {
+            var that = this;
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("excelPatterns");
+            var oPattern = oContext.getObject();
+            
+            // Initialize the edit model if not exists
+            if (!this.getView().getModel("excelPatternEdit")) {
+                var oEditModel = new JSONModel({
+                    mode: "edit",
+                    pattern: {}
+                });
+                this.getView().setModel(oEditModel, "excelPatternEdit");
+            }
+            
+            // Set mode to edit and load pattern data
+            var oEditModel = this.getView().getModel("excelPatternEdit");
+            oEditModel.setProperty("/mode", "edit");
+            oEditModel.setProperty("/pattern", JSON.parse(JSON.stringify(oPattern))); // Deep copy
+            
+            // Load and open the edit fragment
+            if (!this._excelPatternEditDialog) {
+                sap.ui.core.Fragment.load({
+                    id: this.getView().getId(),
+                    name: "lockbox.view.ExcelPatternEdit",
+                    controller: this
+                }).then(function (oDialog) {
+                    that._excelPatternEditDialog = oDialog;
+                    that.getView().addDependent(oDialog);
+                    oDialog.open();
+                });
+            } else {
+                this._excelPatternEditDialog.open();
+            }
+        },
+        
+        // Add condition row in edit dialog
+        onAddConditionRow: function () {
+            var oEditModel = this.getView().getModel("excelPatternEdit");
+            var aConditions = oEditModel.getProperty("/pattern/conditions") || [];
+            
+            aConditions.push({
+                documentFormat: "",
+                condition: "",
+                action: "",
+                apiFieldReference: ""
+            });
+            
+            oEditModel.setProperty("/pattern/conditions", aConditions);
+        },
+        
+        // Delete condition row
+        onDeleteConditionRow: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("excelPatternEdit");
+            var sPath = oContext.getPath();
+            var iIndex = parseInt(sPath.split("/").pop());
+            
+            var oEditModel = this.getView().getModel("excelPatternEdit");
+            var aConditions = oEditModel.getProperty("/pattern/conditions");
+            
+            if (aConditions.length > 1) {
+                aConditions.splice(iIndex, 1);
+                oEditModel.setProperty("/pattern/conditions", aConditions);
+            } else {
+                MessageToast.show("At least one condition row is required");
+            }
+        },
+        
+        // Save Excel pattern
+        onSaveExcelPattern: function () {
+            var oEditModel = this.getView().getModel("excelPatternEdit");
+            var oPatternsModel = this.getView().getModel("excelPatterns");
+            var oPattern = oEditModel.getProperty("/pattern");
+            var sMode = oEditModel.getProperty("/mode");
+            
+            // Validate
+            if (!oPattern.patternId || !oPattern.description) {
+                MessageToast.show("Please fill in Pattern ID and Description");
+                return;
+            }
+            
+            var aPatterns = oPatternsModel.getProperty("/patterns");
+            
+            if (sMode === "create") {
+                // Check for duplicate ID
+                var bExists = aPatterns.some(function (p) {
+                    return p.patternId === oPattern.patternId;
+                });
+                
+                if (bExists) {
+                    MessageToast.show("Pattern ID already exists");
+                    return;
+                }
+                
+                // Add new pattern
+                aPatterns.push(JSON.parse(JSON.stringify(oPattern)));
+                MessageToast.show("Pattern created: " + oPattern.patternId);
+            } else {
+                // Update existing pattern
+                var iIndex = aPatterns.findIndex(function (p) {
+                    return p.patternId === oPattern.patternId;
+                });
+                
+                if (iIndex !== -1) {
+                    aPatterns[iIndex] = JSON.parse(JSON.stringify(oPattern));
+                    MessageToast.show("Pattern updated: " + oPattern.patternId);
+                }
+            }
+            
+            oPatternsModel.setProperty("/patterns", aPatterns);
+            
+            // Close dialog
+            if (this._excelPatternEditDialog) {
+                this._excelPatternEditDialog.close();
+            }
+        },
+        
+        // Cancel Excel pattern edit
+        onCancelExcelPatternEdit: function () {
+            if (this._excelPatternEditDialog) {
+                this._excelPatternEditDialog.close();
+            }
+        },
+        
+        // Delete Excel pattern
+        onDeleteExcelPattern: function (oEvent) {
+            var that = this;
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("excelPatterns");
+            var oPattern = oContext.getObject();
+            
+            MessageBox.confirm("Are you sure you want to delete pattern " + oPattern.patternId + "?", {
+                onClose: function (oAction) {
+                    if (oAction === MessageBox.Action.OK) {
+                        var oPatternsModel = that.getView().getModel("excelPatterns");
+                        var aPatterns = oPatternsModel.getProperty("/patterns");
+                        var iIndex = aPatterns.findIndex(function (p) {
+                            return p.patternId === oPattern.patternId;
+                        });
+                        
+                        if (iIndex !== -1) {
+                            aPatterns.splice(iIndex, 1);
+                            oPatternsModel.setProperty("/patterns", aPatterns);
+                            MessageToast.show("Pattern deleted");
+                        }
+                    }
+                }
+            });
+        },
+        
+        // Save all Excel patterns
+        onSaveExcelPatterns: function () {
+            var oPatternsModel = this.getView().getModel("excelPatterns");
+            var aPatterns = oPatternsModel.getProperty("/patterns");
+            
+            // Here you would normally save to backend
+            // For now, just show a message
+            MessageToast.show("Saved " + aPatterns.length + " Excel patterns");
+            
+            // You can add backend API call here
+            /*
+            fetch(API_BASE + "/field-mapping/excel-patterns", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ patterns: aPatterns })
+            })
+            .then(function (response) { return response.json(); })
+            .then(function (data) {
+                MessageToast.show("Patterns saved successfully");
+            })
+            .catch(function (error) {
+                MessageBox.error("Failed to save patterns: " + error.message);
+            });
+            */
+        },
+        
+        // Refresh Excel patterns
+        onRefreshExcelPatterns: function () {
+            this._loadExcelPatterns();
+            MessageToast.show("Excel patterns refreshed");
+        },
+        
+        // Excel pattern press (for expanding details)
+        onExcelPatternPress: function (oEvent) {
+            // Can be used to show additional details in a separate panel if needed
+            MessageToast.show("Pattern selected");
+        },
+        
+        // ============================================================================
         // UPLOAD TEMPLATE DIALOG FUNCTIONS
         // ============================================================================
         
