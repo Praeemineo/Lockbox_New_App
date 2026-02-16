@@ -1,219 +1,230 @@
 [
   {
     "patternId": "PAT-001",
-    "patternName": "Single Check - Single Invoice",
+    "patternName": "Single Check, Multiple Invoice",
     "fileType": "EXCEL",
-    "patternType": "SINGLE_CHECK_SINGLE_INVOICE",
+    "patternType": "SINGLE_CHECK_MULTI_INVOICE",
     "category": "CHECK",
-    "description": "One check pays exactly one invoice. Simple 1:1 relationship.",
+    "description": "Single Check, Multiple Invoice",
     "delimiter": "",
     "active": true,
     "priority": 10,
-    "fieldMappings": {
-      "checkField": "Check Number",
-      "amountField": "Check Amount",
-      "invoiceField": "Invoice Number",
-      "invoiceAmountField": "Invoice Amount",
-      "customerField": "Customer",
-      "dateField": "Deposit Date"
-    },
-    "detection": {
-      "rowCount": "SINGLE_OR_MULTIPLE",
-      "checkUnique": true,
-      "invoiceUnique": true
-    },
-    "conditions": [],
-    "processingRules": [
-      "PAD_CHECK",
-      "VALIDATE_AMOUNT"
+    "conditions": [
+      {
+        "detectionCondition": "One check Multiple Invo Check",
+        "condition": "One check",
+        "strategy": "One batch item per check",
+        "externalDependency": "Cheque"
+      },
+      {
+        "detectionCondition": "Check Amount",
+        "condition": "Amount per Check",
+        "strategy": "Per check item",
+        "externalDependency": "AmountInTransactionCurrency"
+      },
+      {
+        "detectionCondition": "Invoice/Document number",
+        "condition": "Per Check",
+        "strategy": "Invoice/Doc number per Check",
+        "externalDependency": "PaymentReference"
+      },
+      {
+        "detectionCondition": "Invoice/Document Amount",
+        "condition": "Amount per Invoice/Document",
+        "strategy": "Invoice/Doc number amount",
+        "externalDependency": "NetPaymentAmountInPayCurrency"
+      }
     ]
   },
   {
     "patternId": "PAT-002",
-    "patternName": "Single Check - Multiple Invoices",
+    "patternName": "Multiple Check, Multiple Invoice",
     "fileType": "EXCEL",
-    "patternType": "SINGLE_CHECK_MULTI_INVOICE",
+    "patternType": "MULTI_CHECK_MULTI_INVOICE",
     "category": "CHECK",
-    "description": "One check pays multiple invoices. Check info on first row, subsequent rows have empty check fields.",
+    "description": "Multiple Check, Multiple Invoice",
     "delimiter": "",
     "active": true,
     "priority": 20,
-    "fieldMappings": {
-      "checkField": "Check Number",
-      "amountField": "Check Amount",
-      "invoiceField": "Invoice Number",
-      "invoiceAmountField": "Invoice Amount",
-      "customerField": "Customer",
-      "dateField": "Deposit Date",
-      "deductionField": "Deduction Amount",
-      "reasonField": "Reason Code"
-    },
-    "detection": {
-      "rowCount": "MULTIPLE",
-      "checkUnique": false,
-      "checkFillDownEmpty": true,
-      "invoiceUnique": true
-    },
-    "conditions": [],
-    "processingRules": [
-      "FILL_DOWN_CHECK",
-      "PAD_CHECK",
-      "SUM_INVOICE_AMOUNTS",
-      "VALIDATE_AMOUNT"
+    "conditions": [
+      {
+        "detectionCondition": "Multiple Check Multiple Check",
+        "condition": ">1",
+        "strategy": "Multiple Batch item based on Check",
+        "externalDependency": "Cheque"
+      },
+      {
+        "detectionCondition": "Check Amount",
+        "condition": ">1",
+        "strategy": "Check amount per batch item",
+        "externalDependency": "AmountInTransactionCurrency"
+      },
+      {
+        "detectionCondition": "Invoice/Document number",
+        "condition": "Per Check",
+        "strategy": "Invoice/Doc number per Check",
+        "externalDependency": "PaymentReference"
+      },
+      {
+        "detectionCondition": "Invoice/Document Amount",
+        "condition": "Amount per Invoice/Document",
+        "strategy": "Invoice/Doc number amount",
+        "externalDependency": "NetPaymentAmountInPayCurrency"
+      }
     ]
   },
   {
     "patternId": "PAT-003",
-    "patternName": "Invoice Split (Comma)",
+    "patternName": "File Containing Comma",
     "fileType": "EXCEL",
     "patternType": "INVOICE_SPLIT",
     "category": "INVOICE",
-    "description": "Invoice field contains comma-separated values like '90004206, 207, 208'. Common prefix detection enabled.",
+    "description": "File Containing Comma",
     "delimiter": ",",
     "active": true,
     "priority": 100,
-    "fieldMappings": {
-      "checkField": "Check Number",
-      "amountField": "Check Amount",
-      "invoiceField": "Invoice Number",
-      "invoiceAmountField": "Invoice Amount",
-      "customerField": "Customer",
-      "dateField": "Deposit Date"
-    },
-    "detection": {
-      "invoiceDelimited": true,
-      "delimiter": ","
-    },
     "conditions": [
       {
-        "priority": 1,
-        "detectionCondition": "Invoice contains \",\"",
-        "strategy": "OUTSTANDING_AMOUNT_MATCH",
-        "condition": "OPEN_AR_AVAILABLE = YES",
-        "fallbackAction": "HOLD_IN_SUSPENSE",
-        "externalDependency": "SAP_AR_Data"
+        "detectionCondition": "Comma delimited files Check",
+        "condition": "With Comma Separator",
+        "strategy": "Check Split based on Comma",
+        "externalDependency": "Cheque"
       },
       {
-        "priority": 2,
-        "detectionCondition": "Invoice contains \",\"",
-        "strategy": "EQUAL_AMOUNT_SPLIT",
-        "condition": "DEFAULT",
-        "fallbackAction": "HOLD_IN_SUSPENSE",
-        "externalDependency": ""
+        "detectionCondition": "Check Amount",
+        "condition": "With Comma Separator",
+        "strategy": "Check Amount split per check",
+        "externalDependency": "AmountInTransactionCurrency"
+      },
+      {
+        "detectionCondition": "Invoice/Document number",
+        "condition": "With Comma Separator",
+        "strategy": "Invoice/Doc number split with complete 10 Digit",
+        "externalDependency": "PaymentReference"
+      },
+      {
+        "detectionCondition": "Invoice/Document Amount",
+        "condition": "With Comma Separator",
+        "strategy": "Invoice/Document Amount Split with logic per invoice",
+        "externalDependency": "NetPaymentAmountInPayCurrency"
       }
-    ],
-    "commonPrefixDetection": true,
-    "processingRules": [
-      "COMMON_PREFIX_DETECT",
-      "SPLIT_INVOICE",
-      "PAD_CHECK",
-      "SUM_INVOICE_AMOUNTS",
-      "VALIDATE_AMOUNT"
     ]
   },
   {
     "patternId": "PAT-004",
-    "patternName": "Invoice Range Pattern",
+    "patternName": "File Containing Comma (Hyphen Range)",
     "fileType": "EXCEL",
     "patternType": "INVOICE_RANGE",
     "category": "INVOICE",
-    "description": "Invoice field contains ranges like '90004206-90004210'. Expands to individual invoices.",
+    "description": "File Containing Comma with Hyphen Range",
     "delimiter": "-",
     "active": true,
     "priority": 110,
-    "fieldMappings": {
-      "checkField": "Check Number",
-      "amountField": "Check Amount",
-      "invoiceField": "Invoice Number",
-      "invoiceAmountField": "Invoice Amount"
-    },
-    "detection": {
-      "invoiceDelimited": true,
-      "delimiter": "-",
-      "isRange": true
-    },
     "conditions": [
       {
-        "priority": 1,
-        "detectionCondition": "Invoice contains \"-\"",
-        "strategy": "RANGE_EXPAND",
-        "condition": "VALID_RANGE",
-        "fallbackAction": "MANUAL_REVIEW",
-        "externalDependency": ""
+        "detectionCondition": "Comma delimited files Check",
+        "condition": "Hyphen Range",
+        "strategy": "Check Split based on Range",
+        "externalDependency": "Cheque"
       },
       {
-        "priority": 2,
-        "detectionCondition": "Range expanded",
-        "strategy": "EQUAL_AMOUNT_SPLIT",
-        "condition": "DEFAULT",
-        "fallbackAction": "HOLD_IN_SUSPENSE",
+        "detectionCondition": "Check Amount",
+        "condition": "Hyphen Range",
+        "strategy": "Check Amount split per check",
+        "externalDependency": "AmountInTransactionCurrency"
+      },
+      {
+        "detectionCondition": "Invoice/Document number",
+        "condition": "Hyphen Range",
+        "strategy": "Invoice/Doc number split base on Range",
+        "externalDependency": "PaymentReference"
+      },
+      {
+        "detectionCondition": "Invoice/Document Amount",
+        "condition": "Hyphen Range",
+        "strategy": "Invoice/Document Amount Split with logic per invoice",
+        "externalDependency": "NetPaymentAmountInPayCurrency"
+      },
+      {
+        "detectionCondition": "",
+        "condition": "",
+        "strategy": "API Standard",
         "externalDependency": ""
       }
-    ],
-    "processingRules": [
-      "EXPAND_RANGE",
-      "SPLIT_INVOICE",
-      "PAD_CHECK",
-      "VALIDATE_AMOUNT"
     ]
   },
   {
     "patternId": "PAT-005",
-    "patternName": "Check Split (Comma)",
+    "patternName": "Date Pattern",
     "fileType": "EXCEL",
-    "patternType": "CHECK_SPLIT",
-    "category": "CHECK",
-    "description": "Check field contains comma-separated check numbers like '1001, 1002, 1003'.",
-    "delimiter": ",",
+    "patternType": "DATE_PATTERN",
+    "category": "DATE",
+    "description": "Date Pattern Matching",
+    "delimiter": "",
     "active": true,
-    "priority": 90,
-    "fieldMappings": {
-      "checkField": "Check Number",
-      "amountField": "Check Amount",
-      "invoiceField": "Invoice Number"
-    },
-    "detection": {
-      "checkDelimited": true,
-      "delimiter": ","
-    },
+    "priority": 50,
     "conditions": [
       {
-        "priority": 1,
-        "detectionCondition": "Check contains \",\"",
-        "strategy": "SPLIT_BY_DELIMITER",
-        "condition": "DEFAULT",
-        "fallbackAction": "MANUAL_REVIEW",
-        "externalDependency": ""
+        "detectionCondition": "Date Pattern Matching MMDDYYYY",
+        "condition": "Comma, Dot, Hyphen, Slash",
+        "strategy": "YYYY-MM-DD",
+        "externalDependency": "DepositDateTime"
+      },
+      {
+        "detectionCondition": "DDMMYYYY",
+        "condition": "Comma, Dot, Hyphen, Slash",
+        "strategy": "YYYY-MM-DD",
+        "externalDependency": "DepositDateTime"
+      },
+      {
+        "detectionCondition": "YYYYMMDD",
+        "condition": "Comma, Dot, Hyphen, Slash",
+        "strategy": "YYYY-MM-DD",
+        "externalDependency": "DepositDateTime"
+      },
+      {
+        "detectionCondition": "MMDDYY",
+        "condition": "Comma, Dot, Hyphen, Slash",
+        "strategy": "YYYY-MM-DD",
+        "externalDependency": "DepositDateTime"
+      },
+      {
+        "detectionCondition": "DDMMYY",
+        "condition": "Comma, Dot, Hyphen, Slash",
+        "strategy": "YYYY-MM-DD",
+        "externalDependency": "DepositDateTime"
+      },
+      {
+        "detectionCondition": "YYMMDD",
+        "condition": "Comma, Dot, Hyphen, Slash",
+        "strategy": "YYYY-MM-DD",
+        "externalDependency": "DepositDateTime"
       }
-    ],
-    "processingRules": [
-      "SPLIT_CHECK",
-      "PAD_CHECK",
-      "VALIDATE_AMOUNT"
     ]
   },
   {
     "patternId": "PAT-006",
-    "patternName": "Multiple Sheets",
+    "patternName": "File containing multiple Sheets",
     "fileType": "EXCEL",
     "patternType": "MULTI_SHEET",
     "category": "MULTI_SHEET",
-    "description": "Excel workbook with multiple sheets. Each sheet processed separately.",
+    "description": "File containing multiple Sheets",
     "delimiter": "",
     "active": true,
-    "priority": 50,
-    "fieldMappings": {
-      "checkField": "Check Number",
-      "amountField": "Check Amount",
-      "invoiceField": "Invoice Number"
-    },
-    "detection": {
-      "multiSheet": true
-    },
-    "conditions": [],
-    "processingRules": [
-      "PROCESS_ALL_SHEETS",
-      "MERGE_RESULTS"
+    "priority": 60,
+    "conditions": [
+      {
+        "detectionCondition": "Header, Item data split Check Data",
+        "condition": "Multiple Sheet",
+        "strategy": "Build Heirarchy of 50 Items per Batch",
+        "externalDependency": "Reference API reference Fields Table"
+      },
+      {
+        "detectionCondition": "Invoice /Document data",
+        "condition": "Multiple Sheet",
+        "strategy": "Build Heirarchy of 50 Items per Batch",
+        "externalDependency": "Reference API reference Fields Table"
+      }
     ]
   },
   {
@@ -222,124 +233,54 @@
     "fileType": "EXCEL",
     "patternType": "BAI2_BANK",
     "category": "BANK",
-    "description": "Standard BAI2 bank file format with record types 01, 02, 03, 16, 88, 49.",
+    "description": "Standard BAI2 bank file format converted to Excel",
     "delimiter": "",
     "active": true,
     "priority": 200,
-    "bankCode": "CHASE",
-    "accountIdentifier": "",
-    "transactionCodes": "115,165,175,275,375",
-    "fieldMappings": {},
-    "detection": {
-      "recordType01": "File Header",
-      "recordType02": "Group Header",
-      "recordType03": "Account Identifier",
-      "recordType16": "Transaction Detail"
-    },
     "conditions": [
       {
-        "priority": 1,
         "detectionCondition": "Transaction Code = 115",
+        "condition": "AMOUNT > 0",
         "strategy": "LOCKBOX_DEPOSIT",
-        "condition": "AMOUNT > 0",
-        "fallbackAction": "LOG_ERROR",
         "externalDependency": "Bank_Master"
       },
       {
-        "priority": 2,
         "detectionCondition": "Transaction Code = 165",
-        "strategy": "CHECK_DEPOSIT",
         "condition": "AMOUNT > 0",
-        "fallbackAction": "LOG_ERROR",
+        "strategy": "CHECK_DEPOSIT",
         "externalDependency": "Bank_Master"
       },
       {
-        "priority": 3,
         "detectionCondition": "Transaction Code = 175",
-        "strategy": "ACH_CREDIT",
         "condition": "DEFAULT",
-        "fallbackAction": "MANUAL_REVIEW",
+        "strategy": "ACH_CREDIT",
         "externalDependency": ""
       }
-    ],
-    "processingRules": [
-      "PARSE_BAI2",
-      "EXTRACT_TRANSACTIONS"
     ]
   },
   {
     "patternId": "PAT-008",
-    "patternName": "PDF Payment Advice",
+    "patternName": "PDF Payment Advice (Excel Extract)",
     "fileType": "EXCEL",
     "patternType": "PDF_EXTRACTION",
     "category": "EXTRACTION",
-    "description": "Payment advice in PDF format. Uses OCR and pattern matching to extract payment details.",
+    "description": "PDF Payment Advice data extracted to Excel",
     "delimiter": "",
     "active": true,
     "priority": 210,
-    "fieldMappings": {
-      "checkPattern": "Check\\s*#?:\\s*(\\d+)",
-      "invoicePattern": "Invoice\\s*#?:\\s*(\\d+)",
-      "amountPattern": "\\$([\\d,]+\\.\\d{2})"
-    },
-    "pdfFields": [
-      {
-        "fieldName": "Customer Number",
-        "extractionPattern": "Customer\\s*#?:\\s*(\\d+)",
-        "fieldType": "TEXT",
-        "required": true,
-        "defaultValue": ""
-      },
-      {
-        "fieldName": "Invoice Number",
-        "extractionPattern": "Invoice\\s*#?:\\s*(\\d+)",
-        "fieldType": "TEXT",
-        "required": true,
-        "defaultValue": ""
-      },
-      {
-        "fieldName": "Date",
-        "extractionPattern": "(\\d{1,2}[/\\-]\\d{1,2}[/\\-]\\d{2,4})",
-        "fieldType": "DATE",
-        "required": true,
-        "defaultValue": ""
-      },
-      {
-        "fieldName": "Amount",
-        "extractionPattern": "\\$([\\d,]+\\.\\d{2})",
-        "fieldType": "AMOUNT",
-        "required": true,
-        "defaultValue": ""
-      },
-      {
-        "fieldName": "Payment Reference",
-        "extractionPattern": "Ref\\s*#?:\\s*(\\w+)",
-        "fieldType": "TEXT",
-        "required": false,
-        "defaultValue": ""
-      }
-    ],
     "conditions": [
       {
-        "priority": 1,
         "detectionCondition": "Field Pattern Match",
-        "strategy": "REGEX_EXTRACT",
         "condition": "FIELD_FOUND = YES",
-        "fallbackAction": "USE_DEFAULT",
+        "strategy": "REGEX_EXTRACT",
         "externalDependency": ""
       },
       {
-        "priority": 2,
         "detectionCondition": "OCR Confidence > 80%",
-        "strategy": "REGEX_EXTRACT",
         "condition": "CONFIDENCE > 0.8",
-        "fallbackAction": "MANUAL_REVIEW",
+        "strategy": "REGEX_EXTRACT",
         "externalDependency": ""
       }
-    ],
-    "processingRules": [
-      "OCR_EXTRACT",
-      "PATTERN_MATCH"
     ]
   },
   {
@@ -348,49 +289,29 @@
     "fileType": "EXCEL",
     "patternType": "PAYMENT_ADVICE_SPLIT",
     "category": "INVOICE",
-    "description": "Payment advice with split conditions for invoice matching and amount distribution.",
+    "description": "Payment advice with split conditions",
     "delimiter": "",
     "active": true,
     "priority": 220,
-    "splitType": "BY_INVOICE",
-    "amountThreshold": 10000,
-    "autoMatchOpenItems": true,
-    "createSuspenseEntry": false,
-    "fieldMappings": {
-      "customerField": "Customer",
-      "invoiceField": "Invoice Number",
-      "amountField": "Amount",
-      "dateField": "Payment Date"
-    },
     "conditions": [
       {
-        "priority": 1,
         "detectionCondition": "Invoice Count > 1",
-        "strategy": "OUTSTANDING_AMOUNT_MATCH",
         "condition": "OPEN_AR_AVAILABLE = YES",
-        "fallbackAction": "HOLD_IN_SUSPENSE",
+        "strategy": "OUTSTANDING_AMOUNT_MATCH",
         "externalDependency": "SAP_AR_Data"
       },
       {
-        "priority": 2,
         "detectionCondition": "Amount > Threshold",
-        "strategy": "SPLIT_BY_INVOICE",
         "condition": "AMOUNT > 10000",
-        "fallbackAction": "MANUAL_REVIEW",
+        "strategy": "SPLIT_BY_INVOICE",
         "externalDependency": ""
       },
       {
-        "priority": 3,
         "detectionCondition": "Single Invoice",
-        "strategy": "DIRECT_MATCH",
         "condition": "DEFAULT",
-        "fallbackAction": "AUTO_CLEAR",
+        "strategy": "DIRECT_MATCH",
         "externalDependency": "SAP_AR"
       }
-    ],
-    "processingRules": [
-      "MATCH_OPEN_ITEMS",
-      "SPLIT_BY_INVOICE"
     ]
   },
   {
@@ -399,23 +320,23 @@
     "fileType": "EXCEL",
     "patternType": "SINGLE_CHECK_MULTI_INVOICE",
     "category": "CHECK",
-    "description": "Standard CSV format with comma-separated fields.",
+    "description": "Standard CSV format converted to Excel",
     "delimiter": ",",
     "active": true,
     "priority": 30,
-    "fieldMappings": {
-      "checkField": "Check Number",
-      "amountField": "Check Amount",
-      "invoiceField": "Invoice Number",
-      "invoiceAmountField": "Invoice Amount"
-    },
-    "detection": {
-      "rowCount": "MULTIPLE"
-    },
-    "conditions": [],
-    "processingRules": [
-      "PAD_CHECK",
-      "VALIDATE_AMOUNT"
+    "conditions": [
+      {
+        "detectionCondition": "CSV Format Check",
+        "condition": "Comma Separated",
+        "strategy": "Parse CSV to Excel format",
+        "externalDependency": "Check Number"
+      },
+      {
+        "detectionCondition": "Amount Field",
+        "condition": "Numeric validation",
+        "strategy": "VALIDATE_AMOUNT",
+        "externalDependency": "Check Amount"
+      }
     ]
   }
 ]
