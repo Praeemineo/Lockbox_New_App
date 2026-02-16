@@ -676,14 +676,14 @@
                                         </content>
                                     </Panel>
                                     
-                                    <!-- Condition Rules Table -->
+                                    <!-- Condition Rules Table - Excel Format -->
                                     <Panel class="sapUiSmallMarginBottom">
                                         <headerToolbar>
                                             <OverflowToolbar>
-                                                <Title text="Split Conditions &amp; Rules ({= ${app>/selectedPattern/conditions} ? ${app>/selectedPattern/conditions}.length : 0})" />
+                                                <Title text="Pattern Conditions &amp; Actions ({= ${app>/selectedPattern/conditions} ? ${app>/selectedPattern/conditions}.length : 0})" />
                                                 <ToolbarSpacer />
-                                                <Button text="Add Rule" icon="sap-icon://add" type="Emphasized" press="onAddPatternCondition" />
-                                                <Button text="Delete" icon="sap-icon://delete" type="Reject" press="onDeletePatternCondition" enabled="{= !!${app>/selectedCondition}}" />
+                                                <Button text="Add Row" icon="sap-icon://add" type="Emphasized" press="onAddPatternCondition" />
+                                                <Button text="Delete Row" icon="sap-icon://delete" type="Reject" press="onDeletePatternCondition" enabled="{= !!${app>/selectedCondition}}" />
                                             </OverflowToolbar>
                                         </headerToolbar>
                                         <content>
@@ -694,24 +694,38 @@
                                                 selectionChange="onConditionSelectionChange"
                                                 class="sapUiSizeCompact">
                                                 <columns>
-                                                    <Column width="5%"><Text text="#" /></Column>
-                                                    <Column width="20%"><Text text="Detection Condition" /></Column>
-                                                    <Column width="18%"><Text text="Strategy" /></Column>
-                                                    <Column width="17%"><Text text="Condition" /></Column>
-                                                    <Column width="15%"><Text text="Fallback Action" /></Column>
-                                                    <Column width="15%"><Text text="External Dependency" /></Column>
-                                                    <Column width="10%" hAlign="Center"><Text text="Priority" /></Column>
+                                                    <Column width="25%">
+                                                        <VBox>
+                                                            <Text text="Condition / Pattern Identification" class="sapUiTinyMarginBottom" />
+                                                            <Text text="Document/Date format" class="sapMTextSmall" />
+                                                        </VBox>
+                                                    </Column>
+                                                    <Column width="20%">
+                                                        <VBox>
+                                                            <Text text="" class="sapUiTinyMarginBottom" />
+                                                            <Text text="Condition" class="sapMTextSmall" />
+                                                        </VBox>
+                                                    </Column>
+                                                    <Column width="30%">
+                                                        <VBox>
+                                                            <Text text="Action and Field Mapping" class="sapUiTinyMarginBottom" />
+                                                            <Text text="Action" class="sapMTextSmall" />
+                                                        </VBox>
+                                                    </Column>
+                                                    <Column width="25%">
+                                                        <VBox>
+                                                            <Text text="" class="sapUiTinyMarginBottom" />
+                                                            <Text text="Related API/Field reference" class="sapMTextSmall" />
+                                                        </VBox>
+                                                    </Column>
                                                 </columns>
                                                 <items>
                                                     <ColumnListItem>
                                                         <cells>
-                                                            <Text text="{app>priority}" />
-                                                            <Text text="{app>detectionCondition}" />
-                                                            <ObjectStatus text="{app>strategy}" state="{path: 'app>strategy', formatter: '.formatStrategyState'}" />
-                                                            <Text text="{app>condition}" />
-                                                            <ObjectStatus text="{app>fallbackAction}" state="{path: 'app>fallbackAction', formatter: '.formatFallbackState'}" />
-                                                            <Text text="{= ${app>externalDependency} || 'None'}" />
-                                                            <Input value="{app>priority}" type="Number" width="50px" textAlign="Center" />
+                                                            <Text text="{app>detectionCondition}" wrapping="true" />
+                                                            <Text text="{app>condition}" wrapping="true" />
+                                                            <Text text="{app>strategy}" wrapping="true" />
+                                                            <Text text="{app>externalDependency}" wrapping="true" />
                                                         </cells>
                                                     </ColumnListItem>
                                                 </items>
