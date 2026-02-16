@@ -32,38 +32,19 @@
                 <Text text="Select an application to get started" class="sapUiTinyMarginBottom" />
                 
                 <HBox wrap="Wrap" class="sapUiLargeMarginTop">
-                    <!-- Configuration Tile -->
+                    <!-- Field Mapping Rules Tile -->
                     <VBox class="sapUiSmallMargin">
                         <GenericTile
-                            id="tileConfig"
-                            header="Configuration"
-                            subheader="Template Settings"
-                            press="onConfigTilePress"
+                            id="tileFieldMappingRules"
+                            header="Field Mapping Rules"
+                            subheader="Manage Extraction Rules"
+                            press="onFieldMappingRulesTilePress"
                             frameType="TwoByOne"
                             class="sapUiTinyMarginBegin sapUiTinyMarginEnd">
                             <tileContent>
                                 <TileContent>
                                     <content>
-                                        <ImageContent src="sap-icon://action-settings" />
-                                    </content>
-                                </TileContent>
-                            </tileContent>
-                        </GenericTile>
-                    </VBox>
-                    
-                    <!-- Template Builder Tile -->
-                    <VBox class="sapUiSmallMargin">
-                        <GenericTile
-                            id="tileTemplateBuilder"
-                            header="Template Builder"
-                            subheader="Import &amp; Map Fields"
-                            press="onTemplateBuilderTilePress"
-                            frameType="TwoByOne"
-                            class="sapUiTinyMarginBegin sapUiTinyMarginEnd">
-                            <tileContent>
-                                <TileContent>
-                                    <content>
-                                        <ImageContent src="sap-icon://document-text" />
+                                        <ImageContent src="sap-icon://tree" />
                                     </content>
                                 </TileContent>
                             </tileContent>
@@ -88,523 +69,43 @@
                             </tileContent>
                         </GenericTile>
                     </VBox>
-                </HBox>
-            </VBox>
-            
-            <!-- ============================================================ -->
-            <!-- CONFIGURATION CONTENT (Hidden by default) -->
-            <!-- ============================================================ -->
-            <VBox id="configContent" visible="{app>/showConfig}" class="sapUiSmallMargin">
-                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                    <core:Icon src="sap-icon://action-settings" size="1.5rem" color="#0854a0" class="sapUiSmallMarginEnd" />
-                    <Title text="Configuration" level="H2" />
-                </HBox>
-                
-                <Panel headerText="Lockbox Template Configuration" expandable="false">
+                    
+                    <!-- PDF Lockbox Transaction Tile (OCR) -->
                     <VBox class="sapUiSmallMargin">
-                        <MessageStrip
-                            text="Configure your template by selecting fields and marking them as required/optional. Selected fields will appear in the Field Sequence panel on the right."
-                            type="Information"
-                            showIcon="true"
-                            class="sapUiSmallMarginBottom" />
-                        
-                        <!-- Two Column Layout: Fields Selection + Field Sequence -->
-                        <HBox width="100%">
-                            <!-- Left Side: Field Selection Tables -->
-                            <VBox width="60%" class="sapUiSmallMarginEnd">
-                                <!-- Header Fields Configuration -->
-                                <Panel headerText="Header Fields" expandable="true" expanded="true" class="sapUiSmallMarginTop">
-                                    <Table
-                                        id="headerFieldsTable"
-                                        items="{app>/templateConfig/header}"
-                                        mode="None">
-                                        <columns>
-                                            <Column width="50%"><Text text="Field Name" /></Column>
-                                            <Column width="25%"><Text text="Include" /></Column>
-                                            <Column width="25%"><Text text="Required" /></Column>
-                                        </columns>
-                                        <items>
-                                            <ColumnListItem>
-                                                <cells>
-                                                    <Text text="{app>fieldName}" />
-                                                    <CheckBox selected="{app>selected}" select="onFieldSelectionChange" />
-                                                    <CheckBox selected="{app>required}" enabled="{app>selected}" select="onFieldSelectionChange" />
-                                                </cells>
-                                            </ColumnListItem>
-                                        </items>
-                                    </Table>
-                                </Panel>
-                                
-                                <!-- Cheques Fields Configuration -->
-                                <Panel headerText="Cheques (Bank Data) Fields" expandable="true" expanded="true" class="sapUiSmallMarginTop">
-                                    <Table
-                                        id="chequesFieldsTable"
-                                        items="{app>/templateConfig/cheques}"
-                                        mode="None">
-                                        <columns>
-                                            <Column width="50%"><Text text="Field Name" /></Column>
-                                            <Column width="25%"><Text text="Include" /></Column>
-                                            <Column width="25%"><Text text="Required" /></Column>
-                                        </columns>
-                                        <items>
-                                            <ColumnListItem>
-                                                <cells>
-                                                    <Text text="{app>fieldName}" />
-                                                    <CheckBox selected="{app>selected}" select="onFieldSelectionChange" />
-                                                    <CheckBox selected="{app>required}" enabled="{app>selected}" select="onFieldSelectionChange" />
-                                                </cells>
-                                            </ColumnListItem>
-                                        </items>
-                                    </Table>
-                                </Panel>
-                                
-                                <!-- Payment References Fields Configuration -->
-                                <Panel headerText="Payment References Fields" expandable="true" expanded="true" class="sapUiSmallMarginTop">
-                                    <Table
-                                        id="paymentRefFieldsTable"
-                                        items="{app>/templateConfig/paymentReferences}"
-                                        mode="None">
-                                        <columns>
-                                            <Column width="50%"><Text text="Field Name" /></Column>
-                                            <Column width="25%"><Text text="Include" /></Column>
-                                            <Column width="25%"><Text text="Required" /></Column>
-                                        </columns>
-                                        <items>
-                                            <ColumnListItem>
-                                                <cells>
-                                                    <Text text="{app>fieldName}" />
-                                                    <CheckBox selected="{app>selected}" select="onFieldSelectionChange" />
-                                                    <CheckBox selected="{app>required}" enabled="{app>selected}" select="onFieldSelectionChange" />
-                                                </cells>
-                                            </ColumnListItem>
-                                        </items>
-                                    </Table>
-                                </Panel>
-                            </VBox>
-                            
-                            <!-- Right Side: Field Sequence Panel -->
-                            <VBox width="40%">
-                                <Panel class="sapUiSmallMarginTop">
-                                    <headerToolbar>
-                                        <Toolbar>
-                                            <Title text="Field Sequence" level="H4" />
-                                            <ToolbarSpacer />
-                                            <Button
-                                                icon="sap-icon://arrow-top"
-                                                press="onMoveFieldUp"
-                                                tooltip="Move Up"
-                                                enabled="{= ${app>/selectedSequenceField} !== null}" />
-                                            <Button
-                                                icon="sap-icon://arrow-bottom"
-                                                press="onMoveFieldDown"
-                                                tooltip="Move Down"
-                                                enabled="{= ${app>/selectedSequenceField} !== null}" />
-                                            <Button
-                                                icon="sap-icon://delete"
-                                                press="onRemoveFromSequence"
-                                                tooltip="Remove from Sequence"
-                                                type="Reject"
-                                                enabled="{= ${app>/selectedSequenceField} !== null}" />
-                                        </Toolbar>
-                                    </headerToolbar>
+                        <GenericTile
+                            id="tilePdfLockbox"
+                            header="PDF Lockbox (OCR)"
+                            subheader="AI-Powered Document Processing"
+                            press="onPdfLockboxTilePress"
+                            frameType="TwoByOne"
+                            class="sapUiTinyMarginBegin sapUiTinyMarginEnd">
+                            <tileContent>
+                                <TileContent>
                                     <content>
-                                        <List
-                                            id="fieldSequenceList"
-                                            items="{app>/fieldSequence}"
-                                            mode="SingleSelectMaster"
-                                            selectionChange="onSequenceFieldSelect"
-                                            noDataText="Select fields from the left to add them to the sequence">
-                                            <StandardListItem
-                                                title="{app>fieldName}"
-                                                description="Type: {app>fieldType}"
-                                                icon="{path: 'app>fieldType', formatter: '.formatFieldTypeIcon'}"
-                                                info="{= ${app>required} ? 'Required' : 'Optional'}"
-                                                infoState="{= ${app>required} ? 'Warning' : 'None'}"
-                                                type="Active" />
-                                        </List>
+                                        <ImageContent src="sap-icon://pdf-attachment" />
                                     </content>
-                                </Panel>
-                            </VBox>
-                        </HBox>
-                        
-                        <!-- Add Custom SAP Field Section -->
-                        <Panel headerText="Add Custom SAP Field" expandable="true" expanded="true" class="sapUiMediumMarginTop">
-                            <VBox class="sapUiSmallMargin">
-                                <MessageStrip
-                                    text="Add SAP validated fields to extend the template. Select the section where the field should be added."
-                                    type="Information"
-                                    showIcon="true"
-                                    class="sapUiSmallMarginBottom" />
-                                <HBox alignItems="End" wrap="Wrap">
-                                    <VBox class="sapUiSmallMarginEnd">
-                                        <Label text="Section" required="true" />
-                                        <Select
-                                            id="selectNewFieldSection"
-                                            selectedKey="{app>/newField/section}">
-                                            <core:Item key="header" text="Header" />
-                                            <core:Item key="cheques" text="Cheques" />
-                                            <core:Item key="paymentReferences" text="Payment References" />
-                                        </Select>
-                                    </VBox>
-                                    <VBox class="sapUiSmallMarginEnd">
-                                        <Label text="Field Name (SAP)" required="true" />
-                                        <Input
-                                            id="inputNewFieldName"
-                                            value="{app>/newField/fieldName}"
-                                            placeholder="e.g., BELNR, BUKRS"
-                                            width="200px" />
-                                    </VBox>
-                                    <VBox class="sapUiSmallMarginEnd">
-                                        <Label text="Required" />
-                                        <CheckBox
-                                            id="chkNewFieldRequired"
-                                            selected="{app>/newField/required}" />
-                                    </VBox>
-                                    <VBox class="sapUiSmallMarginEnd">
-                                        <Label text="Field Type" />
-                                        <Select
-                                            id="selectNewFieldType"
-                                            selectedKey="{app>/newField/fieldType}">
-                                            <core:Item key="text" text="Text" />
-                                            <core:Item key="number" text="Number" />
-                                            <core:Item key="date" text="Date" />
-                                            <core:Item key="currency" text="Currency" />
-                                        </Select>
-                                    </VBox>
-                                    <Button
-                                        text="Add Field"
-                                        icon="sap-icon://add"
-                                        type="Accept"
-                                        press="onAddCustomField"
-                                        class="sapUiSmallMarginBottom" />
-                                </HBox>
-                            </VBox>
-                        </Panel>
-                        
-                        <!-- Download Template Section -->
-                        <Panel headerText="Download Template" expandable="true" expanded="true" class="sapUiMediumMarginTop">
-                            <VBox class="sapUiSmallMargin">
-                                <MessageStrip
-                                    text="Download an Excel template based on the field sequence above. The template will include all selected fields in the specified order."
-                                    type="Information"
-                                    showIcon="true"
-                                    class="sapUiSmallMarginBottom" />
-                                <Button
-                                    text="Download Template"
-                                    icon="sap-icon://download"
-                                    type="Emphasized"
-                                    press="onDownloadTemplate"
-                                    class="sapUiSmallMarginTop" />
-                            </VBox>
-                        </Panel>
+                                </TileContent>
+                            </tileContent>
+                        </GenericTile>
                     </VBox>
-                </Panel>
-            </VBox>
-            
-            <!-- ============================================================ -->
-            <!-- TEMPLATE BUILDER CONTENT (Hidden by default) -->
-            <!-- ============================================================ -->
-            <VBox id="templateBuilderContent" visible="{app>/showTemplateBuilder}" class="sapUiSmallMargin">
-                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                    <core:Icon src="sap-icon://document-text" size="1.5rem" color="#0854a0" class="sapUiSmallMarginEnd" />
-                    <Title text="Template Builder" level="H2" />
                 </HBox>
-                
-                <Panel headerText="Import Template" expandable="false">
-                    <VBox class="sapUiSmallMargin">
-                        <MessageStrip
-                            text="Upload a template file (PDF, Excel, or BAI2) and extract fields to map them to the Lockbox API structure. The system will automatically identify fields and suggest mappings."
-                            type="Information"
-                            showIcon="true"
-                            class="sapUiSmallMarginBottom" />
-                        
-                        <!-- Two Column Layout -->
-                        <HBox width="100%">
-                            <!-- Left Side: Upload and Extract -->
-                            <VBox width="50%" class="sapUiSmallMarginEnd">
-                                <!-- File Upload Section -->
-                                <Panel headerText="1. Upload Template File" expandable="false" class="sapUiSmallMarginBottom">
-                                    <VBox class="sapUiSmallMargin">
-                                        <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                                            <u:FileUploader
-                                                id="templateFileUploader"
-                                                name="templateFile"
-                                                uploadUrl="/api/template/upload"
-                                                width="300px"
-                                                placeholder="Choose PDF, Excel, or BAI2 file..."
-                                                fileType="pdf,xlsx,xls,bai2,bai,txt"
-                                                change="onTemplateFileChange"
-                                                typeMissmatch="onTemplateTypeMismatch"
-                                                class="sapUiSmallMarginEnd" />
-                                            <Button
-                                                id="btnUploadTemplate"
-                                                text="Upload"
-                                                icon="sap-icon://upload"
-                                                type="Emphasized"
-                                                press="onUploadTemplateFile"
-                                                enabled="{app>/templateBuilder/fileSelected}" />
-                                        </HBox>
-                                        <HBox alignItems="Center" class="sapUiSmallMarginTop">
-                                            <Text text="Supported formats: " class="sapUiSmallMarginEnd" />
-                                            <ObjectStatus text="PDF" state="Success" class="sapUiSmallMarginEnd" />
-                                            <ObjectStatus text="Excel (.xlsx, .xls)" state="Success" class="sapUiSmallMarginEnd" />
-                                            <ObjectStatus text="BAI2" state="Success" />
-                                        </HBox>
-                                        <HBox alignItems="Center" class="sapUiMediumMarginTop">
-                                            <Button
-                                                id="btnQuickTest"
-                                                text="Quick Test (Demo Excel)"
-                                                icon="sap-icon://lab"
-                                                type="Accept"
-                                                press="onQuickTestDemo"
-                                                tooltip="Simulate uploading and extracting an Excel template for testing" />
-                                        </HBox>
-                                    </VBox>
-                                </Panel>
-                                
-                                <!-- Uploaded File Info -->
-                                <Panel headerText="2. Uploaded File" expandable="false" class="sapUiSmallMarginBottom" visible="{= !!${app>/templateBuilder/uploadedFile}}">
-                                    <VBox class="sapUiSmallMargin">
-                                        <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                                            <core:Icon src="{path: 'app>/templateBuilder/uploadedFile/type', formatter: '.formatFileTypeIcon'}" size="2rem" class="sapUiSmallMarginEnd" />
-                                            <VBox>
-                                                <Text text="{app>/templateBuilder/uploadedFile/name}" class="sapUiSmallMarginBottom" />
-                                                <Text text="Type: {app>/templateBuilder/uploadedFile/type} | Size: {app>/templateBuilder/uploadedFile/size}" />
-                                            </VBox>
-                                        </HBox>
-                                        <Button
-                                            id="btnExtractFields"
-                                            text="Extract Fields"
-                                            icon="sap-icon://activate"
-                                            type="Emphasized"
-                                            press="onExtractFields"
-                                            class="sapUiSmallMarginTop" />
-                                    </VBox>
-                                </Panel>
-                                
-                                <!-- Extracted Fields Preview -->
-                                <Panel headerText="3. Extracted Fields" expandable="false" visible="{= ${app>/templateBuilder/extractedFields}.length > 0}">
-                                    <VBox class="sapUiSmallMargin">
-                                        <MessageStrip
-                                            text="{= ${app>/templateBuilder/extractedFields}.length + ' fields extracted from template'}"
-                                            type="Success"
-                                            showIcon="true"
-                                            class="sapUiSmallMarginBottom" />
-                                        <List
-                                            id="extractedFieldsList"
-                                            items="{app>/templateBuilder/extractedFields}"
-                                            mode="None">
-                                            <StandardListItem
-                                                title="{app>fieldName}"
-                                                description="Sample: {app>sampleValue}"
-                                                icon="{path: 'app>detectedType', formatter: '.formatFieldTypeIcon'}"
-                                                info="{app>detectedType}"
-                                                infoState="Information" />
-                                        </List>
-                                    </VBox>
-                                </Panel>
-                            </VBox>
-                            
-                            <!-- Right Side: Field Mapping -->
-                            <VBox width="50%">
-                                <Panel headerText="4. Field Mapping to Lockbox API" expandable="false">
-                                    <VBox class="sapUiSmallMargin">
-                                        <MessageStrip
-                                            text="Map extracted fields to Lockbox API fields. Auto-populated fields (like Company Code) are pre-filled from system settings."
-                                            type="Information"
-                                            showIcon="true"
-                                            class="sapUiSmallMarginBottom"
-                                            visible="{= ${app>/templateBuilder/extractedFields}.length > 0}" />
-                                        
-                                        <!-- Auto-populated Fields -->
-                                        <Panel headerText="Auto-Populated Fields (Background)" expandable="true" expanded="true" class="sapUiSmallMarginBottom">
-                                            <Table
-                                                id="autoPopulatedFieldsTable"
-                                                items="{app>/templateBuilder/autoPopulatedFields}"
-                                                mode="None">
-                                                <columns>
-                                                    <Column width="40%"><Text text="API Field" /></Column>
-                                                    <Column width="40%"><Text text="Value" /></Column>
-                                                    <Column width="20%"><Text text="Source" /></Column>
-                                                </columns>
-                                                <items>
-                                                    <ColumnListItem>
-                                                        <cells>
-                                                            <Text text="{app>apiField}" />
-                                                            <Input value="{app>value}" editable="{app>editable}" />
-                                                            <ObjectStatus text="{app>source}" state="Success" />
-                                                        </cells>
-                                                    </ColumnListItem>
-                                                </items>
-                                            </Table>
-                                        </Panel>
-                                        
-                                        <!-- Field Mapping Table -->
-                                        <Panel headerText="Template Field → API Field Mapping" expandable="true" expanded="true">
-                                            <Table
-                                                id="fieldMappingTable"
-                                                items="{app>/templateBuilder/fieldMappings}"
-                                                mode="None"
-                                                noDataText="Upload and extract a template to see field mappings">
-                                                <columns>
-                                                    <Column width="30%"><Text text="Template Field" /></Column>
-                                                    <Column width="35%"><Text text="Lockbox API Field" /></Column>
-                                                    <Column width="20%"><Text text="Section" /></Column>
-                                                    <Column width="15%"><Text text="Required" /></Column>
-                                                </columns>
-                                                <items>
-                                                    <ColumnListItem>
-                                                        <cells>
-                                                            <Text text="{app>templateField}" />
-                                                            <Select
-                                                                selectedKey="{app>apiField}"
-                                                                change="onFieldMappingChange">
-                                                                <core:Item key="" text="-- Select API Field --" />
-                                                                <core:Item key="Lockbox" text="Lockbox (Header)" />
-                                                                <core:Item key="DepositDateTime" text="DepositDateTime (Header)" />
-                                                                <core:Item key="AmountInTransactionCurrency" text="Amount (Header)" />
-                                                                <core:Item key="LockboxBatchOrigin" text="LockboxBatchOrigin (Header)" />
-                                                                <core:Item key="LockboxBatchDestination" text="LockboxBatchDestination (Header)" />
-                                                                <core:Item key="CompanyCode" text="CompanyCode (Header)" />
-                                                                <core:Item key="LockboxBatch" text="LockboxBatch (Cheques)" />
-                                                                <core:Item key="LockboxBatchItem" text="LockboxBatchItem (Cheques)" />
-                                                                <core:Item key="Cheque" text="Cheque Number (Cheques)" />
-                                                                <core:Item key="PartnerBank" text="PartnerBank (Cheques)" />
-                                                                <core:Item key="PartnerBankAccount" text="PartnerBankAccount (Cheques)" />
-                                                                <core:Item key="PartnerBankCountry" text="PartnerBankCountry (Cheques)" />
-                                                                <core:Item key="PaymentReference" text="PaymentReference (Payment Ref)" />
-                                                                <core:Item key="NetPaymentAmountInPaytCurrency" text="NetPaymentAmount (Payment Ref)" />
-                                                                <core:Item key="DeductionAmountInPaytCurrency" text="DeductionAmount (Payment Ref)" />
-                                                                <core:Item key="PaymentDifferenceReason" text="PaymentDifferenceReason (Payment Ref)" />
-                                                                <core:Item key="Currency" text="Currency" />
-                                                                <core:Item key="CustomerNumber" text="Customer Number (Custom)" />
-                                                                <core:Item key="InvoiceNumber" text="Invoice Number (Custom)" />
-                                                            </Select>
-                                                            <Select
-                                                                selectedKey="{app>section}"
-                                                                change="onFieldMappingChange">
-                                                                <core:Item key="header" text="Header" />
-                                                                <core:Item key="cheques" text="Cheques" />
-                                                                <core:Item key="paymentReferences" text="Payment Ref" />
-                                                            </Select>
-                                                            <CheckBox selected="{app>required}" />
-                                                        </cells>
-                                                    </ColumnListItem>
-                                                </items>
-                                            </Table>
-                                        </Panel>
-                                    </VBox>
-                                </Panel>
-                                
-                                <!-- Save Template -->
-                                <Panel headerText="5. Save Template Mapping" expandable="false" class="sapUiSmallMarginTop" visible="{= ${app>/templateBuilder/fieldMappings}.length > 0}">
-                                    <VBox class="sapUiSmallMargin">
-                                        <HBox alignItems="End">
-                                            <VBox class="sapUiSmallMarginEnd">
-                                                <Label text="Template Name" required="true" />
-                                                <Input
-                                                    id="inputTemplateName"
-                                                    value="{app>/templateBuilder/templateName}"
-                                                    placeholder="e.g., Bank ABC Lockbox Template"
-                                                    width="250px" />
-                                            </VBox>
-                                            <Button
-                                                text="Save Template"
-                                                icon="sap-icon://save"
-                                                type="Emphasized"
-                                                press="onSaveTemplateMapping" />
-                                        </HBox>
-                                    </VBox>
-                                </Panel>
-                                
-                                <!-- Test Simulation Section -->
-                                <Panel headerText="6. Test Simulation (Temporary Testing)" expandable="false" class="sapUiSmallMarginTop" visible="{= ${app>/templateBuilder/fieldMappings}.length > 0}">
-                                    <VBox class="sapUiSmallMargin">
-                                        <MessageStrip
-                                            text="Test your template mapping by simulating a Lockbox API call. This is a temporary test that validates the payload structure without committing to SAP."
-                                            type="Warning"
-                                            showIcon="true"
-                                            class="sapUiSmallMarginBottom" />
-                                        <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                                            <core:Icon src="sap-icon://lab" size="1.5rem" color="#e78c07" class="sapUiSmallMarginEnd" />
-                                            <Text text="Test Lockbox ID: " class="sapUiSmallMarginEnd" />
-                                            <ObjectStatus text="{app>/templateBuilder/testLockboxId}" state="Warning" class="sapUiSmallMarginEnd" />
-                                            <Button
-                                                icon="sap-icon://refresh"
-                                                type="Transparent"
-                                                press="onRegenerateTestLockbox"
-                                                tooltip="Generate New Test ID" />
-                                        </HBox>
-                                        <HBox alignItems="Center">
-                                            <Button
-                                                id="btnSimulateLockboxAPI"
-                                                text="Simulate Lockbox API"
-                                                icon="sap-icon://simulate"
-                                                type="Accept"
-                                                press="onSimulateLockboxAPI"
-                                                class="sapUiSmallMarginEnd" />
-                                            <Text text="(Validates payload structure - No SAP commit)" />
-                                        </HBox>
-                                        <!-- Simulation Result -->
-                                        <VBox visible="{= !!${app>/templateBuilder/simulationResult}}" class="sapUiSmallMarginTop">
-                                            <MessageStrip
-                                                text="{= ${app>/templateBuilder/simulationResult/success} ? '✅ Simulation Successful - Template is valid!' : '❌ Simulation Failed - Check errors above'}"
-                                                type="{= ${app>/templateBuilder/simulationResult/success} ? 'Success' : 'Error'}"
-                                                showIcon="true" />
-                                        </VBox>
-                                    </VBox>
-                                </Panel>
-                            </VBox>
-                        </HBox>
-                        
-                        <!-- Saved Templates List -->
-                        <Panel headerText="Saved Templates" expandable="true" expanded="false" class="sapUiMediumMarginTop">
-                            <Table
-                                id="savedTemplatesTable"
-                                items="{app>/templateBuilder/savedTemplates}"
-                                mode="SingleSelectMaster"
-                                selectionChange="onSavedTemplateSelect"
-                                noDataText="No saved templates yet">
-                                <columns>
-                                    <Column width="25%"><Text text="Template Name" /></Column>
-                                    <Column width="20%"><Text text="File Type" /></Column>
-                                    <Column width="15%"><Text text="Fields Mapped" /></Column>
-                                    <Column width="20%"><Text text="Created" /></Column>
-                                    <Column width="20%"><Text text="Actions" /></Column>
-                                </columns>
-                                <items>
-                                    <ColumnListItem type="Active">
-                                        <cells>
-                                            <Text text="{app>name}" />
-                                            <ObjectStatus text="{app>fileType}" state="Information" />
-                                            <ObjectNumber number="{app>fieldCount}" unit="fields" />
-                                            <Text text="{path: 'app>createdAt', formatter: '.formatDateTime'}" />
-                                            <HBox>
-                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditSavedTemplate" tooltip="Edit" />
-                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteSavedTemplate" tooltip="Delete" />
-                                            </HBox>
-                                        </cells>
-                                    </ColumnListItem>
-                                </items>
-                            </Table>
-                        </Panel>
-                    </VBox>
-                </Panel>
             </VBox>
             
             <!-- ============================================================ -->
             <!-- LOCKBOX TRANSACTION CONTENT (Hidden by default) -->
             <!-- ============================================================ -->
             <VBox id="lockboxContent" visible="{app>/showLockbox}" class="sapUiSmallMargin">
-                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                    <core:Icon src="sap-icon://money-bills" size="1.5rem" color="#0854a0" class="sapUiSmallMarginEnd" />
-                    <Title text="Lockbox Transaction" level="H2" />
-                </HBox>
+                <VBox class="lockboxPageHeader">
+                    <HBox alignItems="Center">
+                        <core:Icon src="sap-icon://money-bills" size="2rem" class="sapUiSmallMarginEnd" />
+                        <Title text="Lockbox Transaction" level="H2" />
+                    </HBox>
+                </VBox>
                 
                 <!-- Filter Bar Section -->
-                <Panel expandable="false" class="sapUiNoContentPadding">
+                <Panel expandable="false" class="sapUiNoContentPadding filterPanel">
                     <headerToolbar>
-                        <Toolbar>
+                        <Toolbar class="panelHeader">
                             <Title text="Standard" level="H4" />
                             <ToolbarSpacer />
                         </Toolbar>
@@ -647,7 +148,7 @@
                                 <VBox class="sapUiSmallMarginEnd" width="150px">
                                     <Label text="Processing Status" />
                                     <ComboBox
-                                        id="filterStatus"
+                                        id="filterStatusLockbox"
                                         selectedKey="{app>/filters/status}"
                                         placeholder="All">
                                         <core:Item key="" text="All" />
@@ -661,10 +162,11 @@
                                     text="Go"
                                     type="Emphasized"
                                     press="onFilterGo"
-                                    class="sapUiSmallMarginEnd" />
+                                    class="sapUiSmallMarginEnd goButton" />
                                 <Button
                                     text="Adapt Filters"
-                                    press="onAdaptFilters" />
+                                    press="onAdaptFilters"
+                                    class="adaptFiltersButton" />
                             </HBox>
                         </VBox>
                     </content>
@@ -672,9 +174,9 @@
                 
                 <!-- Status Filter Tabs -->
                 <IconTabBar
-                    id="statusTabBar"
+                    id="statusTabBarLockbox"
                     select="onStatusFilterChange"
-                    class="sapUiSmallMarginTop sapUiSmallMarginBottom"
+                    class="sapUiSmallMarginTop sapUiSmallMarginBottom statusTabBar"
                     headerMode="Inline"
                     expandable="false">
                     <items>
@@ -686,59 +188,48 @@
                 </IconTabBar>
                 
                 <!-- Data Panel with TreeTable -->
-                <Panel expandable="false">
+                <Panel expandable="false" class="dataPanel">
                     <headerToolbar>
-                        <OverflowToolbar>
-                            <Title text="Lockbox Data ({= ${app>/headers}.length})" />
+                        <OverflowToolbar class="panelHeader">
+                            <Title text="Lockbox Data ({= ${app>/processingRuns} ? ${app>/processingRuns}.length : 0})" />
                             <ToolbarSpacer />
                             <Button
-                                id="btnUploadFile"
                                 text="Upload File"
                                 icon="sap-icon://upload"
-                                type="Ghost"
-                                press="onOpenUploadDialog" />
+                                type="Emphasized"
+                                press="onOpenUploadDialog"
+                                class="uploadButton"
+                                tooltip="Upload customer file - Auto processes: Template Match → Extract → Validate → Map" />
                             <Button
-                                id="btnSimulate"
                                 text="Simulate"
                                 icon="sap-icon://simulate"
                                 type="Ghost"
                                 press="onSimulate"
-                                enabled="{= !!${app>/selectedHeader} &amp;&amp; ${app>/selectedHeaderDetails/status} !== 'POSTED'}" />
+                                class="simulateButton"
+                                tooltip="Run simulation mode" />
                             <Button
-                                id="btnProductionRun"
                                 text="Production Run"
                                 icon="sap-icon://accept"
-                                type="Emphasized"
-                                press="onPost"
-                                enabled="{= !!${app>/selectedHeader} &amp;&amp; ${app>/selectedHeaderDetails/status} === 'SIMULATED'}" />
+                                type="Accept"
+                                press="onProductionRun"
+                                class="productionButton"
+                                tooltip="Run production posting" />
                             <Button
-                                id="btnRunHistory"
                                 text="Run History"
                                 icon="sap-icon://history"
                                 type="Ghost"
-                                press="onShowRunHistory"
-                                tooltip="View production run history for selected lockbox"
-                                enabled="{= !!${app>/selectedHeader}}" />
+                                press="onRunHistory"
+                                class="historyButton"
+                                tooltip="View processing runs with stage status (🔴/🟢)" />
                             <Button
-                                text="Edit"
-                                icon="sap-icon://edit"
-                                type="Ghost"
-                                enabled="{= !!${app>/selectedHeader} &amp;&amp; ${app>/selectedHeaderDetails/status} !== 'POSTED'}" />
-                            <Button
-                                id="btnDelete"
-                                text="Delete"
-                                icon="sap-icon://delete"
-                                type="Reject"
-                                press="onDeleteHeader"
-                                enabled="{= !!${app>/selectedHeader} &amp;&amp; ${app>/selectedHeaderDetails/status} !== 'POSTED'}" />
-                            <Button
-                                id="btnTableSettings"
                                 icon="sap-icon://action-settings"
                                 press="onOpenTableSettings"
+                                class="iconButton"
                                 tooltip="Table Settings - Show/Hide Columns" />
                             <Button
                                 icon="sap-icon://refresh"
                                 press="onRefreshHeaders"
+                                class="iconButton"
                                 tooltip="Refresh" />
                         </OverflowToolbar>
                     </headerToolbar>
@@ -746,6 +237,7 @@
                         <!-- sap.ui.table.TreeTable for hierarchical display -->
                         <table:TreeTable
                             id="lockboxTreeTable"
+                            class="lockboxTreeTable"
                             rows="{path: 'app>/treeData', parameters: {arrayNames: ['children']}}"
                             selectionMode="Single"
                             enableSelectAll="false"
@@ -754,34 +246,42 @@
                             selectionBehavior="RowOnly"
                             toggleOpenState="onTreeToggle">
                             <table:columns>
-                                <table:Column id="colLockboxItem" width="15%">
+                                <table:Column width="18%">
                                     <Label text="Lockbox / Item" />
                                     <table:template>
                                         <HBox alignItems="Center">
                                             <core:Icon src="{path: 'app>type', formatter: '.formatTypeIcon'}" class="sapUiSmallMarginEnd" />
-                                            <Text text="{app>displayText}" />
+                                            <Text text="{path: 'app>', formatter: '.formatLockboxItemDisplay'}" />
                                         </HBox>
                                     </table:template>
                                 </table:Column>
-                                <table:Column id="colDepositDateTime" width="12%">
-                                    <Label text="Deposit DateTime" />
+                                <table:Column width="12%">
+                                    <Label text="Source File" />
+                                    <table:template>
+                                        <Link text="{= ${app>sourceFile} || ''}" 
+                                              press="onDownloadSourceFile"
+                                              visible="{= !!${app>sourceFile} &amp;&amp; ${app>type} === 'LOCKBOX'}" />
+                                    </table:template>
+                                </table:Column>
+                                <table:Column width="10%">
+                                    <Label text="Deposit Date" />
                                     <table:template>
                                         <Text text="{path: 'app>deposit_datetime', formatter: '.formatDateTime'}" />
                                     </table:template>
                                 </table:Column>
-                                <table:Column id="colAmount" width="8%">
+                                <table:Column width="8%">
                                     <Label text="Amount" />
                                     <table:template>
                                         <Text text="{app>amount}" />
                                     </table:template>
                                 </table:Column>
-                                <table:Column id="colCurrency" width="6%">
-                                    <Label text="Currency" />
+                                <table:Column width="5%">
+                                    <Label text="Ccy" />
                                     <table:template>
                                         <Text text="{= ${app>currency} || 'USD'}" />
                                     </table:template>
                                 </table:Column>
-                                <table:Column id="colStatus" width="8%">
+                                <table:Column width="6%">
                                     <Label text="Status" />
                                     <table:template>
                                         <ObjectStatus 
@@ -789,28 +289,120 @@
                                             state="{path: 'app>status', formatter: '.formatStatusState'}" />
                                     </table:template>
                                 </table:Column>
-                                <table:Column id="colARPostingDoc" width="10%">
-                                    <Label text="AR Posting Doc" />
+                                <table:Column width="15%">
+                                    <Label text="Processing Flow" />
                                     <table:template>
-                                        <Text text="{app>ar_posting_doc}" />
+                                        <HBox alignItems="Center" visible="{= ${app>type} === 'HEADER' || ${app>type} === 'LOCKBOX'}">
+                                            <!-- Stage 1: Upload & Parse -->
+                                            <core:Icon src="sap-icon://document-text" size="1rem" 
+                                                color="{= ${app>stages/extraction} === 'success' ? '#107e3e' : ${app>stages/extraction} === 'error' || ${app>stages/upload} === 'error' || ${app>stages/templateMatch} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                tooltip="Upload &amp; Parse: File upload, template matching, and data extraction"
+                                                press=".onShowStageDetails"
+                                                class="sapUiTinyMarginEnd">
+                                                <core:customData>
+                                                    <core:CustomData key="stage" value="upload" />
+                                                    <core:CustomData key="runId" value="{app>runId}" />
+                                                </core:customData>
+                                            </core:Icon>
+                                            <Text text=" → " class="sapUiTinyMarginBeginEnd"/>
+                                            
+                                            <!-- Stage 2: Validate & Map -->
+                                            <core:Icon src="sap-icon://document-text" size="1rem" 
+                                                color="{= ${app>stages/validation} === 'success' &amp;&amp; ${app>stages/mapping} === 'success' ? '#107e3e' : ${app>stages/validation} === 'warning' ? '#e78c07' : ${app>stages/validation} === 'error' || ${app>stages/mapping} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                tooltip="Validate &amp; Map: Data validation and API field mapping"
+                                                press=".onShowStageDetails"
+                                                class="sapUiTinyMarginEnd">
+                                                <core:customData>
+                                                    <core:CustomData key="stage" value="validate" />
+                                                    <core:CustomData key="runId" value="{app>runId}" />
+                                                </core:customData>
+                                            </core:Icon>
+                                            <Text text=" → " class="sapUiTinyMarginBeginEnd"/>
+                                            
+                                            <!-- Stage 3: Simulation -->
+                                            <core:Icon src="sap-icon://document-text" size="1rem" 
+                                                color="{= ${app>stages/simulate} === 'success' ? '#107e3e' : ${app>stages/simulate} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                tooltip="Ready: Prepared for posting"
+                                                press=".onShowStageDetails"
+                                                class="sapUiTinyMarginEnd">
+                                                <core:customData>
+                                                    <core:CustomData key="stage" value="simulate" />
+                                                    <core:CustomData key="runId" value="{app>runId}" />
+                                                </core:customData>
+                                            </core:Icon>
+                                            <Text text=" → " class="sapUiTinyMarginBeginEnd"/>
+                                            
+                                            <!-- Stage 4: Posted -->
+                                            <core:Icon src="sap-icon://document-text" size="1rem" 
+                                                color="{= ${app>stages/posted} === 'success' ? '#107e3e' : ${app>stages/posted} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                tooltip="Posted: Document posted to SAP S/4HANA"
+                                                press=".onShowStageDetails"
+                                                class="sapUiTinyMarginEnd">
+                                                <core:customData>
+                                                    <core:CustomData key="stage" value="post" />
+                                                    <core:CustomData key="runId" value="{app>runId}" />
+                                                </core:customData>
+                                            </core:Icon>
+                                        </HBox>
                                     </table:template>
                                 </table:Column>
-                                <table:Column id="colPaymentAdvice" width="10%">
-                                    <Label text="Payment Advice" />
+                                <table:Column width="20%">
+                                    <Label text="Actions" />
                                     <table:template>
-                                        <Text text="{app>payment_advice_doc}" />
+                                        <HBox alignItems="Center" visible="{= ${app>type} === 'HEADER' || ${app>type} === 'LOCKBOX'}">
+                                            <Button
+                                                icon="sap-icon://simulate"
+                                                type="Transparent"
+                                                tooltip="Simulate - Preview SAP posting"
+                                                press="onSimulateItem"
+                                                enabled="{= ${app>status} === 'VALIDATED'}" />
+                                            <Button
+                                                icon="sap-icon://accept"
+                                                type="Transparent"
+                                                tooltip="Production Run - Post to SAP S/4HANA"
+                                                press="onProductionRunItem"
+                                                enabled="{= ${app>status} === 'SIMULATED'}" />
+                                            <Button
+                                                icon="sap-icon://restart"
+                                                type="Transparent"
+                                                tooltip="Repost - Retry production run after posting failure"
+                                                press="onRepostItem"
+                                                enabled="{= ${app>status} === 'POST_FAILED'}" />
+                                            <Button
+                                                icon="sap-icon://refresh"
+                                                type="Transparent"
+                                                tooltip="Reprocess - Re-run extraction and validation"
+                                                press="onReprocessItem"
+                                                enabled="{= ${app>status} === 'FAILED'}" />
+                                            <Button
+                                                icon="sap-icon://table-view"
+                                                type="Transparent"
+                                                tooltip="Preview Field Mapping - View extraction, validation, constants and defaults"
+                                                press=".onPreviewFieldMapping" />
+                                            <Button
+                                                icon="sap-icon://detail-view"
+                                                type="Transparent"
+                                                tooltip="View Details - See full processing information"
+                                                press="onViewItemDetails" />
+                                            <Button
+                                                icon="sap-icon://delete"
+                                                type="Transparent"
+                                                tooltip="Delete - Remove unprocessed file"
+                                                press="onDeleteItem"
+                                                enabled="{= ${app>status} !== 'POSTED' &amp;&amp; ${app>status} !== 'SIMULATED' }" />
+                                        </HBox>
                                     </table:template>
                                 </table:Column>
-                                <table:Column id="colOnAccount" width="8%">
-                                    <Label text="On Account" />
+                                <table:Column width="5%" hAlign="Center">
+                                    <Label text="" />
                                     <table:template>
-                                        <Text text="{app>on_account_doc}" />
-                                    </table:template>
-                                </table:Column>
-                                <table:Column id="colClearingDoc" width="10%">
-                                    <Label text="Clearing Doc" />
-                                    <table:template>
-                                        <Text text="{app>clearing_doc}" />
+                                        <Button 
+                                            icon="sap-icon://navigation-right-arrow" 
+                                            type="Transparent"
+                                            press="onShowTransactionDetails"
+                                            class="actionButton"
+                                            visible="{= ${app>type} === 'HEADER' || ${app>type} === 'LOCKBOX'}"
+                                            tooltip="View Transaction Details" />
                                     </table:template>
                                 </table:Column>
                             </table:columns>
@@ -818,6 +410,1535 @@
                     </content>
                 </Panel>
             </VBox>
+            
+            <!-- ============================================================ -->
+            <!-- MANAGE FIELD MAPPING RULES - Page 1 (Rule List) -->
+            <!-- ============================================================ -->
+            <VBox id="fieldMappingRulesContent" visible="{app>/showFieldMappingRules}" class="sapUiSmallMargin">
+                <!-- Page Header -->
+                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                    <core:Icon src="sap-icon://tree" size="1.5rem" color="#0854a0" class="sapUiSmallMarginEnd" />
+                    <Title text="Manage Field Mapping Rules for Extraction" level="H2" />
+                </HBox>
+                
+                <!-- Filter Bar -->
+                <Panel headerText="Filters" expandable="true" expanded="true" class="sapUiSmallMarginBottom">
+                    <VBox class="sapUiSmallMargin">
+                        <HBox alignItems="End" wrap="Wrap">
+                            <!-- File Format Filter -->
+                            <VBox class="sapUiSmallMarginEnd" width="150px">
+                                <Label text="File Format" />
+                                <Select id="filterRuleFileFormat" selectedKey="{app>/ruleFilters/fileFormat}" width="100%">
+                                    <core:Item key="" text="All" />
+                                    <core:Item key="EXCEL" text="Excel" />
+                                    <core:Item key="CSV" text="CSV" />
+                                    <core:Item key="BAI2" text="BAI2" />
+                                    <core:Item key="PDF" text="PDF" />
+                                    <core:Item key="PAYMENT_ADVICE" text="Payment Advice" />
+                                </Select>
+                            </VBox>
+                            <!-- Category Filter -->
+                            <VBox class="sapUiSmallMarginEnd" width="150px">
+                                <Label text="Category" />
+                                <Select id="filterRuleCategory" selectedKey="{app>/ruleFilters/category}" width="100%">
+                                    <core:Item key="" text="All" />
+                                    <core:Item key="CHEQUE" text="Cheque" />
+                                    <core:Item key="INVOICE" text="Invoice" />
+                                    <core:Item key="AMOUNT" text="Amount" />
+                                    <core:Item key="DATE" text="Date" />
+                                    <core:Item key="REFERENCE" text="Reference" />
+                                </Select>
+                            </VBox>
+                            <!-- Rule Type Filter -->
+                            <VBox class="sapUiSmallMarginEnd" width="150px">
+                                <Label text="Rule Type" />
+                                <Select id="filterRuleType" selectedKey="{app>/ruleFilters/ruleType}" width="100%">
+                                    <core:Item key="" text="All" />
+                                    <core:Item key="SPLIT" text="Split" />
+                                    <core:Item key="DERIVE" text="Derive" />
+                                    <core:Item key="VALIDATE" text="Validate" />
+                                    <core:Item key="ALLOCATE" text="Allocate" />
+                                    <core:Item key="TEXT_CONVERSION" text="Text Conversion" />
+                                </Select>
+                            </VBox>
+                            <!-- Active Filter -->
+                            <VBox class="sapUiSmallMarginEnd" width="100px">
+                                <Label text="Active" />
+                                <Select id="filterRuleActive" selectedKey="{app>/ruleFilters/active}" width="100%">
+                                    <core:Item key="" text="All" />
+                                    <core:Item key="true" text="Yes" />
+                                    <core:Item key="false" text="No" />
+                                </Select>
+                            </VBox>
+                            <!-- Rule Name Search -->
+                            <VBox class="sapUiSmallMarginEnd" width="200px">
+                                <Label text="Rule Name" />
+                                <SearchField id="filterRuleName" placeholder="Search rule name..." search="onRuleFilterGo" width="100%" />
+                            </VBox>
+                            <!-- Filter Actions -->
+                            <Button text="Go" type="Emphasized" press="onRuleFilterGo" class="sapUiSmallMarginEnd" />
+                            <Button text="Adapt Filters" press="onAdaptRuleFilters" />
+                        </HBox>
+                    </VBox>
+                </Panel>
+                
+                <!-- Main Tabs -->
+                <IconTabBar
+                    id="ruleTabBar"
+                    select="onRuleTabSelect"
+                    class="sapUiSmallMarginBottom"
+                    headerMode="Inline"
+                    expandable="false">
+                    <items>
+                        <IconTabFilter key="filePatterns" text="File Patterns" count="{app>/ruleCounts/filePatterns}" icon="sap-icon://document-text" />
+                        <IconTabFilter key="rules" text="Rules" count="{app>/ruleCounts/rules}" icon="sap-icon://decision" />
+                        <IconTabFilter key="apiFieldLogic" text="API Field &amp; Logic" count="{app>/ruleCounts/apiFieldLogic}" icon="sap-icon://action-settings" />
+                        <IconTabFilter key="apiOdataServices" text="API/OData/Services" count="{app>/ruleCounts/apiOdataServices}" icon="sap-icon://cloud" />
+                    </items>
+                </IconTabBar>
+                
+                <!-- File Patterns Tab Content - Master-Detail Layout with Split Panel -->
+                <VBox visible="{= ${app>/selectedRuleTab} === 'filePatterns' || !${app>/selectedRuleTab}}" class="sapUiSmallMarginBottom">
+                    <!-- Quick Action Bar for Excel Patterns -->
+                    <Panel class="sapUiSmallMarginBottom" backgroundDesign="Solid">
+                        <content>
+                            <HBox alignItems="Center" justifyContent="SpaceBetween" class="sapUiSmallMargin">
+                                <VBox>
+                                    <Title text="Excel File Patterns Configuration" level="H4" class="sapUiTinyMarginBottom" />
+                                    <Text text="Manage conditions and actions for Excel file processing" class="sapMTextSmall" />
+                                </VBox>
+                                <Button 
+                                    text="Configure Excel Patterns" 
+                                    icon="sap-icon://excel-attachment" 
+                                    type="Emphasized" 
+                                    press="onOpenExcelFilePatternsDialog" />
+                            </HBox>
+                        </content>
+                    </Panel>
+                    
+                    <!-- Pattern Filters Bar -->
+                    <Panel expandable="true" expanded="false" class="sapUiSmallMarginBottom">
+                        <headerToolbar>
+                            <OverflowToolbar>
+                                <Title text="Pattern Filters" />
+                            </OverflowToolbar>
+                        </headerToolbar>
+                        <content>
+                            <HBox alignItems="End" wrap="Wrap" class="sapUiSmallMargin">
+                                <VBox class="sapUiSmallMarginEnd" width="150px">
+                                    <Label text="File Type" />
+                                    <Select id="filterPatternFileType" selectedKey="{app>/patternFilters/fileType}" width="100%">
+                                        <core:Item key="" text="All" />
+                                        <core:Item key="EXCEL" text="Excel" />
+                                        <core:Item key="CSV" text="CSV" />
+                                        <core:Item key="WORD" text="Word/Text" />
+                                        <core:Item key="BAI2" text="BAI2" />
+                                        <core:Item key="PDF" text="PDF" />
+                                        <core:Item key="PAYMENT_ADVICE" text="Payment Advice" />
+                                    </Select>
+                                </VBox>
+                                <VBox class="sapUiSmallMarginEnd" width="180px">
+                                    <Label text="Pattern Category" />
+                                    <Select id="filterPatternCategory" selectedKey="{app>/patternFilters/category}" width="100%">
+                                        <core:Item key="" text="All" />
+                                        <core:Item key="CHECK" text="Check Patterns" />
+                                        <core:Item key="INVOICE" text="Invoice Patterns" />
+                                        <core:Item key="AMOUNT" text="Amount Patterns" />
+                                        <core:Item key="MULTI_SHEET" text="Multi Sheet" />
+                                        <core:Item key="BANK" text="Bank (BAI2)" />
+                                        <core:Item key="EXTRACTION" text="Field Extraction (PDF)" />
+                                    </Select>
+                                </VBox>
+                                <VBox class="sapUiSmallMarginEnd" width="200px">
+                                    <Label text="Pattern Type" />
+                                    <Select id="filterPatternType" selectedKey="{app>/patternFilters/patternType}" width="100%">
+                                        <core:Item key="" text="All" />
+                                        <core:Item key="INVOICE_SPLIT" text="Invoice Split" />
+                                        <core:Item key="INVOICE_RANGE" text="Invoice Range" />
+                                        <core:Item key="CHECK_SPLIT" text="Check Split" />
+                                        <core:Item key="SINGLE_CHECK_SINGLE_INVOICE" text="Single Check - Single Invoice" />
+                                        <core:Item key="SINGLE_CHECK_MULTI_INVOICE" text="Single Check - Multi Invoice" />
+                                        <core:Item key="MULTI_SHEET" text="Multiple Sheets" />
+                                        <core:Item key="BAI2_BANK" text="BAI2 Bank Template" />
+                                        <core:Item key="PDF_EXTRACTION" text="PDF Field Extraction" />
+                                        <core:Item key="PAYMENT_ADVICE_SPLIT" text="Payment Advice Split" />
+                                    </Select>
+                                </VBox>
+                                <Button text="Go" type="Emphasized" press="onPatternFilterGo" class="sapUiSmallMarginEnd" />
+                                <Button text="Create Pattern" icon="sap-icon://add" type="Emphasized" press="onCreateFilePattern" />
+                            </HBox>
+                        </content>
+                    </Panel>
+                    
+                    <!-- Master-Detail Split Container -->
+                    <HBox width="100%" height="600px">
+                        <!-- Master Panel - Pattern List (Left Side) -->
+                        <VBox width="{= ${app>/patternDetailExpanded} ? '40%' : '100%'}" class="sapUiSmallMarginEnd">
+                            <Panel expandable="false" height="100%">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <Title text="File Patterns ({= ${app>/filePatterns}.length})" />
+                                        <ToolbarSpacer />
+                                        <SearchField placeholder="Search..." liveChange="onPatternSearch" width="200px" />
+                                        <Button icon="sap-icon://add" type="Emphasized" press="onCreateFilePattern" tooltip="Create Pattern" />
+                                        <Button icon="sap-icon://copy" press="onCopyPattern" enabled="{= !!${app>/selectedPattern}}" tooltip="Copy" />
+                                        <Button icon="sap-icon://delete" type="Reject" press="onDeletePattern" enabled="{= !!${app>/selectedPattern}}" tooltip="Delete" />
+                                        <Button icon="sap-icon://refresh" press="onRefreshPatterns" tooltip="Refresh" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <content>
+                                    <Table
+                                        id="filePatternsTable"
+                                        items="{app>/filePatterns}"
+                                        mode="SingleSelectMaster"
+                                        itemPress="onPatternItemPress"
+                                        selectionChange="onPatternSelectionChange"
+                                        class="sapUiSizeCompact">
+                                        <columns>
+                                            <Column width="15%"><Text text="Pattern ID" /></Column>
+                                            <Column width="25%"><Text text="Pattern Name" /></Column>
+                                            <Column width="15%"><Text text="File Type" /></Column>
+                                            <Column width="20%"><Text text="Pattern Type" /></Column>
+                                            <Column width="15%" hAlign="Center"><Text text="Active" /></Column>
+                                            <Column width="10%" hAlign="Center"><Text text="" /></Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem type="Active" press="onPatternRowPress">
+                                                <cells>
+                                                    <Text text="{app>patternId}" />
+                                                    <VBox>
+                                                        <Text text="{app>patternName}" class="sapUiTinyMarginBottom" />
+                                                        <Text text="{app>description}" class="sapUiTinyMarginTop" wrapping="true" />
+                                                    </VBox>
+                                                    <ObjectStatus text="{app>fileType}" state="{path: 'app>fileType', formatter: '.formatFileTypeState'}" />
+                                                    <ObjectStatus text="{app>patternType}" state="{path: 'app>patternType', formatter: '.formatPatternTypeState'}" />
+                                                    <Switch state="{app>active}" change="onPatternActiveToggle" customTextOn="Yes" customTextOff="No" />
+                                                    <core:Icon 
+                                                        src="{= ${app>/patternDetailExpanded} &amp;&amp; ${app>/selectedPattern/patternId} === ${app>patternId} ? 'sap-icon://slim-arrow-left' : 'sap-icon://slim-arrow-right'}" 
+                                                        color="#0854a0" 
+                                                        press="onTogglePatternDetail" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </content>
+                            </Panel>
+                        </VBox>
+                        
+                        <!-- Detail Panel - Pattern Conditions (Right Side) - Expandable -->
+                        <VBox width="60%" visible="{app>/patternDetailExpanded}" class="sapUiResponsiveMargin">
+                            <Panel expandable="false" height="100%" backgroundDesign="Transparent">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <Button icon="sap-icon://slim-arrow-left" press="onCollapsePatternDetail" tooltip="Collapse" />
+                                        <Title text="Pattern Conditions: {app>/selectedPattern/patternName}" />
+                                        <ToolbarSpacer />
+                                        <Button text="Edit Pattern" icon="sap-icon://edit" press="onEditPattern" />
+                                        <Button text="Save" icon="sap-icon://save" type="Emphasized" press="onSavePatternConditions" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <content>
+                                    <!-- Pattern Header Info -->
+                                    <Panel class="sapUiSmallMarginBottom" backgroundDesign="Solid">
+                                        <content>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" class="sapUiSmallMargin">
+                                                <VBox>
+                                                    <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                                        <Label text="Pattern ID:" class="sapUiTinyMarginEnd" design="Bold" />
+                                                        <Text text="{app>/selectedPattern/patternId}" />
+                                                    </HBox>
+                                                    <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                                        <Label text="File Type:" class="sapUiTinyMarginEnd" design="Bold" />
+                                                        <ObjectStatus text="{app>/selectedPattern/fileType}" state="{path: 'app>/selectedPattern/fileType', formatter: '.formatFileTypeState'}" />
+                                                    </HBox>
+                                                </VBox>
+                                                <VBox>
+                                                    <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                                        <Label text="Pattern Type:" class="sapUiTinyMarginEnd" design="Bold" />
+                                                        <ObjectStatus text="{app>/selectedPattern/patternType}" state="{path: 'app>/selectedPattern/patternType', formatter: '.formatPatternTypeState'}" />
+                                                    </HBox>
+                                                    <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                                        <Label text="Category:" class="sapUiTinyMarginEnd" design="Bold" />
+                                                        <Text text="{app>/selectedPattern/category}" />
+                                                    </HBox>
+                                                </VBox>
+                                                <VBox>
+                                                    <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                                        <Label text="Delimiter:" class="sapUiTinyMarginEnd" design="Bold" />
+                                                        <Text text="{= ${app>/selectedPattern/delimiter} || 'N/A'}" />
+                                                    </HBox>
+                                                    <HBox alignItems="Center">
+                                                        <Label text="Status:" class="sapUiTinyMarginEnd" design="Bold" />
+                                                        <ObjectStatus text="{= ${app>/selectedPattern/active} ? 'Active' : 'Inactive'}" state="{= ${app>/selectedPattern/active} ? 'Success' : 'Error'}" />
+                                                    </HBox>
+                                                </VBox>
+                                            </HBox>
+                                        </content>
+                                    </Panel>
+                                    
+                                    <!-- Condition Rules Table -->
+                                    <Panel class="sapUiSmallMarginBottom">
+                                        <headerToolbar>
+                                            <OverflowToolbar>
+                                                <Title text="Split Conditions &amp; Rules ({= ${app>/selectedPattern/conditions} ? ${app>/selectedPattern/conditions}.length : 0})" />
+                                                <ToolbarSpacer />
+                                                <Button text="Add Rule" icon="sap-icon://add" type="Emphasized" press="onAddPatternCondition" />
+                                                <Button text="Delete" icon="sap-icon://delete" type="Reject" press="onDeletePatternCondition" enabled="{= !!${app>/selectedCondition}}" />
+                                            </OverflowToolbar>
+                                        </headerToolbar>
+                                        <content>
+                                            <Table
+                                                id="patternConditionsTable"
+                                                items="{app>/selectedPattern/conditions}"
+                                                mode="SingleSelectMaster"
+                                                selectionChange="onConditionSelectionChange"
+                                                class="sapUiSizeCompact">
+                                                <columns>
+                                                    <Column width="5%"><Text text="#" /></Column>
+                                                    <Column width="20%"><Text text="Detection Condition" /></Column>
+                                                    <Column width="18%"><Text text="Strategy" /></Column>
+                                                    <Column width="17%"><Text text="Condition" /></Column>
+                                                    <Column width="15%"><Text text="Fallback Action" /></Column>
+                                                    <Column width="15%"><Text text="External Dependency" /></Column>
+                                                    <Column width="10%" hAlign="Center"><Text text="Priority" /></Column>
+                                                </columns>
+                                                <items>
+                                                    <ColumnListItem>
+                                                        <cells>
+                                                            <Text text="{app>priority}" />
+                                                            <Text text="{app>detectionCondition}" />
+                                                            <ObjectStatus text="{app>strategy}" state="{path: 'app>strategy', formatter: '.formatStrategyState'}" />
+                                                            <Text text="{app>condition}" />
+                                                            <ObjectStatus text="{app>fallbackAction}" state="{path: 'app>fallbackAction', formatter: '.formatFallbackState'}" />
+                                                            <Text text="{= ${app>externalDependency} || 'None'}" />
+                                                            <Input value="{app>priority}" type="Number" width="50px" textAlign="Center" />
+                                                        </cells>
+                                                    </ColumnListItem>
+                                                </items>
+                                            </Table>
+                                        </content>
+                                    </Panel>
+                                    
+                                    <!-- Processing Rules (for different file types) -->
+                                    <Panel visible="{= ${app>/selectedPattern/fileType} === 'EXCEL' || ${app>/selectedPattern/fileType} === 'CSV'}">
+                                        <headerToolbar>
+                                            <OverflowToolbar>
+                                                <Title text="Excel/CSV Processing Rules" />
+                                            </OverflowToolbar>
+                                        </headerToolbar>
+                                        <content>
+                                            <VBox class="sapUiSmallMargin">
+                                                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                                                    <CheckBox text="Common Prefix Detection" selected="{app>/selectedPattern/commonPrefixDetection}" class="sapUiMediumMarginEnd" />
+                                                    <CheckBox text="Pad Check Numbers" selected="{app>/selectedPattern/padCheckNumbers}" class="sapUiMediumMarginEnd" />
+                                                    <CheckBox text="Sum Invoice Amounts" selected="{app>/selectedPattern/sumInvoiceAmounts}" />
+                                                </HBox>
+                                                <HBox alignItems="Center">
+                                                    <Label text="Header Row:" class="sapUiTinyMarginEnd" />
+                                                    <Input value="{app>/selectedPattern/headerRow}" type="Number" width="60px" class="sapUiMediumMarginEnd" />
+                                                    <Label text="Data Start Row:" class="sapUiTinyMarginEnd" />
+                                                    <Input value="{app>/selectedPattern/dataStartRow}" type="Number" width="60px" />
+                                                </HBox>
+                                            </VBox>
+                                        </content>
+                                    </Panel>
+                                    
+                                    <!-- BAI2 Bank Template Settings -->
+                                    <Panel visible="{= ${app>/selectedPattern/fileType} === 'BAI2'}">
+                                        <headerToolbar>
+                                            <OverflowToolbar>
+                                                <Title text="BAI2 Bank Template Settings" />
+                                            </OverflowToolbar>
+                                        </headerToolbar>
+                                        <content>
+                                            <VBox class="sapUiSmallMargin">
+                                                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                                                    <Label text="Bank Code:" class="sapUiTinyMarginEnd" width="120px" />
+                                                    <Input value="{app>/selectedPattern/bankCode}" width="150px" placeholder="e.g., CHASE, BOA" />
+                                                </HBox>
+                                                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                                                    <Label text="Account Identifier:" class="sapUiTinyMarginEnd" width="120px" />
+                                                    <Input value="{app>/selectedPattern/accountIdentifier}" width="200px" placeholder="Account number pattern" />
+                                                </HBox>
+                                                <HBox alignItems="Center">
+                                                    <Label text="Transaction Codes:" class="sapUiTinyMarginEnd" width="120px" />
+                                                    <Input value="{app>/selectedPattern/transactionCodes}" width="300px" placeholder="e.g., 115,165,175 (comma-separated)" />
+                                                </HBox>
+                                            </VBox>
+                                        </content>
+                                    </Panel>
+                                    
+                                    <!-- PDF Field Extraction Settings -->
+                                    <Panel visible="{= ${app>/selectedPattern/fileType} === 'PDF'}">
+                                        <headerToolbar>
+                                            <OverflowToolbar>
+                                                <Title text="PDF Field Extraction Settings" />
+                                                <ToolbarSpacer />
+                                                <Button text="Add Field" icon="sap-icon://add" press="onAddPdfField" />
+                                            </OverflowToolbar>
+                                        </headerToolbar>
+                                        <content>
+                                            <Table items="{app>/selectedPattern/pdfFields}" class="sapUiSizeCompact">
+                                                <columns>
+                                                    <Column width="20%"><Text text="Field Name" /></Column>
+                                                    <Column width="25%"><Text text="Extraction Pattern" /></Column>
+                                                    <Column width="15%"><Text text="Field Type" /></Column>
+                                                    <Column width="15%"><Text text="Required" /></Column>
+                                                    <Column width="15%"><Text text="Default Value" /></Column>
+                                                    <Column width="10%"><Text text="" /></Column>
+                                                </columns>
+                                                <items>
+                                                    <ColumnListItem>
+                                                        <cells>
+                                                            <Input value="{app>fieldName}" placeholder="e.g., Customer Number" />
+                                                            <Input value="{app>extractionPattern}" placeholder="Regex pattern" />
+                                                            <Select selectedKey="{app>fieldType}">
+                                                                <core:Item key="TEXT" text="Text" />
+                                                                <core:Item key="NUMBER" text="Number" />
+                                                                <core:Item key="DATE" text="Date" />
+                                                                <core:Item key="AMOUNT" text="Amount" />
+                                                            </Select>
+                                                            <CheckBox selected="{app>required}" />
+                                                            <Input value="{app>defaultValue}" />
+                                                            <Button icon="sap-icon://delete" type="Reject" press="onDeletePdfField" />
+                                                        </cells>
+                                                    </ColumnListItem>
+                                                </items>
+                                            </Table>
+                                        </content>
+                                    </Panel>
+                                    
+                                    <!-- Payment Advice Split Settings -->
+                                    <Panel visible="{= ${app>/selectedPattern/fileType} === 'PAYMENT_ADVICE'}">
+                                        <headerToolbar>
+                                            <OverflowToolbar>
+                                                <Title text="Payment Advice Split Settings" />
+                                            </OverflowToolbar>
+                                        </headerToolbar>
+                                        <content>
+                                            <VBox class="sapUiSmallMargin">
+                                                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                                                    <Label text="Split Type:" class="sapUiTinyMarginEnd" width="120px" />
+                                                    <Select selectedKey="{app>/selectedPattern/splitType}" width="200px">
+                                                        <core:Item key="BY_INVOICE" text="By Invoice Number" />
+                                                        <core:Item key="BY_CUSTOMER" text="By Customer" />
+                                                        <core:Item key="BY_DATE" text="By Date" />
+                                                        <core:Item key="BY_AMOUNT" text="By Amount Threshold" />
+                                                    </Select>
+                                                </HBox>
+                                                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                                                    <Label text="Amount Threshold:" class="sapUiTinyMarginEnd" width="120px" />
+                                                    <Input value="{app>/selectedPattern/amountThreshold}" type="Number" width="150px" placeholder="e.g., 10000" />
+                                                </HBox>
+                                                <HBox alignItems="Center">
+                                                    <CheckBox text="Auto-match Open Items" selected="{app>/selectedPattern/autoMatchOpenItems}" class="sapUiMediumMarginEnd" />
+                                                    <CheckBox text="Create Suspense Entry" selected="{app>/selectedPattern/createSuspenseEntry}" />
+                                                </HBox>
+                                            </VBox>
+                                        </content>
+                                    </Panel>
+                                </content>
+                            </Panel>
+                        </VBox>
+                    </HBox>
+                </VBox>
+                
+                <!-- Rules Tab Content -->
+                <VBox visible="{= ${app>/selectedRuleTab} === 'rules'}" class="sapUiSmallMarginBottom">
+                    <!-- Reference Document Rules Panel -->
+                    <Panel expandable="false">
+                        <headerToolbar>
+                            <OverflowToolbar>
+                                <Title text="Reference Document Rules ({= ${app>/referenceDocRules}.length})" />
+                                <ToolbarSpacer />
+                                <Label text="Active Rule:" class="sapUiSmallMarginEnd" />
+                                <ObjectStatus text="{app>/selectedRefDocRule/ruleName}" state="Success" />
+                                <Button text="Add Rule" icon="sap-icon://add" type="Emphasized" press="onOpenAddRefDocRuleDialog" />
+                                <Button icon="sap-icon://refresh" press="onRefreshRefDocRules" tooltip="Refresh" />
+                            </OverflowToolbar>
+                        </headerToolbar>
+                        <content>
+                            <MessageStrip text="Reference Document Rules determine which document number (BELNR = Accounting Doc or XBLNR = Invoice Ref) is used for clearing during the lockbox posting process." type="Information" showIcon="true" class="sapUiSmallMarginBottom" />
+                            <Table
+                                id="refDocRulesTableNew"
+                                items="{app>/referenceDocRules}"
+                                mode="SingleSelectMaster"
+                                selectionChange="onRefDocRuleSelectionChange"
+                                fixedLayout="false">
+                                <columns>
+                                    <Column width="80px"><Text text="Rule ID" /></Column>
+                                    <Column width="180px"><Text text="Rule Name" /></Column>
+                                    <Column><Text text="Description" /></Column>
+                                    <Column width="180px"><Text text="Logic/Condition" /></Column>
+                                    <Column width="200px"><Text text="Document ID Type" /></Column>
+                                    <Column width="80px" hAlign="Center"><Text text="Active" /></Column>
+                                    <Column width="100px" hAlign="Center"><Text text="Selected" /></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem type="Active" press="onEditRefDocRule">
+                                        <cells>
+                                            <ObjectIdentifier title="{app>ruleId}" />
+                                            <Text text="{app>ruleName}" wrapping="false" />
+                                            <Text text="{app>description}" wrapping="true" />
+                                            <ObjectStatus text="{app>logicCondition}" state="Information" />
+                                            <Text text="{app>documentIdType}" wrapping="true" />
+                                            <Switch state="{app>active}" change="onRefDocRuleActiveToggle" customTextOn="Yes" customTextOff="No" />
+                                            <Button 
+                                                text="{= ${app>ruleId} === ${app>/selectedReferenceDocRule} ? 'Active' : 'Select'}" 
+                                                type="{= ${app>ruleId} === ${app>/selectedReferenceDocRule} ? 'Success' : 'Default'}"
+                                                press="onSelectRefDocRule"
+                                                enabled="{= ${app>active} &amp;&amp; ${app>ruleId} !== ${app>/selectedReferenceDocRule}}" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </content>
+                    </Panel>
+                    
+                    <!-- Add/Edit Reference Document Rule Dialog -->
+                    <Dialog id="refDocRuleDialogNew" title="{= ${app>/editingRefDocRule/ruleId} ? 'Edit Rule' : 'Add New Reference Document Rule'}" contentWidth="600px">
+                        <content>
+                            <VBox class="sapUiSmallMargin">
+                                <VBox class="sapUiSmallMarginBottom">
+                                    <Label text="Rule Name" required="true" />
+                                    <Input value="{app>/editingRefDocRule/ruleName}" placeholder="e.g., Document Number First" width="100%" />
+                                </VBox>
+                                <VBox class="sapUiSmallMarginBottom">
+                                    <Label text="Rule Type" required="true" />
+                                    <Select selectedKey="{app>/editingRefDocRule/ruleType}" width="100%">
+                                        <core:Item key="BELNR" text="BELNR - Accounting Document" />
+                                        <core:Item key="XBLNR" text="XBLNR - Invoice Reference" />
+                                        <core:Item key="BELNR_THEN_XBLNR" text="BELNR first, then XBLNR" />
+                                        <core:Item key="XBLNR_THEN_BELNR" text="XBLNR first, then BELNR" />
+                                    </Select>
+                                </VBox>
+                                <VBox class="sapUiSmallMarginBottom">
+                                    <Label text="Description" />
+                                    <TextArea value="{app>/editingRefDocRule/description}" rows="2" width="100%" placeholder="Describe when to use this rule" />
+                                </VBox>
+                                <VBox class="sapUiSmallMarginBottom">
+                                    <Label text="Logic/Condition" />
+                                    <Input value="{app>/editingRefDocRule/logicCondition}" placeholder="e.g., lbinvref = belnr else XBLNR" width="100%" />
+                                </VBox>
+                                <VBox class="sapUiSmallMarginBottom">
+                                    <Label text="Document ID Type" />
+                                    <Input value="{app>/editingRefDocRule/documentIdType}" placeholder="e.g., Accounting document else Invoice document" width="100%" />
+                                </VBox>
+                                <HBox alignItems="Center">
+                                    <CheckBox text="Active" selected="{app>/editingRefDocRule/active}" />
+                                </HBox>
+                            </VBox>
+                        </content>
+                        <beginButton>
+                            <Button text="Save" type="Emphasized" press="onSaveRefDocRule" />
+                        </beginButton>
+                        <endButton>
+                            <Button text="Cancel" press="onCloseRefDocRuleDialog" />
+                        </endButton>
+                    </Dialog>
+                </VBox>
+                
+                <!-- API Field & Logic Tab Content -->
+                <VBox visible="{= ${app>/selectedRuleTab} === 'apiFieldLogic'}" class="sapUiSmallMarginBottom">
+                    <Panel expandable="false">
+                        <headerToolbar>
+                            <OverflowToolbar>
+                                <Title text="Lockbox API Fields ({= ${app>/apiFields}.length})" />
+                                <ToolbarSpacer />
+                                <SearchField placeholder="Search fields..." liveChange="onApiFieldSearch" width="250px" />
+                                <Button text="Add Field" icon="sap-icon://add" type="Emphasized" press="onOpenAddApiFieldDialog" />
+                                <Button text="Edit" icon="sap-icon://edit" press="onEditApiField" enabled="{= !!${app>/selectedApiField}}" />
+                                <Button text="Delete" icon="sap-icon://delete" type="Reject" press="onDeleteApiField" enabled="{= !!${app>/selectedApiField}}" />
+                                <Button text="Save All" icon="sap-icon://save" press="onSaveAllApiFields" tooltip="Save all changes to database" />
+                                <Button icon="sap-icon://refresh" press="onRefreshApiFields" tooltip="Refresh" />
+                            </OverflowToolbar>
+                        </headerToolbar>
+                        <content>
+                            <MessageStrip text="Constant fields (Lockbox, LockboxBatchOrigin, LockboxBatchDestination) can be edited below. Partner Bank details are fetched from Business Partner API when available, otherwise defaults are used." type="Information" showIcon="true" class="sapUiSmallMarginBottom" />
+                            <Table
+                                id="apiFieldsTable"
+                                items="{app>/apiFields}"
+                                mode="SingleSelectMaster"
+                                selectionChange="onApiFieldSelectionChange"
+                                fixedLayout="false">
+                                <columns>
+                                    <Column width="80px"><Text text="Field ID" /></Column>
+                                    <Column width="160px"><Text text="Field Name" /></Column>
+                                    <Column width="90px"><Text text="Necessity" /></Column>
+                                    <Column width="100px"><Text text="Field Type" /></Column>
+                                    <Column width="140px"><Text text="Default Value" /></Column>
+                                    <Column width="50px" hAlign="Center"><Text text="Len" /></Column>
+                                    <Column><Text text="Description" /></Column>
+                                    <Column width="80px" hAlign="Center"><Text text="Actions" /></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem type="Active" press="onEditApiField">
+                                        <cells>
+                                            <Text text="{app>fieldId}" />
+                                            <Text text="{app>fieldName}" wrapping="false" />
+                                            <ObjectStatus text="{app>necessity}" state="{= ${app>necessity} === 'Mandatory' ? 'Error' : ${app>necessity} === 'Required' ? 'Warning' : 'Success'}" />
+                                            <ObjectStatus text="{app>fieldType}" state="{= ${app>fieldType} === 'Constant' ? 'Error' : ${app>fieldType} === 'From BP API' ? 'Warning' : ${app>fieldType} === 'User Input' ? 'Information' : 'None'}" />
+                                            <Input 
+                                                value="{app>defaultValue}" 
+                                                placeholder="{= ${app>isEditable} ? 'Enter value' : 'N/A'}"
+                                                enabled="{app>isEditable}"
+                                                maxLength="{app>maxLength}"
+                                                change="onApiFieldDefaultValueChange"
+                                                width="100%" />
+                                            <Text text="{app>maxLength}" />
+                                            <Text text="{app>description}" wrapping="true" />
+                                            <Button icon="sap-icon://delete" type="Reject" press="onDeleteApiFieldRow" tooltip="Delete this field" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </content>
+                    </Panel>
+                    
+                    <!-- Add/Edit API Field Dialog -->
+                    <Dialog id="apiFieldDialog" title="{= ${app>/editingApiField/fieldId} ? 'Edit API Field' : 'Add New API Field'}" contentWidth="500px">
+                        <content>
+                            <VBox class="sapUiSmallMargin">
+                                <VBox class="sapUiSmallMarginBottom">
+                                    <Label text="Field Name" required="true" />
+                                    <Input value="{app>/editingApiField/fieldName}" placeholder="e.g., CustomField" width="100%" />
+                                </VBox>
+                                <HBox class="sapUiSmallMarginBottom">
+                                    <VBox class="sapUiSmallMarginEnd" width="50%">
+                                        <Label text="Necessity" />
+                                        <Select selectedKey="{app>/editingApiField/necessity}" width="100%">
+                                            <core:Item key="Mandatory" text="Mandatory" />
+                                            <core:Item key="Required" text="Required" />
+                                            <core:Item key="Optional" text="Optional" />
+                                        </Select>
+                                    </VBox>
+                                    <VBox width="50%">
+                                        <Label text="Field Type" />
+                                        <Select selectedKey="{app>/editingApiField/fieldType}" width="100%">
+                                            <core:Item key="Constant" text="Constant" />
+                                            <core:Item key="Default" text="Default" />
+                                            <core:Item key="User Input" text="User Input" />
+                                            <core:Item key="System Generated" text="System Generated" />
+                                            <core:Item key="From BP API" text="From BP API" />
+                                            <core:Item key="Optional" text="Optional" />
+                                        </Select>
+                                    </VBox>
+                                </HBox>
+                                <HBox class="sapUiSmallMarginBottom">
+                                    <VBox class="sapUiSmallMarginEnd" width="50%">
+                                        <Label text="Data Type" />
+                                        <Select selectedKey="{app>/editingApiField/dataType}" width="100%">
+                                            <core:Item key="String" text="String" />
+                                            <core:Item key="Currency" text="Currency" />
+                                            <core:Item key="DateTime" text="DateTime" />
+                                            <core:Item key="Integer" text="Integer" />
+                                        </Select>
+                                    </VBox>
+                                    <VBox width="50%">
+                                        <Label text="Max Length" />
+                                        <Input value="{app>/editingApiField/maxLength}" type="Number" placeholder="0" width="100%" />
+                                    </VBox>
+                                </HBox>
+                                <VBox class="sapUiSmallMarginBottom">
+                                    <Label text="Default Value" />
+                                    <Input value="{app>/editingApiField/defaultValue}" placeholder="Enter default value" width="100%" />
+                                </VBox>
+                                <VBox class="sapUiSmallMarginBottom">
+                                    <Label text="Description" />
+                                    <TextArea value="{app>/editingApiField/description}" rows="2" width="100%" placeholder="Field description" />
+                                </VBox>
+                                <HBox alignItems="Center">
+                                    <CheckBox text="Editable" selected="{app>/editingApiField/isEditable}" />
+                                </HBox>
+                            </VBox>
+                        </content>
+                        <beginButton>
+                            <Button text="Save" type="Emphasized" press="onSaveApiFieldFromDialog" />
+                        </beginButton>
+                        <endButton>
+                            <Button text="Cancel" press="onCloseApiFieldDialog" />
+                        </endButton>
+                    </Dialog>
+                </VBox>
+                
+                <!-- API/OData/Services Tab Content - With Edit & PostgreSQL Persistence -->
+                <VBox visible="{= ${app>/selectedRuleTab} === 'apiOdataServices'}" class="sapUiSmallMarginBottom">
+                    <Panel expandable="false">
+                        <headerToolbar>
+                            <OverflowToolbar>
+                                <Title text="S4HANA / ECC / ERP Cloud Services ({= ${app>/odataServices}.length})" />
+                                <ToolbarSpacer />
+                                <SearchField placeholder="Search services..." liveChange="onServiceSearch" width="250px" />
+                                <Button text="Add Service" icon="sap-icon://add" type="Emphasized" press="onOpenAddOdataServiceDialog" />
+                                <Button text="Edit" icon="sap-icon://edit" press="onEditOdataService" enabled="{= !!${app>/selectedOdataService}}" />
+                                <Button text="Delete" icon="sap-icon://delete" type="Reject" press="onDeleteOdataService" enabled="{= !!${app>/selectedOdataService}}" />
+                                <Button icon="sap-icon://refresh" press="onRefreshServices" tooltip="Refresh" />
+                            </OverflowToolbar>
+                        </headerToolbar>
+                        <content>
+                            <ScrollContainer horizontal="true" vertical="false" height="auto" width="100%">
+                                <Table
+                                    id="odataServicesTable"
+                                    items="{app>/odataServices}"
+                                    mode="SingleSelectMaster"
+                                    selectionChange="onOdataServiceSelectionChange"
+                                    fixedLayout="false">
+                                    <columns>
+                                        <Column width="120px"><Text text="System" /></Column>
+                                        <Column width="80px"><Text text="Version" /></Column>
+                                        <Column width="180px"><Text text="Technical Service Name" /></Column>
+                                        <Column width="130px"><Text text="Description" /></Column>
+                                        <Column width="160px"><Text text="Service Operations" /></Column>
+                                        <Column width="350px"><Text text="HTTPS API / OData URL" /></Column>
+                                        <Column width="120px"><Text text="Auth Type" /></Column>
+                                        <Column width="160px"><Text text="Destination" /></Column>
+                                        <Column width="80px" hAlign="Center"><Text text="Active" /></Column>
+                                        <Column width="60px" hAlign="Center"><Text text="" /></Column>
+                                    </columns>
+                                    <items>
+                                        <ColumnListItem type="Active" press="onEditOdataService">
+                                            <cells>
+                                                <Text text="{app>system}" />
+                                                <ObjectStatus text="{app>productVersion}" state="{path: 'app>productVersion', formatter: '.formatVersionState'}" />
+                                                <Text text="{app>technicalServiceName}" wrapping="false" />
+                                                <Text text="{app>serviceDescription}" wrapping="true" />
+                                                <Text text="{app>serviceOperations}" wrapping="false" />
+                                                <Link text="{app>httpsApiOdata}" href="{app>httpsApiOdata}" target="_blank" wrapping="false" />
+                                                <ObjectStatus text="{app>authType}" state="{path: 'app>authType', formatter: '.formatAuthTypeState'}" />
+                                                <Text text="{app>destination}" wrapping="false" />
+                                                <Switch state="{app>active}" change="onServiceActiveToggle" customTextOn="Yes" customTextOff="No" />
+                                                <core:Icon src="sap-icon://edit" color="#0854a0" press="onEditOdataService" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
+                                </Table>
+                            </ScrollContainer>
+                        </content>
+                    </Panel>
+                    
+                    <!-- Add/Edit Service Dialog -->
+                    <Dialog id="odataServiceDialog" title="{= ${app>/editingOdataService/serviceId} ? 'Edit Service' : 'Add New Service'}" contentWidth="700px">
+                        <content>
+                            <VBox class="sapUiSmallMargin">
+                                <l:Grid defaultSpan="XL6 L6 M6 S12">
+                                    <VBox class="sapUiSmallMarginBottom">
+                                        <Label text="System" required="true" />
+                                        <Select selectedKey="{app>/editingOdataService/system}" width="100%">
+                                            <core:Item key="S4HANA On Premise" text="S4HANA On Premise" />
+                                            <core:Item key="S4HANA Cloud" text="S4HANA Cloud" />
+                                            <core:Item key="ERP Cloud Private" text="ERP Cloud Private" />
+                                            <core:Item key="ERP Cloud" text="ERP Cloud" />
+                                            <core:Item key="ECC On Premise" text="ECC On Premise" />
+                                        </Select>
+                                    </VBox>
+                                    <VBox class="sapUiSmallMarginBottom">
+                                        <Label text="Version" required="true" />
+                                        <Select selectedKey="{app>/editingOdataService/productVersion}" width="100%">
+                                            <core:Item key="V2" text="V2" />
+                                            <core:Item key="V4" text="V4" />
+                                        </Select>
+                                    </VBox>
+                                    <VBox class="sapUiSmallMarginBottom">
+                                        <Label text="Technical Service Name" required="true" />
+                                        <Input value="{app>/editingOdataService/technicalServiceName}" placeholder="e.g., ZAPI_Lockboxpost_IN" width="100%" />
+                                    </VBox>
+                                    <VBox class="sapUiSmallMarginBottom">
+                                        <Label text="Description" />
+                                        <Input value="{app>/editingOdataService/serviceDescription}" placeholder="e.g., Post Lockbox" width="100%" />
+                                    </VBox>
+                                    <VBox class="sapUiSmallMarginBottom">
+                                        <Label text="Service Operations" />
+                                        <Input value="{app>/editingOdataService/serviceOperations}" placeholder="e.g., GET, POST, QUERY" width="100%" />
+                                    </VBox>
+                                    <VBox class="sapUiSmallMarginBottom">
+                                        <Label text="Authentication Type" required="true" />
+                                        <Select selectedKey="{app>/editingOdataService/authType}" width="100%">
+                                            <core:Item key="BASIC" text="Basic Authentication" />
+                                            <core:Item key="OAUTH2" text="OAuth 2.0" />
+                                            <core:Item key="SAML" text="SAML" />
+                                            <core:Item key="DESTINATION" text="BTP Destination" />
+                                            <core:Item key="NONE" text="None" />
+                                        </Select>
+                                    </VBox>
+                                </l:Grid>
+                                <VBox class="sapUiSmallMarginBottom">
+                                    <Label text="HTTPS API / OData URL" required="true" />
+                                    <Input value="{app>/editingOdataService/httpsApiOdata}" placeholder="e.g., /sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxBatch" width="100%" />
+                                </VBox>
+                                <VBox class="sapUiSmallMarginBottom">
+                                    <Label text="Destination Name (for BTP)" />
+                                    <Input value="{app>/editingOdataService/destination}" placeholder="e.g., S4HANA_SYSTEM_DESTINATION" width="100%" />
+                                </VBox>
+                                <HBox alignItems="Center">
+                                    <CheckBox text="Active" selected="{app>/editingOdataService/active}" />
+                                </HBox>
+                            </VBox>
+                        </content>
+                        <beginButton>
+                            <Button text="Save" type="Emphasized" press="onSaveOdataService" />
+                        </beginButton>
+                        <endButton>
+                            <Button text="Cancel" press="onCloseOdataServiceDialog" />
+                        </endButton>
+                    </Dialog>
+                </VBox>
+                
+            </VBox>
+            
+            <!-- ============================================================ -->
+            <!-- MANAGE FIELD MAPPING RULES - Page 2 (Create/Edit Rule) -->
+            <!-- Sliding panel that appears from right -->
+            <!-- ============================================================ -->
+            <VBox id="ruleDetailContent" visible="{app>/showRuleDetail}" class="sapUiSmallMargin">
+                <!-- Page Header with Save/Cancel -->
+                <HBox alignItems="Center" justifyContent="SpaceBetween" class="sapUiSmallMarginBottom">
+                    <HBox alignItems="Center">
+                        <Button icon="sap-icon://nav-back" press="onRuleDetailBack" type="Transparent" class="sapUiSmallMarginEnd" />
+                        <Title text="{= ${app>/ruleDetail/id} ? 'Edit Rule' : 'New Rule'}" level="H2" />
+                    </HBox>
+                    <HBox>
+                        <Button text="Save" type="Emphasized" press="onSaveRule" class="sapUiSmallMarginEnd" />
+                        <Button text="Cancel" press="onCancelRule" />
+                    </HBox>
+                </HBox>
+                
+                <!-- Rule Header Section -->
+                <Panel headerText="Rule Header" class="sapUiSmallMarginBottom">
+                    <l:Grid defaultSpan="XL4 L4 M6 S12" class="sapUiSmallMargin">
+                        <!-- Rule Name -->
+                        <VBox>
+                            <Label text="Rule Name" required="true" />
+                            <Input id="ruleNameInput" value="{app>/ruleDetail/ruleName}" placeholder="Enter rule name" width="100%" />
+                        </VBox>
+                        <!-- File Format -->
+                        <VBox>
+                            <Label text="File Format" required="true" />
+                            <Select id="ruleFileFormatSelect" selectedKey="{app>/ruleDetail/fileFormat}" width="100%" change="onRuleFileFormatChange">
+                                <core:Item key="EXCEL" text="Excel" />
+                                <core:Item key="CSV" text="CSV" />
+                                <core:Item key="BAI2" text="BAI2" />
+                                <core:Item key="PDF" text="PDF" />
+                                <core:Item key="PAYMENT_ADVICE" text="Payment Advice" />
+                            </Select>
+                        </VBox>
+                        <!-- Category -->
+                        <VBox>
+                            <Label text="Category" required="true" />
+                            <Select id="ruleCategorySelect" selectedKey="{app>/ruleDetail/category}" width="100%">
+                                <core:Item key="CHEQUE" text="Cheque" />
+                                <core:Item key="INVOICE" text="Invoice" />
+                                <core:Item key="AMOUNT" text="Amount" />
+                                <core:Item key="DATE" text="Date" />
+                                <core:Item key="REFERENCE" text="Reference" />
+                            </Select>
+                        </VBox>
+                        <!-- Rule Type -->
+                        <VBox>
+                            <Label text="Rule Type" required="true" />
+                            <Select id="ruleTypeSelect" selectedKey="{app>/ruleDetail/ruleType}" width="100%" change="onRuleTypeChange">
+                                <core:Item key="SPLIT" text="Split" />
+                                <core:Item key="DERIVE" text="Derive" />
+                                <core:Item key="VALIDATE" text="Validate" />
+                                <core:Item key="ALLOCATE" text="Allocate" />
+                                <core:Item key="TEXT_CONVERSION" text="Text Conversion" />
+                            </Select>
+                        </VBox>
+                        <!-- Active -->
+                        <VBox>
+                            <Label text="Active" />
+                            <Switch id="ruleActiveSwitch" state="{app>/ruleDetail/active}" customTextOn="Yes" customTextOff="No" />
+                        </VBox>
+                        <!-- Priority -->
+                        <VBox>
+                            <Label text="Priority" />
+                            <StepInput id="rulePriorityInput" value="{app>/ruleDetail/priority}" min="1" max="100" step="1" width="100%" />
+                        </VBox>
+                    </l:Grid>
+                </Panel>
+                
+                <!-- Rule Definition Tabs - Simplified -->
+                <IconTabBar
+                    id="ruleDetailTabBar"
+                    class="sapUiSmallMarginBottom"
+                    stretchContentHeight="true"
+                    expandable="false">
+                    <items>
+                        <!-- Tab 1: Rule Definition -->
+                        <IconTabFilter key="definition" text="Rule Definition" icon="sap-icon://detail-view">
+                            <Panel headerText="Rule Definition Details" class="sapUiSmallMargin">
+                                <VBox class="sapUiSmallMargin">
+                                    <Label text="Description" />
+                                    <TextArea value="{app>/ruleDetail/description}" rows="3" width="100%" placeholder="Enter rule description..." class="sapUiSmallMarginBottom" />
+                                    
+                                    <Label text="Error Behavior" />
+                                    <Select selectedKey="{app>/ruleDetail/errorBehavior}" width="300px" class="sapUiSmallMarginBottom">
+                                        <core:Item key="STOP" text="Stop Processing" />
+                                        <core:Item key="WARN" text="Warning Only" />
+                                        <core:Item key="SKIP" text="Skip Record" />
+                                        <core:Item key="DEFAULT" text="Use Default Value" />
+                                    </Select>
+                                    
+                                    <Label text="Execution Order" />
+                                    <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                                        <StepInput value="{app>/ruleDetail/executionOrder}" min="1" max="999" width="120px" class="sapUiSmallMarginEnd" />
+                                        <Text text="(Lower numbers execute first)" class="sapUiTinyText" />
+                                    </HBox>
+                                </VBox>
+                            </Panel>
+                        </IconTabFilter>
+                        
+                        <!-- Tab 2: Trigger Conditions with Transformation -->
+                        <IconTabFilter key="triggers" text="Trigger Conditions" icon="sap-icon://filter">
+                            <VBox class="sapUiSmallMargin">
+                                <!-- Conditions Section -->
+                                <Panel class="sapUiSmallMarginBottom">
+                                    <headerToolbar>
+                                        <OverflowToolbar>
+                                            <Title text="Conditions (WHEN this rule should run)" />
+                                            <ToolbarSpacer />
+                                            <Button text="Add Condition" icon="sap-icon://add" press="onAddTriggerCondition" />
+                                            <Button text="Delete" icon="sap-icon://delete" press="onDeleteTriggerCondition" enabled="{= ${app>/ruleDetail/triggerConditions}.length > 0}" />
+                                        </OverflowToolbar>
+                                    </headerToolbar>
+                                    <content>
+                                        <Table items="{app>/ruleDetail/triggerConditions}" mode="Delete" delete="onDeleteTriggerConditionRow">
+                                            <columns>
+                                                <Column width="30%"><Text text="Attribute" /></Column>
+                                                <Column width="20%"><Text text="Operator" /></Column>
+                                                <Column width="40%"><Text text="Value" /></Column>
+                                                <Column width="10%"><Text text="Logic" /></Column>
+                                            </columns>
+                                            <items>
+                                                <ColumnListItem>
+                                                    <cells>
+                                                        <Select selectedKey="{app>attribute}" width="100%">
+                                                            <core:Item key="CUSTOMER_FIELD" text="Customer Input Field" />
+                                                            <core:Item key="AMOUNT" text="Amount" />
+                                                            <core:Item key="TEXT_PATTERN" text="Text Pattern" />
+                                                            <core:Item key="FILE_TYPE" text="File Type" />
+                                                            <core:Item key="ROW_NUMBER" text="Row Number" />
+                                                            <core:Item key="COLUMN_NAME" text="Column Name" />
+                                                        </Select>
+                                                        <Select selectedKey="{app>operator}" width="100%">
+                                                            <core:Item key="EQUALS" text="Equals" />
+                                                            <core:Item key="CONTAINS" text="Contains" />
+                                                            <core:Item key="STARTS_WITH" text="Starts With" />
+                                                            <core:Item key="ENDS_WITH" text="Ends With" />
+                                                            <core:Item key="REGEX" text="Matches (Regex)" />
+                                                            <core:Item key="GREATER_THAN" text="Greater Than" />
+                                                            <core:Item key="LESS_THAN" text="Less Than" />
+                                                            <core:Item key="NOT_EMPTY" text="Not Empty" />
+                                                            <core:Item key="IS_EMPTY" text="Is Empty" />
+                                                        </Select>
+                                                        <Input value="{app>value}" placeholder="Enter value..." width="100%" />
+                                                        <Select selectedKey="{app>logic}" width="100%">
+                                                            <core:Item key="AND" text="AND" />
+                                                            <core:Item key="OR" text="OR" />
+                                                        </Select>
+                                                    </cells>
+                                                </ColumnListItem>
+                                            </items>
+                                        </Table>
+                                    </content>
+                                </Panel>
+                                
+                                <!-- Transformation Section (Below Conditions) -->
+                                <Panel headerText="Transformation Settings" class="sapUiSmallMarginTop">
+                                    <VBox class="sapUiSmallMargin">
+                                        <!-- Split Settings (visible when Rule Type = SPLIT) -->
+                                        <VBox visible="{= ${app>/ruleDetail/ruleType} === 'SPLIT'}">
+                                            <Title text="Split Settings" level="H5" class="sapUiSmallMarginBottom" />
+                                            <l:Grid defaultSpan="XL3 L4 M6 S12">
+                                                <VBox>
+                                                    <Label text="Delimiter" />
+                                                    <Input value="{app>/ruleDetail/splitSettings/delimiter}" placeholder="e.g., ," width="100%" />
+                                                </VBox>
+                                                <VBox>
+                                                    <Label text="Range Separator" />
+                                                    <Input value="{app>/ruleDetail/splitSettings/rangeSeparator}" placeholder="e.g., -" width="100%" />
+                                                </VBox>
+                                                <VBox>
+                                                    <Label text="Output Mode" />
+                                                    <Select selectedKey="{app>/ruleDetail/splitSettings/outputMode}" width="100%">
+                                                        <core:Item key="EXPLODE" text="Explode Rows" />
+                                                        <core:Item key="ARRAY" text="Keep as Array" />
+                                                        <core:Item key="FIRST" text="First Value Only" />
+                                                        <core:Item key="LAST" text="Last Value Only" />
+                                                    </Select>
+                                                </VBox>
+                                                <VBox>
+                                                    <Label text="Preserve Original" />
+                                                    <Switch state="{app>/ruleDetail/splitSettings/preserveOriginal}" customTextOn="Yes" customTextOff="No" />
+                                                </VBox>
+                                            </l:Grid>
+                                        </VBox>
+                                        
+                                        <!-- Derive Settings (visible when Rule Type = DERIVE) -->
+                                        <VBox visible="{= ${app>/ruleDetail/ruleType} === 'DERIVE'}">
+                                            <Title text="Derive Settings" level="H5" class="sapUiSmallMarginBottom" />
+                                            <Label text="Derivation Formula" />
+                                            <TextArea value="{app>/ruleDetail/deriveSettings/formula}" rows="2" width="100%" placeholder="e.g., CONCAT(Field1, '-', Field2)" class="sapUiSmallMarginBottom" />
+                                            <Label text="Source Fields" />
+                                            <Input value="{app>/ruleDetail/deriveSettings/sourceFields}" placeholder="e.g., Field1, Field2" width="100%" class="sapUiSmallMarginBottom" />
+                                            <Label text="Default Value" />
+                                            <Input value="{app>/ruleDetail/deriveSettings/defaultValue}" placeholder="Enter default value" width="300px" />
+                                        </VBox>
+                                        
+                                        <!-- Validate Settings (visible when Rule Type = VALIDATE) -->
+                                        <VBox visible="{= ${app>/ruleDetail/ruleType} === 'VALIDATE'}">
+                                            <Title text="Validation Settings" level="H5" class="sapUiSmallMarginBottom" />
+                                            <l:Grid defaultSpan="XL3 L4 M6 S12">
+                                                <VBox>
+                                                    <Label text="Validation Type" />
+                                                    <Select selectedKey="{app>/ruleDetail/validateSettings/validationType}" width="100%">
+                                                        <core:Item key="HARD" text="Hard (Block)" />
+                                                        <core:Item key="SOFT" text="Soft (Warn)" />
+                                                    </Select>
+                                                </VBox>
+                                                <VBox>
+                                                    <Label text="Error Code" />
+                                                    <Input value="{app>/ruleDetail/validateSettings/errorCode}" placeholder="e.g., ERR001" width="100%" />
+                                                </VBox>
+                                                <VBox>
+                                                    <Label text="Stop Processing" />
+                                                    <Switch state="{app>/ruleDetail/validateSettings/stopProcessing}" customTextOn="Yes" customTextOff="No" />
+                                                </VBox>
+                                            </l:Grid>
+                                            <Label text="Error Message" class="sapUiSmallMarginTop" />
+                                            <TextArea value="{app>/ruleDetail/validateSettings/errorMessage}" rows="2" width="100%" placeholder="Enter error message" />
+                                        </VBox>
+                                        
+                                        <!-- Allocate Settings (visible when Rule Type = ALLOCATE) -->
+                                        <VBox visible="{= ${app>/ruleDetail/ruleType} === 'ALLOCATE'}">
+                                            <Title text="Allocation Settings" level="H5" class="sapUiSmallMarginBottom" />
+                                            <l:Grid defaultSpan="XL3 L4 M6 S12">
+                                                <VBox>
+                                                    <Label text="Allocation Method" />
+                                                    <Select selectedKey="{app>/ruleDetail/allocateSettings/method}" width="100%">
+                                                        <core:Item key="EQUAL" text="Equal Distribution" />
+                                                        <core:Item key="PROPORTIONAL" text="Proportional" />
+                                                        <core:Item key="OPEN_AMOUNT" text="Open Amount" />
+                                                        <core:Item key="FIFO" text="FIFO" />
+                                                    </Select>
+                                                </VBox>
+                                                <VBox>
+                                                    <Label text="Rounding Rule" />
+                                                    <Select selectedKey="{app>/ruleDetail/allocateSettings/roundingRule}" width="100%">
+                                                        <core:Item key="ADJUST_LAST" text="Adjust Last" />
+                                                        <core:Item key="ROUND_UP" text="Round Up" />
+                                                        <core:Item key="ROUND_DOWN" text="Round Down" />
+                                                    </Select>
+                                                </VBox>
+                                                <VBox>
+                                                    <Label text="Tolerance (%)" />
+                                                    <StepInput value="{app>/ruleDetail/allocateSettings/tolerance}" min="0" max="100" step="0.1" width="100%" />
+                                                </VBox>
+                                                <VBox>
+                                                    <Label text="Decimal Places" />
+                                                    <StepInput value="{app>/ruleDetail/allocateSettings/decimalPlaces}" min="0" max="6" step="1" width="100%" />
+                                                </VBox>
+                                            </l:Grid>
+                                        </VBox>
+                                        
+                                        <!-- Text Conversion Settings (visible when Rule Type = TEXT_CONVERSION) -->
+                                        <VBox visible="{= ${app>/ruleDetail/ruleType} === 'TEXT_CONVERSION'}">
+                                            <Title text="Text Conversion Settings" level="H5" class="sapUiSmallMarginBottom" />
+                                            <l:Grid defaultSpan="XL3 L4 M6 S12">
+                                                <VBox>
+                                                    <Label text="Conversion Type" />
+                                                    <Select selectedKey="{app>/ruleDetail/textConversionSettings/conversionType}" width="100%">
+                                                        <core:Item key="UPPERCASE" text="Uppercase" />
+                                                        <core:Item key="LOWERCASE" text="Lowercase" />
+                                                        <core:Item key="TRIM" text="Trim" />
+                                                        <core:Item key="PAD_LEFT" text="Pad Left" />
+                                                        <core:Item key="PAD_RIGHT" text="Pad Right" />
+                                                        <core:Item key="REPLACE" text="Find &amp; Replace" />
+                                                        <core:Item key="EXTRACT" text="Extract Pattern" />
+                                                    </Select>
+                                                </VBox>
+                                                <VBox>
+                                                    <Label text="Find Text / Pattern" />
+                                                    <Input value="{app>/ruleDetail/textConversionSettings/findText}" placeholder="Text or regex" width="100%" />
+                                                </VBox>
+                                                <VBox>
+                                                    <Label text="Replace With" />
+                                                    <Input value="{app>/ruleDetail/textConversionSettings/replaceWith}" placeholder="Replacement" width="100%" />
+                                                </VBox>
+                                                <VBox>
+                                                    <Label text="Target Length" />
+                                                    <StepInput value="{app>/ruleDetail/textConversionSettings/targetLength}" min="1" max="100" width="100%" />
+                                                </VBox>
+                                            </l:Grid>
+                                        </VBox>
+                                    </VBox>
+                                </Panel>
+                            </VBox>
+                        </IconTabFilter>
+                    </items>
+                </IconTabBar>
+            </VBox>
+            
+            <!-- ============================================================ -->
+            <!-- PDF LOCKBOX CONTENT (AI OCR Processing) -->
+            <!-- ============================================================ -->
+            <VBox id="pdfLockboxContent" visible="{app>/showPdfLockbox}">
+                <mvc:XMLView viewName="lockbox.view.PdfLockbox" />
+            </VBox>
+            
         </content>
+        
+        <!-- ============================================================ -->
+        <!-- DIALOGS FOR FIELD MAPPING RULES -->
+        <!-- ============================================================ -->
+        
+        <!-- Upload Template Dialog -->
+        <dependents>
+            <Dialog id="uploadTemplateDialog" title="Upload Customer Template" contentWidth="500px">
+                <content>
+                    <VBox class="sapUiSmallMargin">
+                        <Label text="Template Name" required="true" />
+                        <Input id="uploadTemplateName" value="{app>/newTemplate/name}" placeholder="Enter template name" width="100%" class="sapUiSmallMarginBottom" />
+                        
+                        <Label text="File Type" required="true" />
+                        <Select id="uploadTemplateFileType" selectedKey="{app>/newTemplate/fileType}" width="100%" class="sapUiSmallMarginBottom">
+                            <core:Item key="EXCEL" text="Excel (.xlsx, .xls)" />
+                            <core:Item key="CSV" text="CSV (.csv)" />
+                            <core:Item key="BAI2" text="BAI2 (.bai, .bai2)" />
+                            <core:Item key="PAYMENT_ADVICE" text="Payment Advice (.txt, .pdf)" />
+                        </Select>
+                        
+                        <Label text="Template Type" />
+                        <Select id="uploadTemplateType" selectedKey="{app>/newTemplate/templateType}" width="100%" class="sapUiSmallMarginBottom">
+                            <core:Item key="STANDARD" text="Standard" />
+                            <core:Item key="CUSTOM" text="Custom" />
+                        </Select>
+                        
+                        <Label text="Description" />
+                        <TextArea id="uploadTemplateDesc" value="{app>/newTemplate/description}" rows="2" width="100%" placeholder="Enter description" class="sapUiSmallMarginBottom" />
+                        
+                        <Label text="Select Template File" required="true" />
+                        <u:FileUploader
+                            id="templateFileUploader"
+                            name="templateFile"
+                            fileType="xlsx,xls,csv,bai,bai2,txt,pdf"
+                            placeholder="Choose file..."
+                            width="100%"
+                            change="onTemplateFileChange"
+                            style="Emphasized" />
+                        
+                        <MessageStrip
+                            text="Supported formats: Excel (.xlsx, .xls), CSV (.csv), BAI2 (.bai, .bai2), Payment Advice (.txt, .pdf)"
+                            type="Information"
+                            showIcon="true"
+                            class="sapUiSmallMarginTop" />
+                    </VBox>
+                </content>
+                <beginButton>
+                    <Button text="Upload" type="Emphasized" press="onSaveTemplate" />
+                </beginButton>
+                <endButton>
+                    <Button text="Cancel" press="onCancelTemplateDialog" />
+                </endButton>
+            </Dialog>
+            
+            <!-- Add API Field Dialog -->
+            <Dialog id="addApiFieldDialog" title="Add New API Field" contentWidth="550px">
+                <content>
+                    <VBox class="sapUiSmallMargin">
+                        <Label text="Field Name" required="true" />
+                        <Input id="apiFieldName" value="{app>/newApiField/fieldName}" placeholder="e.g., CustomField1" width="100%" class="sapUiSmallMarginBottom" />
+                        
+                        <Label text="Necessity" required="true" />
+                        <Select id="apiFieldNecessity" selectedKey="{app>/newApiField/necessity}" width="100%" class="sapUiSmallMarginBottom">
+                            <core:Item key="Mandatory" text="Mandatory" />
+                            <core:Item key="Optional" text="Optional" />
+                        </Select>
+                        
+                        <Label text="Field Type" required="true" />
+                        <Select id="apiFieldType" selectedKey="{app>/newApiField/fieldType}" width="100%" class="sapUiSmallMarginBottom">
+                            <core:Item key="User Input" text="User Input" />
+                            <core:Item key="System Generated" text="System Generated" />
+                            <core:Item key="Constant" text="Constant" />
+                            <core:Item key="Default" text="Default" />
+                            <core:Item key="Derived" text="Derived" />
+                        </Select>
+                        
+                        <Label text="Data Type" />
+                        <Select id="apiFieldDataType" selectedKey="{app>/newApiField/dataType}" width="100%" class="sapUiSmallMarginBottom">
+                            <core:Item key="String" text="String" />
+                            <core:Item key="Number" text="Number" />
+                            <core:Item key="Date" text="Date" />
+                            <core:Item key="DateTime" text="DateTime" />
+                            <core:Item key="Currency" text="Currency" />
+                            <core:Item key="Boolean" text="Boolean" />
+                        </Select>
+                        
+                        <Label text="Max Length" />
+                        <StepInput id="apiFieldMaxLength" value="{app>/newApiField/maxLength}" min="1" max="1000" width="150px" class="sapUiSmallMarginBottom" />
+                        
+                        <Label text="Default Value" />
+                        <Input id="apiFieldDefaultValue" value="{app>/newApiField/defaultValue}" placeholder="Enter default value (if any)" width="100%" class="sapUiSmallMarginBottom" />
+                        
+                        <Label text="Description" />
+                        <TextArea id="apiFieldDesc" value="{app>/newApiField/description}" rows="2" width="100%" placeholder="Enter field description" />
+                    </VBox>
+                </content>
+                <beginButton>
+                    <Button text="Add Field" type="Emphasized" press="onSaveApiField" />
+                </beginButton>
+                <endButton>
+                    <Button text="Cancel" press="onCancelApiFieldDialog" />
+                </endButton>
+            </Dialog>
+            
+            <!-- Add OData Service Dialog -->
+            <Dialog id="addOdataServiceDialog" title="Add New API/OData Service" contentWidth="600px">
+                <content>
+                    <VBox class="sapUiSmallMargin">
+                        <Label text="System" required="true" />
+                        <Select id="odataSystem" selectedKey="{app>/newOdataService/system}" width="100%" class="sapUiSmallMarginBottom">
+                            <core:Item key="S4HANA On Premise" text="S4HANA On Premise" />
+                            <core:Item key="S4HANA Cloud" text="S4HANA Cloud" />
+                            <core:Item key="ERP Cloud Private" text="ERP Cloud Private" />
+                            <core:Item key="ERP Cloud" text="ERP Cloud" />
+                            <core:Item key="ECC On Premise" text="ECC On Premise" />
+                            <core:Item key="Custom" text="Custom System" />
+                        </Select>
+                        
+                        <Label text="Product Version" required="true" />
+                        <Select id="odataProductVersion" selectedKey="{app>/newOdataService/productVersion}" width="100%" class="sapUiSmallMarginBottom">
+                            <core:Item key="V2" text="V2 (OData V2)" />
+                            <core:Item key="V4" text="V4 (OData V4)" />
+                        </Select>
+                        
+                        <Label text="Technical Service Name" required="true" />
+                        <Input id="odataTechnicalName" value="{app>/newOdataService/technicalServiceName}" placeholder="e.g., ZAPI_Lockboxpost_IN" width="100%" class="sapUiSmallMarginBottom" />
+                        
+                        <Label text="External Service Name" />
+                        <Input id="odataExternalName" value="{app>/newOdataService/externalServiceName}" placeholder="e.g., API_Lockboxpost_IN" width="100%" class="sapUiSmallMarginBottom" />
+                        
+                        <Label text="Service Description" />
+                        <Input id="odataServiceDesc" value="{app>/newOdataService/serviceDescription}" placeholder="e.g., Post Lockbox" width="100%" class="sapUiSmallMarginBottom" />
+                        
+                        <Label text="Service Operations" required="true" />
+                        <MultiComboBox id="odataServiceOps" selectedKeys="{app>/newOdataService/serviceOperationsKeys}" width="100%" class="sapUiSmallMarginBottom">
+                            <core:Item key="GET" text="GET (Read)" />
+                            <core:Item key="POST" text="POST (Create)" />
+                            <core:Item key="PUT" text="PUT (Update)" />
+                            <core:Item key="PATCH" text="PATCH (Partial Update)" />
+                            <core:Item key="DELETE" text="DELETE (Remove)" />
+                            <core:Item key="QUERY" text="QUERY (List)" />
+                            <core:Item key="BATCH" text="BATCH (Multiple)" />
+                        </MultiComboBox>
+                        
+                        <Label text="HTTPS API / OData URL" required="true" />
+                        <Input id="odataUrl" value="{app>/newOdataService/httpsApiOdata}" placeholder="e.g., /sap/opu/odata/sap/API_LOCKBOXPOST_IN/" width="100%" class="sapUiSmallMarginBottom" />
+                        
+                        <Label text="Authentication Type" />
+                        <Select id="odataAuthType" selectedKey="{app>/newOdataService/authType}" width="100%" class="sapUiSmallMarginBottom">
+                            <core:Item key="BASIC" text="Basic Authentication" />
+                            <core:Item key="OAUTH2" text="OAuth 2.0" />
+                            <core:Item key="SAML" text="SAML" />
+                            <core:Item key="X509" text="X.509 Certificate" />
+                        </Select>
+                        
+                        <Label text="Destination Name (BTP)" />
+                        <Input id="odataDestination" value="{app>/newOdataService/destinationName}" placeholder="e.g., S4HANA_DEST" width="100%" />
+                    </VBox>
+                </content>
+                <beginButton>
+                    <Button text="Add Service" type="Emphasized" press="onSaveOdataService" />
+                </beginButton>
+                <endButton>
+                    <Button text="Cancel" press="onCancelOdataServiceDialog" />
+                </endButton>
+            </Dialog>
+            
+            <!-- Field Mapping Preview Dialog - Shows COMPLETE SAP Payload Structure -->
+            <Dialog id="fieldMappingPreviewDialog" title="Field Mapping Preview - Complete SAP Payload" contentWidth="1100px" contentHeight="600px">
+                <content>
+                    <VBox class="sapUiSmallMargin">
+                        <HBox justifyContent="SpaceBetween" class="sapUiSmallMarginBottom">
+                            <VBox>
+                                <Title text="Lockbox: {app>/fieldMappingPreview/lockboxId}" level="H4" />
+                                <Label text="Pattern: {app>/fieldMappingPreview/patternName}" class="sapUiTinyMarginTop" />
+                            </VBox>
+                            <ObjectStatus 
+                                text="{app>/fieldMappingPreview/status}" 
+                                state="{= ${app>/fieldMappingPreview/status} === 'VALIDATED' ? 'Success' : ${app>/fieldMappingPreview/status} === 'EXTRACTED' ? 'Warning' : 'Information'}" />
+                        </HBox>
+                        <MessageStrip text="This view shows all API fields organized by SAP payload hierarchy: Header → Item → Clearing. Fields marked as SYSTEM are auto-generated, CONSTANT are fixed values, DEFAULT use configured fallbacks, and DIRECT are mapped from your file." type="Information" showIcon="true" class="sapUiSmallMarginBottom" />
+                        <Table 
+                            id="fieldMappingPreviewTable"
+                            items="{app>/fieldMappingPreview/mappings}"
+                            mode="None"
+                            width="100%"
+                            sticky="ColumnHeaders">
+                            <headerToolbar>
+                                <Toolbar>
+                                    <Title text="Complete Field Mappings ({= ${app>/fieldMappingPreview/mappings}.length } fields)" level="H5" />
+                                    <ToolbarSpacer />
+                                    <SegmentedButton id="mappingFilterSegment" selectionChange="onMappingFilterChange" selectedKey="all">
+                                        <items>
+                                            <SegmentedButtonItem key="all" text="All" />
+                                            <SegmentedButtonItem key="DIRECT" text="Direct" />
+                                            <SegmentedButtonItem key="CONSTANT" text="Constant" />
+                                            <SegmentedButtonItem key="DEFAULT" text="Default" />
+                                            <SegmentedButtonItem key="SYSTEM" text="System" />
+                                            <SegmentedButtonItem key="SOURCE" text="Source Only" />
+                                        </items>
+                                    </SegmentedButton>
+                                </Toolbar>
+                            </headerToolbar>
+                            <columns>
+                                <Column width="10%">
+                                    <Text text="Section" />
+                                </Column>
+                                <Column width="15%">
+                                    <Text text="Source Field" />
+                                </Column>
+                                <Column width="12%">
+                                    <Text text="Source Value" />
+                                </Column>
+                                <Column width="10%">
+                                    <Text text="Type" />
+                                </Column>
+                                <Column width="18%">
+                                    <Text text="Target API Field" />
+                                </Column>
+                                <Column width="12%">
+                                    <Text text="Final Value" />
+                                </Column>
+                                <Column width="23%">
+                                    <Text text="Transformation/Notes" />
+                                </Column>
+                            </columns>
+                            <items>
+                                <ColumnListItem>
+                                    <cells>
+                                        <ObjectStatus 
+                                            text="{app>section}"
+                                            state="{= ${app>section} === 'Header' ? 'Information' : ${app>section} === 'Item' ? 'Success' : ${app>section} === 'Clearing' ? 'Warning' : 'None'}" />
+                                        <Text text="{= ${app>sourceField} || '—'}" />
+                                        <Text text="{= ${app>sourceValue} || '—'}" />
+                                        <ObjectStatus 
+                                            text="{app>mappingType}"
+                                            state="{= ${app>mappingType} === 'DIRECT' ? 'Success' : ${app>mappingType} === 'CONSTANT' ? 'Warning' : ${app>mappingType} === 'DEFAULT' ? 'Information' : ${app>mappingType} === 'SYSTEM' ? 'None' : 'Error'}"
+                                            icon="{= ${app>mappingType} === 'DIRECT' ? 'sap-icon://connected' : ${app>mappingType} === 'CONSTANT' ? 'sap-icon://locked' : ${app>mappingType} === 'DEFAULT' ? 'sap-icon://hint' : ${app>mappingType} === 'SYSTEM' ? 'sap-icon://sys-enter' : 'sap-icon://document'}" />
+                                        <Text text="{app>targetField}" class="sapUiTinyMarginEnd" />
+                                        <ObjectStatus 
+                                            text="{= ${app>finalValue} || '(empty)'}"
+                                            state="{= ${app>finalValue} ? 'Success' : 'None'}" />
+                                        <Text text="{= ${app>transformation} || '—'}" wrapping="true" />
+                                    </cells>
+                                </ColumnListItem>
+                            </items>
+                        </Table>
+                    </VBox>
+                </content>
+                <beginButton>
+                    <Button text="Export" icon="sap-icon://excel-attachment" press="onExportFieldMappings" type="Emphasized" />
+                </beginButton>
+                <endButton>
+                    <Button text="Close" press="onCloseFieldMappingPreview" />
+                </endButton>
+            </Dialog>
+            
+            <!-- ============================================================ -->
+            <!-- TRANSACTION DETAILS DIALOG -->
+            <!-- ============================================================ -->
+            <Dialog
+                id="transactionDetailsDialog"
+                contentWidth="98%"
+                contentHeight="90%"
+                resizable="true"
+                draggable="true">
+                <customHeader>
+                    <Bar class="dialogHeaderBar">
+                        <contentLeft>
+                            <Title text="Lockbox-{app>/selectedTransaction/runId}" level="H3" class="dialogHeaderTitle" />
+                        </contentLeft>
+                        <contentRight>
+                            <Button text="View File" icon="sap-icon://document" press="onViewTransactionFile" class="dialogHeaderButton" />
+                            <Button text="Log" icon="sap-icon://menu2" class="dialogHeaderButton" />
+                            <Button icon="sap-icon://decline" press="onCloseTransactionDetails" tooltip="Close" class="dialogHeaderButton" />
+                        </contentRight>
+                    </Bar>
+                </customHeader>
+                <content>
+                    <VBox>
+                        <!-- Metadata Section - Compact -->
+                        <VBox class="metadataSection">
+                            <l:Grid defaultSpan="L3 M6 S12" hSpacing="1" vSpacing="0.5">
+                                <l:content>
+                                    <VBox class="metadataField">
+                                        <Label text="Company Code:" class="metadataLabel" />
+                                        <Text text="{= ${app>/selectedTransaction/companyCode} || 'N/A'}" class="metadataValue" />
+                                    </VBox>
+                                    <VBox class="metadataField">
+                                        <Label text="Source File:" class="metadataLabel" />
+                                        <Link text="{app>/selectedTransaction/sourceFile}" press="onDownloadSourceFile" class="metadataLink" />
+                                    </VBox>
+                                    <VBox class="metadataField">
+                                        <Label text="Lockbox Batch:" class="metadataLabel" />
+                                        <Text text="{app>/selectedTransaction/lockboxBatch}" class="metadataValue" />
+                                    </VBox>
+                                    <VBox class="metadataField">
+                                        <Label text="Created On:" class="metadataLabel" />
+                                        <Text text="{path: 'app>/selectedTransaction/processedDate', formatter: '.formatDateTime'}" class="metadataValue" />
+                                    </VBox>
+                                    <VBox class="metadataField">
+                                        <Label text="Created By:" class="metadataLabel" />
+                                        <Text text="System" class="metadataValue" />
+                                    </VBox>
+                                    <VBox class="metadataField">
+                                        <Label text="Overall Processing Status:" class="metadataLabel" />
+                                        <ObjectStatus 
+                                            text="{app>/selectedTransaction/status}" 
+                                            state="{path: 'app>/selectedTransaction/status', formatter: '.formatStatusState'}" />
+                                    </VBox>
+                                    <VBox class="metadataField">
+                                        <Label text="Deposit Date/Time:" class="metadataLabel" />
+                                        <Text text="{path: 'app>/selectedTransaction/depositDate', formatter: '.formatDateTime'}" class="metadataValue" />
+                                    </VBox>
+                                    <VBox class="metadataField">
+                                        <Label text="Total Amount:" class="metadataLabel" />
+                                        <ObjectNumber 
+                                            number="{app>/selectedTransaction/amount}" 
+                                            unit="{= ${app>/selectedTransaction/currency} || 'USD'}" 
+                                            class="metadataValue" />
+                                    </VBox>
+                                </l:content>
+                            </l:Grid>
+                        </VBox>
+                        
+                        <!-- Lockbox Processing Status Card -->
+                        <VBox class="statusCard sapUiMediumMargin">
+                            <HBox class="statusCardHeader">
+                                <core:Icon src="sap-icon://status-positive" size="1.5rem" class="sapUiTinyMarginEnd" />
+                                <Title text="Lockbox Processing Status" level="H4" />
+                            </HBox>
+                            <VBox class="statusCardContent">
+                                <l:Grid defaultSpan="L3 M4 S6" hSpacing="1" vSpacing="0.5">
+                                    <l:content>
+                                        <!-- File Pattern/Rule -->
+                                        <VBox class="statusItem">
+                                            <Label text="File Pattern/Rule" class="statusItemLabel" />
+                                            <Text text="RuleID001: Standard Pattern" class="statusItemValue" />
+                                        </VBox>
+                                        <!-- Extract File -->
+                                        <VBox class="statusItem">
+                                            <Label text="Extract File" class="statusItemLabel" />
+                                            <Text text="Rows Extracted: {app>/selectedTransaction/rowsExtracted}" class="statusItemValue" />
+                                        </VBox>
+                                        <!-- Validation & Mapping -->
+                                        <VBox class="statusItem">
+                                            <Label text="Validation &amp; Mapping" class="statusItemLabel" />
+                                            <ObjectStatus text="API Field Mapping Success" state="Success" class="statusItemValue" />
+                                        </VBox>
+                                        <!-- Simulation Run -->
+                                        <VBox class="statusItem">
+                                            <Label text="Simulation Run" class="statusItemLabel" />
+                                            <ObjectStatus 
+                                                text="{app>/selectedTransaction/stages/simulate}" 
+                                                state="{path: 'app>/selectedTransaction/stages/simulate', formatter: '.formatStatusState'}" 
+                                                class="statusItemValue" />
+                                        </VBox>
+                                        <!-- Pattern Identified -->
+                                        <VBox class="statusItem">
+                                            <Label text="Pattern Identified" class="statusItemLabel" />
+                                            <ObjectStatus 
+                                                text="{app>/selectedTransaction/stages/templateMatch}" 
+                                                state="{path: 'app>/selectedTransaction/stages/templateMatch', formatter: '.formatStatusState'}" 
+                                                class="statusItemValue" />
+                                        </VBox>
+                                        <!-- Overall Processing Status -->
+                                        <VBox class="statusItem">
+                                            <Label text="Overall Processing Status" class="statusItemLabel" />
+                                            <ObjectStatus 
+                                                text="{app>/selectedTransaction/status}" 
+                                                state="{path: 'app>/selectedTransaction/status', formatter: '.formatStatusState'}" 
+                                                class="statusItemValue" />
+                                        </VBox>
+                                        <!-- Number of Checks -->
+                                        <VBox class="statusItem">
+                                            <Label text="Number of Checks" class="statusItemLabel" />
+                                            <Text text="{= ${app>/selectedTransaction/checks} ? ${app>/selectedTransaction/checks}.length : '0'}" class="statusItemValue" />
+                                        </VBox>
+                                        <!-- Production Run -->
+                                        <VBox class="statusItem">
+                                            <Label text="Production Run" class="statusItemLabel" />
+                                            <ObjectStatus 
+                                                text="{= ${app>/selectedTransaction/mode} === 'PRODUCTION' ? 'Posted' : 'Not Posted'}" 
+                                                state="{= ${app>/selectedTransaction/mode} === 'PRODUCTION' ? 'Success' : 'None'}" 
+                                                class="statusItemValue" />
+                                        </VBox>
+                                    </l:content>
+                                </l:Grid>
+                            </VBox>
+                        </VBox>
+                        
+                        <!-- Lockbox Data Table -->
+                        <VBox class="dataTableCard sapUiMediumMargin">
+                            <HBox class="dataTableHeader">
+                                <core:Icon src="sap-icon://database" size="1.5rem" class="sapUiTinyMarginEnd" />
+                                <Title text="Lockbox Data" level="H4" />
+                            </HBox>
+                            <Table
+                                id="lockboxDataTable"
+                                class="lockboxDataTable"
+                                items="{app>/selectedTransaction/lockboxItems}"
+                                mode="None">
+                                <columns>
+                                    <Column width="8%">
+                                        <Text text="Company Code" />
+                                    </Column>
+                                    <Column width="10%">
+                                        <Text text="Lockbox ID" />
+                                    </Column>
+                                    <Column width="10%">
+                                        <Text text="Lockbox Dest" />
+                                    </Column>
+                                    <Column width="10%">
+                                        <Text text="Lockbox Origin" />
+                                    </Column>
+                                    <Column width="7%">
+                                        <Text text="Item" />
+                                    </Column>
+                                    <Column width="10%">
+                                        <Text text="Amount(USD)" />
+                                    </Column>
+                                    <Column width="15%">
+                                        <Text text="AR Posting Doc" />
+                                    </Column>
+                                    <Column width="15%">
+                                        <Text text="Payment Advice" />
+                                    </Column>
+                                    <Column width="15%">
+                                        <Text text="Clearing Doc" />
+                                    </Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{app>companyCode}" />
+                                            <Text text="{app>lockboxId}" />
+                                            <Text text="{app>lockboxDest}" />
+                                            <Text text="{app>lockboxOrigin}" />
+                                            <Text text="{app>item}" />
+                                            <ObjectNumber number="{app>amount}" unit="USD" />
+                                            <Text text="{app>postingDoc}" />
+                                            <Text text="{app>paytAdvice}" />
+                                            <Text text="{app>clearingDoc}" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </VBox>
+                </content>
+            </Dialog>
+
+        </dependents>
     </Page>
 </mvc:View>
