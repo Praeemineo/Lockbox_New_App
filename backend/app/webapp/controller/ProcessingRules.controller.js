@@ -47,7 +47,163 @@ sap.ui.define([
         /**
          * Create new rule
          */
-        onCreateProcessingRule: function () {
+        onCreateRule: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var newRule = {
+                rule_id: "RULE-" + Date.now(),
+                rule_name: "",
+                description: "",
+                file_type: "Excel",
+                rule_type: "Validation",
+                is_active: true,
+                conditions: [],
+                api_mappings: []
+            };
+            oModel.setProperty("/selectedRule", newRule);
+            this.byId("ruleDetailsDialog").open();
+        },
+
+        /**
+         * Show rule details dialog
+         */
+        onShowRuleDetails: function (oEvent) {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oContext = oEvent.getSource().getBindingContext("app");
+            var oRule = oContext.getObject();
+            
+            // Ensure conditions and mappings are arrays
+            if (!oRule.conditions || typeof oRule.conditions === 'string') {
+                try {
+                    oRule.conditions = JSON.parse(oRule.conditions || '[]');
+                } catch (e) {
+                    oRule.conditions = [];
+                }
+            }
+            if (!oRule.api_mappings || typeof oRule.api_mappings === 'string') {
+                try {
+                    oRule.api_mappings = JSON.parse(oRule.api_mappings || '[]');
+                } catch (e) {
+                    oRule.api_mappings = [];
+                }
+            }
+            
+            oModel.setProperty("/selectedRule", oRule);
+            this.byId("ruleDetailsDialog").open();
+        },
+
+        /**
+         * Close rule details dialog
+         */
+        onCloseRuleDetails: function () {
+            this.byId("ruleDetailsDialog").close();
+        },
+
+        /**
+         * Save rule
+         */
+        onSaveRule: function () {
+            var that = this;
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oRule = oModel.getProperty("/selectedRule");
+            
+            // Validate required fields
+            if (!oRule.rule_name) {
+                MessageBox.error("Please enter a Rule Name");
+                return;
+            }
+            
+            // Determine if this is a new rule or an update
+            var method = oRule.id ? "PUT" : "POST";
+            var url = oRule.id ? "/api/processing-rules/" + oRule.id : "/api/processing-rules";
+            
+            fetch(url, {
+                method: method,
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(oRule)
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                MessageToast.show("Rule saved successfully");
+                that.byId("ruleDetailsDialog").close();
+                that.loadProcessingRules();
+            })
+            .catch(function (error) {
+                console.error("Error saving rule:", error);
+                MessageBox.error("Failed to save rule");
+            });
+        },
+
+        /**
+         * Refresh rules
+         */
+        onRefreshRules: function () {
+            this.loadProcessingRules();
+            MessageToast.show("Rules refreshed");
+        },
+
+        /**
+         * Add condition
+         */
+        onAddCondition: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var aConditions = oModel.getProperty("/selectedRule/conditions") || [];
+            aConditions.push({
+                field: "",
+                operator: "equals",
+                value: "",
+                logic: "AND"
+            });
+            oModel.setProperty("/selectedRule/conditions", aConditions);
+        },
+
+        /**
+         * Delete condition
+         */
+        onDeleteCondition: function (oEvent) {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oItem = oEvent.getParameter("listItem");
+            var oContext = oItem.getBindingContext("app");
+            var sPath = oContext.getPath();
+            var iIndex = parseInt(sPath.split("/").pop());
+            
+            var aConditions = oModel.getProperty("/selectedRule/conditions");
+            aConditions.splice(iIndex, 1);
+            oModel.setProperty("/selectedRule/conditions", aConditions);
+        },
+
+        /**
+         * Add mapping
+         */
+        onAddMapping: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var aMappings = oModel.getProperty("/selectedRule/api_mappings") || [];
+            aMappings.push({
+                source_field: "",
+                target_field: "",
+                transformation: "none",
+                required: false
+            });
+            oModel.setProperty("/selectedRule/api_mappings", aMappings);
+        },
+
+        /**
+         * Delete mapping
+         */
+        onDeleteMapping: function (oEvent) {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oItem = oEvent.getParameter("listItem");
+            var oContext = oItem.getBindingContext("app");
+            var sPath = oContext.getPath();
+            var iIndex = parseInt(sPath.split("/").pop());
+            
+            var aMappings = oModel.getProperty("/selectedRule/api_mappings");
+            aMappings.splice(iIndex, 1);
+            oModel.setProperty("/selectedRule/api_mappings", aMappings);
+        },
             var oModel = this.getOwnerComponent().getModel("app");
             oModel.setProperty("/editingProcessingRule", {
                 ruleId: "",
