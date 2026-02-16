@@ -43,52 +43,22 @@ sap.ui.define([
         _initNavigationState: function () {
             var oModel = this.getOwnerComponent().getModel("app");
             oModel.setProperty("/showHome", true);
-            oModel.setProperty("/showConfig", false);
-            oModel.setProperty("/showTemplateBuilder", false);
             oModel.setProperty("/showLockbox", false);
             oModel.setProperty("/showFieldMappingRules", false);
             oModel.setProperty("/showRuleDetail", false);
             oModel.setProperty("/showPdfLockbox", false);
-            oModel.setProperty("/showProcessingRules", false);
             oModel.setProperty("/showNavButton", false);
             oModel.setProperty("/currentView", "home");
-        },
-        
-        // Navigation: Configuration Tile Press
-        onConfigTilePress: function () {
-            var oModel = this.getOwnerComponent().getModel("app");
-            oModel.setProperty("/showHome", false);
-            oModel.setProperty("/showConfig", true);
-            oModel.setProperty("/showTemplateBuilder", false);
-            oModel.setProperty("/showLockbox", false);
-            oModel.setProperty("/showFieldMappingRules", false);
-            oModel.setProperty("/showRuleDetail", false);
-            oModel.setProperty("/showNavButton", true);
-            oModel.setProperty("/currentView", "config");
-        },
-        
-        // Navigation: Template Builder Tile Press
-        onTemplateBuilderTilePress: function () {
-            var oModel = this.getOwnerComponent().getModel("app");
-            oModel.setProperty("/showHome", false);
-            oModel.setProperty("/showConfig", false);
-            oModel.setProperty("/showTemplateBuilder", true);
-            oModel.setProperty("/showLockbox", false);
-            oModel.setProperty("/showFieldMappingRules", false);
-            oModel.setProperty("/showRuleDetail", false);
-            oModel.setProperty("/showNavButton", true);
-            oModel.setProperty("/currentView", "templateBuilder");
         },
         
         // Navigation: Lockbox Transaction Tile Press
         onLockboxTilePress: function () {
             var oModel = this.getOwnerComponent().getModel("app");
             oModel.setProperty("/showHome", false);
-            oModel.setProperty("/showConfig", false);
-            oModel.setProperty("/showTemplateBuilder", false);
             oModel.setProperty("/showLockbox", true);
             oModel.setProperty("/showFieldMappingRules", false);
             oModel.setProperty("/showRuleDetail", false);
+            oModel.setProperty("/showPdfLockbox", false);
             oModel.setProperty("/showNavButton", true);
             oModel.setProperty("/currentView", "lockbox");
             // Load headers and run history when entering Lockbox Transaction
@@ -100,11 +70,10 @@ sap.ui.define([
         onFieldMappingRulesTilePress: function () {
             var oModel = this.getOwnerComponent().getModel("app");
             oModel.setProperty("/showHome", false);
-            oModel.setProperty("/showConfig", false);
-            oModel.setProperty("/showTemplateBuilder", false);
             oModel.setProperty("/showLockbox", false);
             oModel.setProperty("/showFieldMappingRules", true);
             oModel.setProperty("/showRuleDetail", false);
+            oModel.setProperty("/showPdfLockbox", false);
             oModel.setProperty("/showNavButton", true);
             oModel.setProperty("/currentView", "fieldMappingRules");
             // Initialize and load rules
@@ -116,30 +85,12 @@ sap.ui.define([
         onPdfLockboxTilePress: function () {
             var oModel = this.getOwnerComponent().getModel("app");
             oModel.setProperty("/showHome", false);
-            oModel.setProperty("/showConfig", false);
-            oModel.setProperty("/showTemplateBuilder", false);
             oModel.setProperty("/showLockbox", false);
             oModel.setProperty("/showFieldMappingRules", false);
             oModel.setProperty("/showPdfLockbox", true);
             oModel.setProperty("/showRuleDetail", false);
-            oModel.setProperty("/showProcessingRules", false);
             oModel.setProperty("/showNavButton", true);
             oModel.setProperty("/currentView", "pdfLockbox");
-        },
-        
-        // Navigation: Processing Rules Tile Press
-        onProcessingRulesTilePress: function () {
-            var oModel = this.getOwnerComponent().getModel("app");
-            oModel.setProperty("/showHome", false);
-            oModel.setProperty("/showConfig", false);
-            oModel.setProperty("/showTemplateBuilder", false);
-            oModel.setProperty("/showLockbox", false);
-            oModel.setProperty("/showFieldMappingRules", false);
-            oModel.setProperty("/showPdfLockbox", false);
-            oModel.setProperty("/showRuleDetail", false);
-            oModel.setProperty("/showProcessingRules", true);
-            oModel.setProperty("/showNavButton", true);
-            oModel.setProperty("/currentView", "processingRules");
         },
         
         // Navigation: Back Button Press
