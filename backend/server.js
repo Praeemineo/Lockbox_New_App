@@ -3667,67 +3667,43 @@ app.get('/api/field-mapping/patterns/:patternId', (req, res) => {
 // POST create new file pattern
 app.post('/api/field-mapping/patterns', async (req, res) => {
     try {
-        const { 
-            patternName, 
-            fileType, 
-            patternType, 
-            category, 
-            description, 
-            delimiter, 
-            active,
-            priority,
-            fieldMappings,
-            splitSettings,
-            detection,
-            processingRules,
-            conditions,
-            pdfFields,
-            bankCode,
-            accountIdentifier,
-            transactionCodes,
-            splitType,
-            amountThreshold,
-            autoMatchOpenItems,
-            createSuspenseEntry,
-            commonPrefixDetection,
-            padCheckNumbers,
-            sumInvoiceAmounts,
-            headerRow,
-            dataStartRow
-        } = req.body;
+        const patternData = req.body;
         
-        if (!patternName || !fileType || !patternType) {
-            return res.status(400).json({ error: 'Missing required fields: patternName, fileType, patternType' });
+        if (!patternData.patternName || !patternData.fileType) {
+            return res.status(400).json({ success: false, error: 'Missing required fields: patternName, fileType' });
         }
         
-        const patternId = `PAT-${String(patternIdCounter++).padStart(3, '0')}`;
+        // Use provided patternId or generate new one in PAT0001 format
+        const patternId = patternData.patternId || `PAT${String(patternIdCounter++).padStart(4, '0')}`;
+        
+        // Check if pattern ID already exists
+        const exists = filePatterns.find(p => p.patternId === patternId);
+        if (exists) {
+            return res.status(400).json({ success: false, error: 'Pattern ID already exists' });
+        }
         
         const newPattern = {
-            id: uuidv4(),
             patternId,
-            patternName,
-            fileType,
-            patternType,
-            category: category || '',
-            description: description || '',
-            delimiter: delimiter || '',
-            active: active !== false,
-            priority: priority || 100,
-            fieldMappings: fieldMappings || {},
-            splitSettings: splitSettings || {},
-            detection: detection || {},
-            processingRules: processingRules || [],
-            conditions: conditions || [],
-            pdfFields: pdfFields || [],
-            bankCode: bankCode || '',
-            accountIdentifier: accountIdentifier || '',
-            transactionCodes: transactionCodes || '',
-            splitType: splitType || '',
-            amountThreshold: amountThreshold || null,
-            autoMatchOpenItems: autoMatchOpenItems || false,
-            createSuspenseEntry: createSuspenseEntry || false,
-            commonPrefixDetection: commonPrefixDetection || false,
-            padCheckNumbers: padCheckNumbers || false,
+            patternName: patternData.patternName,
+            fileType: patternData.fileType,
+            patternType: patternData.patternType || '',
+            category: patternData.category || '',
+            description: patternData.description || '',
+            delimiter: patternData.delimiter || '',
+            active: patternData.active !== false,
+            priority: patternData.priority || 100,
+            conditions: patternData.conditions || []
+        };
+        
+        filePatterns.push(newPattern);
+        savePatternsToFile();
+        
+        res.status(201).json({ success: true, pattern: newPattern, message: 'Pattern created successfully' });
+    } catch (err) {
+        console.error('Error creating pattern:', err);
+        res.status(500).json({ success: false, error: 'Failed to create pattern', message: err.message });
+    }
+});
             sumInvoiceAmounts: sumInvoiceAmounts || false,
             headerRow: headerRow || 1,
             dataStartRow: dataStartRow || 2,
