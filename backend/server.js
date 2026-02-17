@@ -4494,7 +4494,8 @@ const defaultProcessingRules = [
 app.get('/api/processing-rules', async (req, res) => {
     try {
         if (!dbAvailable) {
-            return res.json(defaultProcessingRules);
+            // Return rules loaded from file instead of hardcoded defaults
+            return res.json(processingRules);
         }
         
         const result = await pool.query('SELECT * FROM processing_rule ORDER BY priority, rule_id');
@@ -4512,9 +4513,9 @@ app.get('/api/processing-rules', async (req, res) => {
             updatedAt: row.updated_at
         }));
         
-        // If no rules in DB, return defaults
+        // If no rules in DB, return rules from file
         if (rules.length === 0) {
-            return res.json(defaultProcessingRules);
+            return res.json(processingRules);
         }
         
         res.json(rules);
