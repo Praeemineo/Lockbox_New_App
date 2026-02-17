@@ -6689,14 +6689,92 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         console.log('Extraction complete. Rows:', extractedData.length);
         
         // ═══════════════════════════════════════════════════════════════════
-        // STAGE 4: VALIDATION - Validate extracted data
+        // STAGE 4: VALIDATION & ENRICHMENT - Execute Processing Rules Dynamically
         // ═══════════════════════════════════════════════════════════════════
         run.currentStage = 'validation';
-        console.log('=== VALIDATION ===');
+        console.log('=== VALIDATION & RULE EXECUTION (PHASE 3: DYNAMIC) ===');
         
         const warnings = [];
         const errors = [];
+        const ruleExecutionLogs = [];
         
+        // Phase 3: Execute active processing rules dynamically
+        const activeRules = processingRules.filter(r => r.active);
+        console.log(`Found ${activeRules.length} active processing rules to execute`);
+        
+        for (const rule of activeRules) {
+            console.log(`\n--- Executing ${rule.ruleId}: ${rule.ruleName} ---`);
+            const ruleLog = {
+                ruleId: rule.ruleId,
+                ruleName: rule.ruleName,
+                conditionsChecked: 0,
+                conditionsMet: 0,
+                apiCallsMade: 0,
+                recordsEnriched: 0,
+                errors: [],
+                warnings: []
+            };
+            
+            // Check rule conditions against extracted data
+            let ruleApplies = true;
+            if (rule.conditions && Array.isArray(rule.conditions)) {
+                for (const condition of rule.conditions) {
+                    ruleLog.conditionsChecked++;
+                    const conditionMet = checkRuleCondition(condition, extractedData, patternResult);
+                    if (conditionMet) {
+                        ruleLog.conditionsMet++;
+                        console.log(`  ✓ Condition met: ${condition.documentFormat} - ${condition.condition}`);
+                    } else {
+                        console.log(`  ✗ Condition not met: ${condition.documentFormat} - ${condition.condition}`);
+                    }
+                }
+                
+                // Rule applies if at least 50% of conditions are met
+                const conditionMatchRate = rule.conditions.length > 0 
+                    ? ruleLog.conditionsMet / rule.conditions.length 
+                    : 1;
+                ruleApplies = conditionMatchRate >= 0.5;
+            }
+            
+            if (!ruleApplies) {
+                console.log(`  ⊘ Rule ${rule.ruleId} skipped - conditions not met`);
+                ruleLog.warnings.push('Rule skipped - conditions not met');
+                ruleExecutionLogs.push(ruleLog);
+                continue;
+            }
+            
+            // Execute rule's API mappings
+            if (rule.apiMappings && Array.isArray(rule.apiMappings)) {
+                console.log(`  Executing ${rule.apiMappings.length} API mappings...`);
+                
+                for (const mapping of rule.apiMappings) {
+                    ruleLog.apiCallsMade++;
+                    try {
+                        // Execute API mapping dynamically
+                        const enrichmentResult = await executeApiMapping(
+                            mapping, 
+                            extractedData, 
+                            rule.ruleId
+                        );
+                        
+                        if (enrichmentResult.success) {
+                            ruleLog.recordsEnriched += enrichmentResult.recordsAffected;
+                            console.log(`  ✓ API mapping successful: ${enrichmentResult.recordsAffected} records enriched`);
+                        } else {
+                            ruleLog.warnings.push(enrichmentResult.message);
+                            console.log(`  ⚠ API mapping warning: ${enrichmentResult.message}`);
+                        }
+                    } catch (error) {
+                        ruleLog.errors.push(`API mapping failed: ${error.message}`);
+                        console.error(`  ✗ API mapping error:`, error.message);
+                    }
+                }
+            }
+            
+            ruleExecutionLogs.push(ruleLog);
+        }
+        
+        // Basic validation (legacy)
         for (let i = 0; i < extractedData.length; i++) {
             const row = extractedData[i];
             
@@ -6717,13 +6795,18 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
             warnings.push('Some rows have empty check numbers - using fill-down pattern');
         }
         
+        const totalRecordsEnriched = ruleExecutionLogs.reduce((sum, log) => sum + log.recordsEnriched, 0);
+        const rulesExecuted = ruleExecutionLogs.filter(log => log.conditionsMet > 0).length;
+        
         run.stages.validation = { 
-            status: warnings.length ? 'warning' : 'success', 
-            message: warnings.length ? `Passed with ${warnings.length} warnings` : 'All validations passed', 
+            status: warnings.length || errors.length ? 'warning' : 'success', 
+            message: `Executed ${rulesExecuted}/${activeRules.length} rules, enriched ${totalRecordsEnriched} records. ${warnings.length} warnings.`, 
             warnings, 
-            errors: [] 
+            errors,
+            ruleExecutionLogs
         };
-        console.log('Validation complete. Warnings:', warnings.length);
+        console.log(`\n✓ Validation complete. Rules executed: ${rulesExecuted}, Records enriched: ${totalRecordsEnriched}`);
+        console.log('Warnings:', warnings.length, 'Errors:', errors.length);
         
         // ═══════════════════════════════════════════════════════════════════
         // STAGE 5: MAPPING - Build standard payload with constants
