@@ -4529,7 +4529,7 @@ app.get('/api/processing-rules', async (req, res) => {
 app.get('/api/processing-rules/:ruleId', async (req, res) => {
     try {
         if (!dbAvailable) {
-            const rule = defaultProcessingRules.find(r => r.ruleId === req.params.ruleId);
+            const rule = processingRules.find(r => r.ruleId === req.params.ruleId);
             if (!rule) {
                 return res.status(404).json({ error: 'Rule not found' });
             }
