@@ -5109,7 +5109,7 @@ const COLUMN_PATTERNS = {
 // PATTERN DETECTION - Detect file pattern from data structure
 // ============================================================================
 function detectFilePattern(data, headers, fileType) {
-    console.log('=== PATTERN DETECTION ===');
+    console.log('=== PATTERN DETECTION (DYNAMIC WITH CONDITIONS) ===');
     console.log('File type:', fileType);
     console.log('Headers:', headers);
     console.log('Data rows:', data.length);
@@ -5122,9 +5122,10 @@ function detectFilePattern(data, headers, fileType) {
     const analysis = analyzeDataStructure(data, headerMapping);
     console.log('Data analysis:', analysis);
     
-    // Find best matching pattern from filePatterns array
+    // Find best matching pattern from filePatterns array (loaded from file_patterns.json)
     let bestMatch = null;
     let bestScore = 0;
+    let matchDetails = [];
     
     for (const pattern of filePatterns) {
         if (!pattern.active) continue;
@@ -5139,8 +5140,62 @@ function detectFilePattern(data, headers, fileType) {
         if (!fileTypeMatch) continue;
         
         let score = 0;
+        let conditionsMatched = 0;
+        let conditionDetails = [];
         
-        // Score based on pattern type match
+        // PHASE 2: Check pattern conditions dynamically from JSON
+        if (pattern.conditions && Array.isArray(pattern.conditions)) {
+            console.log(`Checking conditions for pattern ${pattern.patternId}:`, pattern.conditions.length, 'conditions');
+            
+            for (const condition of pattern.conditions) {
+                const docFormat = condition.documentFormat || condition.fieldName;
+                const conditionValue = condition.condition || condition.value;
+                
+                // Match condition against data
+                let conditionMet = false;
+                
+                // Check if document format exists in headers or data
+                if (docFormat) {
+                    const normalizedDocFormat = docFormat.toLowerCase();
+                    
+                    // Check header match
+                    const headerMatch = headers.some(h => 
+                        h && h.toString().toLowerCase().includes(normalizedDocFormat)
+                    );
+                    
+                    if (headerMatch) {
+                        conditionMet = true;
+                        conditionsMatched++;
+                        conditionDetails.push(`✓ ${docFormat} found in headers`);
+                    }
+                    
+                    // Check condition value match in data
+                    if (conditionValue) {
+                        const condNorm = conditionValue.toLowerCase();
+                        // Check analysis object for common patterns
+                        if (condNorm.includes('single') && condNorm.includes('check') && analysis.checkUnique) {
+                            conditionMet = true;
+                            conditionsMatched++;
+                            conditionDetails.push(`✓ ${conditionValue} matches data pattern`);
+                        }
+                        if (condNorm.includes('multiple') && !analysis.checkUnique) {
+                            conditionMet = true;
+                            conditionsMatched++;
+                            conditionDetails.push(`✓ ${conditionValue} matches data pattern`);
+                        }
+                    }
+                }
+            }
+            
+            // Score based on condition matches
+            if (pattern.conditions.length > 0) {
+                const conditionMatchRatio = conditionsMatched / pattern.conditions.length;
+                score += conditionMatchRatio * 150; // High weight for condition matches
+                console.log(`Pattern ${pattern.patternId}: ${conditionsMatched}/${pattern.conditions.length} conditions matched (${(conditionMatchRatio * 100).toFixed(0)}%)`);
+            }
+        }
+        
+        // Legacy scoring for backward compatibility
         if (pattern.patternType === 'SINGLE_CHECK_SINGLE_INVOICE' && 
             analysis.checkUnique && analysis.invoiceUnique) {
             score += 100;
@@ -5153,33 +5208,27 @@ function detectFilePattern(data, headers, fileType) {
             !analysis.checkUnique && !analysis.invoiceUnique) {
             score += 90;
         }
-        if (pattern.patternType === 'MULTI_CUSTOMER' && 
-            analysis.customerCount > 1) {
-            score += 50;
+        if (pattern.patternType === 'INVOICE_SPLIT' && analysis.hasDelimitedInvoices) {
+            score += 200;
         }
-        if (pattern.patternType === 'SINGLE_CUSTOMER' && 
-            analysis.customerCount === 1) {
-            score += 30;
+        if (pattern.patternType === 'CHECK_SPLIT' && analysis.hasDelimitedChecks) {
+            score += 200;
         }
-        if (pattern.patternType === 'CHECK_SPLIT' && 
-            analysis.hasDelimitedChecks) {
-            score += 100;
-        }
-        if (pattern.patternType === 'INVOICE_SPLIT' && 
-            analysis.hasDelimitedInvoices) {
-            score += 200;  // High priority for invoice split when detected
-        }
-        if (pattern.patternType === 'CHECK_SPLIT' && 
-            analysis.hasDelimitedChecks) {
-            score += 200;  // High priority for check split when detected
-        }
-        if (pattern.patternType === 'AMOUNT_SPLIT' && 
-            analysis.hasDelimitedAmounts) {
-            score += 200;  // High priority for amount split when detected
+        if (pattern.patternType === 'AMOUNT_SPLIT' && analysis.hasDelimitedAmounts) {
+            score += 200;
         }
         
         // Bonus for priority
-        score += (200 - pattern.priority) / 10;
+        score += (200 - (pattern.priority || 100)) / 10;
+        
+        matchDetails.push({
+            patternId: pattern.patternId,
+            patternName: pattern.patternName,
+            score: score,
+            conditionsMatched: conditionsMatched,
+            totalConditions: pattern.conditions?.length || 0,
+            conditionDetails: conditionDetails
+        });
         
         if (score > bestScore) {
             bestScore = score;
@@ -5189,21 +5238,20 @@ function detectFilePattern(data, headers, fileType) {
     
     // If no pattern matched, use a default
     if (!bestMatch) {
-        // Find default pattern (SINGLE_CHECK_MULTI_INVOICE is most common)
+        console.log('No pattern matched, using default');
         bestMatch = filePatterns.find(p => p.patternType === 'SINGLE_CHECK_MULTI_INVOICE' && p.active) ||
                    filePatterns.find(p => p.active);
     }
     
-    console.log('Matched pattern:', bestMatch?.patternId, bestMatch?.patternName, 'Score:', bestScore);
-    console.log('Analysis - hasDelimitedInvoices:', analysis.hasDelimitedInvoices, 
-                'hasDelimitedChecks:', analysis.hasDelimitedChecks,
-                'hasDelimitedAmounts:', analysis.hasDelimitedAmounts);
+    console.log('✓ MATCHED PATTERN:', bestMatch?.patternId, bestMatch?.patternName, 'Score:', bestScore);
+    console.log('Match details:', JSON.stringify(matchDetails, null, 2));
     
     return {
         pattern: bestMatch,
         score: bestScore,
         analysis: analysis,
-        headerMapping: headerMapping
+        headerMapping: headerMapping,
+        matchDetails: matchDetails
     };
 }
 
