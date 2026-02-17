@@ -631,7 +631,7 @@
                                 <headerToolbar>
                                     <OverflowToolbar>
                                         <Button icon="sap-icon://slim-arrow-left" press="onCollapsePatternDetail" tooltip="Collapse" />
-                                        <Title text="Pattern Conditions: {app>/selectedPattern/patternName}" />
+                                        <Title text="{app>/selectedPattern/patternName}" />
                                         <ToolbarSpacer />
                                         <Button text="Edit Pattern" icon="sap-icon://edit" press="onEditPattern" />
                                         <Button text="Save" icon="sap-icon://save" type="Emphasized" press="onSavePatternConditions" />
@@ -696,7 +696,7 @@
                                                 <columns>
                                                     <Column width="25%">
                                                         <VBox>
-                                                            <Text text="Condition / Pattern Identification" class="sapUiTinyMarginBottom" />
+                                                            <Text text="Condition &amp; Pattern" class="sapUiTinyMarginBottom" />
                                                             <Text text="Document/Date format" class="sapMTextSmall" />
                                                         </VBox>
                                                     </Column>
@@ -708,7 +708,7 @@
                                                     </Column>
                                                     <Column width="30%">
                                                         <VBox>
-                                                            <Text text="Action and Field Mapping" class="sapUiTinyMarginBottom" />
+                                                            <Text text="Action &amp; Field Identification" class="sapUiTinyMarginBottom" />
                                                             <Text text="Action" class="sapMTextSmall" />
                                                         </VBox>
                                                     </Column>
@@ -909,9 +909,6 @@
                             </Table>
                         </content>
                     </Panel>
-                </VBox>
-                        </endButton>
-                    </Dialog>
                 </VBox>
                 
                 <!-- API Field & Logic Tab Content -->
