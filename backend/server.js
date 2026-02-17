@@ -4030,6 +4030,99 @@ app.delete('/api/field-mapping/rules/:ruleId', (req, res) => {
     }
 });
 
+// ============ Processing Rules APIs ============
+
+// GET all processing rules
+app.get('/api/field-mapping/processing-rules', (req, res) => {
+    try {
+        res.json(processingRules);
+    } catch (err) {
+        console.error('Error fetching processing rules:', err);
+        res.status(500).json({ error: 'Failed to fetch processing rules', message: err.message });
+    }
+});
+
+// GET single processing rule
+app.get('/api/field-mapping/processing-rules/:ruleId', (req, res) => {
+    try {
+        const rule = processingRules.find(r => r.ruleId === req.params.ruleId);
+        if (!rule) {
+            return res.status(404).json({ error: 'Processing rule not found' });
+        }
+        res.json(rule);
+    } catch (err) {
+        console.error('Error fetching processing rule:', err);
+        res.status(500).json({ error: 'Failed to fetch processing rule', message: err.message });
+    }
+});
+
+// POST create new processing rule
+app.post('/api/field-mapping/processing-rules', (req, res) => {
+    try {
+        const ruleData = req.body;
+        const ruleId = ruleData.ruleId || `RULE-${String(processingRuleIdCounter++).padStart(3, '0')}`;
+        
+        const newRule = {
+            id: String(processingRules.length + 1),
+            ruleId,
+            ...ruleData,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+        
+        processingRules.push(newRule);
+        saveProcessingRulesToFile();
+        
+        res.status(201).json({ success: true, rule: newRule });
+    } catch (err) {
+        console.error('Error creating processing rule:', err);
+        res.status(500).json({ success: false, error: 'Failed to create processing rule', message: err.message });
+    }
+});
+
+// PUT update processing rule
+app.put('/api/field-mapping/processing-rules/:ruleId', (req, res) => {
+    try {
+        const ruleData = req.body;
+        const idx = processingRules.findIndex(r => r.ruleId === req.params.ruleId);
+        
+        if (idx === -1) {
+            return res.status(404).json({ success: false, error: 'Processing rule not found' });
+        }
+        
+        processingRules[idx] = { 
+            ...processingRules[idx], 
+            ...ruleData, 
+            updatedAt: new Date().toISOString() 
+        };
+        
+        saveProcessingRulesToFile();
+        
+        res.json({ success: true, message: 'Processing rule updated', rule: processingRules[idx] });
+    } catch (err) {
+        console.error('Error updating processing rule:', err);
+        res.status(500).json({ success: false, error: 'Failed to update processing rule', message: err.message });
+    }
+});
+
+// DELETE processing rule
+app.delete('/api/field-mapping/processing-rules/:ruleId', (req, res) => {
+    try {
+        const idx = processingRules.findIndex(r => r.ruleId === req.params.ruleId);
+        if (idx === -1) {
+            return res.status(404).json({ success: false, error: 'Processing rule not found' });
+        }
+        
+        const deleted = processingRules.splice(idx, 1)[0];
+        saveProcessingRulesToFile();
+        
+        res.json({ success: true, message: 'Processing rule deleted', rule: deleted });
+    } catch (err) {
+        console.error('Error deleting processing rule:', err);
+        res.status(500).json({ success: false, error: 'Failed to delete processing rule', message: err.message });
+    }
+});
+
 // ============ API Fields APIs ============
 
 // GET all API fields
