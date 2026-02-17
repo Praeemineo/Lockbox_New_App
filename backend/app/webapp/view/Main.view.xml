@@ -638,44 +638,6 @@
                                     </OverflowToolbar>
                                 </headerToolbar>
                                 <content>
-                                    <!-- Pattern Header Info -->
-                                    <Panel class="sapUiSmallMarginBottom" backgroundDesign="Solid">
-                                        <content>
-                                            <HBox alignItems="Center" justifyContent="SpaceBetween" class="sapUiSmallMargin">
-                                                <VBox>
-                                                    <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                                                        <Label text="Pattern ID:" class="sapUiTinyMarginEnd" design="Bold" />
-                                                        <Text text="{app>/selectedPattern/patternId}" />
-                                                    </HBox>
-                                                    <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                                                        <Label text="File Type:" class="sapUiTinyMarginEnd" design="Bold" />
-                                                        <ObjectStatus text="{app>/selectedPattern/fileType}" state="{path: 'app>/selectedPattern/fileType', formatter: '.formatFileTypeState'}" />
-                                                    </HBox>
-                                                </VBox>
-                                                <VBox>
-                                                    <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                                                        <Label text="Pattern Type:" class="sapUiTinyMarginEnd" design="Bold" />
-                                                        <ObjectStatus text="{app>/selectedPattern/patternType}" state="{path: 'app>/selectedPattern/patternType', formatter: '.formatPatternTypeState'}" />
-                                                    </HBox>
-                                                    <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                                                        <Label text="Category:" class="sapUiTinyMarginEnd" design="Bold" />
-                                                        <Text text="{app>/selectedPattern/category}" />
-                                                    </HBox>
-                                                </VBox>
-                                                <VBox>
-                                                    <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                                                        <Label text="Delimiter:" class="sapUiTinyMarginEnd" design="Bold" />
-                                                        <Text text="{= ${app>/selectedPattern/delimiter} || 'N/A'}" />
-                                                    </HBox>
-                                                    <HBox alignItems="Center">
-                                                        <Label text="Status:" class="sapUiTinyMarginEnd" design="Bold" />
-                                                        <ObjectStatus text="{= ${app>/selectedPattern/active} ? 'Active' : 'Inactive'}" state="{= ${app>/selectedPattern/active} ? 'Success' : 'Error'}" />
-                                                    </HBox>
-                                                </VBox>
-                                            </HBox>
-                                        </content>
-                                    </Panel>
-                                    
                                     <!-- Condition Rules Table - Excel Format -->
                                     <Panel class="sapUiSmallMarginBottom">
                                         <headerToolbar>
