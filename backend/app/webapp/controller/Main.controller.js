@@ -9410,28 +9410,175 @@ sap.ui.define([
             oModel.setProperty("/patternDetailExpanded", true);
         },
         
-        // Toggle pattern detail panel
+        // Toggle pattern detail (existing side panel)
         onTogglePatternDetail: function (oEvent) {
             var oModel = this.getOwnerComponent().getModel("app");
-            var bExpanded = oModel.getProperty("/patternDetailExpanded");
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("app");
+            var oPattern = oContext.getObject();
             
-            if (bExpanded) {
+            var bCurrentlyExpanded = oModel.getProperty("/patternDetailExpanded");
+            var currentPatternId = oModel.getProperty("/selectedPattern/patternId");
+            
+            // If clicking same pattern, toggle; if different pattern, show
+            if (bCurrentlyExpanded && currentPatternId === oPattern.patternId) {
                 oModel.setProperty("/patternDetailExpanded", false);
+                oModel.setProperty("/selectedPattern", null);
             } else {
-                // Get the pattern from the row context
-                var oContext = oEvent.getSource().getParent().getBindingContext("app");
-                if (oContext) {
-                    var oPattern = oContext.getObject();
-                    oModel.setProperty("/selectedPattern", oPattern);
-                    
-                    // Initialize conditions if not exists
-                    if (!oPattern.conditions) {
-                        oPattern.conditions = this._getDefaultConditionsForPattern(oPattern);
-                        oModel.setProperty("/selectedPattern/conditions", oPattern.conditions);
-                    }
-                }
+                oModel.setProperty("/selectedPattern", oPattern);
                 oModel.setProperty("/patternDetailExpanded", true);
             }
+        },
+        
+        // Open pattern detail dialog (NEW - for arrow button)
+        onOpenPatternDetailDialog: function (oEvent) {
+            var that = this;
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("app");
+            var oPattern = oContext.getObject();
+            
+            // Create dialog model
+            if (!this.getView().getModel("patternDialog")) {
+                var oDialogModel = new sap.ui.model.json.JSONModel({
+                    editMode: true,
+                    pattern: {}
+                });
+                this.getView().setModel(oDialogModel, "patternDialog");
+            }
+            
+            // Set pattern data (deep copy)
+            var oDialogModel = this.getView().getModel("patternDialog");
+            oDialogModel.setProperty("/editMode", true);
+            oDialogModel.setProperty("/pattern", JSON.parse(JSON.stringify(oPattern)));
+            
+            // Load and open fragment
+            if (!this._patternDetailDialog) {
+                sap.ui.core.Fragment.load({
+                    id: this.getView().getId(),
+                    name: "lockbox.view.PatternDetailDialog",
+                    controller: this
+                }).then(function (oDialog) {
+                    that._patternDetailDialog = oDialog;
+                    that.getView().addDependent(oDialog);
+                    oDialog.open();
+                });
+            } else {
+                this._patternDetailDialog.open();
+            }
+        },
+        
+        // Close pattern detail dialog
+        onClosePatternDialog: function () {
+            if (this._patternDetailDialog) {
+                this._patternDetailDialog.close();
+            }
+        },
+        
+        // Pattern tab select
+        onPatternTabSelect: function (oEvent) {
+            // Handle tab selection if needed
+        },
+        
+        // Add condition row in dialog
+        onAddPatternConditionRow: function () {
+            var oDialogModel = this.getView().getModel("patternDialog");
+            var aConditions = oDialogModel.getProperty("/pattern/conditions") || [];
+            
+            aConditions.push({
+                detectionCondition: "",
+                condition: "",
+                strategy: "",
+                externalDependency: ""
+            });
+            
+            oDialogModel.setProperty("/pattern/conditions", aConditions);
+        },
+        
+        // Delete condition row in dialog
+        onDeletePatternConditionRow: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("patternDialog");
+            var sPath = oContext.getPath();
+            var iIndex = parseInt(sPath.split("/").pop());
+            
+            var oDialogModel = this.getView().getModel("patternDialog");
+            var aConditions = oDialogModel.getProperty("/pattern/conditions");
+            
+            if (aConditions.length > 1) {
+                aConditions.splice(iIndex, 1);
+                oDialogModel.setProperty("/pattern/conditions", aConditions);
+                sap.m.MessageToast.show("Condition deleted");
+            } else {
+                sap.m.MessageToast.show("At least one condition is required");
+            }
+        },
+        
+        // Add action row in dialog
+        onAddPatternActionRow: function () {
+            var oDialogModel = this.getView().getModel("patternDialog");
+            var aConditions = oDialogModel.getProperty("/pattern/conditions") || [];
+            
+            aConditions.push({
+                detectionCondition: "",
+                condition: "",
+                strategy: "",
+                externalDependency: ""
+            });
+            
+            oDialogModel.setProperty("/pattern/conditions", aConditions);
+        },
+        
+        // Delete action row in dialog
+        onDeletePatternActionRow: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("patternDialog");
+            var sPath = oContext.getPath();
+            var iIndex = parseInt(sPath.split("/").pop());
+            
+            var oDialogModel = this.getView().getModel("patternDialog");
+            var aConditions = oDialogModel.getProperty("/pattern/conditions");
+            
+            if (aConditions.length > 1) {
+                aConditions.splice(iIndex, 1);
+                oDialogModel.setProperty("/pattern/conditions", aConditions);
+                sap.m.MessageToast.show("Action deleted");
+            } else {
+                sap.m.MessageToast.show("At least one action is required");
+            }
+        },
+        
+        // Save pattern from dialog
+        onSavePatternDialog: function () {
+            var that = this;
+            var oDialogModel = this.getView().getModel("patternDialog");
+            var oPattern = oDialogModel.getProperty("/pattern");
+            
+            // Validate
+            if (!oPattern.patternId || !oPattern.patternName) {
+                sap.m.MessageBox.error("Please fill in Pattern ID and Pattern Name");
+                return;
+            }
+            
+            // Update the pattern in the backend
+            fetch(API_BASE + "/field-mapping/patterns/" + oPattern.patternId, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(oPattern)
+            })
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    if (data.success) {
+                        sap.m.MessageToast.show("Pattern saved successfully");
+                        that._loadFilePatterns();
+                        that.onClosePatternDialog();
+                    } else {
+                        sap.m.MessageBox.error("Failed to save pattern: " + (data.message || "Unknown error"));
+                    }
+                })
+                .catch(function (error) {
+                    sap.m.MessageBox.error("Error saving pattern: " + error.message);
+                });
         },
         
         // Collapse pattern detail panel
