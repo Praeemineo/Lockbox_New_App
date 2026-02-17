@@ -910,9 +910,6 @@
                         </content>
                     </Panel>
                 </VBox>
-                        </endButton>
-                    </Dialog>
-                </VBox>
                 
                 <!-- API Field & Logic Tab Content -->
                 <VBox visible="{= ${app>/selectedRuleTab} === 'apiFieldLogic'}" class="sapUiSmallMarginBottom">
