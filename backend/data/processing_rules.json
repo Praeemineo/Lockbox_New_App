@@ -1,0 +1,189 @@
+[
+  {
+    "id": "1",
+    "ruleId": "RULE-001",
+    "ruleName": "Accounting Document Lookup",
+    "description": "Fetch accounting document details from SAP using invoice reference",
+    "fileType": "EXCEL",
+    "ruleType": "API_LOOKUP",
+    "active": true,
+    "conditions": [
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_JOURNALENTRY_SRV/JournalEntry",
+        "inputField": "InvoiceReference",
+        "sourceInput": "lbinvref",
+        "outputField": "AccountingDocument",
+        "lockboxApiField": "Belnr"
+      },
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_JOURNALENTRY_SRV/JournalEntry",
+        "inputField": "CompanyCode",
+        "sourceInput": "lbcompanycode",
+        "outputField": "CompanyCode",
+        "lockboxApiField": "CompanyCode"
+      }
+    ],
+    "apiMappings": [
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_JOURNALENTRY_SRV/JournalEntry",
+        "inputField": "InvoiceReference",
+        "sourceInput": "PaymentReference",
+        "outputField": "Belnr",
+        "lockboxApiField": "DocumentNumber"
+      },
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_JOURNALENTRY_SRV/JournalEntry",
+        "inputField": "FiscalYear",
+        "sourceInput": "CurrentYear",
+        "outputField": "FiscalYear",
+        "lockboxApiField": "FiscalYear"
+      }
+    ],
+    "createdAt": "2026-02-16T12:00:00Z",
+    "updatedAt": "2026-02-16T12:00:00Z"
+  },
+  {
+    "id": "2",
+    "ruleId": "RULE-002",
+    "ruleName": "Partner Bank Details",
+    "description": "Retrieve bank account details for partner validation",
+    "fileType": "EXCEL",
+    "ruleType": "BANK_VALIDATION",
+    "active": true,
+    "conditions": [
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartnerBank",
+        "inputField": "BusinessPartner",
+        "sourceInput": "lbcustomer",
+        "outputField": "BankAccount",
+        "lockboxApiField": "BankAccountNumber"
+      }
+    ],
+    "apiMappings": [
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartnerBank",
+        "inputField": "BusinessPartner",
+        "sourceInput": "CustomerNumber",
+        "outputField": "BankNumber",
+        "lockboxApiField": "BankCode"
+      }
+    ],
+    "createdAt": "2026-02-16T12:00:00Z",
+    "updatedAt": "2026-02-16T12:00:00Z"
+  },
+  {
+    "id": "3",
+    "ruleId": "RULE-003",
+    "ruleName": "Customer Master Data",
+    "description": "Fetch customer master data for validation and enrichment",
+    "fileType": "EXCEL",
+    "ruleType": "MASTER_DATA",
+    "active": true,
+    "conditions": [
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartner",
+        "inputField": "BusinessPartner",
+        "sourceInput": "lbcustomer",
+        "outputField": "BusinessPartnerName",
+        "lockboxApiField": "CustomerName"
+      },
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartner",
+        "inputField": "BusinessPartner",
+        "sourceInput": "lbcustomer",
+        "outputField": "BusinessPartnerCategory",
+        "lockboxApiField": "CustomerType"
+      }
+    ],
+    "apiMappings": [
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartner",
+        "inputField": "BusinessPartner",
+        "sourceInput": "CheckCustomer",
+        "outputField": "Customer",
+        "lockboxApiField": "CustomerNumber"
+      },
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartner",
+        "inputField": "SearchTerm1",
+        "sourceInput": "CustomerSearch",
+        "outputField": "SearchTerm",
+        "lockboxApiField": "SearchKey"
+      }
+    ],
+    "createdAt": "2026-02-16T12:00:00Z",
+    "updatedAt": "2026-02-16T12:00:00Z"
+  },
+  {
+    "id": "4",
+    "ruleId": "RULE-004",
+    "ruleName": "Open Item Verification",
+    "description": "Check open invoice items before clearing",
+    "fileType": "EXCEL",
+    "ruleType": "VALIDATION",
+    "active": true,
+    "conditions": [
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_ODATA_FI_OPEN_ITEMS/OpenItems",
+        "inputField": "InvoiceNumber",
+        "sourceInput": "lbinvref",
+        "outputField": "OpenAmount",
+        "lockboxApiField": "OutstandingAmount"
+      }
+    ],
+    "apiMappings": [
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_ODATA_FI_OPEN_ITEMS/OpenItems",
+        "inputField": "DocumentNumber",
+        "sourceInput": "InvoiceReference",
+        "outputField": "DocumentAmount",
+        "lockboxApiField": "InvoiceAmount"
+      }
+    ],
+    "createdAt": "2026-02-16T12:00:00Z",
+    "updatedAt": "2026-02-16T12:00:00Z"
+  },
+  {
+    "id": "5",
+    "ruleId": "RULE-005",
+    "ruleName": "Payment Terms Lookup",
+    "description": "Retrieve payment terms for invoice processing",
+    "fileType": "EXCEL",
+    "ruleType": "ENRICHMENT",
+    "active": true,
+    "conditions": [
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_PAYMENTTERMS/PaymentTerms",
+        "inputField": "CustomerNumber",
+        "sourceInput": "lbcustomer",
+        "outputField": "PaymentTerms",
+        "lockboxApiField": "PaymentCondition"
+      }
+    ],
+    "apiMappings": [
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_PAYMENTTERMS/PaymentTerms",
+        "inputField": "Customer",
+        "sourceInput": "CustomerID",
+        "outputField": "TermsOfPayment",
+        "lockboxApiField": "PaymentTerm"
+      }
+    ],
+    "createdAt": "2026-02-16T12:00:00Z",
+    "updatedAt": "2026-02-16T12:00:00Z"
+  }
+]
