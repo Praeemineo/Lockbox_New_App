@@ -8786,6 +8786,7 @@ sap.ui.define([
             this._loadApiFields();
             this._loadOdataServices();
             this._loadRefDocRules(); // Load Reference Document Rules
+            this._loadProcessingRules(); // Load Processing Rules
         },
         
         // Load Customer Templates from backend
