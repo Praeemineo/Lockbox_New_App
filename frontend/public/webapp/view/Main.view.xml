@@ -570,254 +570,57 @@
                         </content>
                     </Panel>
                     
-                    <!-- Master-Detail Split Container -->
-                    <HBox width="100%" height="600px">
-                        <!-- Master Panel - Pattern List (Left Side) -->
-                        <VBox width="{= ${app>/patternDetailExpanded} ? '40%' : '100%'}" class="sapUiSmallMarginEnd">
-                            <Panel expandable="false" height="100%">
-                                <headerToolbar>
-                                    <OverflowToolbar>
-                                        <Title text="File Patterns ({= ${app>/filePatterns}.length})" />
-                                        <ToolbarSpacer />
-                                        <SearchField placeholder="Search..." liveChange="onPatternSearch" width="200px" />
-                                        <Button icon="sap-icon://add" type="Emphasized" press="onCreateFilePattern" tooltip="Create Pattern" />
-                                        <Button icon="sap-icon://copy" press="onCopyPattern" enabled="{= !!${app>/selectedPattern}}" tooltip="Copy" />
-                                        <Button icon="sap-icon://delete" type="Reject" press="onDeletePattern" enabled="{= !!${app>/selectedPattern}}" tooltip="Delete" />
-                                        <Button icon="sap-icon://refresh" press="onRefreshPatterns" tooltip="Refresh" />
-                                    </OverflowToolbar>
-                                </headerToolbar>
-                                <content>
-                                    <Table
-                                        id="filePatternsTable"
-                                        items="{app>/filePatterns}"
-                                        mode="SingleSelectMaster"
-                                        itemPress="onPatternItemPress"
-                                        selectionChange="onPatternSelectionChange"
-                                        class="sapUiSizeCompact">
-                                        <columns>
-                                            <Column width="15%"><Text text="Pattern ID" /></Column>
-                                            <Column width="25%"><Text text="Pattern Name" /></Column>
-                                            <Column width="15%"><Text text="File Type" /></Column>
-                                            <Column width="20%"><Text text="Pattern Type" /></Column>
-                                            <Column width="15%" hAlign="Center"><Text text="Active" /></Column>
-                                            <Column width="10%" hAlign="Center"><Text text="" /></Column>
-                                        </columns>
-                                        <items>
-                                            <ColumnListItem type="Active" press="onPatternRowPress">
-                                                <cells>
-                                                    <Text text="{app>patternId}" />
-                                                    <VBox>
-                                                        <Text text="{app>patternName}" class="sapUiTinyMarginBottom" />
-                                                        <Text text="{app>description}" class="sapUiTinyMarginTop" wrapping="true" />
-                                                    </VBox>
-                                                    <ObjectStatus text="{app>fileType}" state="{path: 'app>fileType', formatter: '.formatFileTypeState'}" />
-                                                    <ObjectStatus text="{app>patternType}" state="{path: 'app>patternType', formatter: '.formatPatternTypeState'}" />
-                                                    <Switch state="{app>active}" change="onPatternActiveToggle" customTextOn="Yes" customTextOff="No" />
-                                                    <core:Icon 
-                                                        src="sap-icon://navigation-right-arrow" 
-                                                        color="#0854a0" 
-                                                        press="onOpenPatternDetailDialog" 
-                                                        tooltip="View Details" />
-                                                </cells>
-                                            </ColumnListItem>
-                                        </items>
-                                    </Table>
-                                </content>
-                            </Panel>
-                        </VBox>
-                        
-                        <!-- Detail Panel - Pattern Conditions (Right Side) - Expandable -->
-                        <VBox width="60%" visible="{app>/patternDetailExpanded}" class="sapUiResponsiveMargin">
-                            <Panel expandable="false" height="100%" backgroundDesign="Transparent">
-                                <headerToolbar>
-                                    <OverflowToolbar>
-                                        <Button icon="sap-icon://slim-arrow-left" press="onCollapsePatternDetail" tooltip="Collapse" />
-                                        <Title text="{app>/selectedPattern/patternName}" />
-                                        <ToolbarSpacer />
-                                        <Button text="Edit Pattern" icon="sap-icon://edit" press="onEditPattern" />
-                                        <Button text="Save" icon="sap-icon://save" type="Emphasized" press="onSavePatternConditions" />
-                                    </OverflowToolbar>
-                                </headerToolbar>
-                                <content>
-                                    <!-- Condition Rules Table - Excel Format -->
-                                    <Panel class="sapUiSmallMarginBottom">
-                                        <headerToolbar>
-                                            <OverflowToolbar>
-                                                <Title text="Pattern Conditions &amp; Actions ({= ${app>/selectedPattern/conditions} ? ${app>/selectedPattern/conditions}.length : 0})" />
-                                                <ToolbarSpacer />
-                                                <Button text="Add Row" icon="sap-icon://add" type="Emphasized" press="onAddPatternCondition" />
-                                                <Button text="Delete Row" icon="sap-icon://delete" type="Reject" press="onDeletePatternCondition" enabled="{= !!${app>/selectedCondition}}" />
-                                            </OverflowToolbar>
-                                        </headerToolbar>
-                                        <content>
-                                            <Table
-                                                id="patternConditionsTable"
-                                                items="{app>/selectedPattern/conditions}"
-                                                mode="SingleSelectMaster"
-                                                selectionChange="onConditionSelectionChange"
-                                                class="sapUiSizeCompact">
-                                                <columns>
-                                                    <Column width="25%">
-                                                        <VBox>
-                                                            <Text text="Condition &amp; Pattern" class="sapUiTinyMarginBottom" />
-                                                            <Text text="Document/Date format" class="sapMTextSmall" />
-                                                        </VBox>
-                                                    </Column>
-                                                    <Column width="20%">
-                                                        <VBox>
-                                                            <Text text="" class="sapUiTinyMarginBottom" />
-                                                            <Text text="Condition" class="sapMTextSmall" />
-                                                        </VBox>
-                                                    </Column>
-                                                    <Column width="30%">
-                                                        <VBox>
-                                                            <Text text="Action &amp; Field Identification" class="sapUiTinyMarginBottom" />
-                                                            <Text text="Action" class="sapMTextSmall" />
-                                                        </VBox>
-                                                    </Column>
-                                                    <Column width="25%">
-                                                        <VBox>
-                                                            <Text text="" class="sapUiTinyMarginBottom" />
-                                                            <Text text="Related API/Field reference" class="sapMTextSmall" />
-                                                        </VBox>
-                                                    </Column>
-                                                </columns>
-                                                <items>
-                                                    <ColumnListItem>
-                                                        <cells>
-                                                            <Text text="{app>detectionCondition}" wrapping="true" />
-                                                            <Text text="{app>condition}" wrapping="true" />
-                                                            <Text text="{app>strategy}" wrapping="true" />
-                                                            <Text text="{app>externalDependency}" wrapping="true" />
-                                                        </cells>
-                                                    </ColumnListItem>
-                                                </items>
-                                            </Table>
-                                        </content>
-                                    </Panel>
-                                    
-                                    <!-- Processing Rules (for different file types) -->
-                                    <Panel visible="{= ${app>/selectedPattern/fileType} === 'EXCEL' || ${app>/selectedPattern/fileType} === 'CSV'}">
-                                        <headerToolbar>
-                                            <OverflowToolbar>
-                                                <Title text="Excel/CSV Processing Rules" />
-                                            </OverflowToolbar>
-                                        </headerToolbar>
-                                        <content>
-                                            <VBox class="sapUiSmallMargin">
-                                                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                                                    <CheckBox text="Common Prefix Detection" selected="{app>/selectedPattern/commonPrefixDetection}" class="sapUiMediumMarginEnd" />
-                                                    <CheckBox text="Pad Check Numbers" selected="{app>/selectedPattern/padCheckNumbers}" class="sapUiMediumMarginEnd" />
-                                                    <CheckBox text="Sum Invoice Amounts" selected="{app>/selectedPattern/sumInvoiceAmounts}" />
-                                                </HBox>
-                                                <HBox alignItems="Center">
-                                                    <Label text="Header Row:" class="sapUiTinyMarginEnd" />
-                                                    <Input value="{app>/selectedPattern/headerRow}" type="Number" width="60px" class="sapUiMediumMarginEnd" />
-                                                    <Label text="Data Start Row:" class="sapUiTinyMarginEnd" />
-                                                    <Input value="{app>/selectedPattern/dataStartRow}" type="Number" width="60px" />
-                                                </HBox>
+                    <!-- File Patterns Table -->
+                    <Panel expandable="false">
+                        <headerToolbar>
+                            <OverflowToolbar>
+                                <Title text="File Patterns ({= ${app>/filePatterns}.length})" />
+                                <ToolbarSpacer />
+                                <SearchField placeholder="Search..." liveChange="onPatternSearch" width="200px" />
+                                <Button icon="sap-icon://add" type="Emphasized" press="onCreateFilePattern" tooltip="Create Pattern" />
+                                <Button icon="sap-icon://copy" press="onCopyPattern" enabled="{= !!${app>/selectedPattern}}" tooltip="Copy" />
+                                <Button icon="sap-icon://delete" type="Reject" press="onDeletePattern" enabled="{= !!${app>/selectedPattern}}" tooltip="Delete" />
+                                <Button icon="sap-icon://refresh" press="onRefreshPatterns" tooltip="Refresh" />
+                            </OverflowToolbar>
+                        </headerToolbar>
+                        <content>
+                            <Table
+                                id="filePatternsTable"
+                                items="{app>/filePatterns}"
+                                mode="SingleSelectMaster"
+                                itemPress="onPatternItemPress"
+                                selectionChange="onPatternSelectionChange"
+                                class="sapUiSizeCompact">
+                                <columns>
+                                    <Column width="15%"><Text text="Pattern ID" /></Column>
+                                    <Column width="25%"><Text text="Pattern Name" /></Column>
+                                    <Column width="15%"><Text text="File Type" /></Column>
+                                    <Column width="20%"><Text text="Pattern Type" /></Column>
+                                    <Column width="15%" hAlign="Center"><Text text="Active" /></Column>
+                                    <Column width="10%" hAlign="Center"><Text text="" /></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem type="Active" press="onPatternRowPress">
+                                        <cells>
+                                            <Text text="{app>patternId}" />
+                                            <VBox>
+                                                <Text text="{app>patternName}" class="sapUiTinyMarginBottom" />
+                                                <Text text="{app>description}" class="sapUiTinyMarginTop" wrapping="true" />
                                             </VBox>
-                                        </content>
-                                    </Panel>
-                                    
-                                    <!-- BAI2 Bank Template Settings -->
-                                    <Panel visible="{= ${app>/selectedPattern/fileType} === 'BAI2'}">
-                                        <headerToolbar>
-                                            <OverflowToolbar>
-                                                <Title text="BAI2 Bank Template Settings" />
-                                            </OverflowToolbar>
-                                        </headerToolbar>
-                                        <content>
-                                            <VBox class="sapUiSmallMargin">
-                                                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                                                    <Label text="Bank Code:" class="sapUiTinyMarginEnd" width="120px" />
-                                                    <Input value="{app>/selectedPattern/bankCode}" width="150px" placeholder="e.g., CHASE, BOA" />
-                                                </HBox>
-                                                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                                                    <Label text="Account Identifier:" class="sapUiTinyMarginEnd" width="120px" />
-                                                    <Input value="{app>/selectedPattern/accountIdentifier}" width="200px" placeholder="Account number pattern" />
-                                                </HBox>
-                                                <HBox alignItems="Center">
-                                                    <Label text="Transaction Codes:" class="sapUiTinyMarginEnd" width="120px" />
-                                                    <Input value="{app>/selectedPattern/transactionCodes}" width="300px" placeholder="e.g., 115,165,175 (comma-separated)" />
-                                                </HBox>
-                                            </VBox>
-                                        </content>
-                                    </Panel>
-                                    
-                                    <!-- PDF Field Extraction Settings -->
-                                    <Panel visible="{= ${app>/selectedPattern/fileType} === 'PDF'}">
-                                        <headerToolbar>
-                                            <OverflowToolbar>
-                                                <Title text="PDF Field Extraction Settings" />
-                                                <ToolbarSpacer />
-                                                <Button text="Add Field" icon="sap-icon://add" press="onAddPdfField" />
-                                            </OverflowToolbar>
-                                        </headerToolbar>
-                                        <content>
-                                            <Table items="{app>/selectedPattern/pdfFields}" class="sapUiSizeCompact">
-                                                <columns>
-                                                    <Column width="20%"><Text text="Field Name" /></Column>
-                                                    <Column width="25%"><Text text="Extraction Pattern" /></Column>
-                                                    <Column width="15%"><Text text="Field Type" /></Column>
-                                                    <Column width="15%"><Text text="Required" /></Column>
-                                                    <Column width="15%"><Text text="Default Value" /></Column>
-                                                    <Column width="10%"><Text text="" /></Column>
-                                                </columns>
-                                                <items>
-                                                    <ColumnListItem>
-                                                        <cells>
-                                                            <Input value="{app>fieldName}" placeholder="e.g., Customer Number" />
-                                                            <Input value="{app>extractionPattern}" placeholder="Regex pattern" />
-                                                            <Select selectedKey="{app>fieldType}">
-                                                                <core:Item key="TEXT" text="Text" />
-                                                                <core:Item key="NUMBER" text="Number" />
-                                                                <core:Item key="DATE" text="Date" />
-                                                                <core:Item key="AMOUNT" text="Amount" />
-                                                            </Select>
-                                                            <CheckBox selected="{app>required}" />
-                                                            <Input value="{app>defaultValue}" />
-                                                            <Button icon="sap-icon://delete" type="Reject" press="onDeletePdfField" />
-                                                        </cells>
-                                                    </ColumnListItem>
-                                                </items>
-                                            </Table>
-                                        </content>
-                                    </Panel>
-                                    
-                                    <!-- Payment Advice Split Settings -->
-                                    <Panel visible="{= ${app>/selectedPattern/fileType} === 'PAYMENT_ADVICE'}">
-                                        <headerToolbar>
-                                            <OverflowToolbar>
-                                                <Title text="Payment Advice Split Settings" />
-                                            </OverflowToolbar>
-                                        </headerToolbar>
-                                        <content>
-                                            <VBox class="sapUiSmallMargin">
-                                                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                                                    <Label text="Split Type:" class="sapUiTinyMarginEnd" width="120px" />
-                                                    <Select selectedKey="{app>/selectedPattern/splitType}" width="200px">
-                                                        <core:Item key="BY_INVOICE" text="By Invoice Number" />
-                                                        <core:Item key="BY_CUSTOMER" text="By Customer" />
-                                                        <core:Item key="BY_DATE" text="By Date" />
-                                                        <core:Item key="BY_AMOUNT" text="By Amount Threshold" />
-                                                    </Select>
-                                                </HBox>
-                                                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                                                    <Label text="Amount Threshold:" class="sapUiTinyMarginEnd" width="120px" />
-                                                    <Input value="{app>/selectedPattern/amountThreshold}" type="Number" width="150px" placeholder="e.g., 10000" />
-                                                </HBox>
-                                                <HBox alignItems="Center">
-                                                    <CheckBox text="Auto-match Open Items" selected="{app>/selectedPattern/autoMatchOpenItems}" class="sapUiMediumMarginEnd" />
-                                                    <CheckBox text="Create Suspense Entry" selected="{app>/selectedPattern/createSuspenseEntry}" />
-                                                </HBox>
-                                            </VBox>
-                                        </content>
-                                    </Panel>
-                                </content>
-                            </Panel>
-                        </VBox>
-                    </HBox>
+                                            <ObjectStatus text="{app>fileType}" state="{path: 'app>fileType', formatter: '.formatFileTypeState'}" />
+                                            <ObjectStatus text="{app>patternType}" state="{path: 'app>patternType', formatter: '.formatPatternTypeState'}" />
+                                            <Switch state="{app>active}" change="onPatternActiveToggle" customTextOn="Yes" customTextOff="No" />
+                                            <core:Icon 
+                                                src="sap-icon://navigation-right-arrow" 
+                                                color="#0854a0" 
+                                                press="onOpenPatternDetailDialog" 
+                                                tooltip="View Details" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </content>
+                    </Panel>
                 </VBox>
                 
                 <!-- Rules Tab Content -->
