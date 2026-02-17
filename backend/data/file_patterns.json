@@ -1,11 +1,11 @@
 [
   {
-    "patternId": "PAT-001",
+    "patternId": "PAT0001",
     "patternName": "Single Check, Multiple Invoice",
     "fileType": "EXCEL",
-    "patternType": "SINGLE_CHECK_MULTI_INVOICE",
+    "patternType": "Single Check Multi Invoice",
     "category": "CHECK",
-    "description": "One check pays multiple invoices. Check info on first row, subsequent rows have empty check fields.",
+    "description": "Single Check, Multiple Invoice",
     "delimiter": "",
     "active": true,
     "priority": 10,
@@ -37,12 +37,12 @@
     ]
   },
   {
-    "patternId": "PAT-002",
+    "patternId": "PAT0002",
     "patternName": "Multiple Check, Multiple Invoice",
     "fileType": "EXCEL",
-    "patternType": "MULTI_CHECK_MULTI_INVOICE",
+    "patternType": "Multiple Check Multi Invoice",
     "category": "CHECK",
-    "description": "One check pays multiple invoices. Check info on first row, subsequent rows have empty check fields.",
+    "description": "Multiple Check, Multiple Invoice",
     "delimiter": "",
     "active": true,
     "priority": 20,
@@ -74,12 +74,12 @@
     ]
   },
   {
-    "patternId": "PAT-003",
-    "patternName": "Invoice Split (Comma)",
+    "patternId": "PAT0003",
+    "patternName": "File Containing Comma",
     "fileType": "EXCEL",
-    "patternType": "INVOICE_SPLIT",
+    "patternType": "File Containing Comma",
     "category": "INVOICE",
-    "description": "Invoice field contains comma-separated values like '90004206, 207, 208'. Common prefix detection enabled.",
+    "description": "File Containing Comma",
     "delimiter": ",",
     "active": true,
     "priority": 100,
@@ -111,12 +111,12 @@
     ]
   },
   {
-    "patternId": "PAT-004",
-    "patternName": "Invoice Range Pattern",
+    "patternId": "PAT0004",
+    "patternName": "File Containing Comma",
     "fileType": "EXCEL",
-    "patternType": "INVOICE_RANGE",
+    "patternType": "File Containing Comma",
     "category": "INVOICE",
-    "description": "Invoice field contains ranges like '90004206-90004210'. Expands to individual invoices.",
+    "description": "File Containing Comma",
     "delimiter": "-",
     "active": true,
     "priority": 110,
@@ -154,13 +154,13 @@
     ]
   },
   {
-    "patternId": "PAT-005",
-    "patternName": "Check Split (Comma)",
+    "patternId": "PAT0005",
+    "patternName": "Date Pattern",
     "fileType": "EXCEL",
-    "patternType": "CHECK_SPLIT",
-    "category": "CHECK",
-    "description": "Check field contains comma-separated check numbers like '1001, 1002, 1003'.",
-    "delimiter": ",",
+    "patternType": "Date Pattern",
+    "category": "DATE",
+    "description": "Date Pattern",
+    "delimiter": "",
     "active": true,
     "priority": 50,
     "conditions": [
@@ -203,12 +203,12 @@
     ]
   },
   {
-    "patternId": "PAT-006",
-    "patternName": "Multiple Sheets",
+    "patternId": "PAT0006",
+    "patternName": "File containing multiple Sheets",
     "fileType": "EXCEL",
-    "patternType": "MULTI_SHEET",
+    "patternType": "File containing multiple Sheets",
     "category": "MULTI_SHEET",
-    "description": "Excel workbook with multiple sheets. Each sheet processed separately.",
+    "description": "File containing multiple Sheets",
     "delimiter": "",
     "active": true,
     "priority": 60,
@@ -224,118 +224,6 @@
         "condition": "Multiple Sheet",
         "strategy": "Build Heirarchy of 50 Items per Batch",
         "externalDependency": "Reference API reference Fields Table"
-      }
-    ]
-  },
-  {
-    "patternId": "PAT-007",
-    "patternName": "BAI2 Bank Format",
-    "fileType": "BAI2",
-    "patternType": "BAI2_BANK",
-    "category": "BANK",
-    "description": "Standard BAI2 bank file format with record types 01, 02, 03, 16, 88, 49.",
-    "delimiter": "",
-    "active": true,
-    "priority": 200,
-    "conditions": [
-      {
-        "detectionCondition": "Transaction Code = 115",
-        "condition": "AMOUNT > 0",
-        "strategy": "LOCKBOX_DEPOSIT",
-        "externalDependency": "Bank_Master"
-      },
-      {
-        "detectionCondition": "Transaction Code = 165",
-        "condition": "AMOUNT > 0",
-        "strategy": "CHECK_DEPOSIT",
-        "externalDependency": "Bank_Master"
-      },
-      {
-        "detectionCondition": "Transaction Code = 175",
-        "condition": "DEFAULT",
-        "strategy": "ACH_CREDIT",
-        "externalDependency": ""
-      }
-    ]
-  },
-  {
-    "patternId": "PAT-008",
-    "patternName": "PDF Payment Advice",
-    "fileType": "PDF",
-    "patternType": "PDF_EXTRACTION",
-    "category": "EXTRACTION",
-    "description": "Payment advice in PDF format. Uses OCR and pattern matching to extract payment details.",
-    "delimiter": "",
-    "active": true,
-    "priority": 210,
-    "conditions": [
-      {
-        "detectionCondition": "Field Pattern Match",
-        "condition": "FIELD_FOUND = YES",
-        "strategy": "REGEX_EXTRACT",
-        "externalDependency": ""
-      },
-      {
-        "detectionCondition": "OCR Confidence > 80%",
-        "condition": "CONFIDENCE > 0.8",
-        "strategy": "REGEX_EXTRACT",
-        "externalDependency": ""
-      }
-    ]
-  },
-  {
-    "patternId": "PAT-009",
-    "patternName": "Payment Advice Split",
-    "fileType": "PAYMENT_ADVICE",
-    "patternType": "PAYMENT_ADVICE_SPLIT",
-    "category": "INVOICE",
-    "description": "Payment advice with split conditions for open invoice matching and amount allocation.",
-    "delimiter": "",
-    "active": true,
-    "priority": 220,
-    "conditions": [
-      {
-        "detectionCondition": "Invoice Count > 1",
-        "condition": "OPEN_AR_AVAILABLE = YES",
-        "strategy": "OUTSTANDING_AMOUNT_MATCH",
-        "externalDependency": "SAP_AR_Data"
-      },
-      {
-        "detectionCondition": "Amount > Threshold",
-        "condition": "AMOUNT > 10000",
-        "strategy": "SPLIT_BY_INVOICE",
-        "externalDependency": ""
-      },
-      {
-        "detectionCondition": "Single Invoice",
-        "condition": "DEFAULT",
-        "strategy": "DIRECT_MATCH",
-        "externalDependency": "SAP_AR"
-      }
-    ]
-  },
-  {
-    "patternId": "PAT-010",
-    "patternName": "CSV Standard Format",
-    "fileType": "CSV",
-    "patternType": "SINGLE_CHECK_MULTI_INVOICE",
-    "category": "CHECK",
-    "description": "Standard CSV format with comma-separated fields.",
-    "delimiter": ",",
-    "active": true,
-    "priority": 30,
-    "conditions": [
-      {
-        "detectionCondition": "CSV Format Check",
-        "condition": "Comma Separated",
-        "strategy": "Parse CSV to Excel format",
-        "externalDependency": "Check Number"
-      },
-      {
-        "detectionCondition": "Amount Field",
-        "condition": "Numeric validation",
-        "strategy": "VALIDATE_AMOUNT",
-        "externalDependency": "Check Amount"
       }
     ]
   }
