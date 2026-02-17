@@ -9,20 +9,20 @@
     "active": true,
     "conditions": [
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_JOURNALENTRY_SRV/JournalEntry",
-        "inputField": "InvoiceReference",
-        "sourceInput": "lbinvref",
-        "outputField": "AccountingDocument",
-        "lockboxApiField": "Belnr"
+        "documentFormat": "Check",
+        "condition": "Single Check"
       },
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_JOURNALENTRY_SRV/JournalEntry",
-        "inputField": "CompanyCode",
-        "sourceInput": "lbcompanycode",
-        "outputField": "CompanyCode",
-        "lockboxApiField": "CompanyCode"
+        "documentFormat": "Check Amount",
+        "condition": "Amount per Check"
+      },
+      {
+        "documentFormat": "Invoice/document number",
+        "condition": "Single/Multiple for Check"
+      },
+      {
+        "documentFormat": "Invoice/Document Amount",
+        "condition": "Invoice/Document Amount per Invoice"
       }
     ],
     "apiMappings": [
@@ -56,12 +56,12 @@
     "active": true,
     "conditions": [
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartnerBank",
-        "inputField": "BusinessPartner",
-        "sourceInput": "lbcustomer",
-        "outputField": "BankAccount",
-        "lockboxApiField": "BankAccountNumber"
+        "documentFormat": "Bank Account",
+        "condition": "Validate Bank Account"
+      },
+      {
+        "documentFormat": "Partner Number",
+        "condition": "Business Partner Lookup"
       }
     ],
     "apiMappings": [
@@ -87,20 +87,16 @@
     "active": true,
     "conditions": [
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartner",
-        "inputField": "BusinessPartner",
-        "sourceInput": "lbcustomer",
-        "outputField": "BusinessPartnerName",
-        "lockboxApiField": "CustomerName"
+        "documentFormat": "Customer Number",
+        "condition": "Master Data Verification"
       },
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartner",
-        "inputField": "BusinessPartner",
-        "sourceInput": "lbcustomer",
-        "outputField": "BusinessPartnerCategory",
-        "lockboxApiField": "CustomerType"
+        "documentFormat": "Customer Name",
+        "condition": "Name Matching"
+      },
+      {
+        "documentFormat": "Customer Category",
+        "condition": "Category Validation"
       }
     ],
     "apiMappings": [
@@ -134,12 +130,12 @@
     "active": true,
     "conditions": [
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_ODATA_FI_OPEN_ITEMS/OpenItems",
-        "inputField": "InvoiceNumber",
-        "sourceInput": "lbinvref",
-        "outputField": "OpenAmount",
-        "lockboxApiField": "OutstandingAmount"
+        "documentFormat": "Invoice Number",
+        "condition": "Open Item Check"
+      },
+      {
+        "documentFormat": "Document Amount",
+        "condition": "Amount Verification"
       }
     ],
     "apiMappings": [
@@ -165,12 +161,12 @@
     "active": true,
     "conditions": [
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_PAYMENTTERMS/PaymentTerms",
-        "inputField": "CustomerNumber",
-        "sourceInput": "lbcustomer",
-        "outputField": "PaymentTerms",
-        "lockboxApiField": "PaymentCondition"
+        "documentFormat": "Customer Number",
+        "condition": "Payment Terms Lookup"
+      },
+      {
+        "documentFormat": "Due Date",
+        "condition": "Calculate Due Date"
       }
     ],
     "apiMappings": [
