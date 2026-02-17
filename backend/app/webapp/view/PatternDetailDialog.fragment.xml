@@ -130,7 +130,7 @@
                     <IconTabFilter key="actionMapping" text="Action and Field Mapping" count="{= ${patternDialog>/pattern/conditions} ? ${patternDialog>/pattern/conditions}.length : 0}" icon="sap-icon://source-code">
                         <VBox class="sapUiSmallMargin">
                             <Toolbar>
-                                <Title text="Action & Field Mappings" level="H5" />
+                                <Title text="Action &amp; Field Mappings" level="H5" />
                                 <ToolbarSpacer />
                                 <Button text="Add Mapping" icon="sap-icon://add" press="onAddPatternActionRow" type="Emphasized" />
                             </Toolbar>
