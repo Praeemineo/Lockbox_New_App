@@ -57,24 +57,10 @@
                                     </Select>
                                     
                                     <Label text="Pattern Type" required="true" />
-                                    <Select selectedKey="{patternDialog>/pattern/patternType}">
-                                        <core:Item key="SINGLE_CHECK_SINGLE_INVOICE" text="Single Check Single Invoice" />
-                                        <core:Item key="SINGLE_CHECK_MULTI_INVOICE" text="Single Check Multi Invoice" />
-                                        <core:Item key="MULTI_CHECK_MULTI_INVOICE" text="Multi Check Multi Invoice" />
-                                        <core:Item key="INVOICE_SPLIT" text="Invoice Split" />
-                                        <core:Item key="INVOICE_RANGE" text="Invoice Range" />
-                                        <core:Item key="DATE_PATTERN" text="Date Pattern" />
-                                        <core:Item key="MULTI_SHEET" text="Multi Sheet" />
-                                    </Select>
+                                    <Input value="{patternDialog>/pattern/patternType}" placeholder="e.g., Single Check Multi Invoice" />
                                     
                                     <Label text="Category" />
-                                    <Select selectedKey="{patternDialog>/pattern/category}">
-                                        <core:Item key="CHECK" text="Check" />
-                                        <core:Item key="INVOICE" text="Invoice" />
-                                        <core:Item key="AMOUNT" text="Amount" />
-                                        <core:Item key="DATE" text="Date" />
-                                        <core:Item key="MULTI_SHEET" text="Multi Sheet" />
-                                    </Select>
+                                    <Input value="{patternDialog>/pattern/category}" placeholder="e.g., CHECK, INVOICE, DATE" />
                                     
                                     <Label text="Delimiter" />
                                     <Input value="{patternDialog>/pattern/delimiter}" placeholder="e.g., comma (,) or hyphen (-)" />
