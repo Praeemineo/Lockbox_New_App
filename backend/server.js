@@ -2755,6 +2755,44 @@ const DEFAULT_FILE_PATTERNS = [
 let filePatterns = [...DEFAULT_FILE_PATTERNS];
 let patternIdCounter = 11;
 
+// Processing Rules (API integration rules)
+let processingRules = [];
+let processingRuleIdCounter = 6;
+
+const PROCESSING_RULES_FILE = path.join(__dirname, 'data', 'processing_rules.json');
+
+// Load processing rules from file
+function loadProcessingRulesFromFile() {
+    try {
+        if (fs.existsSync(PROCESSING_RULES_FILE)) {
+            const data = fs.readFileSync(PROCESSING_RULES_FILE, 'utf8');
+            processingRules = JSON.parse(data);
+            console.log('Loaded', processingRules.length, 'processing rules from file');
+            
+            // Set counter
+            const maxId = processingRules.reduce((max, r) => {
+                const num = parseInt(r.ruleId.split('-')[1]);
+                return num > max ? num : max;
+            }, 0);
+            processingRuleIdCounter = maxId + 1;
+        }
+    } catch (err) {
+        console.error('Error loading processing rules from file:', err.message);
+        processingRules = [];
+    }
+}
+
+// Save processing rules to file
+function saveProcessingRulesToFile() {
+    try {
+        ensureDataDir();
+        fs.writeFileSync(PROCESSING_RULES_FILE, JSON.stringify(processingRules, null, 2));
+        console.log('Processing rules saved to file:', processingRules.length, 'rules');
+    } catch (err) {
+        console.error('Error saving processing rules to file:', err.message);
+    }
+}
+
 // ================================================================================
 // BATCH TEMPLATES - Store uploaded file structures
 // Each uploaded file is stored as a template with detected fields
