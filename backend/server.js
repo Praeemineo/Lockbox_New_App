@@ -8481,6 +8481,7 @@ app.post('/api/lockbox/process-pdf', upload.single('file'), async (req, res) => 
     await loadServicesFromDb();
     loadTemplatesFromFile();
     loadRefDocRulesFromFile(); // Load Reference Document Rules
+    loadProcessingRulesFromFile(); // Load Processing Rules
     loadApiFieldsFromFile(); // Load API Fields with saved default values
     
     console.log('');
