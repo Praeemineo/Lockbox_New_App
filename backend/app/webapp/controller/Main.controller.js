@@ -9553,6 +9553,7 @@ sap.ui.define([
             var that = this;
             var oDialogModel = this.getView().getModel("patternDialog");
             var oPattern = oDialogModel.getProperty("/pattern");
+            var bEditMode = oDialogModel.getProperty("/editMode");
             
             // Validate
             if (!oPattern.patternId || !oPattern.patternName) {
@@ -9560,16 +9561,22 @@ sap.ui.define([
                 return;
             }
             
-            // Update the pattern in the backend
-            fetch(API_BASE + "/field-mapping/patterns/" + oPattern.patternId, {
-                method: "PUT",
+            var sMethod = bEditMode ? "PUT" : "POST";
+            var sUrl = bEditMode 
+                ? API_BASE + "/field-mapping/patterns/" + oPattern.patternId
+                : API_BASE + "/field-mapping/patterns";
+            
+            // Update or create the pattern in the backend
+            fetch(sUrl, {
+                method: sMethod,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(oPattern)
             })
                 .then(function (response) { return response.json(); })
                 .then(function (data) {
                     if (data.success) {
-                        sap.m.MessageToast.show("Pattern saved successfully");
+                        var sMessage = bEditMode ? "Pattern updated successfully" : "Pattern created successfully";
+                        sap.m.MessageToast.show(sMessage);
                         that._loadFilePatterns();
                         that.onClosePatternDialog();
                     } else {
@@ -9579,6 +9586,78 @@ sap.ui.define([
                 .catch(function (error) {
                     sap.m.MessageBox.error("Error saving pattern: " + error.message);
                 });
+        },
+        
+        // Create new pattern - opens dialog
+        onCreatePatternDialog: function () {
+            var that = this;
+            
+            // Create dialog model if not exists
+            if (!this.getView().getModel("patternDialog")) {
+                var oDialogModel = new sap.ui.model.json.JSONModel({
+                    editMode: false,
+                    pattern: {}
+                });
+                this.getView().setModel(oDialogModel, "patternDialog");
+            }
+            
+            // Set empty pattern for create mode
+            var oDialogModel = this.getView().getModel("patternDialog");
+            oDialogModel.setProperty("/editMode", false);
+            oDialogModel.setProperty("/pattern", {
+                patternId: "",
+                patternName: "",
+                description: "",
+                fileType: "EXCEL",
+                patternType: "",
+                category: "",
+                delimiter: "",
+                active: true,
+                priority: 10,
+                conditions: []
+            });
+            
+            // Load and open fragment
+            if (!this._patternDetailDialog) {
+                sap.ui.core.Fragment.load({
+                    id: this.getView().getId(),
+                    name: "lockbox.view.PatternDetailDialog",
+                    controller: this
+                }).then(function (oDialog) {
+                    that._patternDetailDialog = oDialog;
+                    that.getView().addDependent(oDialog);
+                    oDialog.open();
+                });
+            } else {
+                this._patternDetailDialog.open();
+            }
+        },
+        
+        // Edit pattern from list - opens dialog
+        onEditPatternFromList: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oPattern = oModel.getProperty("/selectedPattern");
+            
+            if (!oPattern) {
+                sap.m.MessageToast.show("Please select a pattern to edit");
+                return;
+            }
+            
+            // Open dialog with selected pattern
+            var oEvent = {
+                getSource: function () {
+                    return {
+                        getBindingContext: function () {
+                            return {
+                                getObject: function () {
+                                    return oPattern;
+                                }
+                            };
+                        }
+                    };
+                }
+            };
+            this.onOpenPatternDetailDialog(oEvent);
         },
         
         // Collapse pattern detail panel
