@@ -3704,29 +3704,6 @@ app.post('/api/field-mapping/patterns', async (req, res) => {
         res.status(500).json({ success: false, error: 'Failed to create pattern', message: err.message });
     }
 });
-            sumInvoiceAmounts: sumInvoiceAmounts || false,
-            headerRow: headerRow || 1,
-            dataStartRow: dataStartRow || 2,
-            createdAt: new Date().toISOString(),
-            lastModified: new Date().toISOString()
-        };
-        
-        // Add to in-memory array
-        filePatterns.push(newPattern);
-        
-        // Save to PostgreSQL
-        await savePatternToDb(newPattern);
-        
-        // Save to file backup
-        savePatternsToFile();
-        
-        console.log(`Created new file pattern: ${patternId} - ${patternName}`);
-        res.status(201).json({ success: true, pattern: newPattern });
-    } catch (err) {
-        console.error('Error creating pattern:', err);
-        res.status(500).json({ error: 'Failed to create pattern', message: err.message });
-    }
-});
 
 // PUT update file pattern
 app.put('/api/field-mapping/patterns/:patternId', async (req, res) => {
