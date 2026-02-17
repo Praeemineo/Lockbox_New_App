@@ -577,9 +577,9 @@
                                 <Title text="File Patterns ({= ${app>/filePatterns}.length})" />
                                 <ToolbarSpacer />
                                 <SearchField placeholder="Search..." liveChange="onPatternSearch" width="200px" />
-                                <Button icon="sap-icon://add" type="Emphasized" press="onCreateFilePattern" tooltip="Create Pattern" />
-                                <Button icon="sap-icon://copy" press="onCopyPattern" enabled="{= !!${app>/selectedPattern}}" tooltip="Copy" />
-                                <Button icon="sap-icon://delete" type="Reject" press="onDeletePattern" enabled="{= !!${app>/selectedPattern}}" tooltip="Delete" />
+                                <Button text="Create" icon="sap-icon://add" type="Emphasized" press="onCreatePatternDialog" tooltip="Create New Pattern" />
+                                <Button text="Edit" icon="sap-icon://edit" press="onEditPatternFromList" enabled="{= !!${app>/selectedPattern}}" tooltip="Edit Pattern" />
+                                <Button text="Delete" icon="sap-icon://delete" type="Reject" press="onDeletePattern" enabled="{= !!${app>/selectedPattern}}" tooltip="Delete Pattern" />
                                 <Button icon="sap-icon://refresh" press="onRefreshPatterns" tooltip="Refresh" />
                             </OverflowToolbar>
                         </headerToolbar>
