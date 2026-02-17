@@ -614,9 +614,10 @@
                                                     <ObjectStatus text="{app>patternType}" state="{path: 'app>patternType', formatter: '.formatPatternTypeState'}" />
                                                     <Switch state="{app>active}" change="onPatternActiveToggle" customTextOn="Yes" customTextOff="No" />
                                                     <core:Icon 
-                                                        src="{= ${app>/patternDetailExpanded} &amp;&amp; ${app>/selectedPattern/patternId} === ${app>patternId} ? 'sap-icon://slim-arrow-left' : 'sap-icon://slim-arrow-right'}" 
+                                                        src="sap-icon://navigation-right-arrow" 
                                                         color="#0854a0" 
-                                                        press="onTogglePatternDetail" />
+                                                        press="onOpenPatternDetailDialog" 
+                                                        tooltip="View Details" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
