@@ -67,38 +67,34 @@
                     <IconTabFilter key="conditions" text="Conditions" count="{= ${processingRuleDialog>/rule/conditions} ? ${processingRuleDialog>/rule/conditions}.length : 0}" icon="sap-icon://filter">
                         <VBox class="sapUiSmallMargin">
                             <Toolbar>
-                                <Title text="Rule Conditions" level="H5" />
+                                <Title text="Pattern Conditions" level="H4" />
                                 <ToolbarSpacer />
-                                <Button text="Add Condition" icon="sap-icon://add" press="onAddRuleCondition" />
+                                <Button text="Add Condition" icon="sap-icon://add" type="Emphasized" press="onAddRuleCondition" />
                             </Toolbar>
                             
                             <Table
                                 id="ruleConditionsTable"
                                 items="{processingRuleDialog>/rule/conditions}"
-                                class="sapUiSizeCompact">
+                                class="sapUiSizeCompact"
+                                mode="None">
+                                <headerToolbar>
+                                    <Toolbar style="Clear">
+                                        <Text text="Document/Date format" class="sapUiSmallMarginBegin" />
+                                        <ToolbarSpacer />
+                                        <Text text="Condition" class="sapUiSmallMarginEnd" />
+                                        <ToolbarSpacer />
+                                    </Toolbar>
+                                </headerToolbar>
                                 <columns>
-                                    <Column width="15%"><Text text="HTTP Method" /></Column>
-                                    <Column width="20%"><Text text="API Reference" /></Column>
-                                    <Column width="20%"><Text text="Input Field" /></Column>
-                                    <Column width="15%"><Text text="Source/Input" /></Column>
-                                    <Column width="15%"><Text text="Output Field" /></Column>
-                                    <Column width="10%"><Text text="Lockbox API Field" /></Column>
+                                    <Column width="45%"><Text text="" /></Column>
+                                    <Column width="50%"><Text text="" /></Column>
                                     <Column width="5%" hAlign="Center"><Text text="" /></Column>
                                 </columns>
                                 <items>
                                     <ColumnListItem>
                                         <cells>
-                                            <Select selectedKey="{processingRuleDialog>httpMethod}">
-                                                <core:Item key="GET" text="GET" />
-                                                <core:Item key="POST" text="POST" />
-                                                <core:Item key="PUT" text="PUT" />
-                                                <core:Item key="DELETE" text="DELETE" />
-                                            </Select>
-                                            <Input value="{processingRuleDialog>apiReference}" />
-                                            <Input value="{processingRuleDialog>inputField}" />
-                                            <Input value="{processingRuleDialog>sourceInput}" />
-                                            <Input value="{processingRuleDialog>outputField}" />
-                                            <Input value="{processingRuleDialog>lockboxApiField}" />
+                                            <Input value="{processingRuleDialog>documentFormat}" placeholder="e.g., Check, Check Amount" />
+                                            <Input value="{processingRuleDialog>condition}" placeholder="e.g., Single Check, Amount per Check" />
                                             <Button icon="sap-icon://delete" type="Reject" press="onDeleteRuleCondition" tooltip="Delete" />
                                         </cells>
                                     </ColumnListItem>
