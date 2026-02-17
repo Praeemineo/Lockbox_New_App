@@ -696,7 +696,7 @@
                                                 <columns>
                                                     <Column width="25%">
                                                         <VBox>
-                                                            <Text text="Condition / Pattern Identification" class="sapUiTinyMarginBottom" />
+                                                            <Text text="Condition &amp; Pattern" class="sapUiTinyMarginBottom" />
                                                             <Text text="Document/Date format" class="sapMTextSmall" />
                                                         </VBox>
                                                     </Column>
@@ -708,7 +708,7 @@
                                                     </Column>
                                                     <Column width="30%">
                                                         <VBox>
-                                                            <Text text="Action and Field Mapping" class="sapUiTinyMarginBottom" />
+                                                            <Text text="Action &amp; Field Identification" class="sapUiTinyMarginBottom" />
                                                             <Text text="Action" class="sapMTextSmall" />
                                                         </VBox>
                                                     </Column>
