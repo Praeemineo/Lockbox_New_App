@@ -126,8 +126,8 @@
                         </VBox>
                     </IconTabFilter>
                     
-                    <!-- Tab 3: Action and Field Mapping -->
-                    <IconTabFilter key="actionMapping" text="Action and Field Mapping" count="{= ${patternDialog>/pattern/conditions} ? ${patternDialog>/pattern/conditions}.length : 0}" icon="sap-icon://source-code">
+                    <!-- Tab 3: Actions & Field Mapping -->
+                    <IconTabFilter key="actionMapping" text="Actions &amp; Field Mapping" count="{= ${patternDialog>/pattern/conditions} ? ${patternDialog>/pattern/conditions}.length : 0}" icon="sap-icon://source-code">
                         <VBox class="sapUiSmallMargin">
                             <Toolbar>
                                 <Title text="Action &amp; Field Mappings" level="H5" />
