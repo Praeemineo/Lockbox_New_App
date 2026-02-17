@@ -859,95 +859,57 @@
                 
                 <!-- Rules Tab Content -->
                 <VBox visible="{= ${app>/selectedRuleTab} === 'rules'}" class="sapUiSmallMarginBottom">
-                    <!-- Reference Document Rules Panel -->
+                    <!-- Processing Rules Panel -->
                     <Panel expandable="false">
                         <headerToolbar>
                             <OverflowToolbar>
-                                <Title text="Reference Document Rules ({= ${app>/referenceDocRules}.length})" />
+                                <Title text="Processing Rules ({= ${app>/processingRules} ? ${app>/processingRules}.length : 0})" />
                                 <ToolbarSpacer />
-                                <Label text="Active Rule:" class="sapUiSmallMarginEnd" />
-                                <ObjectStatus text="{app>/selectedRefDocRule/ruleName}" state="Success" />
-                                <Button text="Add Rule" icon="sap-icon://add" type="Emphasized" press="onOpenAddRefDocRuleDialog" />
-                                <Button icon="sap-icon://refresh" press="onRefreshRefDocRules" tooltip="Refresh" />
+                                <Button text="Create" icon="sap-icon://add" type="Emphasized" press="onCreateProcessingRule" />
+                                <Button text="Edit" icon="sap-icon://edit" press="onEditProcessingRule" enabled="{= !!${app>/selectedProcessingRule}}" />
+                                <Button text="Delete" icon="sap-icon://delete" type="Reject" press="onDeleteProcessingRule" enabled="{= !!${app>/selectedProcessingRule}}" />
+                                <Button text="Settings" icon="sap-icon://action-settings" press="onProcessingRuleSettings" />
+                                <Button icon="sap-icon://refresh" press="onRefreshProcessingRules" tooltip="Refresh" />
                             </OverflowToolbar>
                         </headerToolbar>
                         <content>
-                            <MessageStrip text="Reference Document Rules determine which document number (BELNR = Accounting Doc or XBLNR = Invoice Ref) is used for clearing during the lockbox posting process." type="Information" showIcon="true" class="sapUiSmallMarginBottom" />
                             <Table
-                                id="refDocRulesTableNew"
-                                items="{app>/referenceDocRules}"
+                                id="processingRulesTable"
+                                items="{app>/processingRules}"
                                 mode="SingleSelectMaster"
-                                selectionChange="onRefDocRuleSelectionChange"
-                                fixedLayout="false">
+                                selectionChange="onProcessingRuleSelectionChange"
+                                class="sapUiSizeCompact">
                                 <columns>
-                                    <Column width="80px"><Text text="Rule ID" /></Column>
-                                    <Column width="180px"><Text text="Rule Name" /></Column>
-                                    <Column><Text text="Description" /></Column>
-                                    <Column width="180px"><Text text="Logic/Condition" /></Column>
-                                    <Column width="200px"><Text text="Document ID Type" /></Column>
-                                    <Column width="80px" hAlign="Center"><Text text="Active" /></Column>
-                                    <Column width="100px" hAlign="Center"><Text text="Selected" /></Column>
+                                    <Column width="12%"><Text text="Rule ID" /></Column>
+                                    <Column width="20%"><Text text="Rule Name" /></Column>
+                                    <Column width="28%"><Text text="Description" /></Column>
+                                    <Column width="12%"><Text text="File type" /></Column>
+                                    <Column width="15%"><Text text="Rule Type" /></Column>
+                                    <Column width="8%" hAlign="Center"><Text text="Active" /></Column>
+                                    <Column width="5%" hAlign="Center"><Text text="" /></Column>
                                 </columns>
                                 <items>
-                                    <ColumnListItem type="Active" press="onEditRefDocRule">
+                                    <ColumnListItem type="Active" press="onProcessingRuleRowPress">
                                         <cells>
-                                            <ObjectIdentifier title="{app>ruleId}" />
-                                            <Text text="{app>ruleName}" wrapping="false" />
+                                            <Text text="{app>ruleId}" />
+                                            <Text text="{app>ruleName}" />
                                             <Text text="{app>description}" wrapping="true" />
-                                            <ObjectStatus text="{app>logicCondition}" state="Information" />
-                                            <Text text="{app>documentIdType}" wrapping="true" />
-                                            <Switch state="{app>active}" change="onRefDocRuleActiveToggle" customTextOn="Yes" customTextOff="No" />
-                                            <Button 
-                                                text="{= ${app>ruleId} === ${app>/selectedReferenceDocRule} ? 'Active' : 'Select'}" 
-                                                type="{= ${app>ruleId} === ${app>/selectedReferenceDocRule} ? 'Success' : 'Default'}"
-                                                press="onSelectRefDocRule"
-                                                enabled="{= ${app>active} &amp;&amp; ${app>ruleId} !== ${app>/selectedReferenceDocRule}}" />
+                                            <ObjectStatus text="{app>fileType}" state="Information" />
+                                            <Text text="{app>ruleType}" />
+                                            <Switch state="{app>active}" change="onProcessingRuleActiveToggle" customTextOn="Yes" customTextOff="No" />
+                                            <core:Icon 
+                                                src="sap-icon://navigation-right-arrow" 
+                                                color="#0854a0" 
+                                                press="onOpenProcessingRuleDialog" 
+                                                class="sapUiSmallMarginBegin"
+                                                tooltip="View Details" />
                                         </cells>
                                     </ColumnListItem>
                                 </items>
                             </Table>
                         </content>
                     </Panel>
-                    
-                    <!-- Add/Edit Reference Document Rule Dialog -->
-                    <Dialog id="refDocRuleDialogNew" title="{= ${app>/editingRefDocRule/ruleId} ? 'Edit Rule' : 'Add New Reference Document Rule'}" contentWidth="600px">
-                        <content>
-                            <VBox class="sapUiSmallMargin">
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Rule Name" required="true" />
-                                    <Input value="{app>/editingRefDocRule/ruleName}" placeholder="e.g., Document Number First" width="100%" />
-                                </VBox>
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Rule Type" required="true" />
-                                    <Select selectedKey="{app>/editingRefDocRule/ruleType}" width="100%">
-                                        <core:Item key="BELNR" text="BELNR - Accounting Document" />
-                                        <core:Item key="XBLNR" text="XBLNR - Invoice Reference" />
-                                        <core:Item key="BELNR_THEN_XBLNR" text="BELNR first, then XBLNR" />
-                                        <core:Item key="XBLNR_THEN_BELNR" text="XBLNR first, then BELNR" />
-                                    </Select>
-                                </VBox>
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Description" />
-                                    <TextArea value="{app>/editingRefDocRule/description}" rows="2" width="100%" placeholder="Describe when to use this rule" />
-                                </VBox>
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Logic/Condition" />
-                                    <Input value="{app>/editingRefDocRule/logicCondition}" placeholder="e.g., lbinvref = belnr else XBLNR" width="100%" />
-                                </VBox>
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Document ID Type" />
-                                    <Input value="{app>/editingRefDocRule/documentIdType}" placeholder="e.g., Accounting document else Invoice document" width="100%" />
-                                </VBox>
-                                <HBox alignItems="Center">
-                                    <CheckBox text="Active" selected="{app>/editingRefDocRule/active}" />
-                                </HBox>
-                            </VBox>
-                        </content>
-                        <beginButton>
-                            <Button text="Save" type="Emphasized" press="onSaveRefDocRule" />
-                        </beginButton>
-                        <endButton>
-                            <Button text="Cancel" press="onCloseRefDocRuleDialog" />
+                </VBox>
                         </endButton>
                     </Dialog>
                 </VBox>
