@@ -499,6 +499,23 @@
                 
                 <!-- File Patterns Tab Content - Master-Detail Layout with Split Panel -->
                 <VBox visible="{= ${app>/selectedRuleTab} === 'filePatterns' || !${app>/selectedRuleTab}}" class="sapUiSmallMarginBottom">
+                    <!-- Quick Action Bar for Excel Patterns -->
+                    <Panel class="sapUiSmallMarginBottom" backgroundDesign="Solid">
+                        <content>
+                            <HBox alignItems="Center" justifyContent="SpaceBetween" class="sapUiSmallMargin">
+                                <VBox>
+                                    <Title text="Excel File Patterns Configuration" level="H4" class="sapUiTinyMarginBottom" />
+                                    <Text text="Manage conditions and actions for Excel file processing" class="sapMTextSmall" />
+                                </VBox>
+                                <Button 
+                                    text="Configure Excel Patterns" 
+                                    icon="sap-icon://excel-attachment" 
+                                    type="Emphasized" 
+                                    press="onOpenExcelFilePatternsDialog" />
+                            </HBox>
+                        </content>
+                    </Panel>
+                    
                     <!-- Pattern Filters Bar -->
                     <Panel expandable="true" expanded="false" class="sapUiSmallMarginBottom">
                         <headerToolbar>
@@ -560,9 +577,9 @@
                                 <Title text="File Patterns ({= ${app>/filePatterns}.length})" />
                                 <ToolbarSpacer />
                                 <SearchField placeholder="Search..." liveChange="onPatternSearch" width="200px" />
-                                <Button icon="sap-icon://add" type="Emphasized" press="onCreateFilePattern" tooltip="Create Pattern" />
-                                <Button icon="sap-icon://copy" press="onCopyPattern" enabled="{= !!${app>/selectedPattern}}" tooltip="Copy" />
-                                <Button icon="sap-icon://delete" type="Reject" press="onDeletePattern" enabled="{= !!${app>/selectedPattern}}" tooltip="Delete" />
+                                <Button text="Create" icon="sap-icon://add" type="Emphasized" press="onCreatePatternDialog" tooltip="Create New Pattern" />
+                                <Button text="Edit" icon="sap-icon://edit" press="onEditPatternFromList" enabled="{= !!${app>/selectedPattern}}" tooltip="Edit Pattern" />
+                                <Button text="Delete" icon="sap-icon://delete" type="Reject" press="onDeletePattern" enabled="{= !!${app>/selectedPattern}}" tooltip="Delete Pattern" />
                                 <Button icon="sap-icon://refresh" press="onRefreshPatterns" tooltip="Refresh" />
                             </OverflowToolbar>
                         </headerToolbar>
