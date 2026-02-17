@@ -1,0 +1,163 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form">
+    
+    <Dialog
+        id="processingRuleDialog"
+        title="Processing Rule: {processingRuleDialog>/rule/ruleName}"
+        contentWidth="90%"
+        contentHeight="85%"
+        resizable="true"
+        draggable="true">
+        
+        <content>
+            <IconTabBar
+                id="processingRuleTabBar"
+                select="onProcessingRuleTabSelect"
+                class="sapUiResponsiveContentPadding">
+                <items>
+                    <IconTabFilter key="processingRule" text="Processing Rule" icon="sap-icon://business-objects-experience">
+                        <VBox class="sapUiSmallMargin">
+                            <f:SimpleForm
+                                editable="true"
+                                layout="ResponsiveGridLayout"
+                                labelSpanXL="3"
+                                labelSpanL="3"
+                                labelSpanM="3"
+                                labelSpanS="12"
+                                adjustLabelSpan="false"
+                                emptySpanXL="0"
+                                emptySpanL="0"
+                                emptySpanM="0"
+                                emptySpanS="0"
+                                columnsXL="2"
+                                columnsL="2"
+                                columnsM="1"
+                                singleContainerFullSize="false">
+                                <f:content>
+                                    <Label text="Rule ID" required="true" />
+                                    <Input value="{processingRuleDialog>/rule/ruleId}" enabled="{= !${processingRuleDialog>/editMode}}" />
+                                    
+                                    <Label text="Rule Name" required="true" />
+                                    <Input value="{processingRuleDialog>/rule/ruleName}" />
+                                    
+                                    <Label text="Description" />
+                                    <TextArea value="{processingRuleDialog>/rule/description}" rows="3" />
+                                    
+                                    <Label text="File Type" required="true" />
+                                    <Select selectedKey="{processingRuleDialog>/rule/fileType}">
+                                        <core:Item key="EXCEL" text="Excel" />
+                                        <core:Item key="CSV" text="CSV" />
+                                        <core:Item key="PDF" text="PDF" />
+                                        <core:Item key="XML" text="XML" />
+                                    </Select>
+                                    
+                                    <Label text="Rule Type" required="true" />
+                                    <Input value="{processingRuleDialog>/rule/ruleType}" />
+                                    
+                                    <Label text="Active" />
+                                    <Switch state="{processingRuleDialog>/rule/active}" customTextOn="Yes" customTextOff="No" />
+                                </f:content>
+                            </f:SimpleForm>
+                        </VBox>
+                    </IconTabFilter>
+                    
+                    <IconTabFilter key="conditions" text="Conditions" count="{= ${processingRuleDialog>/rule/conditions} ? ${processingRuleDialog>/rule/conditions}.length : 0}" icon="sap-icon://filter">
+                        <VBox class="sapUiSmallMargin">
+                            <Toolbar>
+                                <Title text="Rule Conditions" level="H5" />
+                                <ToolbarSpacer />
+                                <Button text="Add Condition" icon="sap-icon://add" press="onAddRuleCondition" />
+                            </Toolbar>
+                            
+                            <Table
+                                id="ruleConditionsTable"
+                                items="{processingRuleDialog>/rule/conditions}"
+                                class="sapUiSizeCompact">
+                                <columns>
+                                    <Column width="15%"><Text text="HTTP Method" /></Column>
+                                    <Column width="20%"><Text text="API Reference" /></Column>
+                                    <Column width="20%"><Text text="Input Field" /></Column>
+                                    <Column width="15%"><Text text="Source/Input" /></Column>
+                                    <Column width="15%"><Text text="Output Field" /></Column>
+                                    <Column width="10%"><Text text="Lockbox API Field" /></Column>
+                                    <Column width="5%" hAlign="Center"><Text text="" /></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Select selectedKey="{processingRuleDialog>httpMethod}">
+                                                <core:Item key="GET" text="GET" />
+                                                <core:Item key="POST" text="POST" />
+                                                <core:Item key="PUT" text="PUT" />
+                                                <core:Item key="DELETE" text="DELETE" />
+                                            </Select>
+                                            <Input value="{processingRuleDialog>apiReference}" />
+                                            <Input value="{processingRuleDialog>inputField}" />
+                                            <Input value="{processingRuleDialog>sourceInput}" />
+                                            <Input value="{processingRuleDialog>outputField}" />
+                                            <Input value="{processingRuleDialog>lockboxApiField}" />
+                                            <Button icon="sap-icon://delete" type="Reject" press="onDeleteRuleCondition" tooltip="Delete" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </IconTabFilter>
+                    
+                    <IconTabFilter key="apiMappings" text="API Mappings" count="{= ${processingRuleDialog>/rule/apiMappings} ? ${processingRuleDialog>/rule/apiMappings}.length : 0}" icon="sap-icon://source-code">
+                        <VBox class="sapUiSmallMargin">
+                            <Toolbar>
+                                <Title text="API Field Mappings" level="H5" />
+                                <ToolbarSpacer />
+                                <Button text="Add Mapping" icon="sap-icon://add" press="onAddApiMapping" />
+                            </Toolbar>
+                            
+                            <Table
+                                id="apiMappingsTable"
+                                items="{processingRuleDialog>/rule/apiMappings}"
+                                class="sapUiSizeCompact">
+                                <columns>
+                                    <Column width="15%"><Text text="HTTP Method" /></Column>
+                                    <Column width="20%"><Text text="API Reference" /></Column>
+                                    <Column width="20%"><Text text="Input Field" /></Column>
+                                    <Column width="15%"><Text text="Source/Input" /></Column>
+                                    <Column width="15%"><Text text="Output Field" /></Column>
+                                    <Column width="10%"><Text text="Lockbox API Field" /></Column>
+                                    <Column width="5%" hAlign="Center"><Text text="" /></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Select selectedKey="{processingRuleDialog>httpMethod}">
+                                                <core:Item key="GET" text="GET" />
+                                                <core:Item key="POST" text="POST" />
+                                                <core:Item key="PUT" text="PUT" />
+                                                <core:Item key="DELETE" text="DELETE" />
+                                            </Select>
+                                            <Input value="{processingRuleDialog>apiReference}" />
+                                            <Input value="{processingRuleDialog>inputField}" />
+                                            <Input value="{processingRuleDialog>sourceInput}" />
+                                            <Input value="{processingRuleDialog>outputField}" />
+                                            <Input value="{processingRuleDialog>lockboxApiField}" />
+                                            <Button icon="sap-icon://delete" type="Reject" press="onDeleteApiMapping" tooltip="Delete" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </IconTabFilter>
+                </items>
+            </IconTabBar>
+        </content>
+        
+        <beginButton>
+            <Button text="Save" type="Emphasized" press="onSaveProcessingRule" />
+        </beginButton>
+        <endButton>
+            <Button text="Cancel" press="onCloseProcessingRuleDialog" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>
