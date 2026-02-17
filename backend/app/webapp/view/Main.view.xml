@@ -631,7 +631,7 @@
                                 <headerToolbar>
                                     <OverflowToolbar>
                                         <Button icon="sap-icon://slim-arrow-left" press="onCollapsePatternDetail" tooltip="Collapse" />
-                                        <Title text="Pattern Conditions: {app>/selectedPattern/patternName}" />
+                                        <Title text="{app>/selectedPattern/patternName}" />
                                         <ToolbarSpacer />
                                         <Button text="Edit Pattern" icon="sap-icon://edit" press="onEditPattern" />
                                         <Button text="Save" icon="sap-icon://save" type="Emphasized" press="onSavePatternConditions" />
