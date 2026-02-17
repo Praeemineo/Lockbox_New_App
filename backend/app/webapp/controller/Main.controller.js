@@ -8918,6 +8918,339 @@ sap.ui.define([
         },
         
         // ============================================================================
+        // PROCESSING RULES FUNCTIONS
+        // ============================================================================
+        
+        // Load processing rules
+        _loadProcessingRules: function () {
+            var that = this;
+            var oModel = this.getOwnerComponent().getModel("app");
+            
+            fetch(API_BASE + "/field-mapping/processing-rules")
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    console.log("Loaded Processing Rules:", data.length);
+                    oModel.setProperty("/processingRules", data);
+                    oModel.setProperty("/ruleCounts/rules", data.length);
+                })
+                .catch(function (error) {
+                    console.error("Error loading processing rules:", error);
+                    oModel.setProperty("/processingRules", []);
+                });
+        },
+        
+        // Processing rule selection change
+        onProcessingRuleSelectionChange: function (oEvent) {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oSelectedItem = oEvent.getParameter("listItem");
+            
+            if (oSelectedItem) {
+                var oContext = oSelectedItem.getBindingContext("app");
+                var oRule = oContext.getObject();
+                oModel.setProperty("/selectedProcessingRule", oRule);
+            }
+        },
+        
+        // Processing rule row press
+        onProcessingRuleRowPress: function (oEvent) {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oContext = oEvent.getSource().getBindingContext("app");
+            var oRule = oContext.getObject();
+            oModel.setProperty("/selectedProcessingRule", oRule);
+        },
+        
+        // Open processing rule dialog
+        onOpenProcessingRuleDialog: function (oEvent) {
+            var that = this;
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("app");
+            var oRule = oContext.getObject();
+            
+            // Create dialog model
+            if (!this.getView().getModel("processingRuleDialog")) {
+                var oDialogModel = new sap.ui.model.json.JSONModel({
+                    editMode: true,
+                    rule: {}
+                });
+                this.getView().setModel(oDialogModel, "processingRuleDialog");
+            }
+            
+            // Set rule data
+            var oDialogModel = this.getView().getModel("processingRuleDialog");
+            oDialogModel.setProperty("/editMode", true);
+            oDialogModel.setProperty("/rule", JSON.parse(JSON.stringify(oRule)));
+            
+            // Load and open fragment
+            if (!this._processingRuleDialog) {
+                sap.ui.core.Fragment.load({
+                    id: this.getView().getId(),
+                    name: "lockbox.view.ProcessingRuleDialog",
+                    controller: this
+                }).then(function (oDialog) {
+                    that._processingRuleDialog = oDialog;
+                    that.getView().addDependent(oDialog);
+                    oDialog.open();
+                });
+            } else {
+                this._processingRuleDialog.open();
+            }
+        },
+        
+        // Close processing rule dialog
+        onCloseProcessingRuleDialog: function () {
+            if (this._processingRuleDialog) {
+                this._processingRuleDialog.close();
+            }
+        },
+        
+        // Save processing rule
+        onSaveProcessingRule: function () {
+            var that = this;
+            var oDialogModel = this.getView().getModel("processingRuleDialog");
+            var oRule = oDialogModel.getProperty("/rule");
+            var bEditMode = oDialogModel.getProperty("/editMode");
+            
+            // Validate
+            if (!oRule.ruleId || !oRule.ruleName) {
+                sap.m.MessageBox.error("Please fill in all required fields (Rule ID, Rule Name)");
+                return;
+            }
+            
+            var sMethod = bEditMode ? "PUT" : "POST";
+            var sUrl = bEditMode 
+                ? API_BASE + "/field-mapping/processing-rules/" + oRule.ruleId
+                : API_BASE + "/field-mapping/processing-rules";
+            
+            fetch(sUrl, {
+                method: sMethod,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(oRule)
+            })
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    if (data.success) {
+                        sap.m.MessageToast.show("Processing rule saved successfully");
+                        that._loadProcessingRules();
+                        that.onCloseProcessingRuleDialog();
+                    } else {
+                        sap.m.MessageBox.error("Failed to save processing rule: " + (data.message || "Unknown error"));
+                    }
+                })
+                .catch(function (error) {
+                    sap.m.MessageBox.error("Error saving processing rule: " + error.message);
+                });
+        },
+        
+        // Create processing rule
+        onCreateProcessingRule: function () {
+            var that = this;
+            
+            // Create dialog model
+            if (!this.getView().getModel("processingRuleDialog")) {
+                var oDialogModel = new sap.ui.model.json.JSONModel({
+                    editMode: false,
+                    rule: {}
+                });
+                this.getView().setModel(oDialogModel, "processingRuleDialog");
+            }
+            
+            // Set empty rule
+            var oDialogModel = this.getView().getModel("processingRuleDialog");
+            oDialogModel.setProperty("/editMode", false);
+            oDialogModel.setProperty("/rule", {
+                ruleId: "",
+                ruleName: "",
+                description: "",
+                fileType: "EXCEL",
+                ruleType: "",
+                active: true,
+                conditions: [],
+                apiMappings: []
+            });
+            
+            // Load and open fragment
+            if (!this._processingRuleDialog) {
+                sap.ui.core.Fragment.load({
+                    id: this.getView().getId(),
+                    name: "lockbox.view.ProcessingRuleDialog",
+                    controller: this
+                }).then(function (oDialog) {
+                    that._processingRuleDialog = oDialog;
+                    that.getView().addDependent(oDialog);
+                    oDialog.open();
+                });
+            } else {
+                this._processingRuleDialog.open();
+            }
+        },
+        
+        // Edit processing rule
+        onEditProcessingRule: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oRule = oModel.getProperty("/selectedProcessingRule");
+            
+            if (!oRule) {
+                sap.m.MessageToast.show("Please select a rule to edit");
+                return;
+            }
+            
+            // Trigger the dialog with the selected rule
+            this.onOpenProcessingRuleDialog({
+                getSource: function () {
+                    return {
+                        getBindingContext: function () {
+                            return {
+                                getObject: function () {
+                                    return oRule;
+                                }
+                            };
+                        }
+                    };
+                }
+            });
+        },
+        
+        // Delete processing rule
+        onDeleteProcessingRule: function () {
+            var that = this;
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oRule = oModel.getProperty("/selectedProcessingRule");
+            
+            if (!oRule) {
+                sap.m.MessageToast.show("Please select a rule to delete");
+                return;
+            }
+            
+            sap.m.MessageBox.confirm("Are you sure you want to delete rule " + oRule.ruleId + "?", {
+                onClose: function (oAction) {
+                    if (oAction === sap.m.MessageBox.Action.OK) {
+                        fetch(API_BASE + "/field-mapping/processing-rules/" + oRule.ruleId, {
+                            method: "DELETE"
+                        })
+                            .then(function (response) { return response.json(); })
+                            .then(function (data) {
+                                if (data.success) {
+                                    sap.m.MessageToast.show("Rule deleted successfully");
+                                    that._loadProcessingRules();
+                                    oModel.setProperty("/selectedProcessingRule", null);
+                                } else {
+                                    sap.m.MessageBox.error("Failed to delete rule: " + (data.message || "Unknown error"));
+                                }
+                            })
+                            .catch(function (error) {
+                                sap.m.MessageBox.error("Error deleting rule: " + error.message);
+                            });
+                    }
+                }
+            });
+        },
+        
+        // Refresh processing rules
+        onRefreshProcessingRules: function () {
+            this._loadProcessingRules();
+            sap.m.MessageToast.show("Processing rules refreshed");
+        },
+        
+        // Processing rule active toggle
+        onProcessingRuleActiveToggle: function (oEvent) {
+            var bState = oEvent.getParameter("state");
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("app");
+            var oRule = oContext.getObject();
+            
+            oRule.active = bState;
+            
+            // Update on backend
+            fetch(API_BASE + "/field-mapping/processing-rules/" + oRule.ruleId, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(oRule)
+            })
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    if (data.success) {
+                        sap.m.MessageToast.show("Rule " + (bState ? "activated" : "deactivated"));
+                    }
+                })
+                .catch(function (error) {
+                    console.error("Error updating rule:", error);
+                });
+        },
+        
+        // Processing rule settings
+        onProcessingRuleSettings: function () {
+            sap.m.MessageToast.show("Processing rule settings - Coming soon");
+        },
+        
+        // Add rule condition
+        onAddRuleCondition: function () {
+            var oDialogModel = this.getView().getModel("processingRuleDialog");
+            var aConditions = oDialogModel.getProperty("/rule/conditions") || [];
+            
+            aConditions.push({
+                httpMethod: "GET",
+                apiReference: "",
+                inputField: "",
+                sourceInput: "",
+                outputField: "",
+                lockboxApiField: ""
+            });
+            
+            oDialogModel.setProperty("/rule/conditions", aConditions);
+        },
+        
+        // Delete rule condition
+        onDeleteRuleCondition: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("processingRuleDialog");
+            var sPath = oContext.getPath();
+            var iIndex = parseInt(sPath.split("/").pop());
+            
+            var oDialogModel = this.getView().getModel("processingRuleDialog");
+            var aConditions = oDialogModel.getProperty("/rule/conditions");
+            
+            aConditions.splice(iIndex, 1);
+            oDialogModel.setProperty("/rule/conditions", aConditions);
+        },
+        
+        // Add API mapping
+        onAddApiMapping: function () {
+            var oDialogModel = this.getView().getModel("processingRuleDialog");
+            var aMappings = oDialogModel.getProperty("/rule/apiMappings") || [];
+            
+            aMappings.push({
+                httpMethod: "GET",
+                apiReference: "",
+                inputField: "",
+                sourceInput: "",
+                outputField: "",
+                lockboxApiField: ""
+            });
+            
+            oDialogModel.setProperty("/rule/apiMappings", aMappings);
+        },
+        
+        // Delete API mapping
+        onDeleteApiMapping: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("processingRuleDialog");
+            var sPath = oContext.getPath();
+            var iIndex = parseInt(sPath.split("/").pop());
+            
+            var oDialogModel = this.getView().getModel("processingRuleDialog");
+            var aMappings = oDialogModel.getProperty("/rule/apiMappings");
+            
+            aMappings.splice(iIndex, 1);
+            oDialogModel.setProperty("/rule/apiMappings", aMappings);
+        },
+        
+        // Processing rule tab select
+        onProcessingRuleTabSelect: function (oEvent) {
+            // Handle tab selection if needed
+        },
+        
+        // ============================================================================
         // FILE PATTERNS EVENT HANDLERS
         // ============================================================================
         
