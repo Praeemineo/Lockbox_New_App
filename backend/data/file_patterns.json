@@ -34,6 +34,28 @@
         "strategy": "Invoice/Doc number amount",
         "externalDependency": "NetPaymentAmountInPayCurrency"
       }
+    ],
+    "actions": [
+      {
+        "actionType": "Map_Check_Field",
+        "relatedApiField": "Cheque",
+        "splitLogic": "Single check - use as batch identifier"
+      },
+      {
+        "actionType": "Map_Check_Amount",
+        "relatedApiField": "AmountInTransactionCurrency",
+        "splitLogic": "Total amount for check"
+      },
+      {
+        "actionType": "Map_Invoice_Number",
+        "relatedApiField": "PaymentReference",
+        "splitLogic": "One invoice per row, grouped under single check"
+      },
+      {
+        "actionType": "Map_Invoice_Amount",
+        "relatedApiField": "NetPaymentAmountInPayCurrency",
+        "splitLogic": "Individual invoice amount per row"
+      }
     ]
   },
   {
@@ -70,6 +92,28 @@
         "condition": "Amount per Invoice/Document",
         "strategy": "Invoice/Doc number amount",
         "externalDependency": "NetPaymentAmountInPayCurrency"
+      }
+    ],
+    "actions": [
+      {
+        "actionType": "Map_Multiple_Checks",
+        "relatedApiField": "Cheque",
+        "splitLogic": "Multiple checks - create separate batch item for each check"
+      },
+      {
+        "actionType": "Map_Check_Amount_Per_Item",
+        "relatedApiField": "AmountInTransactionCurrency",
+        "splitLogic": "Check amount per batch item"
+      },
+      {
+        "actionType": "Map_Invoice_Per_Check",
+        "relatedApiField": "PaymentReference",
+        "splitLogic": "Invoice numbers grouped per check"
+      },
+      {
+        "actionType": "Map_Invoice_Amount",
+        "relatedApiField": "NetPaymentAmountInPayCurrency",
+        "splitLogic": "Individual invoice amount"
       }
     ]
   },
@@ -172,6 +216,28 @@
         "condition": "",
         "strategy": "API Standard",
         "externalDependency": ""
+      }
+    ],
+    "actions": [
+      {
+        "actionType": "Split_Check_Range",
+        "relatedApiField": "Cheque",
+        "splitLogic": "Hyphen range split (e.g., 90001-90003)"
+      },
+      {
+        "actionType": "Split_Amount_By_Range",
+        "relatedApiField": "AmountInTransactionCurrency",
+        "splitLogic": "Equal split across range"
+      },
+      {
+        "actionType": "Split_Invoice_Range",
+        "relatedApiField": "PaymentReference",
+        "splitLogic": "Expand range to individual invoices, pad to 10 digits"
+      },
+      {
+        "actionType": "Split_Invoice_Amount_Range",
+        "relatedApiField": "NetPaymentAmountInPayCurrency",
+        "splitLogic": "Equal split across invoice range"
       }
     ]
   },
