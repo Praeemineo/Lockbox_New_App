@@ -7030,10 +7030,13 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         console.log('Matched pattern type:', matchedPattern.patternType);
         console.log('Processing rules:', matchedPattern.processingRules);
         
-        // Apply INVOICE_SPLIT if pattern is INVOICE_SPLIT type
+        // Apply INVOICE_SPLIT if pattern has delimiter or is INVOICE_SPLIT type
         if (matchedPattern.patternType === 'INVOICE_SPLIT' || 
+            matchedPattern.patternType === 'File Containing Comma' ||
+            (matchedPattern.delimiter === ',') ||
             (matchedPattern.processingRules && matchedPattern.processingRules.includes('SPLIT_INVOICE'))) {
             console.log('Applying INVOICE SPLIT rules...');
+            console.log('Pattern type:', matchedPattern.patternType, 'Delimiter:', matchedPattern.delimiter);
             const splitDelimiter = matchedPattern.delimiter || ',';
             const splitData = [];
             
