@@ -9517,16 +9517,15 @@ sap.ui.define([
         // Add action row in dialog
         onAddPatternActionRow: function () {
             var oDialogModel = this.getView().getModel("patternDialog");
-            var aConditions = oDialogModel.getProperty("/pattern/conditions") || [];
+            var aActions = oDialogModel.getProperty("/pattern/actions") || [];
             
-            aConditions.push({
-                detectionCondition: "",
-                condition: "",
-                strategy: "",
-                externalDependency: ""
+            aActions.push({
+                actionType: "",
+                relatedApiField: "",
+                splitLogic: ""
             });
             
-            oDialogModel.setProperty("/pattern/conditions", aConditions);
+            oDialogModel.setProperty("/pattern/actions", aActions);
         },
         
         // Delete action row in dialog
@@ -9537,14 +9536,14 @@ sap.ui.define([
             var iIndex = parseInt(sPath.split("/").pop());
             
             var oDialogModel = this.getView().getModel("patternDialog");
-            var aConditions = oDialogModel.getProperty("/pattern/conditions");
+            var aActions = oDialogModel.getProperty("/pattern/actions");
             
-            if (aConditions.length > 1) {
-                aConditions.splice(iIndex, 1);
-                oDialogModel.setProperty("/pattern/conditions", aConditions);
+            if (aActions && aActions.length > 0) {
+                aActions.splice(iIndex, 1);
+                oDialogModel.setProperty("/pattern/actions", aActions);
                 sap.m.MessageToast.show("Action deleted");
             } else {
-                sap.m.MessageToast.show("At least one action is required");
+                sap.m.MessageToast.show("No actions to delete");
             }
         },
         
