@@ -113,7 +113,7 @@
                     </IconTabFilter>
                     
                     <!-- Tab 3: Actions & Field Mapping -->
-                    <IconTabFilter key="actionMapping" text="Actions &amp; Field Mapping" count="{= ${patternDialog>/pattern/conditions} ? ${patternDialog>/pattern/conditions}.length : 0}" icon="sap-icon://source-code">
+                    <IconTabFilter key="actionMapping" text="Actions &amp; Field Mapping" count="{= ${patternDialog>/pattern/actions} ? ${patternDialog>/pattern/actions}.length : 0}" icon="sap-icon://source-code">
                         <VBox class="sapUiSmallMargin">
                             <Toolbar>
                                 <Title text="Action &amp; Field Mappings" level="H5" />
@@ -123,14 +123,17 @@
                             
                             <Table
                                 id="patternActionsDialogTable"
-                                items="{patternDialog>/pattern/conditions}"
+                                items="{patternDialog>/pattern/actions}"
                                 class="sapUiSizeCompact">
                                 <columns>
-                                    <Column width="45%">
-                                        <Text text="Action" />
+                                    <Column width="30%">
+                                        <Text text="Action Type" />
                                     </Column>
-                                    <Column width="50%">
+                                    <Column width="35%">
                                         <Text text="Related API/Field reference" />
+                                    </Column>
+                                    <Column width="30%">
+                                        <Text text="Split Logic" />
                                     </Column>
                                     <Column width="5%" hAlign="Center">
                                         <Text text="" />
@@ -139,8 +142,9 @@
                                 <items>
                                     <ColumnListItem>
                                         <cells>
-                                            <Input value="{patternDialog>strategy}" placeholder="e.g., One batch item per check, Per check item" />
-                                            <Input value="{patternDialog>externalDependency}" placeholder="e.g., Cheque, AmountInTransactionCurrency" />
+                                            <Input value="{patternDialog>actionType}" placeholder="e.g., Split_Invoice/Document_Number" />
+                                            <Input value="{patternDialog>relatedApiField}" placeholder="e.g., Line1-90000393, Line2-90000394" />
+                                            <Input value="{patternDialog>splitLogic}" placeholder="e.g., Comma delimiter, pad to 10 digits" />
                                             <Button icon="sap-icon://delete" type="Reject" press="onDeletePatternActionRow" tooltip="Delete" />
                                         </cells>
                                     </ColumnListItem>
