@@ -5148,7 +5148,7 @@ function detectFilePattern(data, headers, fileType) {
             console.log(`Checking conditions for pattern ${pattern.patternId}:`, pattern.conditions.length, 'conditions');
             
             for (const condition of pattern.conditions) {
-                const docFormat = condition.documentFormat || condition.fieldName;
+                const docFormat = condition.documentFormat || condition.detectionCondition || condition.fieldName;
                 const conditionValue = condition.condition || condition.value;
                 
                 // Match condition against data
@@ -5172,6 +5172,20 @@ function detectFilePattern(data, headers, fileType) {
                     // Check condition value match in data
                     if (conditionValue) {
                         const condNorm = conditionValue.toLowerCase();
+                        
+                        // Check for "With Comma Separator" or delimiter patterns
+                        if (condNorm.includes('comma') || condNorm.includes('separator')) {
+                            // Check if pattern has a delimiter defined
+                            if (pattern.delimiter) {
+                                // Check if data has delimited values
+                                if (pattern.delimiter === ',' && (analysis.hasDelimitedInvoices || analysis.hasDelimitedChecks || analysis.hasDelimitedAmounts)) {
+                                    conditionMet = true;
+                                    conditionsMatched++;
+                                    conditionDetails.push(`✓ Comma delimiter detected in data`);
+                                }
+                            }
+                        }
+                        
                         // Check analysis object for common patterns
                         if (condNorm.includes('single') && condNorm.includes('check') && analysis.checkUnique) {
                             conditionMet = true;
@@ -5195,18 +5209,38 @@ function detectFilePattern(data, headers, fileType) {
             }
         }
         
-        // Legacy scoring for backward compatibility
+        // CRITICAL: High priority scoring for delimiter detection
+        // This must override other patterns when delimiters are detected
+        if (pattern.delimiter && pattern.delimiter === ',') {
+            if (analysis.hasDelimitedInvoices) {
+                score += 300; // Very high score for invoice delimiter match
+                conditionDetails.push(`✓✓ DELIMITER MATCH: Comma-delimited invoices detected`);
+                console.log(`  ** CRITICAL: Pattern ${pattern.patternId} has delimiter match - adding 300 points`);
+            }
+            if (analysis.hasDelimitedChecks) {
+                score += 300; // Very high score for check delimiter match
+                conditionDetails.push(`✓✓ DELIMITER MATCH: Comma-delimited checks detected`);
+                console.log(`  ** CRITICAL: Pattern ${pattern.patternId} has delimiter match - adding 300 points`);
+            }
+            if (analysis.hasDelimitedAmounts) {
+                score += 300; // Very high score for amount delimiter match
+                conditionDetails.push(`✓✓ DELIMITER MATCH: Comma-delimited amounts detected`);
+                console.log(`  ** CRITICAL: Pattern ${pattern.patternId} has delimiter match - adding 300 points`);
+            }
+        }
+        
+        // Legacy scoring for backward compatibility (lower priority now)
         if (pattern.patternType === 'SINGLE_CHECK_SINGLE_INVOICE' && 
             analysis.checkUnique && analysis.invoiceUnique) {
-            score += 100;
+            score += 50; // Reduced from 100
         }
         if (pattern.patternType === 'SINGLE_CHECK_MULTI_INVOICE' && 
             !analysis.checkUnique && analysis.hasEmptyCheckRows) {
-            score += 100;
+            score += 50; // Reduced from 100
         }
         if (pattern.patternType === 'MULTI_CHECK_MULTI_INVOICE' && 
             !analysis.checkUnique && !analysis.invoiceUnique) {
-            score += 90;
+            score += 45; // Reduced from 90
         }
         if (pattern.patternType === 'INVOICE_SPLIT' && analysis.hasDelimitedInvoices) {
             score += 200;
