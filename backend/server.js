@@ -7098,10 +7098,12 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
             console.log(`Invoice split applied: ${extractedData.length} rows → ${processedData.length} rows`);
         }
         
-        // Apply CHECK_SPLIT if pattern is CHECK_SPLIT type
+        // Apply CHECK_SPLIT if pattern has delimiter or is CHECK_SPLIT type
         if (matchedPattern.patternType === 'CHECK_SPLIT' || 
+            (matchedPattern.delimiter === ',' && patternResult.analysis?.hasDelimitedChecks) ||
             (matchedPattern.processingRules && matchedPattern.processingRules.includes('SPLIT_CHECK'))) {
             console.log('Applying CHECK SPLIT rules...');
+            console.log('Pattern type:', matchedPattern.patternType, 'Delimiter:', matchedPattern.delimiter);
             const splitData = [];
             
             for (const row of processedData) {
