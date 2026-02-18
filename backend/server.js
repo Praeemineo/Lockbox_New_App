@@ -7035,10 +7035,27 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
             matchedPattern.patternType === 'File Containing Comma' ||
             (matchedPattern.delimiter === ',') ||
             (matchedPattern.processingRules && matchedPattern.processingRules.includes('SPLIT_INVOICE'))) {
-            console.log('Applying INVOICE SPLIT rules...');
+            console.log('=== Applying INVOICE SPLIT rules ===');
+            console.log('Pattern:', matchedPattern.patternName);
             console.log('Pattern type:', matchedPattern.patternType, 'Delimiter:', matchedPattern.delimiter);
+            console.log('Pattern actions:', JSON.stringify(matchedPattern.actions, null, 2));
+            
             const splitDelimiter = matchedPattern.delimiter || ',';
             const splitData = [];
+            
+            // Find the action for Invoice/Document Number split
+            const invoiceSplitAction = matchedPattern.actions?.find(a => 
+                a.actionType === 'Split_Invoice/Document_Number' ||
+                a.actionType.toLowerCase().includes('invoice')
+            );
+            
+            // Determine padding requirement from pattern strategy or action
+            const padTo10Digits = matchedPattern.conditions?.some(c => 
+                c.strategy?.includes('10 Digit') || c.strategy?.includes('10Digit')
+            ) || invoiceSplitAction?.splitLogic?.includes('10 digits');
+            
+            console.log('Invoice split action:', invoiceSplitAction);
+            console.log('Pad to 10 digits:', padTo10Digits);
             
             for (const row of processedData) {
                 const invoiceField = row.InvoiceNumber || row.PaymentReference || '';
@@ -7054,8 +7071,13 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
                     if (invoices.length > 1) {
                         const totalAmount = parseFloat(row.InvoiceAmount) || parseFloat(row.CheckAmount) || 0;
                         
-                        // Determine split mode from pattern
-                        const splitMode = matchedPattern.splitMode || 'EQUAL';
+                        // Determine split mode from pattern or action
+                        const amountSplitAction = matchedPattern.actions?.find(a => 
+                            a.actionType === 'Split_Invoice/Document_Amount' ||
+                            a.actionType === 'Split_Amount_Line_Item'
+                        );
+                        
+                        const splitMode = amountSplitAction?.splitLogic?.includes('proportional') ? 'PROPORTIONAL' : 'EQUAL';
                         let splitAmounts = [];
                         
                         if (splitMode === 'EQUAL') {
@@ -7068,24 +7090,34 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
                         }
                         
                         for (let i = 0; i < invoices.length; i++) {
+                            // Apply padding if required by pattern
+                            let invoiceNumber = invoices[i].trim();
+                            if (padTo10Digits) {
+                                // Pad to 10 digits with leading zeros
+                                invoiceNumber = invoiceNumber.padStart(10, '0');
+                                console.log(`  Padded invoice: ${invoices[i]} → ${invoiceNumber}`);
+                            }
+                            
                             splitData.push({
                                 ...row,
-                                InvoiceNumber: invoices[i],
-                                PaymentReference: invoices[i],
+                                InvoiceNumber: invoiceNumber,
+                                PaymentReference: invoiceNumber,
                                 InvoiceAmount: splitAmounts[i],
                                 _splitFrom: invoiceField,
                                 _splitRule: matchedPattern.patternName,
                                 _splitIndex: i + 1,
-                                _splitTotal: invoices.length
+                                _splitTotal: invoices.length,
+                                _splitAction: invoiceSplitAction?.actionType || 'INVOICE_SPLIT'
                             });
                         }
                         appliedSplitRules.push({ 
                             rule: matchedPattern.patternName, 
-                            action: 'INVOICE_SPLIT', 
+                            action: invoiceSplitAction?.actionType || 'INVOICE_SPLIT', 
                             from: invoiceField, 
-                            to: invoices,
+                            to: splitData.slice(-invoices.length).map(r => r.InvoiceNumber),
                             originalAmount: totalAmount,
-                            splitAmounts: splitAmounts
+                            splitAmounts: splitAmounts,
+                            paddedTo10Digits: padTo10Digits
                         });
                     } else {
                         splitData.push(row);
@@ -7095,7 +7127,8 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
                 }
             }
             processedData = splitData;
-            console.log(`Invoice split applied: ${extractedData.length} rows → ${processedData.length} rows`);
+            console.log(`✓ Invoice split applied: ${extractedData.length} rows → ${processedData.length} rows`);
+            console.log(`✓ Split rules applied:`, appliedSplitRules);
         }
         
         // Apply CHECK_SPLIT if pattern has delimiter or is CHECK_SPLIT type
