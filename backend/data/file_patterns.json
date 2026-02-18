@@ -108,6 +108,28 @@
         "strategy": "Invoice/Document Amount Split with logic per invoice",
         "externalDependency": "NetPaymentAmountInPayCurrency"
       }
+    ],
+    "actions": [
+      {
+        "actionType": "Split_Check_Line_Item",
+        "relatedApiField": "Line1-90001, Line2-90002, Line3-90003",
+        "splitLogic": "Comma delimiter"
+      },
+      {
+        "actionType": "Split_Amount_Line_Item",
+        "relatedApiField": "Line1-5000, Line2-8000, Line3-10000",
+        "splitLogic": "Equal split or proportional based on invoice count"
+      },
+      {
+        "actionType": "Split_Invoice/Document_Number",
+        "relatedApiField": "Line1-90000393, Line2-90000394, Line3-90000395",
+        "splitLogic": "Comma delimiter, pad to 10 digits"
+      },
+      {
+        "actionType": "Split_Invoice/Document_Amount",
+        "relatedApiField": "Line1-5000, Line2-8000, Line3-10000",
+        "splitLogic": "Equal split across invoices"
+      }
     ]
   },
   {
