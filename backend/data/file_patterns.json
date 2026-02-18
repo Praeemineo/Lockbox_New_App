@@ -288,6 +288,18 @@
         "strategy": "YYYY-MM-DD",
         "externalDependency": "DepositDateTime"
       }
+    ],
+    "actions": [
+      {
+        "actionType": "Transform_Date_Format",
+        "relatedApiField": "DepositDateTime",
+        "splitLogic": "Convert any date format (MMDDYYYY, DDMMYYYY, YYYYMMDD, etc.) to YYYY-MM-DD ISO format"
+      },
+      {
+        "actionType": "Map_Standard_Fields",
+        "relatedApiField": "StandardFields",
+        "splitLogic": "Standard field mapping with date transformation"
+      }
     ]
   },
   {
@@ -312,6 +324,18 @@
         "condition": "Multiple Sheet",
         "strategy": "Build Heirarchy of 50 Items per Batch",
         "externalDependency": "Reference API reference Fields Table"
+      }
+    ],
+    "actions": [
+      {
+        "actionType": "Process_Multiple_Sheets",
+        "relatedApiField": "WorksheetName",
+        "splitLogic": "Extract and process each sheet individually, create hierarchy"
+      },
+      {
+        "actionType": "Build_Batch_Hierarchy",
+        "relatedApiField": "BatchStructure",
+        "splitLogic": "Build hierarchy of 50 items per batch from multiple sheets"
       }
     ]
   }
