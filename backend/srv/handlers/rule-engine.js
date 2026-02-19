@@ -125,10 +125,14 @@ async function executeRule002(mappings, extractedData) {
     const warnings = [];
     
     for (const row of extractedData) {
-        const businessPartner = row.Customer || row.CustomerNumber || row.BusinessPartner;
+        // Check multiple field name variations for customer number
+        const businessPartner = row.Customer || 
+                                row.CustomerNumber || 
+                                row['Customer Number'] ||  // Handle space in field name
+                                row.BusinessPartner;
         
         if (!businessPartner) {
-            warnings.push(`Row ${row._index || 'unknown'}: No customer/business partner`);
+            warnings.push(`Row ${row._index || 'unknown'}: No customer/business partner found (checked: Customer, CustomerNumber, Customer Number, BusinessPartner)`);
             continue;
         }
         
