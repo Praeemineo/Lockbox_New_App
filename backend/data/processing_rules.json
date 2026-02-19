@@ -3,7 +3,7 @@
     "id": "1",
     "ruleId": "RULE-001",
     "ruleName": "Accounting Document Lookup",
-    "description": "Fetch accounting document details from SAP using customer number",
+    "description": "Fetch accounting document details from SAP using invoice number",
     "fileType": "EXCEL",
     "ruleType": "API_LOOKUP",
     "active": true,
@@ -18,7 +18,7 @@
         "httpMethod": "GET",
         "apiReference": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT",
         "inputField": "P_Documentnumber",
-        "sourceInput": "CustomerNumber",
+        "sourceInput": "InvoiceNumber",
         "outputField": "BELNR",
         "lockboxApiField": "Paymentreference"
       }
