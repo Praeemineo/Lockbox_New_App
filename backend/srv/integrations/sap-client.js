@@ -321,145 +321,37 @@ async function callSapApi(endpoint, method = 'GET', params = {}, payload = null)
     return result;
 }
 
-module.exports = {
-    getDestination,
-    executeDynamicApiCall,
-    buildODataParams,
-    extractOutputValue,
-    fetchAccountingDocument,
-    fetchPartnerBankDetails,
-    // Deprecated
-    callSapApi
-};
-
-
 /**
- * RULE-002: Fetch Partner Bank Details
- * API: /sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartnerBank
- * @param {string} businessPartner - Business Partner Number (Customer)
- * @returns {Promise<object>} - { success, bankCode, bankAccount, bankCountry, error }
- */
-async function fetchPartnerBankDetails(businessPartner) {
-    logger.info('RULE-002: Fetching Partner Bank Details', { businessPartner });
-    
-    try {
-        const params = {
-            $filter: `BusinessPartner eq '${businessPartner}'`,
-            $select: 'BankInternalID,BankCountry,BankAccount,BankControlKey',
-            $top: 1
-        };
-        
-        const result = await callSapApi(
-            '/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartnerBank',
-            'GET',
-            params
-        );
-        
-        if (!result.success) {
-            logger.warn('RULE-002: API call failed, using defaults', { error: result.error });
-            // Return default bank details
-            return {
-                success: false,
-                usedDefaults: true,
-                bankCode: '88888876',
-                bankAccount: '8765432195',
-                bankCountry: 'US',
-                error: result.error
-            };
-        }
-        
-        const banks = result.data?.d?.results || [];
-        
-        if (banks.length === 0) {
-            logger.warn('RULE-002: No bank details found, using defaults', { businessPartner });
-            return {
-                success: false,
-                usedDefaults: true,
-                bankCode: '88888876',
-                bankAccount: '8765432195',
-                bankCountry: 'US',
-                error: 'No bank details found'
-            };
-        }
-        
-        const bank = banks[0];
-        
-        logger.info('RULE-002: Bank Details Retrieved', {
-            businessPartner,
-            bankCode: bank.BankInternalID,
-            bankCountry: bank.BankCountry
-        });
-        
-        return {
-            success: true,
-            usedDefaults: false,
-            bankCode: bank.BankInternalID,
-            bankAccount: bank.BankAccount,
-            bankCountry: bank.BankCountry,
-            bankControlKey: bank.BankControlKey,
-            error: null
-        };
-        
-    } catch (error) {
-        logger.error('RULE-002: Error fetching bank details', { error: error.message });
-        // Return defaults on error
-        return {
-            success: false,
-            usedDefaults: true,
-            bankCode: '88888876',
-            bankAccount: '8765432195',
-            bankCountry: 'US',
-            error: error.message
-        };
-    }
-}
-
-/**
- * RULE-003: Fetch Customer Master Data
- * API: /sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartner
+ * RULE-003: Fetch Customer Master Data - DYNAMIC VERSION
+ * @param {object} apiMapping - API mapping from RULE-003
  * @param {string} businessPartner - Business Partner Number
- * @returns {Promise<object>} - { success, customerName, customerType, customerCategory, error }
+ * @returns {Promise<object>} - Customer details or defaults
  */
-async function fetchCustomerMasterData(businessPartner) {
-    logger.info('RULE-003: Fetching Customer Master Data', { businessPartner });
+async function fetchCustomerMasterData(apiMapping, businessPartner) {
+    logger.info('RULE-003: Fetching Customer Master Data - DYNAMIC', { 
+        api: apiMapping?.apiReference,
+        businessPartner 
+    });
     
     try {
-        const params = {
-            $filter: `BusinessPartner eq '${businessPartner}'`,
-            $select: 'BusinessPartner,BusinessPartnerName,BusinessPartnerCategory,BusinessPartnerGrouping',
-            $top: 1
+        const inputValues = {
+            [apiMapping.sourceInput]: businessPartner
         };
         
-        const result = await callSapApi(
-            '/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartner',
-            'GET',
-            params
-        );
+        const result = await executeDynamicApiCall(apiMapping, inputValues);
         
-        if (!result.success) {
+        if (!result.success || !result.data?.d?.results?.length) {
+            logger.warn('RULE-003: No customer data found', { businessPartner });
             return {
                 success: false,
-                error: `Failed to fetch customer data: ${result.error}`,
+                error: result.error || 'Customer not found',
                 customerName: businessPartner,
                 customerType: 'CUSTOMER',
                 customerCategory: 'UNKNOWN'
             };
         }
         
-        const customers = result.data?.d?.results || [];
-        
-        if (customers.length === 0) {
-            logger.warn('RULE-003: Customer not found', { businessPartner });
-            return {
-                success: false,
-                error: 'Customer not found',
-                customerName: businessPartner,
-                customerType: 'CUSTOMER',
-                customerCategory: 'UNKNOWN'
-            };
-        }
-        
-        const customer = customers[0];
+        const customer = result.data.d.results[0];
         
         logger.info('RULE-003: Customer Data Retrieved', {
             businessPartner,
@@ -488,50 +380,38 @@ async function fetchCustomerMasterData(businessPartner) {
 }
 
 /**
- * RULE-004: Fetch Open Item Details
- * API: /sap/opu/odata/sap/API_ODATA_FI_OPEN_ITEMS/OpenItems
+ * RULE-004: Fetch Open Item Details - DYNAMIC VERSION
+ * @param {object} apiMapping - API mapping from RULE-004
  * @param {string} invoiceNumber - Invoice/Document Number
  * @param {string} companyCode - Company Code
- * @returns {Promise<object>} - { success, openAmount, dueDate, error }
+ * @returns {Promise<object>} - Open item details or defaults
  */
-async function fetchOpenItemDetails(invoiceNumber, companyCode) {
-    logger.info('RULE-004: Fetching Open Item Details', { invoiceNumber, companyCode });
+async function fetchOpenItemDetails(apiMapping, invoiceNumber, companyCode) {
+    logger.info('RULE-004: Fetching Open Item Details - DYNAMIC', { 
+        api: apiMapping?.apiReference,
+        invoiceNumber, 
+        companyCode 
+    });
     
     try {
-        const params = {
-            $filter: `AccountingDocument eq '${invoiceNumber}' and CompanyCode eq '${companyCode}'`,
-            $select: 'AccountingDocument,AmountInCompanyCodeCurrency,NetDueDate',
-            $top: 1
+        const inputValues = {
+            [apiMapping.sourceInput]: invoiceNumber,
+            companyCode: companyCode
         };
         
-        const result = await callSapApi(
-            '/sap/opu/odata/sap/YY1_OPENITEMS_CDS',
-            'GET',
-            params
-        );
+        const result = await executeDynamicApiCall(apiMapping, inputValues);
         
-        if (!result.success) {
-            return {
-                success: false,
-                error: `Failed to fetch open items: ${result.error}`,
-                openAmount: 0,
-                validated: false
-            };
-        }
-        
-        const items = result.data?.d?.results || [];
-        
-        if (items.length === 0) {
+        if (!result.success || !result.data?.d?.results?.length) {
             logger.warn('RULE-004: No open items found', { invoiceNumber });
             return {
                 success: false,
-                error: 'No open items found',
+                error: result.error || 'No open items found',
                 openAmount: 0,
                 validated: false
             };
         }
         
-        const item = items[0];
+        const item = result.data.d.results[0];
         
         logger.info('RULE-004: Open Item Retrieved', {
             invoiceNumber,
@@ -559,10 +439,14 @@ async function fetchOpenItemDetails(invoiceNumber, companyCode) {
 }
 
 module.exports = {
-    callSapApi,
     getDestination,
+    executeDynamicApiCall,
+    buildODataParams,
+    extractOutputValue,
     fetchAccountingDocument,
     fetchPartnerBankDetails,
     fetchCustomerMasterData,
-    fetchOpenItemDetails
+    fetchOpenItemDetails,
+    // Deprecated
+    callSapApi
 };
