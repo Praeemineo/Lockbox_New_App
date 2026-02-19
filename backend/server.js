@@ -7218,6 +7218,7 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
                             // PRESERVE values from RULE-001 if PaymentReference already has BELNR
                             PaymentReference: row.PaymentReference || inv,
                             Paymentreference: row.Paymentreference || row.PaymentReference || inv,
+                            CompanyCode: row.CompanyCode,  // ✅ Preserve CompanyCode from RULE-001
                             InvoiceAmount: amountPerInvoice,
                             // PRESERVE values from RULE-002
                             PartnerBank: row.PartnerBank,
