@@ -95,12 +95,17 @@ async function executeRule001(mappings, extractedData) {
             
             logger.info(`RULE-001 SUCCESS: Invoice ${invoiceNumber} → BELNR ${result.belnr}, CompanyCode ${result.companyCode}`);
         } else {
-            // Fallback: Mark as failed
-            row._rule001_status = 'FAILED';
-            row._rule001_message = result.error || 'BELNR not found';
+            // Fallback: Use invoice number as payment reference (default behavior)
+            row.PaymentReference = invoiceNumber;
+            row.Paymentreference = invoiceNumber;
+            row.BELNR = invoiceNumber;
+            row.CompanyCode = companyCode || '1000';  // Use existing or default company code
+            row.FiscalYear = fiscalYear || new Date().getFullYear().toString();
+            row._rule001_status = 'FALLBACK';
+            row._rule001_message = result.error || 'SAP unavailable - using invoice number as payment reference';
             errors.push(`Invoice ${invoiceNumber}: ${result.error}`);
             
-            logger.warn(`RULE-001 FAILED: Invoice ${invoiceNumber} - ${result.error}`);
+            logger.warn(`RULE-001 FALLBACK: Invoice ${invoiceNumber} - ${result.error}`);
         }
     }
     
