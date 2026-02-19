@@ -70,8 +70,24 @@
         "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartnerBank",
         "inputField": "BusinessPartner",
         "sourceInput": "CustomerNumber",
-        "outputField": "BankNumber",
-        "lockboxApiField": "BankCode"
+        "outputField": "BANKS",
+        "lockboxApiField": "PartnerBank"
+      },
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartnerBank",
+        "inputField": "BusinessPartner",
+        "sourceInput": "CustomerNumber",
+        "outputField": "BANKL",
+        "lockboxApiField": "PartnerBankAccount"
+      },
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartnerBank",
+        "inputField": "BusinessPartner",
+        "sourceInput": "CustomerNumber",
+        "outputField": "BANKN",
+        "lockboxApiField": "PartnerBankCountry"
       }
     ],
     "createdAt": "2026-02-16T12:00:00Z",
