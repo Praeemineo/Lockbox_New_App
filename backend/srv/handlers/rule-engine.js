@@ -82,7 +82,8 @@ async function executeRule001(mapping, extractedData) {
         
         // Step 3: Update Paymentreference with BELNR
         if (result.success && result.belnr) {
-            row.Paymentreference = result.belnr;
+            row.PaymentReference = result.belnr;  // ✅ Correct case
+            row.Paymentreference = result.belnr;  // Keep for backward compatibility
             row.BELNR = result.belnr;
             row.CompanyCode = result.companyCode;
             row.FiscalYear = result.fiscalYear;
