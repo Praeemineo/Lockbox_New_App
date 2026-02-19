@@ -62,6 +62,17 @@ function getDestination() {
  * @returns {Promise<object>} - API response
  */
 async function executeDynamicApiCall(apiMapping, inputValues) {
+    // Check circuit breaker before attempting connection
+    if (!checkCircuitBreaker()) {
+        return {
+            success: false,
+            error: 'SAP connection unavailable (circuit breaker open)',
+            status: 503,
+            data: null,
+            outputValue: null
+        };
+    }
+    
     const destination = getDestination();
     
     try {
@@ -138,6 +149,14 @@ async function executeDynamicApiCall(apiMapping, inputValues) {
             error: error.message,
             response: error.response?.data
         });
+        
+        // Mark connection as failed if it's a network/timeout error
+        if (error.message.includes('timeout') || 
+            error.message.includes('ENOTFOUND') || 
+            error.message.includes('ECONNREFUSED') ||
+            error.message.includes('ETIMEDOUT')) {
+            markConnectionFailed();
+        }
         
         return {
             success: false,
