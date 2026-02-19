@@ -28,7 +28,7 @@
     "apiMappings": [
       {
         "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_JOURNALENTRY_SRV/JournalEntry",
+        "apiReference": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT",
         "inputField": "InvoiceReference",
         "sourceInput": "PaymentReference",
         "outputField": "Belnr",
@@ -36,7 +36,7 @@
       },
       {
         "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_JOURNALENTRY_SRV/JournalEntry",
+        "apiReference": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT",
         "inputField": "FiscalYear",
         "sourceInput": "CurrentYear",
         "outputField": "FiscalYear",
