@@ -8,6 +8,33 @@
 const { executeHttpRequest } = require('@sap-cloud-sdk/http-client');
 const logger = require('../utils/logger');
 
+// Circuit breaker to prevent hanging on repeated connection failures
+let sapConnectionAvailable = true;
+let lastConnectionAttempt = null;
+const CONNECTION_RETRY_DELAY = 30000; // 30 seconds before retrying after failure
+
+function checkCircuitBreaker() {
+    if (!sapConnectionAvailable) {
+        const now = Date.now();
+        if (!lastConnectionAttempt || (now - lastConnectionAttempt) > CONNECTION_RETRY_DELAY) {
+            // Allow retry after delay
+            sapConnectionAvailable = true;
+            lastConnectionAttempt = now;
+            logger.info('Circuit breaker: Allowing SAP connection retry');
+            return true;
+        }
+        logger.warn('Circuit breaker: SAP connection unavailable, skipping call');
+        return false;
+    }
+    return true;
+}
+
+function markConnectionFailed() {
+    sapConnectionAvailable = false;
+    lastConnectionAttempt = Date.now();
+    logger.warn('Circuit breaker: Marking SAP connection as unavailable');
+}
+
 /**
  * Get SAP Destination Configuration
  * Uses the actual BTP destination configured in cockpit
