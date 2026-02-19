@@ -392,11 +392,16 @@ async function fetchPartnerBankDetails(apiMappings, businessPartner) {
         };
         
         const destination = getDestination();
+        
+        // Create timeout promise
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('RULE-002: SAP API timeout after 5 seconds')), 5000)
+        );
+        
+        // Execute with timeout race
         const response = await Promise.race([
             executeHttpRequest(destination, requestConfig),
-            new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('SAP API timeout after 5 seconds')), 5000)
-            )
+            timeoutPromise
         ]);
         
         if (!response.data?.d?.results?.length) {
