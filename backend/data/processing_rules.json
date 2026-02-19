@@ -3,44 +3,24 @@
     "id": "1",
     "ruleId": "RULE-001",
     "ruleName": "Accounting Document Lookup",
-    "description": "Fetch accounting document details from SAP using invoice reference",
+    "description": "Fetch accounting document details from SAP using customer number",
     "fileType": "EXCEL",
     "ruleType": "API_LOOKUP",
     "active": true,
     "conditions": [
       {
-        "documentFormat": "Check",
-        "condition": "Single Check"
-      },
-      {
-        "documentFormat": "Check Amount",
-        "condition": "Amount per Check"
-      },
-      {
-        "documentFormat": "Invoice/document number",
-        "condition": "Single/Multiple for Check"
-      },
-      {
-        "documentFormat": "Invoice/Document Amount",
-        "condition": "Invoice/Document Amount per Invoice"
+        "documentFormat": "Invoice number",
+        "condition": "Exist"
       }
     ],
     "apiMappings": [
       {
         "httpMethod": "GET",
         "apiReference": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT",
-        "inputField": "InvoiceReference",
-        "sourceInput": "PaymentReference",
-        "outputField": "Belnr",
-        "lockboxApiField": "DocumentNumber"
-      },
-      {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT",
-        "inputField": "FiscalYear",
-        "sourceInput": "CurrentYear",
-        "outputField": "FiscalYear",
-        "lockboxApiField": "FiscalYear"
+        "inputField": "P_Documentnumber",
+        "sourceInput": "CustomerNumber",
+        "outputField": "BELNR",
+        "lockboxApiField": "Paymentreference"
       }
     ],
     "createdAt": "2026-02-16T12:00:00Z",
@@ -56,19 +36,15 @@
     "active": true,
     "conditions": [
       {
-        "documentFormat": "Bank Account",
-        "condition": "Validate Bank Account"
-      },
-      {
-        "documentFormat": "Partner Number",
-        "condition": "Business Partner Lookup"
+        "documentFormat": "Customer Number",
+        "condition": "Exist"
       }
     ],
     "apiMappings": [
       {
         "httpMethod": "GET",
         "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartnerBank",
-        "inputField": "BusinessPartner",
+        "inputField": "A_BusinessPartner",
         "sourceInput": "CustomerNumber",
         "outputField": "BANKS",
         "lockboxApiField": "PartnerBank"
@@ -76,7 +52,7 @@
       {
         "httpMethod": "GET",
         "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartnerBank",
-        "inputField": "BusinessPartner",
+        "inputField": "A_BusinessPartner",
         "sourceInput": "CustomerNumber",
         "outputField": "BANKL",
         "lockboxApiField": "PartnerBankAccount"
@@ -84,7 +60,7 @@
       {
         "httpMethod": "GET",
         "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartnerBank",
-        "inputField": "BusinessPartner",
+        "inputField": "A_BusinessPartner",
         "sourceInput": "CustomerNumber",
         "outputField": "BANKN",
         "lockboxApiField": "PartnerBankCountry"
