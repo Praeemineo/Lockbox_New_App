@@ -110,9 +110,10 @@ async function executeDynamicApiCall(apiMapping, inputValues) {
  * Build OData query parameters dynamically from mapping
  * @param {object} apiMapping - API mapping configuration
  * @param {object} inputValues - Input values
+ * @param {array} additionalSelectFields - Additional fields to select (optional)
  * @returns {object} - OData query parameters
  */
-function buildODataParams(apiMapping, inputValues) {
+function buildODataParams(apiMapping, inputValues, additionalSelectFields = []) {
     const params = {};
     
     // Build $filter dynamically
@@ -141,10 +142,17 @@ function buildODataParams(apiMapping, inputValues) {
     if (apiMapping.outputField) {
         selectFields.push(apiMapping.outputField);
     }
+    
+    // Add additional select fields (for multi-field rules like RULE-002)
+    if (additionalSelectFields && additionalSelectFields.length > 0) {
+        selectFields.push(...additionalSelectFields);
+    }
+    
     // Add common fields
     selectFields.push('CompanyCode', 'FiscalYear');
     
-    params.$select = selectFields.join(',');
+    // Remove duplicates
+    params.$select = [...new Set(selectFields)].join(',');
     
     // Limit to 1 result for lookups
     params.$top = 1;
