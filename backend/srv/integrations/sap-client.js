@@ -255,7 +255,7 @@ async function fetchAccountingDocument(apiMapping, documentNumber, companyCode =
         return {
             success: true,
             belnr: result.outputValue,
-            companyCode: entry.CompanyCode || companyCode,
+            companyCode: entry.CompanyCode || companyCode,  // Use from API or fallback to input
             fiscalYear: entry.FiscalYear || fiscalYear,
             documentDate: entry.DocumentDate,
             postingDate: entry.PostingDate,
