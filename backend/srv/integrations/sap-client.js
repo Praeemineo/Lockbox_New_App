@@ -272,9 +272,35 @@ async function fetchPartnerBankDetails(apiMappings, businessPartner) {
             [firstMapping.sourceInput]: businessPartner
         };
         
-        const result = await executeDynamicApiCall(firstMapping, inputValues);
+        // Collect all output fields from the mappings (BANKS, BANKL, BANKN)
+        const additionalFields = Array.isArray(apiMappings) 
+            ? apiMappings.slice(1).map(m => m.outputField).filter(Boolean)
+            : [];
         
-        if (!result.success || !result.data?.d?.results?.length) {
+        // Build params with all output fields
+        const params = buildODataParams(firstMapping, inputValues, additionalFields);
+        
+        logger.info('RULE-002: Query parameters:', { 
+            filter: params.$filter, 
+            select: params.$select 
+        });
+        
+        // Execute API call with enhanced params
+        const requestConfig = {
+            method: 'GET',
+            url: firstMapping.apiReference,
+            params: params,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'sap-client': process.env.SAP_CLIENT || '100'
+            }
+        };
+        
+        const destination = getDestination();
+        const response = await executeHttpRequest(destination, requestConfig);
+        
+        if (!response.data?.d?.results?.length) {
             logger.warn('RULE-002: No bank details found, using defaults', { businessPartner });
             return {
                 success: false,
@@ -282,11 +308,11 @@ async function fetchPartnerBankDetails(apiMappings, businessPartner) {
                 PartnerBank: '88888876',
                 PartnerBankAccount: '8765432195',
                 PartnerBankCountry: 'US',
-                error: result.error || 'No bank details found'
+                error: 'No bank details found'
             };
         }
         
-        const bank = result.data.d.results[0];
+        const bank = response.data.d.results[0];
         
         logger.info('RULE-002: Bank Details Retrieved', {
             businessPartner,
