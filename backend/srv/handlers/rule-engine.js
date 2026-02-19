@@ -45,14 +45,16 @@ function checkRuleCondition(condition, extractedData, patternResult) {
 }
 
 /**
- * Execute RULE-001: Fetch Accounting Document (BELNR) - DYNAMIC
- * @param {object} mapping - API mapping configuration from rule
+ * Execute RULE-001: Fetch Accounting Document (BELNR) and CompanyCode - DYNAMIC
+ * @param {array|object} mappings - API mapping(s) configuration from rule (can be array or single object)
  * @param {array} extractedData - Lockbox data
  * @returns {Promise<object>} - Execution result
  */
-async function executeRule001(mapping, extractedData) {
+async function executeRule001(mappings, extractedData) {
     logger.info('=== Executing RULE-001: Accounting Document Lookup (DYNAMIC) ===');
-    logger.info(`API Mapping: ${mapping?.apiReference}`);
+    const firstMapping = Array.isArray(mappings) ? mappings[0] : mappings;
+    logger.info(`API Mapping: ${firstMapping?.apiReference}`);
+    logger.info(`Fetching fields: BELNR (Paymentreference), CompanyCode`);
     
     let recordsEnriched = 0;
     const errors = [];
@@ -68,30 +70,30 @@ async function executeRule001(mapping, extractedData) {
         
         logger.info(`RULE-001: Calling SAP API (DYNAMIC) for Invoice ${invoiceNumber}`);
         
-        // Step 2: Fetch BELNR from SAP using DYNAMIC API mapping
-        const companyCode = row.CompanyCode || '1000'; // Default company code
+        // Step 2: Fetch BELNR and CompanyCode from SAP using DYNAMIC API mapping
+        const companyCode = row.CompanyCode || '1000'; // Default company code if not already set
         const fiscalYear = row.FiscalYear || new Date().getFullYear().toString();
         
         // ⚡ DYNAMIC: Pass apiMapping as first parameter
         const result = await sapClient.fetchAccountingDocument(
-            mapping,
+            firstMapping,
             invoiceNumber,
             companyCode,
             fiscalYear
         );
         
-        // Step 3: Update Paymentreference with BELNR
+        // Step 3: Update Paymentreference and CompanyCode with values from SAP
         if (result.success && result.belnr) {
             row.PaymentReference = result.belnr;  // ✅ Correct case
             row.Paymentreference = result.belnr;  // Keep for backward compatibility
             row.BELNR = result.belnr;
-            row.CompanyCode = result.companyCode;
+            row.CompanyCode = result.companyCode;  // ✅ Store CompanyCode from SAP (not hardcoded)
             row.FiscalYear = result.fiscalYear;
             row._rule001_status = 'SUCCESS';
-            row._rule001_message = `BELNR retrieved: ${result.belnr}`;
+            row._rule001_message = `BELNR retrieved: ${result.belnr}, CompanyCode: ${result.companyCode}`;
             recordsEnriched++;
             
-            logger.info(`RULE-001 SUCCESS: Invoice ${invoiceNumber} → BELNR ${result.belnr}`);
+            logger.info(`RULE-001 SUCCESS: Invoice ${invoiceNumber} → BELNR ${result.belnr}, CompanyCode ${result.companyCode}`);
         } else {
             // Fallback: Mark as failed
             row._rule001_status = 'FAILED';
