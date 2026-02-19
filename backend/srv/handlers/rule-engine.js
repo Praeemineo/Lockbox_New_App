@@ -58,15 +58,15 @@ async function executeRule001(mapping, extractedData) {
     const errors = [];
     
     for (const row of extractedData) {
-        // Step 1: Get Customer Number from uploaded file (as per mapping.sourceInput)
-        const customerNumber = row.CustomerNumber || row.Customer;
+        // Step 1: Get Invoice Number from uploaded file (as per mapping.sourceInput)
+        const invoiceNumber = row.InvoiceNumber || row.Invoice;
         
-        if (!customerNumber || customerNumber === '' || customerNumber === null) {
-            errors.push(`Row ${row._index || 'unknown'}: Customer Number is NULL`);
+        if (!invoiceNumber || invoiceNumber === '' || invoiceNumber === null) {
+            errors.push(`Row ${row._index || 'unknown'}: Invoice Number is NULL`);
             continue;
         }
         
-        logger.info(`RULE-001: Calling SAP API (DYNAMIC) for Customer ${customerNumber}`);
+        logger.info(`RULE-001: Calling SAP API (DYNAMIC) for Invoice ${invoiceNumber}`);
         
         // Step 2: Fetch BELNR from SAP using DYNAMIC API mapping
         const companyCode = row.CompanyCode || '1000'; // Default company code
@@ -75,7 +75,7 @@ async function executeRule001(mapping, extractedData) {
         // ⚡ DYNAMIC: Pass apiMapping as first parameter
         const result = await sapClient.fetchAccountingDocument(
             mapping,
-            customerNumber,
+            invoiceNumber,
             companyCode,
             fiscalYear
         );
@@ -90,14 +90,14 @@ async function executeRule001(mapping, extractedData) {
             row._rule001_message = `BELNR retrieved: ${result.belnr}`;
             recordsEnriched++;
             
-            logger.info(`RULE-001 SUCCESS: Customer ${customerNumber} → BELNR ${result.belnr}`);
+            logger.info(`RULE-001 SUCCESS: Invoice ${invoiceNumber} → BELNR ${result.belnr}`);
         } else {
             // Fallback: Mark as failed
             row._rule001_status = 'FAILED';
             row._rule001_message = result.error || 'BELNR not found';
-            errors.push(`Customer ${customerNumber}: ${result.error}`);
+            errors.push(`Invoice ${invoiceNumber}: ${result.error}`);
             
-            logger.warn(`RULE-001 FAILED: Customer ${customerNumber} - ${result.error}`);
+            logger.warn(`RULE-001 FAILED: Invoice ${invoiceNumber} - ${result.error}`);
         }
     }
     
