@@ -343,17 +343,17 @@ async function fetchPartnerBankDetails(apiMappings, businessPartner) {
         
         logger.info('RULE-002: Bank Details Retrieved', {
             businessPartner,
-            BANKS: bank.BANKS,
-            BANKL: bank.BANKL,
-            BANKN: bank.BANKN
+            BankNumber: bank.BankNumber,
+            BankAccount: bank.BankAccount,
+            BankCountryKey: bank.BankCountryKey
         });
         
         return {
             success: true,
             usedDefaults: false,
-            PartnerBank: bank.BANKS || bank.BankInternalID || '88888876',
-            PartnerBankAccount: bank.BANKL || bank.BankAccount || '8765432195',
-            PartnerBankCountry: bank.BANKN || bank.BankCountry || 'US',
+            PartnerBank: bank.BankNumber || bank.BankInternalID || '88888876',
+            PartnerBankAccount: bank.BankAccount || '8765432195',
+            PartnerBankCountry: bank.BankCountryKey || bank.BankCountry || 'US',
             error: null
         };
         
