@@ -45,13 +45,14 @@ function checkRuleCondition(condition, extractedData, patternResult) {
 }
 
 /**
- * Execute RULE-001: Fetch Accounting Document (BELNR)
- * @param {object} mapping - API mapping configuration
+ * Execute RULE-001: Fetch Accounting Document (BELNR) - DYNAMIC
+ * @param {object} mapping - API mapping configuration from rule
  * @param {array} extractedData - Lockbox data
  * @returns {Promise<object>} - Execution result
  */
 async function executeRule001(mapping, extractedData) {
-    logger.info('=== Executing RULE-001: Accounting Document Lookup ===');
+    logger.info('=== Executing RULE-001: Accounting Document Lookup (DYNAMIC) ===');
+    logger.info(`API Mapping: ${mapping?.apiReference}`);
     
     let recordsEnriched = 0;
     const errors = [];
@@ -74,13 +75,15 @@ async function executeRule001(mapping, extractedData) {
             continue;
         }
         
-        // Step 3: Fetch BELNR from SAP
+        // Step 3: Fetch BELNR from SAP using DYNAMIC API mapping
         const companyCode = row.CompanyCode || '1000'; // Default company code
         const fiscalYear = row.FiscalYear || new Date().getFullYear().toString();
         
-        logger.info(`RULE-001: Calling SAP API for Invoice ${invoiceNumber}`);
+        logger.info(`RULE-001: Calling SAP API (DYNAMIC) for Invoice ${invoiceNumber}`);
         
+        // ⚡ DYNAMIC: Pass apiMapping as first parameter
         const result = await sapClient.fetchAccountingDocument(
+            mapping,
             invoiceNumber,
             companyCode,
             fiscalYear
@@ -117,13 +120,14 @@ async function executeRule001(mapping, extractedData) {
 }
 
 /**
- * Execute RULE-002: Fetch Partner Bank Details
- * @param {object} mapping - API mapping configuration
+ * Execute RULE-002: Fetch Partner Bank Details - DYNAMIC
+ * @param {object} mapping - API mapping configuration from rule
  * @param {array} extractedData - Lockbox data
  * @returns {Promise<object>} - Execution result
  */
 async function executeRule002(mapping, extractedData) {
-    logger.info('=== Executing RULE-002: Partner Bank Details ===');
+    logger.info('=== Executing RULE-002: Partner Bank Details (DYNAMIC) ===');
+    logger.info(`API Mapping: ${mapping?.apiReference}`);
     
     let recordsEnriched = 0;
     const warnings = [];
@@ -136,9 +140,10 @@ async function executeRule002(mapping, extractedData) {
             continue;
         }
         
-        logger.info(`RULE-002: Calling SAP API for Partner ${businessPartner}`);
+        logger.info(`RULE-002: Calling SAP API (DYNAMIC) for Partner ${businessPartner}`);
         
-        const result = await sapClient.fetchPartnerBankDetails(businessPartner);
+        // ⚡ DYNAMIC: Pass apiMapping as first parameter
+        const result = await sapClient.fetchPartnerBankDetails(mapping, businessPartner);
         
         // Update bank details (uses defaults if API fails)
         row.PartnerBank = result.bankCode;
@@ -166,13 +171,14 @@ async function executeRule002(mapping, extractedData) {
 }
 
 /**
- * Execute RULE-003: Fetch Customer Master Data
- * @param {object} mapping - API mapping configuration
+ * Execute RULE-003: Fetch Customer Master Data - DYNAMIC
+ * @param {object} mapping - API mapping configuration from rule
  * @param {array} extractedData - Lockbox data
  * @returns {Promise<object>} - Execution result
  */
 async function executeRule003(mapping, extractedData) {
-    logger.info('=== Executing RULE-003: Customer Master Data ===');
+    logger.info('=== Executing RULE-003: Customer Master Data (DYNAMIC) ===');
+    logger.info(`API Mapping: ${mapping?.apiReference}`);
     
     let recordsEnriched = 0;
     
@@ -183,9 +189,10 @@ async function executeRule003(mapping, extractedData) {
             continue; // Skip if no customer or already has name
         }
         
-        logger.info(`RULE-003: Calling SAP API for Customer ${businessPartner}`);
+        logger.info(`RULE-003: Calling SAP API (DYNAMIC) for Customer ${businessPartner}`);
         
-        const result = await sapClient.fetchCustomerMasterData(businessPartner);
+        // ⚡ DYNAMIC: Pass apiMapping as first parameter
+        const result = await sapClient.fetchCustomerMasterData(mapping, businessPartner);
         
         row.CustomerName = result.customerName;
         row.CustomerType = result.customerType;
@@ -205,13 +212,14 @@ async function executeRule003(mapping, extractedData) {
 }
 
 /**
- * Execute RULE-004: Open Item Verification
- * @param {object} mapping - API mapping configuration
+ * Execute RULE-004: Open Item Verification - DYNAMIC
+ * @param {object} mapping - API mapping configuration from rule
  * @param {array} extractedData - Lockbox data
  * @returns {Promise<object>} - Execution result
  */
 async function executeRule004(mapping, extractedData) {
-    logger.info('=== Executing RULE-004: Open Item Verification ===');
+    logger.info('=== Executing RULE-004: Open Item Verification (DYNAMIC) ===');
+    logger.info(`API Mapping: ${mapping?.apiReference}`);
     
     let recordsValidated = 0;
     const warnings = [];
@@ -224,9 +232,10 @@ async function executeRule004(mapping, extractedData) {
             continue;
         }
         
-        logger.info(`RULE-004: Calling SAP API for Open Items ${invoiceNumber}`);
+        logger.info(`RULE-004: Calling SAP API (DYNAMIC) for Open Items ${invoiceNumber}`);
         
-        const result = await sapClient.fetchOpenItemDetails(invoiceNumber, companyCode);
+        // ⚡ DYNAMIC: Pass apiMapping as first parameter
+        const result = await sapClient.fetchOpenItemDetails(mapping, invoiceNumber, companyCode);
         
         row._openItemValidated = result.validated;
         row._rule004_status = result.success ? 'SUCCESS' : 'FAILED';
