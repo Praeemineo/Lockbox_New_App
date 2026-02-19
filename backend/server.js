@@ -7214,8 +7214,14 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
                         splitData.push({
                             ...row,
                             InvoiceNumber: inv,
-                            PaymentReference: inv,
+                            // PRESERVE values from RULE-001 if PaymentReference already has BELNR
+                            PaymentReference: row.PaymentReference || inv,
+                            Paymentreference: row.Paymentreference || row.PaymentReference || inv,
                             InvoiceAmount: amountPerInvoice,
+                            // PRESERVE values from RULE-002
+                            PartnerBank: row.PartnerBank,
+                            PartnerBankAccount: row.PartnerBankAccount,
+                            PartnerBankCountry: row.PartnerBankCountry,
                             _splitFrom: invoiceField,
                             _splitRule: invoiceSplitRule.ruleName
                         });
