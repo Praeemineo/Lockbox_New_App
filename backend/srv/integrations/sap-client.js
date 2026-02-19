@@ -246,31 +246,34 @@ async function fetchAccountingDocument(apiMapping, invoiceNumber, companyCode = 
 
 /**
  * RULE-002: Fetch Partner Bank Details - DYNAMIC VERSION
- * @param {object} apiMapping - API mapping from RULE-002
+ * @param {array} apiMappings - Array of API mappings from RULE-002 (for multiple fields)
  * @param {string} businessPartner - Business Partner Number
  * @returns {Promise<object>} - Bank details or defaults
  */
-async function fetchPartnerBankDetails(apiMapping, businessPartner) {
+async function fetchPartnerBankDetails(apiMappings, businessPartner) {
     logger.info('RULE-002: Fetching Partner Bank Details - DYNAMIC', { 
-        api: apiMapping?.apiReference,
+        api: apiMappings?.[0]?.apiReference,
         businessPartner 
     });
     
     try {
+        // Use the first mapping to get the API reference (all mappings use same API)
+        const firstMapping = Array.isArray(apiMappings) ? apiMappings[0] : apiMappings;
+        
         const inputValues = {
-            [apiMapping.sourceInput]: businessPartner
+            [firstMapping.sourceInput]: businessPartner
         };
         
-        const result = await executeDynamicApiCall(apiMapping, inputValues);
+        const result = await executeDynamicApiCall(firstMapping, inputValues);
         
         if (!result.success || !result.data?.d?.results?.length) {
             logger.warn('RULE-002: No bank details found, using defaults', { businessPartner });
             return {
                 success: false,
                 usedDefaults: true,
-                bankCode: '88888876',
-                bankAccount: '8765432195',
-                bankCountry: 'US',
+                PartnerBank: '88888876',
+                PartnerBankAccount: '8765432195',
+                PartnerBankCountry: 'US',
                 error: result.error || 'No bank details found'
             };
         }
@@ -279,15 +282,17 @@ async function fetchPartnerBankDetails(apiMapping, businessPartner) {
         
         logger.info('RULE-002: Bank Details Retrieved', {
             businessPartner,
-            bankCode: bank.BankInternalID
+            BANKS: bank.BANKS,
+            BANKL: bank.BANKL,
+            BANKN: bank.BANKN
         });
         
         return {
             success: true,
             usedDefaults: false,
-            bankCode: bank.BankInternalID,
-            bankAccount: bank.BankAccount,
-            bankCountry: bank.BankCountry,
+            PartnerBank: bank.BANKS || bank.BankInternalID || '88888876',
+            PartnerBankAccount: bank.BANKL || bank.BankAccount || '8765432195',
+            PartnerBankCountry: bank.BANKN || bank.BankCountry || 'US',
             error: null
         };
         
@@ -296,9 +301,9 @@ async function fetchPartnerBankDetails(apiMapping, businessPartner) {
         return {
             success: false,
             usedDefaults: true,
-            bankCode: '88888876',
-            bankAccount: '8765432195',
-            bankCountry: 'US',
+            PartnerBank: '88888876',
+            PartnerBankAccount: '8765432195',
+            PartnerBankCountry: 'US',
             error: error.message
         };
     }
