@@ -60,7 +60,7 @@ function getDestination() {
  * Execute Direct SAP API Call using axios (Fallback when Cloud SDK fails)
  * Uses credentials from .env file for production/direct connection
  */
-async function executeDirect SapApiCall(apiMapping, inputValues) {
+async function executeDirectSapApiCall(apiMapping, inputValues) {
     const sapUrl = process.env.SAP_URL;
     const sapUser = process.env.SAP_USER;
     const sapPassword = process.env.SAP_PASSWORD;
