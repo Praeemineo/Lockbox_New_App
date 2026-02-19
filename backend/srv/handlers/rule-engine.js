@@ -119,7 +119,8 @@ async function executeRule002(mappings, extractedData) {
     logger.info('=== Executing RULE-002: Partner Bank Details (DYNAMIC) ===');
     const firstMapping = Array.isArray(mappings) ? mappings[0] : mappings;
     logger.info(`API Mapping: ${firstMapping?.apiReference}`);
-    logger.info(`Fetching fields: BANKS (PartnerBank), BANKL (PartnerBankAccount), BANKN (PartnerBankCountry)`);
+    logger.info(`Fetching fields: BankNumber (PartnerBank), BankAccount (PartnerBankAccount), BankCountryKey (PartnerBankCountry)`);
+    logger.info(`Filter Condition: BankIdentification = ${firstMapping?.filterConditions?.BankIdentification || 'None'}`);
     
     let recordsEnriched = 0;
     const warnings = [];
