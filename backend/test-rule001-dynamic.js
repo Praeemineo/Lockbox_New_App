@@ -18,10 +18,12 @@ console.log('🧪 RULE-001 Dynamic SAP Integration Test');
 console.log('='.repeat(70));
 console.log();
 
-// Test 1: Load Processing Rules
-console.log('📋 Test 1: Loading Processing Rules from JSON');
-console.log('-'.repeat(70));
-const rules = dataModels.getActiveProcessingRules();
+async function runTests() {
+    // Test 1: Load Processing Rules
+    console.log('📋 Test 1: Loading Processing Rules from JSON');
+    console.log('-'.repeat(70));
+    await dataModels.loadProcessingRules();
+    const rules = dataModels.getActiveProcessingRules();
 console.log(`✅ Loaded ${rules.length} active processing rules`);
 rules.forEach(rule => {
     console.log(`   - ${rule.ruleId}: ${rule.ruleName}`);
@@ -193,3 +195,10 @@ console.log('⚠️  Note: Full integration requires uploading a file through th
 console.log('   This test only validates the code structure and configuration.');
 console.log();
 console.log('='.repeat(70));
+}
+
+// Run async tests
+runTests().catch(err => {
+    console.error('❌ Test failed:', err);
+    process.exit(1);
+});
