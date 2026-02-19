@@ -338,6 +338,19 @@ async function fetchPartnerBankDetails(apiMappings, businessPartner) {
     });
     
     try {
+        // Check circuit breaker before attempting connection
+        if (!checkCircuitBreaker()) {
+            logger.warn('RULE-002: Circuit breaker open, using defaults');
+            return {
+                success: false,
+                usedDefaults: true,
+                PartnerBank: '88888876',
+                PartnerBankAccount: '8765432195',
+                PartnerBankCountry: 'US',
+                error: 'SAP connection unavailable (circuit breaker open)'
+            };
+        }
+        
         // Use the first mapping to get the API reference (all mappings use same API)
         const firstMapping = Array.isArray(apiMappings) ? apiMappings[0] : apiMappings;
         
@@ -366,7 +379,7 @@ async function fetchPartnerBankDetails(apiMappings, businessPartner) {
         
         const fullUrl = `${firstMapping.apiReference}?${queryString.toString()}`;
         
-        // Execute API call with enhanced params
+        // Execute API call with enhanced params and timeout
         const requestConfig = {
             method: 'GET',
             url: fullUrl,
@@ -374,11 +387,17 @@ async function fetchPartnerBankDetails(apiMappings, businessPartner) {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'sap-client': process.env.SAP_CLIENT || '100'
-            }
+            },
+            timeout: parseInt(process.env.SAP_API_TIMEOUT) || 5000
         };
         
         const destination = getDestination();
-        const response = await executeHttpRequest(destination, requestConfig);
+        const response = await Promise.race([
+            executeHttpRequest(destination, requestConfig),
+            new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('SAP API timeout after 5 seconds')), 5000)
+            )
+        ]);
         
         if (!response.data?.d?.results?.length) {
             logger.warn('RULE-002: No bank details found, using defaults', { businessPartner });
