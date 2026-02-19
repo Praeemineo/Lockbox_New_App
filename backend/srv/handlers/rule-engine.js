@@ -321,7 +321,8 @@ async function executeRule(rule, extractedData, patternResult) {
     
     switch (rule.ruleId) {
         case 'RULE-001':
-            result = await executeRule001(rule.apiMappings?.[0], extractedData);
+            // Pass all apiMappings for multiple field retrieval (BELNR, CompanyCode)
+            result = await executeRule001(rule.apiMappings, extractedData);
             break;
         case 'RULE-002':
             // Pass all apiMappings for multiple field retrieval (BANKS, BANKL, BANKN)
