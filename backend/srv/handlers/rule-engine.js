@@ -58,40 +58,31 @@ async function executeRule001(mapping, extractedData) {
     const errors = [];
     
     for (const row of extractedData) {
-        // Step 1: Validate Invoice Number
-        const invoiceNumber = row.InvoiceNumber || row.PaymentReference;
+        // Step 1: Get Customer Number from uploaded file (as per mapping.sourceInput)
+        const customerNumber = row.CustomerNumber || row.Customer;
         
-        if (!invoiceNumber || invoiceNumber === '' || invoiceNumber === null) {
-            errors.push(`Row ${row._index || 'unknown'}: Invoice Number is NULL`);
+        if (!customerNumber || customerNumber === '' || customerNumber === null) {
+            errors.push(`Row ${row._index || 'unknown'}: Customer Number is NULL`);
             continue;
         }
         
-        // Step 2: Check if it's an integer (accounting document format)
-        const isInteger = /^\d+$/.test(invoiceNumber.toString());
-        if (!isInteger) {
-            logger.debug(`Row: InvoiceNumber ${invoiceNumber} is not an integer, skipping BELNR lookup`);
-            row.PaymentReference = invoiceNumber; // Use as-is
-            recordsEnriched++;
-            continue;
-        }
+        logger.info(`RULE-001: Calling SAP API (DYNAMIC) for Customer ${customerNumber}`);
         
-        // Step 3: Fetch BELNR from SAP using DYNAMIC API mapping
+        // Step 2: Fetch BELNR from SAP using DYNAMIC API mapping
         const companyCode = row.CompanyCode || '1000'; // Default company code
         const fiscalYear = row.FiscalYear || new Date().getFullYear().toString();
-        
-        logger.info(`RULE-001: Calling SAP API (DYNAMIC) for Invoice ${invoiceNumber}`);
         
         // ⚡ DYNAMIC: Pass apiMapping as first parameter
         const result = await sapClient.fetchAccountingDocument(
             mapping,
-            invoiceNumber,
+            customerNumber,
             companyCode,
             fiscalYear
         );
         
-        // Step 4: Update PaymentReference with BELNR
+        // Step 3: Update Paymentreference with BELNR
         if (result.success && result.belnr) {
-            row.PaymentReference = result.belnr;
+            row.Paymentreference = result.belnr;
             row.BELNR = result.belnr;
             row.CompanyCode = result.companyCode;
             row.FiscalYear = result.fiscalYear;
@@ -99,15 +90,14 @@ async function executeRule001(mapping, extractedData) {
             row._rule001_message = `BELNR retrieved: ${result.belnr}`;
             recordsEnriched++;
             
-            logger.info(`RULE-001 SUCCESS: Invoice ${invoiceNumber} → BELNR ${result.belnr}`);
+            logger.info(`RULE-001 SUCCESS: Customer ${customerNumber} → BELNR ${result.belnr}`);
         } else {
-            // Fallback: Use invoice number as payment reference
-            row.PaymentReference = invoiceNumber;
+            // Fallback: Mark as failed
             row._rule001_status = 'FAILED';
             row._rule001_message = result.error || 'BELNR not found';
-            errors.push(`Invoice ${invoiceNumber}: ${result.error}`);
+            errors.push(`Customer ${customerNumber}: ${result.error}`);
             
-            logger.warn(`RULE-001 FAILED: Invoice ${invoiceNumber} - ${result.error}`);
+            logger.warn(`RULE-001 FAILED: Customer ${customerNumber} - ${result.error}`);
         }
     }
     
