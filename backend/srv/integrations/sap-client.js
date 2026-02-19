@@ -431,6 +431,15 @@ async function fetchPartnerBankDetails(apiMappings, businessPartner) {
         
     } catch (error) {
         logger.error('RULE-002: Error fetching bank details', { error: error.message });
+        
+        // Mark connection as failed if it's a network/timeout error
+        if (error.message.includes('timeout') || 
+            error.message.includes('ENOTFOUND') || 
+            error.message.includes('ECONNREFUSED') ||
+            error.message.includes('ETIMEDOUT')) {
+            markConnectionFailed();
+        }
+        
         return {
             success: false,
             usedDefaults: true,
