@@ -6961,12 +6961,50 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         const totalRecordsEnriched = ruleExecutionLogs.reduce((sum, log) => sum + log.recordsEnriched, 0);
         const rulesExecuted = ruleExecutionLogs.filter(log => log.conditionsMet > 0).length;
         
+        // Build rule results summary for frontend display
+        const ruleResultsSummary = {
+            rule001: null,
+            rule002: null
+        };
+        
+        // Get RULE-001 results (Paymentreference)
+        const rule001Log = ruleExecutionLogs.find(log => log.ruleId === 'RULE-001');
+        if (rule001Log && rule001Log.recordsEnriched > 0) {
+            const sampleRows = extractedData.filter(row => row.Paymentreference && row._rule001_status === 'SUCCESS').slice(0, 3);
+            ruleResultsSummary.rule001 = {
+                executed: true,
+                recordsEnriched: rule001Log.recordsEnriched,
+                sampleValues: sampleRows.map(row => ({
+                    invoiceNumber: row.InvoiceNumber,
+                    derivedBELNR: row.Paymentreference,
+                    derivedValue: row.BELNR
+                }))
+            };
+        }
+        
+        // Get RULE-002 results (Partner Bank Details)
+        const rule002Log = ruleExecutionLogs.find(log => log.ruleId === 'RULE-002');
+        if (rule002Log && rule002Log.recordsEnriched > 0) {
+            const sampleRows = extractedData.filter(row => row.PartnerBank && row._rule002_status === 'SUCCESS').slice(0, 3);
+            ruleResultsSummary.rule002 = {
+                executed: true,
+                recordsEnriched: rule002Log.recordsEnriched,
+                sampleValues: sampleRows.map(row => ({
+                    customerNumber: row.CustomerNumber || row.Customer,
+                    partnerBank: row.PartnerBank,
+                    partnerBankAccount: row.PartnerBankAccount,
+                    partnerBankCountry: row.PartnerBankCountry
+                }))
+            };
+        }
+        
         run.stages.validation = { 
             status: warnings.length || errors.length ? 'warning' : 'success', 
             message: `Executed ${rulesExecuted}/${activeRules.length} rules, enriched ${totalRecordsEnriched} records. ${warnings.length} warnings.`, 
             warnings, 
             errors,
-            ruleExecutionLogs
+            ruleExecutionLogs,
+            ruleResultsSummary
         };
         console.log(`\n✓ Validation complete. Rules executed: ${rulesExecuted}, Records enriched: ${totalRecordsEnriched}`);
         console.log('Warnings:', warnings.length, 'Errors:', errors.length);
