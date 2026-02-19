@@ -7101,9 +7101,9 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
                             splitData.push({
                                 ...row,
                                 InvoiceNumber: invoiceNumber,
-                                // IMPORTANT: Preserve PaymentReference from RULE-001 if it exists
-                                // Only update PaymentReference if it doesn't already have a BELNR value
-                                PaymentReference: row.Paymentreference || row.PaymentReference || invoiceNumber,
+                                // PRESERVE values from RULE-001 and RULE-002 if they exist
+                                PaymentReference: row.PaymentReference || invoiceNumber,
+                                Paymentreference: row.Paymentreference || row.PaymentReference || invoiceNumber,
                                 InvoiceAmount: splitAmounts[i],
                                 _splitFrom: invoiceField,
                                 _splitRule: matchedPattern.patternName,
