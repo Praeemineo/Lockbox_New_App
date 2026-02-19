@@ -134,6 +134,14 @@ function buildODataParams(apiMapping, inputValues, additionalSelectFields = []) 
         filterParts.push(`${apiMapping.inputField} eq '${inputValue}'`);
     }
     
+    // Add filter conditions from mapping (e.g., BankIdentification = 0001)
+    if (apiMapping.filterConditions) {
+        Object.keys(apiMapping.filterConditions).forEach(key => {
+            const value = apiMapping.filterConditions[key];
+            filterParts.push(`${key} eq '${value}'`);
+        });
+    }
+    
     // Add additional filters from inputValues
     if (inputValues.companyCode) {
         filterParts.push(`CompanyCode eq '${inputValues.companyCode}'`);
