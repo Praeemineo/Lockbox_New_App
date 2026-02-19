@@ -527,41 +527,129 @@ async function fetchPartnerBankDetails(apiMappings, businessPartner) {
             setTimeout(() => reject(new Error('RULE-002: SAP API timeout after 5 seconds')), 5000)
         );
         
-        // Execute with timeout race
-        const response = await Promise.race([
-            executeHttpRequest(destination, requestConfig),
-            timeoutPromise
-        ]);
-        
-        if (!response.data?.d?.results?.length) {
-            logger.warn('RULE-002: No bank details found, using defaults', { businessPartner });
+        // Try Cloud SDK first with timeout race
+        try {
+            logger.info('Attempting SAP Cloud SDK connection for RULE-002...');
+            const response = await Promise.race([
+                executeHttpRequest(destination, requestConfig),
+                timeoutPromise
+            ]);
+            
+            if (!response.data?.d?.results?.length) {
+                logger.warn('RULE-002: No bank details found, using defaults', { businessPartner });
+                return {
+                    success: false,
+                    usedDefaults: true,
+                    PartnerBank: '88888876',
+                    PartnerBankAccount: '8765432195',
+                    PartnerBankCountry: 'US',
+                    error: 'No bank details found'
+                };
+            }
+            
+            const bank = response.data.d.results[0];
+            
+            logger.info('RULE-002: Bank Details Retrieved via Cloud SDK', {
+                businessPartner,
+                BankNumber: bank.BankNumber,
+                BankAccount: bank.BankAccount,
+                BankCountryKey: bank.BankCountryKey
+            });
+            
             return {
-                success: false,
-                usedDefaults: true,
-                PartnerBank: '88888876',
-                PartnerBankAccount: '8765432195',
-                PartnerBankCountry: 'US',
-                error: 'No bank details found'
+                success: true,
+                usedDefaults: false,
+                PartnerBank: bank.BankNumber || bank.BankInternalID || '88888876',
+                PartnerBankAccount: bank.BankAccount || '8765432195',
+                PartnerBankCountry: bank.BankCountryKey || bank.BankCountry || 'US',
+                error: null
             };
+            
+        } catch (cloudSdkError) {
+            logger.warn(`RULE-002: Cloud SDK failed: ${cloudSdkError.message}`);
+            logger.info('RULE-002: Attempting fallback to direct SAP connection...');
+            
+            // Try direct connection as fallback
+            try {
+                const sapUrl = process.env.SAP_URL;
+                const sapUser = process.env.SAP_USER;
+                const sapPassword = process.env.SAP_PASSWORD;
+                const sapClient = process.env.SAP_CLIENT || '100';
+                
+                if (!sapUrl || !sapUser || !sapPassword) {
+                    throw new Error('SAP credentials not configured in .env');
+                }
+                
+                const directUrl = `${sapUrl}${fullUrl}`;
+                
+                const axiosConfig = {
+                    method: 'GET',
+                    url: directUrl,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'sap-client': sapClient
+                    },
+                    auth: {
+                        username: sapUser,
+                        password: sapPassword
+                    },
+                    timeout: 5000,
+                    httpsAgent: new https.Agent({
+                        rejectUnauthorized: false
+                    })
+                };
+                
+                const axios = require('axios');
+                const directResponse = await axios(axiosConfig);
+                
+                if (!directResponse.data?.d?.results?.length) {
+                    logger.warn('RULE-002: No bank details found (direct), using defaults', { businessPartner });
+                    return {
+                        success: false,
+                        usedDefaults: true,
+                        PartnerBank: '88888876',
+                        PartnerBankAccount: '8765432195',
+                        PartnerBankCountry: 'US',
+                        error: 'No bank details found'
+                    };
+                }
+                
+                const bank = directResponse.data.d.results[0];
+                
+                logger.info('✅ RULE-002: Bank Details Retrieved via Direct Connection (fallback worked)', {
+                    businessPartner,
+                    BankNumber: bank.BankNumber,
+                    BankAccount: bank.BankAccount,
+                    BankCountryKey: bank.BankCountryKey
+                });
+                
+                return {
+                    success: true,
+                    usedDefaults: false,
+                    PartnerBank: bank.BankNumber || bank.BankInternalID || '88888876',
+                    PartnerBankAccount: bank.BankAccount || '8765432195',
+                    PartnerBankCountry: bank.BankCountryKey || bank.BankCountry || 'US',
+                    error: null
+                };
+                
+            } catch (directError) {
+                logger.error('RULE-002: Both Cloud SDK and Direct connection failed', {
+                    cloudSdkError: cloudSdkError.message,
+                    directError: directError.message
+                });
+                
+                // Use defaults as final fallback
+                return {
+                    success: false,
+                    usedDefaults: true,
+                    PartnerBank: '88888876',
+                    PartnerBankAccount: '8765432195',
+                    PartnerBankCountry: 'US',
+                    error: `Both connections failed: ${cloudSdkError.message}`
+                };
+            }
         }
-        
-        const bank = response.data.d.results[0];
-        
-        logger.info('RULE-002: Bank Details Retrieved', {
-            businessPartner,
-            BankNumber: bank.BankNumber,
-            BankAccount: bank.BankAccount,
-            BankCountryKey: bank.BankCountryKey
-        });
-        
-        return {
-            success: true,
-            usedDefaults: false,
-            PartnerBank: bank.BankNumber || bank.BankInternalID || '88888876',
-            PartnerBankAccount: bank.BankAccount || '8765432195',
-            PartnerBankCountry: bank.BankCountryKey || bank.BankCountry || 'US',
-            error: null
-        };
         
     } catch (error) {
         logger.error('RULE-002: Error fetching bank details', { error: error.message });
