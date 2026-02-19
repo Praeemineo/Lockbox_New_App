@@ -7158,6 +7158,12 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
                                 ...row,
                                 CheckNumber: checks[i].padStart(10, '0'),
                                 CheckAmount: amountPerCheck,
+                                // PRESERVE enriched values from RULE-001 and RULE-002
+                                PaymentReference: row.PaymentReference,
+                                Paymentreference: row.Paymentreference,
+                                PartnerBank: row.PartnerBank,
+                                PartnerBankAccount: row.PartnerBankAccount,
+                                PartnerBankCountry: row.PartnerBankCountry,
                                 _splitFrom: checkField,
                                 _splitRule: matchedPattern.patternName
                             });
