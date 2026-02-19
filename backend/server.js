@@ -7105,6 +7105,10 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
                                 // PRESERVE values from RULE-001 and RULE-002 if they exist
                                 PaymentReference: row.PaymentReference || invoiceNumber,
                                 Paymentreference: row.Paymentreference || row.PaymentReference || invoiceNumber,
+                                CompanyCode: row.CompanyCode,  // ✅ Preserve CompanyCode from RULE-001
+                                PartnerBank: row.PartnerBank,
+                                PartnerBankAccount: row.PartnerBankAccount,
+                                PartnerBankCountry: row.PartnerBankCountry,
                                 InvoiceAmount: splitAmounts[i],
                                 _splitFrom: invoiceField,
                                 _splitRule: matchedPattern.patternName,
@@ -7162,6 +7166,7 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
                                 // PRESERVE enriched values from RULE-001 and RULE-002
                                 PaymentReference: row.PaymentReference,
                                 Paymentreference: row.Paymentreference,
+                                CompanyCode: row.CompanyCode,  // ✅ Preserve CompanyCode from RULE-001
                                 PartnerBank: row.PartnerBank,
                                 PartnerBankAccount: row.PartnerBankAccount,
                                 PartnerBankCountry: row.PartnerBankCountry,
