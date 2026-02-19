@@ -49,10 +49,26 @@ async function executeDynamicApiCall(apiMapping, inputValues) {
         // Build OData query parameters dynamically
         const params = buildODataParams(apiMapping, inputValues);
         
+        logger.info('Request config:', { 
+            endpoint, 
+            method, 
+            filter: params.$filter,
+            select: params.$select 
+        });
+        
+        // For OData v4, build URL with query string manually
+        const queryString = new URLSearchParams();
+        if (params.$filter) queryString.append('$filter', params.$filter);
+        if (params.$select) queryString.append('$select', params.$select);
+        if (params.$top) queryString.append('$top', params.$top);
+        
+        const fullUrl = `${endpoint}?${queryString.toString()}`;
+        
+        logger.info('Full API URL:', { url: fullUrl });
+        
         const requestConfig = {
             method: method.toUpperCase(),
-            url: endpoint,
-            params: params,
+            url: fullUrl,
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
@@ -64,13 +80,6 @@ async function executeDynamicApiCall(apiMapping, inputValues) {
         if (inputValues.payload && (method === 'POST' || method === 'PUT')) {
             requestConfig.data = inputValues.payload;
         }
-        
-        logger.info('Request config:', { 
-            endpoint, 
-            method, 
-            filter: params.$filter,
-            select: params.$select 
-        });
         
         // Execute via Cloud SDK
         const response = await executeHttpRequest(destination, requestConfig);
