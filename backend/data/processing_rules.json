@@ -21,6 +21,14 @@
         "sourceInput": "InvoiceNumber",
         "outputField": "BELNR",
         "lockboxApiField": "Paymentreference"
+      },
+      {
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT",
+        "inputField": "P_Documentnumber",
+        "sourceInput": "InvoiceNumber",
+        "outputField": "CompanyCode",
+        "lockboxApiField": "CompanyCode"
       }
     ],
     "createdAt": "2026-02-16T12:00:00Z",
