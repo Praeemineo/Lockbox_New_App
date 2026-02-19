@@ -6990,7 +6990,7 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
                 executed: true,
                 recordsEnriched: rule002Log.recordsEnriched,
                 sampleValues: sampleRows.map(row => ({
-                    customerNumber: row.CustomerNumber || row.Customer,
+                    customerNumber: row.CustomerNumber || row.Customer || row['Customer Number'] || row.BusinessPartner,
                     partnerBank: row.PartnerBank,
                     partnerBankAccount: row.PartnerBankAccount,
                     partnerBankCountry: row.PartnerBankCountry
