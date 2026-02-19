@@ -10,6 +10,13 @@ const { executeHttpRequest } = require('@sap-cloud-sdk/http-client');
 require('dotenv').config();
 
 // ============================================================================
+// MODULAR IMPORTS - Dynamic Rule Engine (NEW)
+// ============================================================================
+const ruleEngine = require('./srv/handlers/rule-engine');
+const sapClient = require('./srv/integrations/sap-client');
+const dataModels = require('./srv/models/data-models');
+
+// ============================================================================
 // MODULAR IMPORTS - SAP and Database Services
 // ============================================================================
 // SAP Service Modules (organized by HTTP method)
