@@ -189,35 +189,38 @@ function extractOutputValue(responseData, outputField) {
  * Uses apiMappings from rule configuration
  * 
  * @param {object} apiMapping - API mapping from RULE-001
- * @param {string} invoiceNumber - Invoice/Document Number
+ * @param {string} documentNumber - Customer Number or Document Number (based on mapping.sourceInput)
  * @param {string} companyCode - Company Code (optional)
  * @param {string} fiscalYear - Fiscal Year (optional)
  * @returns {Promise<object>} - { success, belnr, companyCode, fiscalYear, error }
  */
-async function fetchAccountingDocument(apiMapping, invoiceNumber, companyCode = null, fiscalYear = null) {
+async function fetchAccountingDocument(apiMapping, documentNumber, companyCode = null, fiscalYear = null) {
     logger.info('RULE-001: Fetching Accounting Document (BELNR) - DYNAMIC', { 
         api: apiMapping?.apiReference,
-        invoiceNumber, 
+        inputField: apiMapping?.inputField,
+        documentNumber, 
         companyCode, 
         fiscalYear 
     });
     
     try {
-        // Build input values dynamically
+        // Build input values dynamically based on mapping.sourceInput
         const inputValues = {
-            [apiMapping.sourceInput]: invoiceNumber,
+            [apiMapping.sourceInput]: documentNumber,
             companyCode: companyCode,
             fiscalYear: fiscalYear
         };
+        
+        logger.info('RULE-001: Input values:', inputValues);
         
         // Execute dynamic API call
         const result = await executeDynamicApiCall(apiMapping, inputValues);
         
         if (!result.success || !result.outputValue) {
-            logger.warn('RULE-001: No accounting document found', { invoiceNumber });
+            logger.warn('RULE-001: No accounting document found', { documentNumber });
             return {
                 success: false,
-                error: result.error || `No accounting document found for invoice ${invoiceNumber}`,
+                error: result.error || `No accounting document found for ${documentNumber}`,
                 belnr: null
             };
         }
@@ -226,7 +229,7 @@ async function fetchAccountingDocument(apiMapping, invoiceNumber, companyCode = 
         const entry = result.data?.d?.results?.[0] || {};
         
         logger.info('RULE-001: Accounting Document Retrieved', {
-            invoiceNumber,
+            documentNumber,
             belnr: result.outputValue,
             companyCode: entry.CompanyCode,
             fiscalYear: entry.FiscalYear
