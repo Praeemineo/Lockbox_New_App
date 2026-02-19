@@ -5350,6 +5350,7 @@ async function executeApiMapping(mapping, extractedData, ruleId) {
         // Call the appropriate dynamic rule execution function
         switch (ruleId) {
             case 'RULE-001':
+                // RULE-001 needs all mappings to fetch both BELNR and CompanyCode
                 result = await ruleEngine.executeRule001(mapping, extractedData);
                 break;
             case 'RULE-002':
