@@ -5337,129 +5337,60 @@ function checkRuleCondition(condition, extractedData, patternResult) {
 }
 
 // Execute an API mapping and enrich the extracted data
+// ⚡ NOW USING DYNAMIC RULE ENGINE FROM /srv/handlers/rule-engine.js
 async function executeApiMapping(mapping, extractedData, ruleId) {
     console.log(`    → API Mapping: ${mapping.apiReference}`);
     console.log(`      Input: ${mapping.inputField} from ${mapping.sourceInput}`);
     console.log(`      Output: ${mapping.outputField} → ${mapping.lockboxApiField}`);
+    console.log(`    ⚡ CALLING DYNAMIC RULE ENGINE for ${ruleId}`);
     
-    let recordsAffected = 0;
-    const errors = [];
-    
-    // RULE-001: Fetch Accounting Document (Belnr) and Company Code
-    if (ruleId === 'RULE-001' && mapping.outputField === 'Belnr') {
-        console.log('      Executing RULE-001: Fetch Accounting Document (PaymentReference)');
+    try {
+        let result;
         
-        for (const row of extractedData) {
-            // Get input value from sourceInput field
-            const inputValue = row[mapping.sourceInput] || row.InvoiceNumber;
-            
-            if (inputValue) {
-                // Simulate SAP API call (in production, this would call SAP Cloud SDK)
-                // const apiResult = await callSapApi(mapping.apiReference, { [mapping.inputField]: inputValue });
-                
-                // For now, use existing logic or mock data
-                if (!row.PaymentReference) {
-                    row.PaymentReference = inputValue; // Use invoice as payment reference
-                    recordsAffected++;
-                }
-                
-                // Set Belnr if available
-                if (row.BELNR && !row.PaymentReference) {
-                    row.PaymentReference = row.BELNR;
-                    recordsAffected++;
-                }
-            }
+        // Call the appropriate dynamic rule execution function
+        switch (ruleId) {
+            case 'RULE-001':
+                result = await ruleEngine.executeRule001(mapping, extractedData);
+                break;
+            case 'RULE-002':
+                // RULE-002 needs all mappings, not just one
+                // For now, pass the single mapping and let it handle
+                result = await ruleEngine.executeRule002(mapping, extractedData);
+                break;
+            case 'RULE-003':
+                result = await ruleEngine.executeRule003(mapping, extractedData);
+                break;
+            case 'RULE-004':
+                result = await ruleEngine.executeRule004(mapping, extractedData);
+                break;
+            default:
+                console.log(`      ⚠ No dynamic handler for ${ruleId}, using fallback`);
+                return {
+                    success: true,
+                    recordsAffected: 0,
+                    message: `No handler for ${ruleId}`
+                };
         }
-    }
-    
-    // RULE-001: Fetch Company Code
-    if (ruleId === 'RULE-001' && mapping.outputField === 'CompanyCode') {
-        console.log('      Executing RULE-001: Fetch Company Code');
         
-        for (const row of extractedData) {
-            if (!row.CompanyCode) {
-                // Use default company code from API fields or configuration
-                row.CompanyCode = '1000'; // Default SAP company code
-                recordsAffected++;
-            }
-        }
-    }
-    
-    // RULE-002: Partner Bank Details
-    if (ruleId === 'RULE-002') {
-        console.log('      Executing RULE-002: Fetch Partner Bank Details');
+        console.log(`    ✓ ${ruleId} complete: ${result.message}`);
         
-        // Get defaults from API Fields
-        const DEFAULT_PARTNER_BANK = '88888876';
-        const DEFAULT_PARTNER_BANK_ACCOUNT = '8765432195';
-        const DEFAULT_PARTNER_BANK_COUNTRY = 'US';
+        return {
+            success: result.success,
+            recordsAffected: result.recordsEnriched || result.recordsValidated || 0,
+            message: result.message,
+            errors: result.errors || [],
+            warnings: result.warnings || []
+        };
         
-        for (const row of extractedData) {
-            // Try to fetch from SAP API first
-            // const bankDetails = await callSapApi(mapping.apiReference, { BusinessPartner: row.Customer });
-            
-            // Fallback to defaults if API returns nothing
-            if (!row.PartnerBank) {
-                row.PartnerBank = DEFAULT_PARTNER_BANK;
-                recordsAffected++;
-            }
-            if (!row.PartnerBankAccount) {
-                row.PartnerBankAccount = DEFAULT_PARTNER_BANK_ACCOUNT;
-                recordsAffected++;
-            }
-            if (!row.PartnerBankCountry) {
-                row.PartnerBankCountry = DEFAULT_PARTNER_BANK_COUNTRY;
-                recordsAffected++;
-            }
-        }
+    } catch (error) {
+        console.error(`    ✗ Error executing ${ruleId}:`, error.message);
+        return {
+            success: false,
+            recordsAffected: 0,
+            message: `Error: ${error.message}`,
+            errors: [error.message]
+        };
     }
-    
-    // RULE-003: Customer Master Data
-    if (ruleId === 'RULE-003') {
-        console.log('      Executing RULE-003: Fetch Customer Master Data');
-        
-        for (const row of extractedData) {
-            if (row.Customer && !row.CustomerName) {
-                // In production: const customerData = await callSapApi(mapping.apiReference, { BusinessPartner: row.Customer });
-                row.CustomerName = row.Customer; // Placeholder
-                row.CustomerType = 'CUSTOMER'; // Default
-                recordsAffected++;
-            }
-        }
-    }
-    
-    // RULE-004: Open Item Verification
-    if (ruleId === 'RULE-004') {
-        console.log('      Executing RULE-004: Verify Open Items');
-        
-        for (const row of extractedData) {
-            if (row.InvoiceNumber) {
-                // In production: const openItems = await callSapApi(mapping.apiReference, { InvoiceNumber: row.InvoiceNumber });
-                // Validate amounts match
-                row._openItemValidated = true;
-                recordsAffected++;
-            }
-        }
-    }
-    
-    // RULE-005: Payment Terms Lookup (for post-processing)
-    if (ruleId === 'RULE-005') {
-        console.log('      Executing RULE-005: Lookup Payment Terms');
-        
-        for (const row of extractedData) {
-            if (row.Customer) {
-                // In production: const terms = await callSapApi(mapping.apiReference, { Customer: row.Customer });
-                row.PaymentTerms = 'Z001'; // Default
-                recordsAffected++;
-            }
-        }
-    }
-    
-    return {
-        success: true,
-        recordsAffected,
-        message: `Enriched ${recordsAffected} records`
-    };
 }
 
 // ============================================================================
