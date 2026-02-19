@@ -6001,6 +6001,11 @@ sap.ui.define([
                         // Immediately refresh the run history to update TreeTable
                         that._loadRunHistory();
                         
+                        // Show Rule Execution Results Dialog if rules were executed
+                        if (oResponse.run.stages.validation && oResponse.run.stages.validation.ruleResultsSummary) {
+                            that._showRuleExecutionResultsDialog(oResponse.run);
+                        }
+                        
                         // Build step-by-step processing status message
                         var sStageInfo = that._formatProcessingStagesDetailed(oResponse.run);
                         
