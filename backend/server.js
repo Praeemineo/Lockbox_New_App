@@ -6886,26 +6886,50 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
             if (rule.apiMappings && Array.isArray(rule.apiMappings)) {
                 console.log(`  Executing ${rule.apiMappings.length} API mappings...`);
                 
-                for (const mapping of rule.apiMappings) {
+                // Special handling for RULE-002: needs all mappings at once
+                if (rule.ruleId === 'RULE-002' && rule.apiMappings.length > 1) {
+                    console.log(`  ⚡ RULE-002: Executing all ${rule.apiMappings.length} mappings together`);
                     ruleLog.apiCallsMade++;
                     try {
-                        // Execute API mapping dynamically
-                        const enrichmentResult = await executeApiMapping(
-                            mapping, 
-                            extractedData, 
-                            rule.ruleId
+                        const enrichmentResult = await ruleEngine.executeRule002(
+                            rule.apiMappings,  // Pass all mappings
+                            extractedData
                         );
                         
                         if (enrichmentResult.success) {
-                            ruleLog.recordsEnriched += enrichmentResult.recordsAffected;
-                            console.log(`  ✓ API mapping successful: ${enrichmentResult.recordsAffected} records enriched`);
+                            ruleLog.recordsEnriched += enrichmentResult.recordsEnriched || 0;
+                            console.log(`  ✓ RULE-002 successful: ${enrichmentResult.recordsEnriched} records enriched`);
                         } else {
                             ruleLog.warnings.push(enrichmentResult.message);
-                            console.log(`  ⚠ API mapping warning: ${enrichmentResult.message}`);
+                            console.log(`  ⚠ RULE-002 warning: ${enrichmentResult.message}`);
                         }
                     } catch (error) {
-                        ruleLog.errors.push(`API mapping failed: ${error.message}`);
-                        console.error(`  ✗ API mapping error:`, error.message);
+                        ruleLog.errors.push(`RULE-002 failed: ${error.message}`);
+                        console.error(`  ✗ RULE-002 error:`, error.message);
+                    }
+                } else {
+                    // Normal handling: execute each mapping individually
+                    for (const mapping of rule.apiMappings) {
+                        ruleLog.apiCallsMade++;
+                        try {
+                            // Execute API mapping dynamically
+                            const enrichmentResult = await executeApiMapping(
+                                mapping, 
+                                extractedData, 
+                                rule.ruleId
+                            );
+                            
+                            if (enrichmentResult.success) {
+                                ruleLog.recordsEnriched += enrichmentResult.recordsAffected;
+                                console.log(`  ✓ API mapping successful: ${enrichmentResult.recordsAffected} records enriched`);
+                            } else {
+                                ruleLog.warnings.push(enrichmentResult.message);
+                                console.log(`  ⚠ API mapping warning: ${enrichmentResult.message}`);
+                            }
+                        } catch (error) {
+                            ruleLog.errors.push(`API mapping failed: ${error.message}`);
+                            console.error(`  ✗ API mapping error:`, error.message);
+                        }
                     }
                 }
             }
