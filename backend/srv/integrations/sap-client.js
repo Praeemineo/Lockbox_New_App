@@ -297,11 +297,18 @@ async function fetchPartnerBankDetails(apiMappings, businessPartner) {
             select: params.$select 
         });
         
+        // For OData, build URL with query string manually  
+        const queryString = new URLSearchParams();
+        if (params.$filter) queryString.append('$filter', params.$filter);
+        if (params.$select) queryString.append('$select', params.$select);
+        if (params.$top) queryString.append('$top', params.$top);
+        
+        const fullUrl = `${firstMapping.apiReference}?${queryString.toString()}`;
+        
         // Execute API call with enhanced params
         const requestConfig = {
             method: 'GET',
-            url: firstMapping.apiReference,
-            params: params,
+            url: fullUrl,
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
