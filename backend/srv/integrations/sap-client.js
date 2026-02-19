@@ -1,11 +1,14 @@
 /**
  * SAP Cloud SDK Client
  * Handles all SAP S/4HANA API calls via Cloud SDK with DYNAMIC endpoint resolution
+ * With fallback to direct HTTP connection using .env credentials
  * 
  * ⚠️ IMPORTANT: API endpoints come from rule apiMappings, NOT hardcoded here!
  */
 
 const { executeHttpRequest } = require('@sap-cloud-sdk/http-client');
+const axios = require('axios');
+const https = require('https');
 const logger = require('../utils/logger');
 
 // Circuit breaker to prevent hanging on repeated connection failures
@@ -48,9 +51,110 @@ function getDestination() {
         name: destinationName,
         // Additional properties for local testing (optional)
         url: process.env.SAP_URL || 'http://s4fnd:443',
-        username: process.env.SAP_USERNAME || 'S4H_FIN',
+        username: process.env.SAP_USER || 'S4H_FIN',
         password: process.env.SAP_PASSWORD || ''
     };
+}
+
+/**
+ * Execute Direct SAP API Call using axios (Fallback when Cloud SDK fails)
+ * Uses credentials from .env file for production/direct connection
+ */
+async function executeDirect SapApiCall(apiMapping, inputValues) {
+    const sapUrl = process.env.SAP_URL;
+    const sapUser = process.env.SAP_USER;
+    const sapPassword = process.env.SAP_PASSWORD;
+    const sapClient = process.env.SAP_CLIENT || '100';
+    
+    if (!sapUrl || !sapUser || !sapPassword) {
+        logger.error('Direct SAP connection failed: Missing SAP credentials in .env');
+        return {
+            success: false,
+            error: 'SAP credentials not configured',
+            status: 500,
+            data: null,
+            outputValue: null
+        };
+    }
+    
+    try {
+        const method = apiMapping.httpMethod || 'GET';
+        const endpoint = apiMapping.apiReference;
+        
+        logger.info(`Direct SAP API Call: ${method} ${endpoint}`, { 
+            inputField: apiMapping.inputField,
+            outputField: apiMapping.outputField 
+        });
+        
+        // Build OData query parameters dynamically
+        const params = buildODataParams(apiMapping, inputValues);
+        
+        // Build full URL
+        const queryString = new URLSearchParams();
+        if (params.$filter) queryString.append('$filter', params.$filter);
+        if (params.$select) queryString.append('$select', params.$select);
+        if (params.$top) queryString.append('$top', params.$top);
+        
+        const fullUrl = `${sapUrl}${endpoint}?${queryString.toString()}`;
+        
+        logger.info('Direct SAP API URL:', { url: fullUrl });
+        
+        // Create axios instance with timeout and SSL config
+        const axiosConfig = {
+            method: method.toLowerCase(),
+            url: fullUrl,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'sap-client': sapClient
+            },
+            auth: {
+                username: sapUser,
+                password: sapPassword
+            },
+            timeout: parseInt(process.env.SAP_API_TIMEOUT) || 5000,
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: false // Allow self-signed certificates
+            })
+        };
+        
+        // Add body for POST/PUT
+        if (inputValues.payload && (method === 'POST' || method === 'PUT')) {
+            axiosConfig.data = inputValues.payload;
+        }
+        
+        // Execute with timeout
+        const response = await axios(axiosConfig);
+        
+        logger.info(`Direct SAP API Success: ${method} ${endpoint}`, { 
+            status: response.status,
+            recordCount: response.data?.d?.results?.length || 1
+        });
+        
+        // Extract output field value from response
+        const outputValue = extractOutputValue(response.data, apiMapping.outputField);
+        
+        return {
+            success: true,
+            data: response.data,
+            outputValue: outputValue,
+            status: response.status
+        };
+        
+    } catch (error) {
+        logger.error(`Direct SAP API Error: ${apiMapping.httpMethod} ${apiMapping.apiReference}`, {
+            error: error.message,
+            response: error.response?.data
+        });
+        
+        return {
+            success: false,
+            error: error.message,
+            status: error.response?.status || 500,
+            data: null,
+            outputValue: null
+        };
+    }
 }
 
 /**
