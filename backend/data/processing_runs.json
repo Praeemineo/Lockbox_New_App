@@ -1,5 +1,568 @@
 [
   {
+    "id": "7ce4850e-7708-4805-874c-f485945261ae",
+    "runId": "RUN-2026-00129",
+    "filename": "test_payment.csv",
+    "fileType": "CSV",
+    "fileSize": 219,
+    "startedAt": "2026-02-19T16:48:27.363Z",
+    "uploadedAt": "2026-02-19T16:48:27.363Z",
+    "batchNumber": 5,
+    "stages": {
+      "upload": {
+        "status": "success",
+        "message": "Parsed 2 data rows, 8 columns from CSV file"
+      },
+      "templateMatch": {
+        "status": "success",
+        "message": "Matched pattern: Single Check, Multiple Invoice (Single Check Multi Invoice)",
+        "patternId": "PAT0001",
+        "patternName": "Single Check, Multiple Invoice",
+        "patternType": "Single Check Multi Invoice",
+        "matchScore": 0,
+        "analysis": {
+          "rowCount": 2,
+          "checkUnique": true,
+          "invoiceUnique": true,
+          "hasEmptyCheckRows": false,
+          "customerCount": 2,
+          "hasDelimitedChecks": false,
+          "hasDelimitedInvoices": false,
+          "hasDelimitedAmounts": false,
+          "uniqueChecks": {},
+          "uniqueInvoices": {},
+          "uniqueCustomers": {}
+        },
+        "headerMapping": {
+          "Customer": {
+            "index": 0,
+            "originalHeader": "Customer"
+          },
+          "CheckNumber": {
+            "index": 1,
+            "originalHeader": "Check Number"
+          },
+          "CheckAmount": {
+            "index": 2,
+            "originalHeader": "Check Amount"
+          },
+          "InvoiceNumber": {
+            "index": 3,
+            "originalHeader": "Invoice Number"
+          },
+          "InvoiceAmount": {
+            "index": 4,
+            "originalHeader": "Invoice Amount"
+          },
+          "DeductionAmount": {
+            "index": 5,
+            "originalHeader": "Deduction Amount"
+          },
+          "ReasonCode": {
+            "index": 6,
+            "originalHeader": "Reason Code"
+          },
+          "DepositDate": {
+            "index": 7,
+            "originalHeader": "Deposit Date"
+          }
+        }
+      },
+      "extraction": {
+        "status": "success",
+        "message": "Extracted 2 records using pattern: Single Check Multi Invoice",
+        "rowCount": 2,
+        "pattern": "Single Check Multi Invoice"
+      },
+      "validation": {
+        "status": "success",
+        "message": "Executed 5/5 rules, enriched 4 records. 0 warnings.",
+        "warnings": [],
+        "errors": [],
+        "ruleExecutionLogs": [
+          {
+            "ruleId": "RULE-001",
+            "ruleName": "Accounting Document Lookup",
+            "conditionsChecked": 1,
+            "conditionsMet": 1,
+            "apiCallsMade": 2,
+            "recordsEnriched": 0,
+            "errors": [],
+            "warnings": []
+          },
+          {
+            "ruleId": "RULE-002",
+            "ruleName": "Partner Bank Details",
+            "conditionsChecked": 2,
+            "conditionsMet": 2,
+            "apiCallsMade": 1,
+            "recordsEnriched": 2,
+            "errors": [],
+            "warnings": []
+          },
+          {
+            "ruleId": "RULE-003",
+            "ruleName": "Customer Master Data",
+            "conditionsChecked": 3,
+            "conditionsMet": 3,
+            "apiCallsMade": 2,
+            "recordsEnriched": 2,
+            "errors": [],
+            "warnings": []
+          },
+          {
+            "ruleId": "RULE-004",
+            "ruleName": "Open Item Verification",
+            "conditionsChecked": 2,
+            "conditionsMet": 2,
+            "apiCallsMade": 1,
+            "recordsEnriched": 0,
+            "errors": [],
+            "warnings": []
+          },
+          {
+            "ruleId": "RULE-005",
+            "ruleName": "Payment Terms Lookup",
+            "conditionsChecked": 2,
+            "conditionsMet": 2,
+            "apiCallsMade": 1,
+            "recordsEnriched": 0,
+            "errors": [],
+            "warnings": []
+          }
+        ],
+        "ruleResultsSummary": {
+          "rule001": null,
+          "rule002": {
+            "executed": true,
+            "recordsEnriched": 2,
+            "sampleValues": []
+          }
+        }
+      },
+      "mapping": {
+        "status": "success",
+        "message": "Generated standard payload: Lockbox=1000129, Batch=001, 2 Items",
+        "lockboxId": "1000129",
+        "batchId": "001",
+        "itemCount": 2,
+        "totalAmount": "3500.00"
+      }
+    },
+    "currentStage": "complete",
+    "overallStatus": "validated",
+    "rawData": [
+      [
+        "Customer",
+        "Check Number",
+        "Check Amount",
+        "Invoice Number",
+        "Invoice Amount",
+        "Deduction Amount",
+        "Reason Code",
+        "Deposit Date"
+      ],
+      [
+        17100001,
+        8888001,
+        1500,
+        90004301,
+        1500,
+        0,
+        null,
+        45992
+      ],
+      [
+        17100002,
+        8888002,
+        2000,
+        90004302,
+        2000,
+        0,
+        null,
+        45992
+      ]
+    ],
+    "extractedData": [
+      {
+        "Customer": "17100001",
+        "CheckNumber": "0008888001",
+        "CheckAmount": 1500,
+        "InvoiceNumber": "90004301",
+        "InvoiceAmount": 1500,
+        "DeductionAmount": 0,
+        "ReasonCode": "",
+        "DepositDate": 45992,
+        "XBLNR": "90004301",
+        "BELNR": "90004301",
+        "_documentTypeDetection": "Auto-detected as XBLNR: Alphanumeric or non-standard length indicates external reference (XBLNR)",
+        "_rowIndex": 1,
+        "_pattern": "Single Check Multi Invoice",
+        "PaymentReference": "90004301",
+        "Paymentreference": "90004301",
+        "CompanyCode": "1000",
+        "FiscalYear": "2026",
+        "_rule001_status": "FALLBACK",
+        "_rule001_message": "SAP connection unavailable (circuit breaker open)",
+        "PartnerBank": "88888876",
+        "PartnerBankAccount": "8765432195",
+        "PartnerBankCountry": "US",
+        "_rule002_status": "DEFAULTS_USED",
+        "_rule002_message": "Used default bank details",
+        "CustomerName": "17100001",
+        "CustomerType": "CUSTOMER",
+        "CustomerCategory": "UNKNOWN",
+        "_rule003_status": "FAILED",
+        "_openItemValidated": false,
+        "_rule004_status": "FAILED"
+      },
+      {
+        "Customer": "17100002",
+        "CheckNumber": "0008888002",
+        "CheckAmount": 2000,
+        "InvoiceNumber": "90004302",
+        "InvoiceAmount": 2000,
+        "DeductionAmount": 0,
+        "ReasonCode": "",
+        "DepositDate": 45992,
+        "XBLNR": "90004302",
+        "BELNR": "90004302",
+        "_documentTypeDetection": "Auto-detected as XBLNR: Alphanumeric or non-standard length indicates external reference (XBLNR)",
+        "_rowIndex": 2,
+        "_pattern": "Single Check Multi Invoice",
+        "PaymentReference": "90004302",
+        "Paymentreference": "90004302",
+        "CompanyCode": "1000",
+        "FiscalYear": "2026",
+        "_rule001_status": "FALLBACK",
+        "_rule001_message": "SAP connection unavailable (circuit breaker open)",
+        "PartnerBank": "88888876",
+        "PartnerBankAccount": "8765432195",
+        "PartnerBankCountry": "US",
+        "_rule002_status": "DEFAULTS_USED",
+        "_rule002_message": "Used default bank details",
+        "CustomerName": "17100002",
+        "CustomerType": "CUSTOMER",
+        "CustomerCategory": "UNKNOWN",
+        "_rule003_status": "FAILED",
+        "_openItemValidated": false,
+        "_rule004_status": "FAILED"
+      }
+    ],
+    "mappedData": [
+      {
+        "Customer": "17100001",
+        "CheckNumber": "0008888001",
+        "CheckAmount": 1500,
+        "InvoiceNumber": "90004301",
+        "InvoiceAmount": 1500,
+        "DeductionAmount": 0,
+        "ReasonCode": "",
+        "DepositDate": 45992,
+        "XBLNR": "90004301",
+        "BELNR": "90004301",
+        "_documentTypeDetection": "Auto-detected as XBLNR: Alphanumeric or non-standard length indicates external reference (XBLNR)",
+        "_rowIndex": 1,
+        "_pattern": "Single Check Multi Invoice",
+        "PaymentReference": "90004301",
+        "Paymentreference": "90004301",
+        "CompanyCode": "1000",
+        "FiscalYear": "2026",
+        "_rule001_status": "FALLBACK",
+        "_rule001_message": "SAP connection unavailable (circuit breaker open)",
+        "PartnerBank": "88888876",
+        "PartnerBankAccount": "8765432195",
+        "PartnerBankCountry": "US",
+        "_rule002_status": "DEFAULTS_USED",
+        "_rule002_message": "Used default bank details",
+        "CustomerName": "17100001",
+        "CustomerType": "CUSTOMER",
+        "CustomerCategory": "UNKNOWN",
+        "_rule003_status": "FAILED",
+        "_openItemValidated": false,
+        "_rule004_status": "FAILED"
+      },
+      {
+        "Customer": "17100002",
+        "CheckNumber": "0008888002",
+        "CheckAmount": 2000,
+        "InvoiceNumber": "90004302",
+        "InvoiceAmount": 2000,
+        "DeductionAmount": 0,
+        "ReasonCode": "",
+        "DepositDate": 45992,
+        "XBLNR": "90004302",
+        "BELNR": "90004302",
+        "_documentTypeDetection": "Auto-detected as XBLNR: Alphanumeric or non-standard length indicates external reference (XBLNR)",
+        "_rowIndex": 2,
+        "_pattern": "Single Check Multi Invoice",
+        "PaymentReference": "90004302",
+        "Paymentreference": "90004302",
+        "CompanyCode": "1000",
+        "FiscalYear": "2026",
+        "_rule001_status": "FALLBACK",
+        "_rule001_message": "SAP connection unavailable (circuit breaker open)",
+        "PartnerBank": "88888876",
+        "PartnerBankAccount": "8765432195",
+        "PartnerBankCountry": "US",
+        "_rule002_status": "DEFAULTS_USED",
+        "_rule002_message": "Used default bank details",
+        "CustomerName": "17100002",
+        "CustomerType": "CUSTOMER",
+        "CustomerCategory": "UNKNOWN",
+        "_rule003_status": "FAILED",
+        "_openItemValidated": false,
+        "_rule004_status": "FAILED"
+      }
+    ],
+    "hierarchy": [
+      {
+        "nodeId": "lockbox_1000129",
+        "level": 1,
+        "type": "LOCKBOX",
+        "lockbox": "1000129",
+        "displayText": "1000129",
+        "sourceFile": "test_payment.csv",
+        "batchId": "001",
+        "status": "UPLOADED",
+        "amount": 3500,
+        "currency": "USD",
+        "deposit_datetime": "1970-01-01T00:00:45",
+        "customer": "",
+        "children": [
+          {
+            "nodeId": "cheque_0008888001_001",
+            "level": 2,
+            "type": "CHEQUE",
+            "cheque": "0008888001",
+            "displayText": "0008888001",
+            "itemId": "001",
+            "customer": "",
+            "amount": 1500,
+            "currency": "USD",
+            "depositDate": "1970-01-01T00:00:45",
+            "partnerBank": "88888876",
+            "partnerBankAccount": "8765432195",
+            "partnerBankCountry": "US",
+            "children": [
+              {
+                "nodeId": "payment_90004301_001",
+                "level": 3,
+                "type": "PAYMENT",
+                "paymentReference": "90004301",
+                "displayText": "90004301",
+                "customer": "",
+                "netAmount": 1500,
+                "deductionAmount": 0,
+                "currency": "USD",
+                "children": []
+              }
+            ]
+          },
+          {
+            "nodeId": "cheque_0008888002_002",
+            "level": 2,
+            "type": "CHEQUE",
+            "cheque": "0008888002",
+            "displayText": "0008888002",
+            "itemId": "002",
+            "customer": "",
+            "amount": 2000,
+            "currency": "USD",
+            "depositDate": "1970-01-01T00:00:45",
+            "partnerBank": "88888876",
+            "partnerBankAccount": "8765432195",
+            "partnerBankCountry": "US",
+            "children": [
+              {
+                "nodeId": "payment_90004302_002",
+                "level": 3,
+                "type": "PAYMENT",
+                "paymentReference": "90004302",
+                "displayText": "90004302",
+                "customer": "",
+                "netAmount": 2000,
+                "deductionAmount": 0,
+                "currency": "USD",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "sapPayload": {
+      "Lockbox": "1000129",
+      "DepositDateTime": "1970-01-01T00:00:45",
+      "AmountInTransactionCurrency": "3500.00",
+      "LockboxBatchOrigin": "LOCKBOXORI",
+      "LockboxBatchDestination": "LOCKBOXDES",
+      "to_Item": {
+        "results": [
+          {
+            "LockboxBatch": "001",
+            "LockboxBatchItem": "001",
+            "AmountInTransactionCurrency": "1500.00",
+            "Currency": "USD",
+            "Cheque": "0008888001",
+            "PartnerBank": "88888876",
+            "PartnerBankAccount": "8765432195",
+            "PartnerBankCountry": "US",
+            "to_LockboxClearing": {
+              "results": [
+                {
+                  "PaymentReference": "90004301",
+                  "NetPaymentAmountInPaytCurrency": "1500.00",
+                  "DeductionAmountInPaytCurrency": "0.00",
+                  "Currency": "USD"
+                }
+              ]
+            }
+          },
+          {
+            "LockboxBatch": "001",
+            "LockboxBatchItem": "002",
+            "AmountInTransactionCurrency": "2000.00",
+            "Currency": "USD",
+            "Cheque": "0008888002",
+            "PartnerBank": "88888876",
+            "PartnerBankAccount": "8765432195",
+            "PartnerBankCountry": "US",
+            "to_LockboxClearing": {
+              "results": [
+                {
+                  "PaymentReference": "90004302",
+                  "NetPaymentAmountInPaytCurrency": "2000.00",
+                  "DeductionAmountInPaytCurrency": "0.00",
+                  "Currency": "USD"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "lastFailedStage": null,
+    "originalFileBuffer": "Q3VzdG9tZXIsQ2hlY2sgTnVtYmVyLENoZWNrIEFtb3VudCxJbnZvaWNlIE51bWJlcixJbnZvaWNlIEFtb3VudCxEZWR1Y3Rpb24gQW1vdW50LFJlYXNvbiBDb2RlLERlcG9zaXQgRGF0ZQoxNzEwMDAwMSw4ODg4MDAxLDE1MDAuMDAsOTAwMDQzMDEsMTUwMC4wMCwwLCwxMi8wMS8yMDI1CjE3MTAwMDAyLDg4ODgwMDIsMjAwMC4wMCw5MDAwNDMwMiwyMDAwLjAwLDAsLDEyLzAxLzIwMjUK",
+    "originalFileMimeType": "application/octet-stream",
+    "templateId": "TPL-0019",
+    "batchTemplate": {
+      "id": "427ae365-5781-4fed-8daf-7ecd260ed6d1",
+      "templateId": "TPL-0019",
+      "templateName": "Template for test_payment.csv",
+      "originalFilename": "test_payment.csv",
+      "fileType": "CSV",
+      "fileSize": 0,
+      "uploadDate": "2026-02-19T16:48:27.366Z",
+      "detectedHeaders": [
+        "Customer",
+        "Check Number",
+        "Check Amount",
+        "Invoice Number",
+        "Invoice Amount",
+        "Deduction Amount",
+        "Reason Code",
+        "Deposit Date"
+      ],
+      "fieldMappings": {
+        "Customer": {
+          "index": 0,
+          "originalHeader": "Customer",
+          "normalizedHeader": "Customer",
+          "sapField": "Customer",
+          "dataType": "String",
+          "required": true
+        },
+        "Check Number": {
+          "index": 1,
+          "originalHeader": "Check Number",
+          "normalizedHeader": "CheckNumber",
+          "sapField": "Cheque",
+          "dataType": "String",
+          "required": true
+        },
+        "Check Amount": {
+          "index": 2,
+          "originalHeader": "Check Amount",
+          "normalizedHeader": "CheckAmount",
+          "sapField": "AmountInTransactionCurrency",
+          "dataType": "String",
+          "required": true
+        },
+        "Invoice Number": {
+          "index": 3,
+          "originalHeader": "Invoice Number",
+          "normalizedHeader": "InvoiceNumber",
+          "sapField": "PaymentReference",
+          "dataType": "String",
+          "required": false
+        },
+        "Invoice Amount": {
+          "index": 4,
+          "originalHeader": "Invoice Amount",
+          "normalizedHeader": "InvoiceAmount",
+          "sapField": "NetPaymentAmountInPaytCurrency",
+          "dataType": "String",
+          "required": false
+        },
+        "Deduction Amount": {
+          "index": 5,
+          "originalHeader": "Deduction Amount",
+          "normalizedHeader": "DeductionAmount",
+          "sapField": "DeductionAmountInPaytCurrency",
+          "dataType": "String",
+          "required": false
+        },
+        "Reason Code": {
+          "index": 6,
+          "originalHeader": "Reason Code",
+          "normalizedHeader": "ReasonCode",
+          "sapField": "PaymentDifferenceReason",
+          "dataType": "String",
+          "required": false
+        },
+        "Deposit Date": {
+          "index": 7,
+          "originalHeader": "Deposit Date",
+          "normalizedHeader": "DepositDate",
+          "sapField": "DepositDateTime",
+          "dataType": "String",
+          "required": false
+        }
+      },
+      "sampleData": [
+        [
+          17100001,
+          8888001,
+          1500,
+          90004301,
+          1500,
+          0,
+          null,
+          45992
+        ],
+        [
+          17100002,
+          8888002,
+          2000,
+          90004302,
+          2000,
+          0,
+          null,
+          45992
+        ]
+      ],
+      "rowCount": 2,
+      "columnCount": 8,
+      "headerRow": 1,
+      "dataStartRow": 2,
+      "status": "ACTIVE",
+      "createdAt": "2026-02-19T16:48:27.366Z",
+      "updatedAt": "2026-02-19T16:48:27.366Z"
+    },
+    "completedAt": "2026-02-19T16:48:37.390Z"
+  },
+  {
     "id": "6820c4ff-cf33-4238-bc7a-60e54b133949",
     "runId": "RUN-2026-00128",
     "filename": "test_payment.csv",
