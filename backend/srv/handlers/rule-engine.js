@@ -121,19 +121,21 @@ async function executeRule001(mapping, extractedData) {
 
 /**
  * Execute RULE-002: Fetch Partner Bank Details - DYNAMIC
- * @param {object} mapping - API mapping configuration from rule
+ * @param {array|object} mappings - API mapping(s) configuration from rule (can be array or single object)
  * @param {array} extractedData - Lockbox data
  * @returns {Promise<object>} - Execution result
  */
-async function executeRule002(mapping, extractedData) {
+async function executeRule002(mappings, extractedData) {
     logger.info('=== Executing RULE-002: Partner Bank Details (DYNAMIC) ===');
-    logger.info(`API Mapping: ${mapping?.apiReference}`);
+    const firstMapping = Array.isArray(mappings) ? mappings[0] : mappings;
+    logger.info(`API Mapping: ${firstMapping?.apiReference}`);
+    logger.info(`Fetching fields: BANKS (PartnerBank), BANKL (PartnerBankAccount), BANKN (PartnerBankCountry)`);
     
     let recordsEnriched = 0;
     const warnings = [];
     
     for (const row of extractedData) {
-        const businessPartner = row.Customer || row.BusinessPartner;
+        const businessPartner = row.Customer || row.CustomerNumber || row.BusinessPartner;
         
         if (!businessPartner) {
             warnings.push(`Row ${row._index || 'unknown'}: No customer/business partner`);
@@ -142,13 +144,13 @@ async function executeRule002(mapping, extractedData) {
         
         logger.info(`RULE-002: Calling SAP API (DYNAMIC) for Partner ${businessPartner}`);
         
-        // ⚡ DYNAMIC: Pass apiMapping as first parameter
-        const result = await sapClient.fetchPartnerBankDetails(mapping, businessPartner);
+        // ⚡ DYNAMIC: Pass apiMappings array (or single mapping) as first parameter
+        const result = await sapClient.fetchPartnerBankDetails(mappings, businessPartner);
         
-        // Update bank details (uses defaults if API fails)
-        row.PartnerBank = result.bankCode;
-        row.PartnerBankAccount = result.bankAccount;
-        row.PartnerBankCountry = result.bankCountry;
+        // Update bank details with correct field names (uses defaults if API fails)
+        row.PartnerBank = result.PartnerBank;
+        row.PartnerBankAccount = result.PartnerBankAccount;
+        row.PartnerBankCountry = result.PartnerBankCountry;
         row._rule002_status = result.success ? 'SUCCESS' : 'DEFAULTS_USED';
         row._rule002_message = result.usedDefaults ? 'Used default bank details' : 'Bank details retrieved';
         
@@ -159,6 +161,9 @@ async function executeRule002(mapping, extractedData) {
             logger.warn(`RULE-002: Used defaults for Partner ${businessPartner}`);
         } else {
             logger.info(`RULE-002 SUCCESS: Partner ${businessPartner} bank details retrieved`);
+            logger.info(`  → PartnerBank (BANKS): ${result.PartnerBank}`);
+            logger.info(`  → PartnerBankAccount (BANKL): ${result.PartnerBankAccount}`);
+            logger.info(`  → PartnerBankCountry (BANKN): ${result.PartnerBankCountry}`);
         }
     }
     
