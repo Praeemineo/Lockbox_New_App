@@ -73,7 +73,9 @@ async function executeDynamicApiCall(apiMapping, inputValues) {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'sap-client': process.env.SAP_CLIENT || '100'
-            }
+            },
+            // Add timeout to prevent hanging indefinitely
+            timeout: parseInt(process.env.SAP_API_TIMEOUT) || 5000  // 5 seconds default
         };
         
         // Add body for POST/PUT
@@ -81,8 +83,13 @@ async function executeDynamicApiCall(apiMapping, inputValues) {
             requestConfig.data = inputValues.payload;
         }
         
-        // Execute via Cloud SDK
-        const response = await executeHttpRequest(destination, requestConfig);
+        // Execute via Cloud SDK with timeout protection
+        const response = await Promise.race([
+            executeHttpRequest(destination, requestConfig),
+            new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('SAP API timeout after 5 seconds')), 5000)
+            )
+        ]);
         
         logger.info(`SAP API Success: ${method} ${endpoint}`, { 
             status: response.status,
