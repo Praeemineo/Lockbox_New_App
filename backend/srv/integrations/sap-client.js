@@ -1,8 +1,8 @@
 /**
  * SAP Cloud SDK Client
- * Handles all SAP S/4HANA API calls via Cloud SDK
+ * Handles all SAP S/4HANA API calls via Cloud SDK with DYNAMIC endpoint resolution
  * 
- * ⚠️ NEW CODE LOCATION: All SAP API integration logic goes HERE
+ * ⚠️ IMPORTANT: API endpoints come from rule apiMappings, NOT hardcoded here!
  */
 
 const { executeHttpRequest } = require('@sap-cloud-sdk/http-client');
@@ -10,30 +10,44 @@ const logger = require('../utils/logger');
 
 /**
  * Get SAP Destination Configuration
+ * Uses the actual BTP destination configured in cockpit
  */
 function getDestination() {
-    // BTP Destination name configured in cockpit
+    const destinationName = process.env.SAP_DESTINATION || 'S4HANA_SYSTEM_DESTINATION';
+    
+    logger.info(`Using SAP Destination: ${destinationName}`);
+    
     return {
-        name: process.env.SAP_DESTINATION || 'LOCKBOXDES',
-        url: process.env.SAP_URL || '',
-        username: process.env.SAP_USERNAME || '',
+        name: destinationName,
+        // Additional properties for local testing (optional)
+        url: process.env.SAP_URL || 'http://s4fnd:443',
+        username: process.env.SAP_USERNAME || 'S4H_FIN',
         password: process.env.SAP_PASSWORD || ''
     };
 }
 
 /**
- * Execute SAP OData API Call
- * @param {string} endpoint - API endpoint (e.g., '/sap/opu/odata/sap/API_JOURNALENTRY_SRV/JournalEntry')
- * @param {string} method - HTTP method (GET, POST, PUT, DELETE)
- * @param {object} params - Query parameters
- * @param {object} payload - Request body (for POST/PUT)
+ * Execute SAP OData API Call - FULLY DYNAMIC
+ * Builds the API request based on rule configuration
+ * 
+ * @param {object} apiMapping - API mapping from rule configuration
+ * @param {object} inputValues - Input values for the API call
  * @returns {Promise<object>} - API response
  */
-async function callSapApi(endpoint, method = 'GET', params = {}, payload = null) {
+async function executeDynamicApiCall(apiMapping, inputValues) {
     const destination = getDestination();
     
     try {
-        logger.info(`SAP API Call: ${method} ${endpoint}`, { params });
+        const method = apiMapping.httpMethod || 'GET';
+        const endpoint = apiMapping.apiReference;
+        
+        logger.info(`Dynamic SAP API Call: ${method} ${endpoint}`, { 
+            inputField: apiMapping.inputField,
+            outputField: apiMapping.outputField 
+        });
+        
+        // Build OData query parameters dynamically
+        const params = buildODataParams(apiMapping, inputValues);
         
         const requestConfig = {
             method: method.toUpperCase(),
@@ -41,13 +55,22 @@ async function callSapApi(endpoint, method = 'GET', params = {}, payload = null)
             params: params,
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'sap-client': process.env.SAP_CLIENT || '100'
             }
         };
         
-        if (payload && (method === 'POST' || method === 'PUT')) {
-            requestConfig.data = payload;
+        // Add body for POST/PUT
+        if (inputValues.payload && (method === 'POST' || method === 'PUT')) {
+            requestConfig.data = inputValues.payload;
         }
+        
+        logger.info('Request config:', { 
+            endpoint, 
+            method, 
+            filter: params.$filter,
+            select: params.$select 
+        });
         
         // Execute via Cloud SDK
         const response = await executeHttpRequest(destination, requestConfig);
@@ -57,14 +80,18 @@ async function callSapApi(endpoint, method = 'GET', params = {}, payload = null)
             recordCount: response.data?.d?.results?.length || 1
         });
         
+        // Extract output field value from response
+        const outputValue = extractOutputValue(response.data, apiMapping.outputField);
+        
         return {
             success: true,
             data: response.data,
+            outputValue: outputValue,
             status: response.status
         };
         
     } catch (error) {
-        logger.error(`SAP API Error: ${method} ${endpoint}`, {
+        logger.error(`SAP API Error: ${apiMapping.httpMethod} ${apiMapping.apiReference}`, {
             error: error.message,
             response: error.response?.data
         });
@@ -73,77 +100,135 @@ async function callSapApi(endpoint, method = 'GET', params = {}, payload = null)
             success: false,
             error: error.message,
             status: error.response?.status || 500,
-            data: null
+            data: null,
+            outputValue: null
         };
     }
 }
 
 /**
- * RULE-001: Fetch Accounting Document (BELNR) by Invoice Number
- * API: /sap/opu/odata/sap/API_JOURNALENTRY_SRV/JournalEntry
- * @param {string} invoiceNumber - Invoice/Document Number (PaymentReference)
+ * Build OData query parameters dynamically from mapping
+ * @param {object} apiMapping - API mapping configuration
+ * @param {object} inputValues - Input values
+ * @returns {object} - OData query parameters
+ */
+function buildODataParams(apiMapping, inputValues) {
+    const params = {};
+    
+    // Build $filter dynamically
+    const filterParts = [];
+    
+    // Input field becomes the filter condition
+    if (apiMapping.inputField && inputValues[apiMapping.sourceInput]) {
+        const inputValue = inputValues[apiMapping.sourceInput];
+        filterParts.push(`${apiMapping.inputField} eq '${inputValue}'`);
+    }
+    
+    // Add additional filters from inputValues
+    if (inputValues.companyCode) {
+        filterParts.push(`CompanyCode eq '${inputValues.companyCode}'`);
+    }
+    if (inputValues.fiscalYear) {
+        filterParts.push(`FiscalYear eq '${inputValues.fiscalYear}'`);
+    }
+    
+    if (filterParts.length > 0) {
+        params.$filter = filterParts.join(' and ');
+    }
+    
+    // Build $select for output fields
+    const selectFields = [];
+    if (apiMapping.outputField) {
+        selectFields.push(apiMapping.outputField);
+    }
+    // Add common fields
+    selectFields.push('CompanyCode', 'FiscalYear');
+    
+    params.$select = selectFields.join(',');
+    
+    // Limit to 1 result for lookups
+    params.$top = 1;
+    
+    return params;
+}
+
+/**
+ * Extract output value from SAP response
+ * @param {object} responseData - SAP OData response
+ * @param {string} outputField - Field name to extract
+ * @returns {any} - Extracted value
+ */
+function extractOutputValue(responseData, outputField) {
+    try {
+        // Handle OData v2 response format
+        const results = responseData?.d?.results || [];
+        
+        if (results.length === 0) {
+            return null;
+        }
+        
+        const firstResult = results[0];
+        return firstResult[outputField] || null;
+        
+    } catch (error) {
+        logger.error('Error extracting output value:', error);
+        return null;
+    }
+}
+
+/**
+ * RULE-001: Fetch Accounting Document (BELNR) - DYNAMIC VERSION
+ * Uses apiMappings from rule configuration
+ * 
+ * @param {object} apiMapping - API mapping from RULE-001
+ * @param {string} invoiceNumber - Invoice/Document Number
  * @param {string} companyCode - Company Code (optional)
  * @param {string} fiscalYear - Fiscal Year (optional)
  * @returns {Promise<object>} - { success, belnr, companyCode, fiscalYear, error }
  */
-async function fetchAccountingDocument(invoiceNumber, companyCode = null, fiscalYear = null) {
-    logger.info('RULE-001: Fetching Accounting Document (BELNR)', { invoiceNumber, companyCode, fiscalYear });
+async function fetchAccountingDocument(apiMapping, invoiceNumber, companyCode = null, fiscalYear = null) {
+    logger.info('RULE-001: Fetching Accounting Document (BELNR) - DYNAMIC', { 
+        api: apiMapping?.apiReference,
+        invoiceNumber, 
+        companyCode, 
+        fiscalYear 
+    });
     
     try {
-        // Build OData filter query
-        let filter = `Reference3 eq '${invoiceNumber}'`;
-        if (companyCode) {
-            filter += ` and CompanyCode eq '${companyCode}'`;
-        }
-        if (fiscalYear) {
-            filter += ` and FiscalYear eq '${fiscalYear}'`;
-        }
-        
-        const params = {
-            $filter: filter,
-            $select: 'AccountingDocument,CompanyCode,FiscalYear,DocumentDate,PostingDate',
-            $top: 1
+        // Build input values dynamically
+        const inputValues = {
+            [apiMapping.sourceInput]: invoiceNumber,
+            companyCode: companyCode,
+            fiscalYear: fiscalYear
         };
         
-        const result = await callSapApi(
-            '/sap/opu/odata/sap/API_JOURNALENTRY_SRV/A_JournalEntry',
-            'GET',
-            params
-        );
+        // Execute dynamic API call
+        const result = await executeDynamicApiCall(apiMapping, inputValues);
         
-        if (!result.success) {
-            return {
-                success: false,
-                error: `SAP API call failed: ${result.error}`,
-                belnr: null
-            };
-        }
-        
-        const entries = result.data?.d?.results || [];
-        
-        if (entries.length === 0) {
+        if (!result.success || !result.outputValue) {
             logger.warn('RULE-001: No accounting document found', { invoiceNumber });
             return {
                 success: false,
-                error: `No accounting document found for invoice ${invoiceNumber}`,
+                error: result.error || `No accounting document found for invoice ${invoiceNumber}`,
                 belnr: null
             };
         }
         
-        const entry = entries[0];
+        // Extract full result
+        const entry = result.data?.d?.results?.[0] || {};
         
         logger.info('RULE-001: Accounting Document Retrieved', {
             invoiceNumber,
-            belnr: entry.AccountingDocument,
+            belnr: result.outputValue,
             companyCode: entry.CompanyCode,
             fiscalYear: entry.FiscalYear
         });
         
         return {
             success: true,
-            belnr: entry.AccountingDocument,
-            companyCode: entry.CompanyCode,
-            fiscalYear: entry.FiscalYear,
+            belnr: result.outputValue,
+            companyCode: entry.CompanyCode || companyCode,
+            fiscalYear: entry.FiscalYear || fiscalYear,
             documentDate: entry.DocumentDate,
             postingDate: entry.PostingDate,
             error: null
@@ -158,6 +243,95 @@ async function fetchAccountingDocument(invoiceNumber, companyCode = null, fiscal
         };
     }
 }
+
+/**
+ * RULE-002: Fetch Partner Bank Details - DYNAMIC VERSION
+ * @param {object} apiMapping - API mapping from RULE-002
+ * @param {string} businessPartner - Business Partner Number
+ * @returns {Promise<object>} - Bank details or defaults
+ */
+async function fetchPartnerBankDetails(apiMapping, businessPartner) {
+    logger.info('RULE-002: Fetching Partner Bank Details - DYNAMIC', { 
+        api: apiMapping?.apiReference,
+        businessPartner 
+    });
+    
+    try {
+        const inputValues = {
+            [apiMapping.sourceInput]: businessPartner
+        };
+        
+        const result = await executeDynamicApiCall(apiMapping, inputValues);
+        
+        if (!result.success || !result.data?.d?.results?.length) {
+            logger.warn('RULE-002: No bank details found, using defaults', { businessPartner });
+            return {
+                success: false,
+                usedDefaults: true,
+                bankCode: '88888876',
+                bankAccount: '8765432195',
+                bankCountry: 'US',
+                error: result.error || 'No bank details found'
+            };
+        }
+        
+        const bank = result.data.d.results[0];
+        
+        logger.info('RULE-002: Bank Details Retrieved', {
+            businessPartner,
+            bankCode: bank.BankInternalID
+        });
+        
+        return {
+            success: true,
+            usedDefaults: false,
+            bankCode: bank.BankInternalID,
+            bankAccount: bank.BankAccount,
+            bankCountry: bank.BankCountry,
+            error: null
+        };
+        
+    } catch (error) {
+        logger.error('RULE-002: Error fetching bank details', { error: error.message });
+        return {
+            success: false,
+            usedDefaults: true,
+            bankCode: '88888876',
+            bankAccount: '8765432195',
+            bankCountry: 'US',
+            error: error.message
+        };
+    }
+}
+
+/**
+ * Generic SAP API call (backward compatibility)
+ * @deprecated Use executeDynamicApiCall instead
+ */
+async function callSapApi(endpoint, method = 'GET', params = {}, payload = null) {
+    const apiMapping = {
+        httpMethod: method,
+        apiReference: endpoint,
+        inputField: '',
+        sourceInput: '',
+        outputField: ''
+    };
+    
+    const result = await executeDynamicApiCall(apiMapping, { params, payload });
+    return result;
+}
+
+module.exports = {
+    getDestination,
+    executeDynamicApiCall,
+    buildODataParams,
+    extractOutputValue,
+    fetchAccountingDocument,
+    fetchPartnerBankDetails,
+    // Deprecated
+    callSapApi
+};
+
 
 /**
  * RULE-002: Fetch Partner Bank Details
