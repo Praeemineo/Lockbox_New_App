@@ -153,7 +153,6 @@
                                         placeholder="All">
                                         <core:Item key="" text="All" />
                                         <core:Item key="UPLOADED" text="Uploaded" />
-                                        <core:Item key="SIMULATED" text="Simulated" />
                                         <core:Item key="POSTED" text="Posted" />
                                         <core:Item key="POST_ERROR" text="Error" />
                                     </ComboBox>
@@ -182,7 +181,6 @@
                     <items>
                         <IconTabFilter key="all" text="All" count="{app>/statusCounts/all}" />
                         <IconTabFilter key="uploaded" text="Uploaded" count="{app>/statusCounts/uploaded}" />
-                        <IconTabFilter key="simulated" text="Simulated" count="{app>/statusCounts/simulated}" />
                         <IconTabFilter key="posted" text="Posted" count="{app>/statusCounts/posted}" />
                     </items>
                 </IconTabBar>
