@@ -11,6 +11,16 @@ const axios = require('axios');
 const https = require('https');
 const logger = require('../utils/logger');
 
+// Import the working getFromSapApi function from server.js
+// This uses the same proven connection method as postToSapApi
+let getFromSapApi;
+try {
+    // We'll need to pass this function from server.js
+    // For now, we'll implement it here using the same pattern
+} catch (e) {
+    logger.warn('Could not import getFromSapApi from server.js, will use local implementation');
+}
+
 // Circuit breaker to prevent hanging on repeated connection failures
 let sapConnectionAvailable = true;
 let lastConnectionAttempt = null;
