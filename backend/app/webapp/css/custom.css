@@ -1,3 +1,45 @@
+/* ===================================================================
+   SAP72 Font Family - Applied globally to Lockbox Transaction App
+   =================================================================== */
+@font-face {
+    font-family: '72';
+    font-style: normal;
+    font-weight: 400;
+    src: local('72'), local('72-Regular'),
+         url('https://sapui5.hana.ondemand.com/resources/sap/ui/core/themes/sap_horizon/fonts/72-Regular.woff2') format('woff2'),
+         url('https://sapui5.hana.ondemand.com/resources/sap/ui/core/themes/sap_horizon/fonts/72-Regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: '72';
+    font-style: normal;
+    font-weight: 700;
+    src: local('72-Bold'),
+         url('https://sapui5.hana.ondemand.com/resources/sap/ui/core/themes/sap_horizon/fonts/72-Bold.woff2') format('woff2'),
+         url('https://sapui5.hana.ondemand.com/resources/sap/ui/core/themes/sap_horizon/fonts/72-Bold.woff') format('woff');
+}
+
+/* Apply SAP72 font globally to all UI5 controls */
+.sapUiBody,
+.sapMPage,
+.sapMText,
+.sapMLabel,
+.sapMTitle,
+.sapMButton,
+.sapMInput,
+.sapMTable,
+.sapMListTbl,
+.sapMObjectHeader,
+.sapMObjectAttribute,
+.sapMPanel,
+.sapMDialog {
+    font-family: '72', '72full', Arial, Helvetica, sans-serif !important;
+}
+
+/* ===================================================================
+   Custom Styles for Lockbox Transaction App
+   =================================================================== */
+
 /* Custom CSS for Transaction Details Dialog */
 
 /* Phase Headers with Colors */
