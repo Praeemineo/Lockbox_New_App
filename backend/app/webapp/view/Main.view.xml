@@ -201,20 +201,6 @@
                                 class="uploadButton"
                                 tooltip="Upload customer file - Auto processes: Template Match → Extract → Validate → Map" />
                             <Button
-                                text="Simulate"
-                                icon="sap-icon://simulate"
-                                type="Ghost"
-                                press="onSimulate"
-                                class="simulateButton"
-                                tooltip="Run simulation mode" />
-                            <Button
-                                text="Production Run"
-                                icon="sap-icon://accept"
-                                type="Accept"
-                                press="onProductionRun"
-                                class="productionButton"
-                                tooltip="Run production posting" />
-                            <Button
                                 text="Run History"
                                 icon="sap-icon://history"
                                 type="Ghost"
