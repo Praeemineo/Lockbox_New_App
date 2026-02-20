@@ -595,8 +595,20 @@ async function fetchPartnerBankDetails(apiMappings, businessPartner, ruleDestina
         if (params.$select) queryParams.$select = params.$select;
         if (params.$top) queryParams.$top = params.$top;
         
+        // Extract destination from API mapping (most specific) OR rule (fallback)
+        const destinationToUse = firstMapping.destination || 
+                                ruleDestination || 
+                                process.env.SAP_DESTINATION_NAME || 
+                                'S4HANA_SYSTEM_DESTINATION';
+        
+        logger.info('RULE-002: Using destination:', {
+            apiMappingDestination: firstMapping.destination,
+            ruleDestination: ruleDestination,
+            finalDestination: destinationToUse
+        });
+        
         // Use the SAME method as working POST operation with destination
-        const response = await executeSapGetRequest(ruleDestination, firstMapping.apiReference, queryParams);
+        const response = await executeSapGetRequest(destinationToUse, firstMapping.apiReference, queryParams);
         
         if (!response.data?.d?.results?.length && !response.data?.value?.length) {
             logger.warn('RULE-002: No bank details found, using defaults', { businessPartner });
