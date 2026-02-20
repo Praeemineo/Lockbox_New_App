@@ -127,8 +127,9 @@ async function executeRule001(mappings, extractedData, ruleDestination) {
  * @param {array} extractedData - Lockbox data
  * @returns {Promise<object>} - Execution result
  */
-async function executeRule002(mappings, extractedData) {
-    logger.info('=== Executing RULE-002: Partner Bank Details (DYNAMIC) ===');
+async function executeRule002(mappings, extractedData, ruleDestination) {
+    logger.info('=== Executing RULE-002: Partner Bank Details (DYNAMIC with Destination) ===');
+    logger.info(`RULE-002 using destination: ${ruleDestination || 'DEFAULT'}`);
     const firstMapping = Array.isArray(mappings) ? mappings[0] : mappings;
     logger.info(`API Mapping: ${firstMapping?.apiReference}`);
     logger.info(`Fetching fields: BankNumber (PartnerBank), BankAccount (PartnerBankAccount), BankCountryKey (PartnerBankCountry)`);
@@ -151,8 +152,8 @@ async function executeRule002(mappings, extractedData) {
         
         logger.info(`RULE-002: Calling SAP API (DYNAMIC) for Partner ${businessPartner}`);
         
-        // ⚡ DYNAMIC: Pass apiMappings array (or single mapping) as first parameter
-        const result = await sapClient.fetchPartnerBankDetails(mappings, businessPartner);
+        // ⚡ DYNAMIC: Pass apiMappings array (or single mapping) as first parameter with destination
+        const result = await sapClient.fetchPartnerBankDetails(mappings, businessPartner, ruleDestination);
         
         // Update bank details with correct field names (uses defaults if API fails)
         row.PartnerBank = result.PartnerBank;
