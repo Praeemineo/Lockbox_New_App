@@ -133,20 +133,15 @@ Frontend Service (port 3000):
 
 ---
 
-## Testing Status
-
-### ✅ Verified:
-1. Frontend service serves UI correctly on port 3000
-2. Backend API health check responds: `http://localhost:8001/api/health`
-3. Manifest.json correctly references custom.css
-4. Custom.css is served correctly with SAP72 font configuration
-5. All "Simulate" and "Production Run" button press handlers removed from views
-
-### ⚠️ External Issue:
-- Preview URL (https://lockbox-processing.preview.emergentagent.com) returns 404
-- This is an infrastructure/routing issue, NOT a code issue
-- Application works correctly when accessed locally via localhost:3000
-- This is blocked on external environment configuration
+### **Testing Status:**
+- ✅ Backend API health check working
+- ✅ Frontend serving correctly on port 3000
+- ✅ CSS with SAP72 font configuration loading properly
+- ✅ Manifest.json correctly references custom.css
+- ✅ **Application loads successfully at: https://payment-processor-32.preview.emergentagent.com**
+- ✅ "Simulate" and "Production Run" buttons removed from all views
+- ✅ SAP72 font (referred to as '72') rendering correctly
+- ✅ All three tiles functional: Field Mapping Rules, Lockbox Transaction, PDF Lockbox (OCR)
 
 ---
 
