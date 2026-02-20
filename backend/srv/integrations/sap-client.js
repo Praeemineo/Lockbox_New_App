@@ -544,8 +544,9 @@ async function fetchAccountingDocument(apiMapping, documentNumber, companyCode =
  * @param {string} businessPartner - Business Partner Number
  * @returns {Promise<object>} - Bank details or defaults
  */
-async function fetchPartnerBankDetails(apiMappings, businessPartner) {
-    logger.info('RULE-002: Fetching Partner Bank Details - DYNAMIC (Using same method as POST)', { 
+async function fetchPartnerBankDetails(apiMappings, businessPartner, ruleDestination) {
+    logger.info('RULE-002: Fetching Partner Bank Details - DYNAMIC with Destination', { 
+        destination: ruleDestination,
         api: apiMappings?.[0]?.apiReference,
         businessPartner 
     });
@@ -590,8 +591,8 @@ async function fetchPartnerBankDetails(apiMappings, businessPartner) {
         if (params.$select) queryParams.$select = params.$select;
         if (params.$top) queryParams.$top = params.$top;
         
-        // Use the SAME method as working POST operation
-        const response = await executeSapGetRequest(firstMapping.apiReference, queryParams);
+        // Use the SAME method as working POST operation with destination
+        const response = await executeSapGetRequest(ruleDestination, firstMapping.apiReference, queryParams);
         
         if (!response.data?.d?.results?.length && !response.data?.value?.length) {
             logger.warn('RULE-002: No bank details found, using defaults', { businessPartner });
