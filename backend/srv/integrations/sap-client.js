@@ -466,17 +466,19 @@ function extractOutputValue(responseData, outputField) {
 }
 
 /**
- * RULE-001: Fetch Accounting Document (BELNR) - DYNAMIC VERSION
+ * RULE-001: Fetch Accounting Document (BELNR) - DYNAMIC VERSION with Destination
  * Uses apiMappings from rule configuration
  * 
  * @param {object} apiMapping - API mapping from RULE-001
  * @param {string} documentNumber - Customer Number or Document Number (based on mapping.sourceInput)
  * @param {string} companyCode - Company Code (optional)
  * @param {string} fiscalYear - Fiscal Year (optional)
- * @returns {Promise<object>} - { success, belnr, companyCode, fiscalYear, error }
+ * @param {string} ruleDestination - Destination from rule config (NEW!)
+ * @returns {Promise<object>} - { success, belnr, companyCode, fiscalYear, error, destination }
  */
-async function fetchAccountingDocument(apiMapping, documentNumber, companyCode = null, fiscalYear = null) {
-    logger.info('RULE-001: Fetching Accounting Document (BELNR) - DYNAMIC', { 
+async function fetchAccountingDocument(apiMapping, documentNumber, companyCode = null, fiscalYear = null, ruleDestination) {
+    logger.info('RULE-001: Fetching Accounting Document (BELNR) - DYNAMIC with Destination', { 
+        destination: ruleDestination,
         api: apiMapping?.apiReference,
         inputField: apiMapping?.inputField,
         documentNumber, 
@@ -494,11 +496,11 @@ async function fetchAccountingDocument(apiMapping, documentNumber, companyCode =
         
         logger.info('RULE-001: Input values:', inputValues);
         
-        // Execute dynamic API call
-        const result = await executeDynamicApiCall(apiMapping, inputValues);
+        // Execute dynamic API call with destination
+        const result = await executeDynamicApiCall(apiMapping, inputValues, ruleDestination);
         
         if (!result.success || !result.outputValue) {
-            logger.warn('RULE-001: No accounting document found', { documentNumber });
+            logger.warn('RULE-001: No accounting document found', { destination: ruleDestination, documentNumber });
             return {
                 success: false,
                 error: result.error || `No accounting document found for ${documentNumber}`,
