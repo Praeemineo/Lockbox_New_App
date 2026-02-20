@@ -182,7 +182,6 @@
                     <items>
                         <IconTabFilter key="all" text="All" count="{app>/statusCounts/all}" />
                         <IconTabFilter key="uploaded" text="Uploaded" count="{app>/statusCounts/uploaded}" />
-                        <IconTabFilter key="simulated" text="Simulated" count="{app>/statusCounts/simulated}" />
                         <IconTabFilter key="posted" text="Posted" count="{app>/statusCounts/posted}" />
                     </items>
                 </IconTabBar>
