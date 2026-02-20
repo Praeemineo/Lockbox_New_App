@@ -1010,6 +1010,122 @@ function extractSapODataError(error) {
     return structuredError;
 }
 
+// Helper function to GET from SAP using SAP Cloud SDK via BTP Destination
+// SAP Cloud SDK handles Cloud Connector routing automatically
+// FALLBACK: If destination service fails, use direct axios with env variables
+async function getFromSapApi(url, queryParams = {}) {
+    console.log('=== SAP API GET CALL (BTP Destination via Cloud SDK) ===');
+    console.log('Destination:', SAP_DESTINATION_NAME);
+    console.log('URL:', url);
+    console.log('sap-client:', SAP_CLIENT);
+    console.log('Query Params:', JSON.stringify(queryParams, null, 2));
+    
+    // ENHANCED DEBUGGING: Check if destination service is accessible
+    console.log('=== DESTINATION SERVICE CHECK ===');
+    let destinationResolved = false;
+    try {
+        const { getDestination } = require('@sap-cloud-sdk/connectivity');
+        console.log('Attempting to resolve destination:', SAP_DESTINATION_NAME);
+        const destination = await getDestination(SAP_DESTINATION_NAME);
+        console.log('Destination resolved successfully!');
+        console.log('Destination URL:', destination?.url);
+        console.log('Destination ProxyType:', destination?.proxyType);
+        console.log('Destination Authentication:', destination?.authentication);
+        destinationResolved = true;
+    } catch (destError) {
+        console.error('WARNING: Failed to resolve destination!');
+        console.error('Destination Error:', destError.message);
+        console.log('Will attempt fallback to direct connection using environment variables...');
+    }
+    console.log('=== END DESTINATION CHECK ===');
+    
+    // Try destination service approach first
+    if (destinationResolved) {
+        try {
+            const response = await executeHttpRequest(
+                { destinationName: SAP_DESTINATION_NAME },
+                {
+                    method: 'GET',
+                    url: url,
+                    params: {
+                        'sap-client': SAP_CLIENT,
+                        ...queryParams
+                    },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                }
+            );
+            
+            console.log('SAP Response Status:', response.status);
+            console.log('SAP Response Data:', JSON.stringify(response.data, null, 2));
+            
+            return response;
+            
+        } catch (error) {
+            console.error('Destination service approach failed, will try fallback...', error.message);
+            // Continue to fallback below
+        }
+    }
+    
+    // FALLBACK: Use direct axios with environment variables
+    console.log('=== FALLBACK: Direct SAP Connection (GET) ===');
+    const SAP_URL = process.env.SAP_URL;
+    const SAP_USER = process.env.SAP_USER;
+    const SAP_PASSWORD = process.env.SAP_PASSWORD;
+    
+    if (!SAP_URL || !SAP_USER || !SAP_PASSWORD) {
+        throw new Error('SAP connection failed: Destination service unavailable and environment variables (SAP_URL, SAP_USER, SAP_PASSWORD) not configured');
+    }
+    
+    console.log('Using direct connection to:', SAP_URL);
+    console.log('User:', SAP_USER);
+    
+    try {
+        // Build query string
+        const queryString = new URLSearchParams({
+            'sap-client': SAP_CLIENT,
+            ...queryParams
+        }).toString();
+        
+        const fullUrl = `${SAP_URL}${url}?${queryString}`;
+        console.log('Full URL:', fullUrl);
+        
+        const response = await axios({
+            method: 'GET',
+            url: fullUrl,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            auth: {
+                username: SAP_USER,
+                password: SAP_PASSWORD
+            },
+            httpsAgent: new (require('https').Agent)({
+                rejectUnauthorized: false // For self-signed certificates
+            }),
+            timeout: parseInt(process.env.SAP_API_TIMEOUT) || 10000 // 10 seconds default for GET
+        });
+        
+        console.log('SAP Response Status (Direct):', response.status);
+        console.log('SAP Response Data (Direct):', JSON.stringify(response.data, null, 2));
+        
+        return response;
+        
+    } catch (error) {
+        console.error('=== SAP API GET ERROR ===');
+        console.error('HTTP Status:', error.response?.status);
+        console.error('HTTP Status Text:', error.response?.statusText);
+        console.error('Error Message:', error.message);
+        console.error('Response Data:', JSON.stringify(error.response?.data, null, 2));
+        console.error('=== END SAP ERROR ===');
+        
+        throw error;
+    }
+}
+
 // Helper function to POST to SAP using SAP Cloud SDK via BTP Destination
 // SAP Cloud SDK handles Cloud Connector routing automatically
 // FALLBACK: If destination service fails, use direct axios with env variables
