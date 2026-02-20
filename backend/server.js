@@ -46,14 +46,13 @@ app.use(express.json());
 // Serve static UI files - support both Kubernetes and BTP deployments
 // In Kubernetes: Use consolidated frontend from ../frontend/public
 // In BTP/CF: Use local frontend from ./app (included in deployment package)
-const fs = require('fs');
 let frontendPath;
 
 // Check if we're in Kubernetes environment (consolidated frontend exists)
 const consolidatedPath = path.join(__dirname, '../frontend/public');
 const localPath = path.join(__dirname, 'app');
 
-if (fs.existsSync(consolidatedPath)) {
+if (require('fs').existsSync(consolidatedPath)) {
     frontendPath = consolidatedPath;
     console.log('Using consolidated frontend path:', frontendPath);
 } else {
