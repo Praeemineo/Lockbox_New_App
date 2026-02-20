@@ -282,14 +282,15 @@ async function executeDirectSapApiCall(apiMapping, inputValues) {
  * @returns {Promise<object>} - API response
  */
 /**
- * Execute SAP OData API Call - FULLY DYNAMIC
+ * Execute SAP OData API Call - FULLY DYNAMIC with Destination Support
  * Uses SAME connection method as working POST operation
  * 
  * @param {object} apiMapping - API mapping from rule configuration
  * @param {object} inputValues - Input values for the API call
+ * @param {string} ruleDestination - Destination name from rule config (NEW!)
  * @returns {Promise<object>} - API response
  */
-async function executeDynamicApiCall(apiMapping, inputValues) {
+async function executeDynamicApiCall(apiMapping, inputValues, ruleDestination) {
     // Check circuit breaker before attempting connection
     if (!checkCircuitBreaker()) {
         return {
@@ -302,10 +303,15 @@ async function executeDynamicApiCall(apiMapping, inputValues) {
     }
     
     try {
+        // Extract destination from rule (NEW FEATURE!)
+        const destinationName = ruleDestination || 
+                               process.env.SAP_DESTINATION_NAME || 
+                               'S4HANA_SYSTEM_DESTINATION';
+        
         const method = apiMapping.httpMethod || 'GET';
         const endpoint = apiMapping.apiReference;
         
-        logger.info(`Dynamic SAP API Call: ${method} ${endpoint}`, { 
+        logger.info(`Dynamic SAP API Call via ${destinationName}: ${method} ${endpoint}`, { 
             inputField: apiMapping.inputField,
             outputField: apiMapping.outputField 
         });
@@ -314,6 +320,7 @@ async function executeDynamicApiCall(apiMapping, inputValues) {
         const params = buildODataParams(apiMapping, inputValues);
         
         logger.info('Request config:', { 
+            destination: destinationName,
             endpoint, 
             method, 
             filter: params.$filter,
@@ -328,10 +335,10 @@ async function executeDynamicApiCall(apiMapping, inputValues) {
         
         logger.info('Query parameters:', queryParams);
         
-        // Use the SAME method as working POST operation
-        const response = await executeSapGetRequest(endpoint, queryParams);
+        // Use the SAME method as working POST operation with dynamic destination
+        const response = await executeSapGetRequest(destinationName, endpoint, queryParams);
         
-        logger.info(`✅ SAP API Success: ${method} ${endpoint}`, { 
+        logger.info(`✅ SAP API Success via ${destinationName}: ${method} ${endpoint}`, { 
             status: response.status,
             recordCount: response.data?.d?.results?.length || response.data?.value?.length || 1
         });
@@ -343,11 +350,13 @@ async function executeDynamicApiCall(apiMapping, inputValues) {
             success: true,
             data: response.data,
             outputValue: outputValue,
-            status: response.status
+            status: response.status,
+            destination: destinationName  // Return which destination was used
         };
         
     } catch (error) {
         logger.error(`❌ SAP API Error: ${apiMapping.httpMethod} ${apiMapping.apiReference}`, {
+            destination: ruleDestination,
             error: error.message,
             response: error.response?.data
         });
