@@ -116,13 +116,14 @@
                                 items="{processingRuleDialog>/rule/apiMappings}"
                                 class="sapUiSizeCompact">
                                 <columns>
-                                    <Column width="15%"><Text text="HTTP Method" /></Column>
+                                    <Column width="10%"><Text text="HTTP Method" /></Column>
+                                    <Column width="15%"><Text text="SAP Destination" /></Column>
                                     <Column width="20%"><Text text="API Reference" /></Column>
-                                    <Column width="20%"><Text text="Input Field" /></Column>
-                                    <Column width="15%"><Text text="Source/Input" /></Column>
-                                    <Column width="15%"><Text text="Output Field" /></Column>
+                                    <Column width="15%"><Text text="Input Field" /></Column>
+                                    <Column width="13%"><Text text="Source/Input" /></Column>
+                                    <Column width="13%"><Text text="Output Field" /></Column>
                                     <Column width="10%"><Text text="Lockbox API Field" /></Column>
-                                    <Column width="5%" hAlign="Center"><Text text="" /></Column>
+                                    <Column width="4%" hAlign="Center"><Text text="" /></Column>
                                 </columns>
                                 <items>
                                     <ColumnListItem>
@@ -133,11 +134,15 @@
                                                 <core:Item key="PUT" text="PUT" />
                                                 <core:Item key="DELETE" text="DELETE" />
                                             </Select>
-                                            <Input value="{processingRuleDialog>apiReference}" />
-                                            <Input value="{processingRuleDialog>inputField}" />
-                                            <Input value="{processingRuleDialog>sourceInput}" />
-                                            <Input value="{processingRuleDialog>outputField}" />
-                                            <Input value="{processingRuleDialog>lockboxApiField}" />
+                                            <Input 
+                                                value="{processingRuleDialog>destination}" 
+                                                placeholder="S4HANA_SYSTEM_DESTINATION"
+                                                tooltip="BTP Destination for this API" />
+                                            <Input value="{processingRuleDialog>apiReference}" placeholder="/sap/opu/odata/..." />
+                                            <Input value="{processingRuleDialog>inputField}" placeholder="P_Documentnumber" />
+                                            <Input value="{processingRuleDialog>sourceInput}" placeholder="InvoiceNumber" />
+                                            <Input value="{processingRuleDialog>outputField}" placeholder="BELNR" />
+                                            <Input value="{processingRuleDialog>lockboxApiField}" placeholder="Paymentreference" />
                                             <Button icon="sap-icon://delete" type="Reject" press="onDeleteApiMapping" tooltip="Delete" />
                                         </cells>
                                     </ColumnListItem>
