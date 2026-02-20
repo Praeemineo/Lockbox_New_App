@@ -1,1 +1,0 @@
-This directory is deprecated - Frontend is now served from /app/frontend/public/
