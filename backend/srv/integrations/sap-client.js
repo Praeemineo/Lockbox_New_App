@@ -760,7 +760,8 @@ async function fetchOpenItemDetails(apiMapping, invoiceNumber, companyCode) {
 }
 
 module.exports = {
-    getDestination,
+    getDestinationViaBTP,
+    executeSapGetRequest,
     executeDynamicApiCall,
     buildODataParams,
     extractOutputValue,
