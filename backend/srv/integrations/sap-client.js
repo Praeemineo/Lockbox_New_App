@@ -274,7 +274,7 @@ async function executeDirectSapApiCall(apiMapping, inputValues) {
  */
 /**
  * Execute SAP OData API Call - FULLY DYNAMIC
- * Tries Cloud SDK first, falls back to direct connection if Cloud SDK fails
+ * Uses SAME connection method as working POST operation
  * 
  * @param {object} apiMapping - API mapping from rule configuration
  * @param {object} inputValues - Input values for the API call
@@ -291,8 +291,6 @@ async function executeDynamicApiCall(apiMapping, inputValues) {
             outputValue: null
         };
     }
-    
-    const destination = getDestination();
     
     try {
         const method = apiMapping.httpMethod || 'GET';
@@ -313,45 +311,20 @@ async function executeDynamicApiCall(apiMapping, inputValues) {
             select: params.$select 
         });
         
-        // For OData v4, build URL with query string manually
-        const queryString = new URLSearchParams();
-        if (params.$filter) queryString.append('$filter', params.$filter);
-        if (params.$select) queryString.append('$select', params.$select);
-        if (params.$top) queryString.append('$top', params.$top);
+        // Build query parameters object
+        const queryParams = {};
+        if (params.$filter) queryParams.$filter = params.$filter;
+        if (params.$select) queryParams.$select = params.$select;
+        if (params.$top) queryParams.$top = params.$top;
         
-        const fullUrl = `${endpoint}?${queryString.toString()}`;
+        logger.info('Query parameters:', queryParams);
         
-        logger.info('Full API URL:', { url: fullUrl });
+        // Use the SAME method as working POST operation
+        const response = await executeSapGetRequest(endpoint, queryParams);
         
-        const requestConfig = {
-            method: method.toUpperCase(),
-            url: fullUrl,
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'sap-client': process.env.SAP_CLIENT || '100'
-            },
-            // Add timeout to prevent hanging indefinitely
-            timeout: parseInt(process.env.SAP_API_TIMEOUT) || 5000  // 5 seconds default
-        };
-        
-        // Add body for POST/PUT
-        if (inputValues.payload && (method === 'POST' || method === 'PUT')) {
-            requestConfig.data = inputValues.payload;
-        }
-        
-        // Try Cloud SDK first with timeout protection
-        logger.info('Attempting SAP Cloud SDK connection...');
-        const response = await Promise.race([
-            executeHttpRequest(destination, requestConfig),
-            new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('SAP API timeout after 5 seconds')), 5000)
-            )
-        ]);
-        
-        logger.info(`SAP Cloud SDK Success: ${method} ${endpoint}`, { 
+        logger.info(`✅ SAP API Success: ${method} ${endpoint}`, { 
             status: response.status,
-            recordCount: response.data?.d?.results?.length || 1
+            recordCount: response.data?.d?.results?.length || response.data?.value?.length || 1
         });
         
         // Extract output field value from response
@@ -364,43 +337,27 @@ async function executeDynamicApiCall(apiMapping, inputValues) {
             status: response.status
         };
         
-    } catch (cloudSdkError) {
-        logger.warn(`SAP Cloud SDK failed: ${cloudSdkError.message}`);
-        logger.info('Attempting fallback to direct SAP connection with .env credentials...');
+    } catch (error) {
+        logger.error(`❌ SAP API Error: ${apiMapping.httpMethod} ${apiMapping.apiReference}`, {
+            error: error.message,
+            response: error.response?.data
+        });
         
-        // Try direct connection as fallback
-        try {
-            const directResult = await executeDirectSapApiCall(apiMapping, inputValues);
-            
-            if (directResult.success) {
-                logger.info('✅ Direct SAP connection successful (fallback worked)');
-                return directResult;
-            } else {
-                throw new Error(directResult.error);
-            }
-            
-        } catch (directError) {
-            logger.error(`Both Cloud SDK and Direct connection failed`, {
-                cloudSdkError: cloudSdkError.message,
-                directError: directError.message
-            });
-            
-            // Mark connection as failed if it's a network/timeout error
-            if (cloudSdkError.message.includes('timeout') || 
-                cloudSdkError.message.includes('ENOTFOUND') || 
-                cloudSdkError.message.includes('ECONNREFUSED') ||
-                cloudSdkError.message.includes('ETIMEDOUT')) {
-                markConnectionFailed();
-            }
-            
-            return {
-                success: false,
-                error: `Cloud SDK: ${cloudSdkError.message}; Direct: ${directError.message}`,
-                status: cloudSdkError.response?.status || 500,
-                data: null,
-                outputValue: null
-            };
+        // Mark connection as failed if it's a network/timeout error
+        if (error.message.includes('timeout') || 
+            error.message.includes('ENOTFOUND') || 
+            error.message.includes('ECONNREFUSED') ||
+            error.message.includes('ETIMEDOUT')) {
+            markConnectionFailed();
         }
+        
+        return {
+            success: false,
+            error: error.message,
+            status: error.response?.status || 500,
+            data: null,
+            outputValue: null
+        };
     }
 }
 
