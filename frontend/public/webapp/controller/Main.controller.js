@@ -12429,9 +12429,6 @@ sap.ui.define([
 
     });
 });
-,
-        
-        // Show Rule Execution Results Dialog with derived values
         _showRuleExecutionResultsDialog: function (oRun) {
             var that = this;
             var oSummary = oRun.stages.validation.ruleResultsSummary;
