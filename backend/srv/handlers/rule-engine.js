@@ -45,13 +45,16 @@ function checkRuleCondition(condition, extractedData, patternResult) {
 }
 
 /**
- * Execute RULE-001: Fetch Accounting Document (BELNR) and CompanyCode - DYNAMIC
+ * Execute RULE-001: Fetch Accounting Document (BELNR) and CompanyCode - DYNAMIC with Destination
  * @param {array|object} mappings - API mapping(s) configuration from rule (can be array or single object)
  * @param {array} extractedData - Lockbox data
+ * @param {string} ruleDestination - Destination from rule config (NEW!)
  * @returns {Promise<object>} - Execution result
  */
-async function executeRule001(mappings, extractedData) {
-    logger.info('=== Executing RULE-001: Accounting Document Lookup (DYNAMIC) ===');
+async function executeRule001(mappings, extractedData, ruleDestination) {
+    logger.info('=== Executing RULE-001: Accounting Document Lookup (DYNAMIC with Destination) ===');
+    logger.info(`RULE-001 using destination: ${ruleDestination || 'DEFAULT'}`);
+    
     const firstMapping = Array.isArray(mappings) ? mappings[0] : mappings;
     logger.info(`API Mapping: ${firstMapping?.apiReference}`);
     logger.info(`Fetching fields: BELNR (Paymentreference), CompanyCode`);
@@ -68,18 +71,19 @@ async function executeRule001(mappings, extractedData) {
             continue;
         }
         
-        logger.info(`RULE-001: Calling SAP API (DYNAMIC) for Invoice ${invoiceNumber}`);
+        logger.info(`RULE-001: Calling SAP API via ${ruleDestination} for Invoice ${invoiceNumber}`);
         
         // Step 2: Fetch BELNR and CompanyCode from SAP using DYNAMIC API mapping
         const companyCode = row.CompanyCode || '1000'; // Default company code if not already set
         const fiscalYear = row.FiscalYear || new Date().getFullYear().toString();
         
-        // ⚡ DYNAMIC: Pass apiMapping as first parameter
+        // ⚡ DYNAMIC: Pass apiMapping and destination
         const result = await sapClient.fetchAccountingDocument(
             firstMapping,
             invoiceNumber,
             companyCode,
-            fiscalYear
+            fiscalYear,
+            ruleDestination  // ← NEW: Pass destination
         );
         
         // Step 3: Update Paymentreference and CompanyCode with values from SAP
