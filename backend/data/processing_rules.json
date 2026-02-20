@@ -124,6 +124,7 @@
       {
         "httpMethod": "GET",
         "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartner",
+        "destination": "S4HANA_SYSTEM_DESTINATION",
         "inputField": "BusinessPartner",
         "sourceInput": "CheckCustomer",
         "outputField": "Customer",
@@ -132,6 +133,7 @@
       {
         "httpMethod": "GET",
         "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartner",
+        "destination": "S4HANA_SYSTEM_DESTINATION",
         "inputField": "SearchTerm1",
         "sourceInput": "CustomerSearch",
         "outputField": "SearchTerm",
@@ -164,6 +166,7 @@
       {
         "httpMethod": "GET",
         "apiReference": "/sap/opu/odata/sap/API_ODATA_FI_OPEN_ITEMS/OpenItems",
+        "destination": "S4HANA_SYSTEM_DESTINATION",
         "inputField": "DocumentNumber",
         "sourceInput": "InvoiceReference",
         "outputField": "DocumentAmount",
@@ -196,6 +199,7 @@
       {
         "httpMethod": "GET",
         "apiReference": "/sap/opu/odata/sap/API_PAYMENTTERMS/PaymentTerms",
+        "destination": "S4HANA_SYSTEM_DESTINATION",
         "inputField": "Customer",
         "sourceInput": "CustomerID",
         "outputField": "TermsOfPayment",
