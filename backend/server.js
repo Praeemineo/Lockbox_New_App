@@ -43,16 +43,8 @@ const PORT = process.env.PORT || 8001;
 app.use(cors());
 app.use(express.json());
 
-// Serve static UI files from /app directory
-app.use(express.static(path.join(__dirname, 'app')));
-
-// Explicitly serve webapp files (for BTP compatibility)
-app.use('/webapp', express.static(path.join(__dirname, 'app/webapp')));
-
-// Serve index.html at root
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'index.html'));
-});
+// Static file serving removed - Frontend service handles all UI
+// Backend only serves API endpoints with /api prefix
 
 // Multer for file uploads
 const storage = multer.memoryStorage();
