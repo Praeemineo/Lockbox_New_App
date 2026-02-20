@@ -768,7 +768,5 @@ module.exports = {
     fetchAccountingDocument,
     fetchPartnerBankDetails,
     fetchCustomerMasterData,
-    fetchOpenItemDetails,
-    // Deprecated
-    callSapApi
+    fetchOpenItemDetails
 };
