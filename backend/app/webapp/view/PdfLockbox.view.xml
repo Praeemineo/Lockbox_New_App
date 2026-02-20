@@ -110,18 +110,6 @@
                                         type="Transparent"
                                         press="onViewDetails"
                                         tooltip="View Details" />
-                                    <Button
-                                        icon="sap-icon://simulate"
-                                        type="Transparent"
-                                        press="onSimulate"
-                                        enabled="{= ${app>overallStatus} === 'extracted'}"
-                                        tooltip="Simulate" />
-                                    <Button
-                                        icon="sap-icon://accept"
-                                        type="Transparent"
-                                        press="onProductionRun"
-                                        enabled="{= ${app>overallStatus} === 'simulated'}"
-                                        tooltip="Production Run" />
                                 </HBox>
                             </cells>
                         </ColumnListItem>
