@@ -282,12 +282,12 @@ async function executeDirectSapApiCall(apiMapping, inputValues) {
  * @returns {Promise<object>} - API response
  */
 /**
- * Execute SAP OData API Call - FULLY DYNAMIC with Destination Support
+ * Execute SAP OData API Call - FULLY DYNAMIC with API-Level Destination Support
  * Uses SAME connection method as working POST operation
  * 
- * @param {object} apiMapping - API mapping from rule configuration
+ * @param {object} apiMapping - API mapping from rule configuration (includes destination)
  * @param {object} inputValues - Input values for the API call
- * @param {string} ruleDestination - Destination name from rule config (NEW!)
+ * @param {string} ruleDestination - Fallback destination from rule config
  * @returns {Promise<object>} - API response
  */
 async function executeDynamicApiCall(apiMapping, inputValues, ruleDestination) {
@@ -303,15 +303,19 @@ async function executeDynamicApiCall(apiMapping, inputValues, ruleDestination) {
     }
     
     try {
-        // Extract destination from rule (NEW FEATURE!)
-        const destinationName = ruleDestination || 
-                               process.env.SAP_DESTINATION_NAME || 
+        // Extract destination from API mapping (most specific) OR rule (fallback) OR env
+        const destinationName = apiMapping.destination ||  // ← API-level destination (NEW!)
+                               ruleDestination ||          // ← Rule-level destination
+                               process.env.SAP_DESTINATION_NAME ||
                                'S4HANA_SYSTEM_DESTINATION';
         
         const method = apiMapping.httpMethod || 'GET';
         const endpoint = apiMapping.apiReference;
         
         logger.info(`Dynamic SAP API Call via ${destinationName}: ${method} ${endpoint}`, { 
+            apiDestination: apiMapping.destination || 'not specified',
+            ruleDestination: ruleDestination || 'not specified',
+            finalDestination: destinationName,
             inputField: apiMapping.inputField,
             outputField: apiMapping.outputField 
         });
