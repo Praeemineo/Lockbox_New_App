@@ -72,20 +72,29 @@ async function getDestinationViaBTP() {
 
 /**
  * Execute SAP GET Request - Using SAME method as working POST
+ * With DYNAMIC Destination support
  * Primary: BTP Destination Service (Cloud SDK)
  * Fallback: Direct HTTPS with .env credentials
+ * 
+ * @param {string} destinationName - BTP destination name from rule config
+ * @param {string} url - API endpoint path
+ * @param {object} queryParams - Query parameters
  */
-async function executeSapGetRequest(url, queryParams = {}) {
+async function executeSapGetRequest(destinationName, url, queryParams = {}) {
     const SAP_CLIENT = process.env.SAP_CLIENT || '100';
     
-    logger.info('SAP GET Request', { url, queryParams });
+    logger.info('🚀 SAP GET Request', { 
+        destination: destinationName,
+        url, 
+        queryParams 
+    });
     
     // STEP 1: Try BTP Destination Service (Same as POST)
-    const btpDest = await getDestinationViaBTP();
+    const btpDest = await getDestinationViaBTP(destinationName);
     
     if (btpDest) {
         try {
-            logger.info('Attempting SAP Cloud SDK (BTP) for GET...');
+            logger.info(`Attempting SAP Cloud SDK with destination: ${destinationName}`);
             const response = await executeHttpRequest(
                 { destinationName: btpDest.destinationName },
                 {
@@ -103,26 +112,26 @@ async function executeSapGetRequest(url, queryParams = {}) {
                 }
             );
             
-            logger.info('✅ SAP Cloud SDK GET Success', { status: response.status });
+            logger.info(`✅ SAP Cloud SDK GET Success via ${destinationName}`, { status: response.status });
             return response;
             
         } catch (error) {
-            logger.warn(`SAP Cloud SDK GET failed: ${error.message}, trying fallback...`);
+            logger.warn(`SAP Cloud SDK GET via ${destinationName} failed: ${error.message}, trying fallback...`);
             // Continue to fallback
         }
     }
     
     // STEP 2: Fallback to Direct Connection (Same as POST)
-    logger.info('Using direct SAP connection fallback for GET...');
+    logger.info(`Using direct SAP connection fallback for destination: ${destinationName}`);
     const SAP_URL = process.env.SAP_URL;
     const SAP_USER = process.env.SAP_USER;
     const SAP_PASSWORD = process.env.SAP_PASSWORD;
     
     if (!SAP_URL || !SAP_USER || !SAP_PASSWORD) {
-        throw new Error('SAP connection failed: BTP unavailable and .env credentials missing');
+        throw new Error(`SAP connection failed for destination ${destinationName}: BTP unavailable and .env credentials missing`);
     }
     
-    logger.info('Direct SAP GET', { url: SAP_URL, user: SAP_USER });
+    logger.info('Direct SAP GET', { destination: destinationName, url: SAP_URL, user: SAP_USER });
     
     try {
         const queryString = new URLSearchParams({
@@ -131,7 +140,7 @@ async function executeSapGetRequest(url, queryParams = {}) {
         }).toString();
         
         const fullUrl = `${SAP_URL}${url}?${queryString}`;
-        logger.info('Full GET URL:', { url: fullUrl });
+        logger.info('Full GET URL:', { destination: destinationName, url: fullUrl });
         
         const response = await axios({
             method: 'GET',
@@ -150,11 +159,11 @@ async function executeSapGetRequest(url, queryParams = {}) {
             timeout: parseInt(process.env.SAP_API_TIMEOUT) || 10000
         });
         
-        logger.info('✅ Direct SAP GET Success', { status: response.status });
+        logger.info(`✅ Direct SAP GET Success via ${destinationName}`, { status: response.status });
         return response;
         
     } catch (error) {
-        logger.error('Direct SAP GET Error', {
+        logger.error(`Direct SAP GET Error for destination ${destinationName}`, {
             status: error.response?.status,
             message: error.message,
             data: error.response?.data
