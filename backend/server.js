@@ -43,8 +43,16 @@ const PORT = process.env.PORT || 8001;
 app.use(cors());
 app.use(express.json());
 
-// Static file serving removed - Frontend service handles all UI
-// Backend only serves API endpoints with /api prefix
+// Serve static UI files from consolidated frontend directory
+// This supports both Kubernetes (frontend service) and BTP/CF (single app) deployments
+const frontendPath = path.join(__dirname, '../frontend/public');
+app.use(express.static(frontendPath));
+app.use('/webapp', express.static(path.join(frontendPath, 'webapp')));
+
+// Serve index.html at root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'));
+});
 
 // Multer for file uploads
 const storage = multer.memoryStorage();
