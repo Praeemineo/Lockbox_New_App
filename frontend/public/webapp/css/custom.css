@@ -1,0 +1,432 @@
+/* ===================================================================
+   SAP72 Font Family - Applied globally to Lockbox Transaction App
+   =================================================================== */
+@font-face {
+    font-family: '72';
+    font-style: normal;
+    font-weight: 400;
+    src: local('72'), local('72-Regular'),
+         url('https://sapui5.hana.ondemand.com/resources/sap/ui/core/themes/sap_horizon/fonts/72-Regular.woff2') format('woff2'),
+         url('https://sapui5.hana.ondemand.com/resources/sap/ui/core/themes/sap_horizon/fonts/72-Regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: '72';
+    font-style: normal;
+    font-weight: 700;
+    src: local('72-Bold'),
+         url('https://sapui5.hana.ondemand.com/resources/sap/ui/core/themes/sap_horizon/fonts/72-Bold.woff2') format('woff2'),
+         url('https://sapui5.hana.ondemand.com/resources/sap/ui/core/themes/sap_horizon/fonts/72-Bold.woff') format('woff');
+}
+
+/* Apply SAP72 font globally to all UI5 controls */
+.sapUiBody,
+.sapMPage,
+.sapMText,
+.sapMLabel,
+.sapMTitle,
+.sapMButton,
+.sapMInput,
+.sapMTable,
+.sapMListTbl,
+.sapMObjectHeader,
+.sapMObjectAttribute,
+.sapMPanel,
+.sapMDialog {
+    font-family: '72', '72full', Arial, Helvetica, sans-serif !important;
+}
+
+/* ===================================================================
+   Custom Styles for Lockbox Transaction App
+   =================================================================== */
+
+/* Custom CSS for Transaction Details Dialog */
+
+/* Phase Headers with Colors */
+.phaseHeaderGreen {
+    background-color: #4caf50 !important;
+    padding: 0.5rem !important;
+    color: white !important;
+}
+
+.phaseHeaderYellow {
+    background-color: #ff9800 !important;
+    padding: 0.5rem !important;
+    color: white !important;
+}
+
+.phaseHeaderGreen .sapMTitle,
+.phaseHeaderYellow .sapMTitle {
+    color: white !important;
+}
+
+/* Phase Column Borders */
+.phaseColumn {
+    border-right: 1px solid #e0e0e0;
+    padding: 1rem;
+}
+
+.phaseColumnLast {
+    padding: 1rem;
+}
+
+/* Lockbox Processing Status Box */
+.lockboxProcessingBox {
+    background-color: #ffffff;
+    border: 1px solid #d9d9d9;
+    padding: 0;
+    margin: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.lockboxProcessingBox .sapMPanelHdr {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 1rem;
+    border-radius: 8px 8px 0 0;
+}
+
+.lockboxProcessingBox .sapMPanelExpandableIcon {
+    color: white !important;
+}
+
+.lockboxProcessingBox .sapMPanelHdrText {
+    color: white !important;
+    font-weight: bold !important;
+}
+
+/* Lockbox Hierarchy Panel */
+.lockboxHierarchyPanel {
+    background-color: #ffffff;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.lockboxHierarchyPanel .sapMPanelHdr {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 1rem;
+    border-radius: 8px 8px 0 0;
+}
+
+.lockboxHierarchyPanel .sapMPanelExpandableIcon {
+    color: white !important;
+}
+
+.lockboxHierarchyPanel .sapMPanelHdrText {
+    color: white !important;
+    font-weight: bold !important;
+}
+
+/* Hierarchy Level Panels - Nested Structure */
+.hierarchyLevelPanel {
+    margin: 0.5rem;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Lockbox Header Panel (Level 1) */
+.lockboxHeaderPanel .sapMPanelHdr {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white !important;
+    font-weight: 600;
+    padding: 0.75rem;
+    border-radius: 6px 6px 0 0;
+}
+
+.lockboxHeaderPanel .sapMPanelExpandableIcon,
+.lockboxHeaderPanel .sapMPanelHdrText {
+    color: white !important;
+}
+
+/* Check Data Panel (Level 2) */
+.checkDataPanel {
+    margin-left: 1.5rem;
+    border-left: 3px solid #4caf50;
+}
+
+.checkDataPanel .sapMPanelHdr {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+    color: white !important;
+    font-weight: 600;
+    padding: 0.65rem;
+    border-radius: 6px 6px 0 0;
+}
+
+.checkDataPanel .sapMPanelExpandableIcon,
+.checkDataPanel .sapMPanelHdrText {
+    color: white !important;
+}
+
+/* Payment Data Panel (Level 3) */
+.paymentDataPanel {
+    margin-left: 1.5rem;
+    border-left: 3px solid #ff9800;
+}
+
+.paymentDataPanel .sapMPanelHdr {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white !important;
+    font-weight: 600;
+    padding: 0.5rem;
+    border-radius: 6px 6px 0 0;
+}
+
+.paymentDataPanel .sapMPanelExpandableIcon,
+.paymentDataPanel .sapMPanelHdrText {
+    color: white !important;
+}
+
+/* Hierarchy Field Styling */
+.hierarchyField {
+    background: rgba(255, 255, 255, 0.7);
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+    min-height: 45px;
+}
+
+.hierarchyLabel {
+    font-size: 11px;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.hierarchyValue {
+    font-size: 13px;
+    color: #212529;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-top: 2px;
+}
+
+/* Panel Content Padding */
+.lockboxProcessingBox .sapMPanelContent,
+.lockboxHierarchyPanel .sapMPanelContent {
+    padding: 1rem;
+}
+
+/* Processing Status Right Aligned */
+.processingStatusBar {
+    background: linear-gradient(to right, #f8f9fa, #e9ecef);
+    border-bottom: 2px solid #dee2e6;
+    padding: 1rem;
+}
+
+.processingStatusBar .sapMLabel {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.processingStatusBar .sapMObjectStatus {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* Metadata Section Styling - Compact & Professional */
+.metadataSection {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 1rem;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.metadataField {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    min-height: 45px;
+}
+
+.metadataField:hover {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.metadataLabel {
+    font-size: 11px;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 2px;
+    line-height: 1;
+}
+
+.metadataValue {
+    font-size: 13px;
+    color: #212529;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-top: 2px;
+}
+
+.metadataLink {
+    font-size: 13px;
+    color: #667eea !important;
+    font-weight: 500;
+    text-decoration: none !important;
+    line-height: 1.2;
+}
+
+.metadataLink:hover {
+    color: #764ba2 !important;
+    text-decoration: underline !important;
+}
+
+/* Status Card Styling */
+.statusCard {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.statusCardHeader {
+    background: #0854a0;
+    padding: 1rem;
+    align-items: center;
+}
+
+.statusCardHeader .sapMTitle {
+    color: white !important;
+}
+
+.statusCardHeader .sapUiIcon {
+    color: white !important;
+}
+
+/* Dialog Header Bar - Same color as cards */
+.dialogHeaderBar {
+    background: #0854a0 !important;
+    border: none !important;
+    height: 3.5rem !important;
+}
+
+.dialogHeaderTitle {
+    color: white !important;
+    font-weight: 600 !important;
+    margin-left: 1rem !important;
+}
+
+.dialogHeaderButton {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+    margin-left: 0.5rem !important;
+}
+
+.dialogHeaderButton:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+}
+
+.dialogHeaderButton .sapUiIcon {
+    color: white !important;
+}
+
+.dialogHeaderButton .sapMBtnInner {
+    color: white !important;
+}
+
+.statusCardContent {
+    padding: 1.5rem;
+}
+
+.statusItem {
+    background: rgba(102, 126, 234, 0.05);
+    padding: 0.75rem;
+    border-radius: 6px;
+    border-left: 3px solid #667eea;
+    min-height: 60px;
+}
+
+.statusItemLabel {
+    font-size: 11px;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 4px;
+    line-height: 1;
+}
+
+.statusItemValue {
+    font-size: 13px;
+    color: #212529;
+    font-weight: 500;
+    line-height: 1.3;
+    margin-top: 4px;
+}
+
+/* Data Table Card Styling */
+.dataTableCard {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.dataTableHeader {
+    background: #0854a0;
+    padding: 1rem;
+    align-items: center;
+}
+
+.dataTableHeader .sapMTitle {
+    color: white !important;
+}
+
+.dataTableHeader .sapUiIcon {
+    color: white !important;
+}
+
+/* Lockbox Data Table */
+.lockboxDataTable {
+    border-top: none;
+}
+
+.lockboxDataTable .sapMListTblHeaderCell {
+    background: #0854a0;
+    color: white !important;
+    font-weight: 600;
+    padding: 0.75rem;
+}
+
+.lockboxDataTable .sapMListTblHeaderCell .sapMText,
+.lockboxDataTable .sapMListTblHeaderCell .sapMLabel {
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+.lockboxDataTable .sapMListTblRow {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.lockboxDataTable .sapMListTblRow:hover {
+    background-color: #f8f9ff !important;
+}
+
+.lockboxDataTable .sapMListTblCell {
+    padding: 0.75rem 0.5rem;
+    font-size: 13px;
+}
+
+/* Bold Title */
+.boldTitle {
+    font-weight: bold !important;
+}
+
