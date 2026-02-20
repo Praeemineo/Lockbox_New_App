@@ -337,18 +337,6 @@
                                     <table:template>
                                         <HBox alignItems="Center" visible="{= ${app>type} === 'HEADER' || ${app>type} === 'LOCKBOX'}">
                                             <Button
-                                                icon="sap-icon://simulate"
-                                                type="Transparent"
-                                                tooltip="Simulate - Preview SAP posting"
-                                                press="onSimulateItem"
-                                                enabled="{= ${app>status} === 'VALIDATED'}" />
-                                            <Button
-                                                icon="sap-icon://accept"
-                                                type="Transparent"
-                                                tooltip="Production Run - Post to SAP S/4HANA"
-                                                press="onProductionRunItem"
-                                                enabled="{= ${app>status} === 'SIMULATED'}" />
-                                            <Button
                                                 icon="sap-icon://restart"
                                                 type="Transparent"
                                                 tooltip="Repost - Retry production run after posting failure"
