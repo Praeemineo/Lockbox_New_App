@@ -153,7 +153,6 @@
                                         placeholder="All">
                                         <core:Item key="" text="All" />
                                         <core:Item key="UPLOADED" text="Uploaded" />
-                                        <core:Item key="SIMULATED" text="Simulated" />
                                         <core:Item key="POSTED" text="Posted" />
                                         <core:Item key="POST_ERROR" text="Error" />
                                     </ComboBox>
