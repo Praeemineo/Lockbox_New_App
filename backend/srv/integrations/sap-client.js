@@ -49,21 +49,118 @@ function markConnectionFailed() {
 }
 
 /**
- * Get SAP Destination Configuration
- * Uses the actual BTP destination configured in cockpit
+ * Get SAP Destination Configuration (Using same method as POST)
+ * Uses the BTP Destination Service - same as working postToSapApi
  */
-function getDestination() {
-    const destinationName = process.env.SAP_DESTINATION || 'S4HANA_SYSTEM_DESTINATION';
+async function getDestinationViaBTP() {
+    const { getDestination } = require('@sap-cloud-sdk/connectivity');
+    const destinationName = process.env.SAP_DESTINATION_NAME || 'S4HANA_SYSTEM_DESTINATION';
     
-    logger.info(`Using SAP Destination: ${destinationName}`);
+    try {
+        logger.info(`Resolving SAP Destination: ${destinationName}`);
+        const destination = await getDestination(destinationName);
+        logger.info('✅ Destination resolved successfully via BTP', {
+            url: destination?.url,
+            proxyType: destination?.proxyType
+        });
+        return { destination, destinationName };
+    } catch (error) {
+        logger.warn(`Failed to resolve BTP destination: ${error.message}`);
+        return null;
+    }
+}
+
+/**
+ * Execute SAP GET Request - Using SAME method as working POST
+ * Primary: BTP Destination Service (Cloud SDK)
+ * Fallback: Direct HTTPS with .env credentials
+ */
+async function executeSapGetRequest(url, queryParams = {}) {
+    const SAP_CLIENT = process.env.SAP_CLIENT || '100';
     
-    return {
-        name: destinationName,
-        // Additional properties for local testing (optional)
-        url: process.env.SAP_URL || 'http://s4fnd:443',
-        username: process.env.SAP_USER || 'S4H_FIN',
-        password: process.env.SAP_PASSWORD || ''
-    };
+    logger.info('SAP GET Request', { url, queryParams });
+    
+    // STEP 1: Try BTP Destination Service (Same as POST)
+    const btpDest = await getDestinationViaBTP();
+    
+    if (btpDest) {
+        try {
+            logger.info('Attempting SAP Cloud SDK (BTP) for GET...');
+            const response = await executeHttpRequest(
+                { destinationName: btpDest.destinationName },
+                {
+                    method: 'GET',
+                    url: url,
+                    params: {
+                        'sap-client': SAP_CLIENT,
+                        ...queryParams
+                    },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    timeout: parseInt(process.env.SAP_API_TIMEOUT) || 10000
+                }
+            );
+            
+            logger.info('✅ SAP Cloud SDK GET Success', { status: response.status });
+            return response;
+            
+        } catch (error) {
+            logger.warn(`SAP Cloud SDK GET failed: ${error.message}, trying fallback...`);
+            // Continue to fallback
+        }
+    }
+    
+    // STEP 2: Fallback to Direct Connection (Same as POST)
+    logger.info('Using direct SAP connection fallback for GET...');
+    const SAP_URL = process.env.SAP_URL;
+    const SAP_USER = process.env.SAP_USER;
+    const SAP_PASSWORD = process.env.SAP_PASSWORD;
+    
+    if (!SAP_URL || !SAP_USER || !SAP_PASSWORD) {
+        throw new Error('SAP connection failed: BTP unavailable and .env credentials missing');
+    }
+    
+    logger.info('Direct SAP GET', { url: SAP_URL, user: SAP_USER });
+    
+    try {
+        const queryString = new URLSearchParams({
+            'sap-client': SAP_CLIENT,
+            ...queryParams
+        }).toString();
+        
+        const fullUrl = `${SAP_URL}${url}?${queryString}`;
+        logger.info('Full GET URL:', { url: fullUrl });
+        
+        const response = await axios({
+            method: 'GET',
+            url: fullUrl,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            auth: {
+                username: SAP_USER,
+                password: SAP_PASSWORD
+            },
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: false // For self-signed certificates (same as POST)
+            }),
+            timeout: parseInt(process.env.SAP_API_TIMEOUT) || 10000
+        });
+        
+        logger.info('✅ Direct SAP GET Success', { status: response.status });
+        return response;
+        
+    } catch (error) {
+        logger.error('Direct SAP GET Error', {
+            status: error.response?.status,
+            message: error.message,
+            data: error.response?.data
+        });
+        throw error;
+    }
 }
 
 /**
