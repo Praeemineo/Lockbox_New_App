@@ -106,6 +106,18 @@
                                 <Text text="{app>uploadedAt}" />
                                 <HBox>
                                     <Button
+                                        icon="sap-icon://simulate"
+                                        type="Transparent"
+                                        press="onSimulate"
+                                        enabled="{= ${app>overallStatus} === 'extracted'}"
+                                        tooltip="Simulate" />
+                                    <Button
+                                        icon="sap-icon://accept"
+                                        type="Transparent"
+                                        press="onProductionRun"
+                                        enabled="{= ${app>overallStatus} === 'simulated'}"
+                                        tooltip="Production Run" />
+                                    <Button
                                         icon="sap-icon://detail-view"
                                         type="Transparent"
                                         press="onViewDetails"
