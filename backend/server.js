@@ -2939,11 +2939,13 @@ function saveProcessingRulesToFile() {
 // Save processing rule to PostgreSQL
 async function saveProcessingRuleToDb(rule) {
     if (!dbAvailable) {
-        console.log('Database not available, rule saved to file backup only');
-        return;
+        console.log('⚠️ Database not available, rule saved to file backup only');
+        return { success: false, reason: 'Database not available' };
     }
     
     try {
+        console.log('💾 Saving processing rule to PostgreSQL:', rule.ruleId);
+        
         const query = `
             INSERT INTO processing_rule 
             (id, rule_id, rule_name, description, file_type, rule_type, active, priority, 
@@ -2976,9 +2978,12 @@ async function saveProcessingRuleToDb(rule) {
             JSON.stringify(rule.apiMappings || rule.api_mappings || [])
         ]);
         
-        console.log('Processing rule saved to database:', rule.ruleId);
+        console.log('✅ Processing rule saved to database:', rule.ruleId);
+        return { success: true };
     } catch (err) {
-        console.error('Error saving processing rule to database:', err.message);
+        console.error('❌ Error saving processing rule to database:', err.message);
+        console.error('Rule data:', JSON.stringify(rule, null, 2));
+        return { success: false, error: err.message };
     }
 }
 
@@ -4300,10 +4305,15 @@ app.post('/api/field-mapping/processing-rules', async (req, res) => {
 // PUT update processing rule
 app.put('/api/field-mapping/processing-rules/:ruleId', async (req, res) => {
     try {
+        console.log('📝 PUT /api/field-mapping/processing-rules/:ruleId called');
+        console.log('Rule ID:', req.params.ruleId);
+        console.log('Request body:', JSON.stringify(req.body, null, 2));
+        
         const ruleData = req.body;
         const idx = processingRules.findIndex(r => r.ruleId === req.params.ruleId);
         
         if (idx === -1) {
+            console.log('❌ Processing rule not found:', req.params.ruleId);
             return res.status(404).json({ success: false, error: 'Processing rule not found' });
         }
         
@@ -4313,16 +4323,25 @@ app.put('/api/field-mapping/processing-rules/:ruleId', async (req, res) => {
             updatedAt: new Date().toISOString() 
         };
         
+        console.log('📦 Updated in-memory rule:', processingRules[idx].ruleId);
+        
         // Save to PostgreSQL
-        await saveProcessingRuleToDb(processingRules[idx]);
+        const dbResult = await saveProcessingRuleToDb(processingRules[idx]);
+        console.log('💾 PostgreSQL save result:', dbResult);
         
         // Save to file backup
         saveProcessingRulesToFile();
+        console.log('📄 Saved to JSON backup file');
         
-        console.log(`Updated processing rule: ${processingRules[idx].ruleId}`);
-        res.json({ success: true, message: 'Processing rule updated', rule: processingRules[idx] });
+        console.log(`✅ Updated processing rule: ${processingRules[idx].ruleId}`);
+        res.json({ 
+            success: true, 
+            message: 'Processing rule updated', 
+            rule: processingRules[idx],
+            dbSaved: dbResult?.success || false
+        });
     } catch (err) {
-        console.error('Error updating processing rule:', err);
+        console.error('❌ Error updating processing rule:', err);
         res.status(500).json({ success: false, error: 'Failed to update processing rule', message: err.message });
     }
 });
