@@ -12,6 +12,11 @@ applications:
     timeout: 180
     env:
       NODE_ENV: production
+      SAP_URL: "https://44.194.22.195:44301"
+      SAP_CLIENT: "100"
+      SAP_USER: "S4H_FIN"
+      SAP_PASSWORD: "Welcome1"
+      SAP_API_TIMEOUT: "10000"
     services:
       - lockbox-db
       - lockbox-destination
