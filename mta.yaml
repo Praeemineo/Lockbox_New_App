@@ -29,7 +29,6 @@ modules:
       DB_PASSWORD: "593373429221a65ff07f625d1b"
       DB_SSL: "true"
     requires:
-      - name: postgresql-db
       - name: lockbox-destination
       - name: lockbox-xsuaa
       - name: lockbox-connectivity
@@ -45,12 +44,6 @@ modules:
         - "__pycache__/"
 
 resources:
-  # PostgreSQL Database Service (Using existing service)
-  - name: postgresql-db
-    type: org.cloudfoundry.existing-service
-    parameters:
-      service-name: Postgresql
-
   # SAP Destination Service
   - name: lockbox-destination
     type: org.cloudfoundry.managed-service
