@@ -4156,28 +4156,46 @@ app.patch('/api/field-mapping/patterns/:patternId/toggle', async (req, res) => {
 });
 
 // POST copy/duplicate a pattern
-app.post('/api/field-mapping/patterns/:patternId/copy', (req, res) => {
+app.post('/api/field-mapping/patterns/:patternId/copy', async (req, res) => {
     try {
+        console.log('📋 POST /api/field-mapping/patterns/:patternId/copy - Copying pattern');
+        
         const original = filePatterns.find(p => p.patternId === req.params.patternId);
         if (!original) {
+            console.log('❌ Pattern not found:', req.params.patternId);
             return res.status(404).json({ error: 'Pattern not found' });
         }
         
-        const patternId = `PAT-${String(patternIdCounter++).padStart(3, '0')}`;
+        const patternId = `PAT${String(patternIdCounter++).padStart(4, '0')}`;
         
         const copy = {
             ...JSON.parse(JSON.stringify(original)), // Deep copy
+            id: uuidv4(),
             patternId,
             patternName: `${original.patternName} (Copy)`,
             createdAt: new Date().toISOString(),
-            lastModified: new Date().toISOString()
+            updatedAt: new Date().toISOString()
         };
         
+        // Add to in-memory array
         filePatterns.push(copy);
-        console.log(`Copied pattern ${original.patternId} to ${patternId}`);
-        res.status(201).json({ success: true, pattern: copy });
+        
+        // Save to PostgreSQL
+        const dbResult = await savePatternToDb(copy);
+        console.log('💾 PostgreSQL save result:', dbResult);
+        
+        // Save to JSON backup
+        savePatternsToFile();
+        console.log('📄 Saved to JSON backup file');
+        
+        console.log(`✅ Copied pattern ${original.patternId} to ${patternId}`);
+        res.status(201).json({ 
+            success: true, 
+            pattern: copy,
+            dbSaved: dbResult?.success || false
+        });
     } catch (err) {
-        console.error('Error copying pattern:', err);
+        console.error('❌ Error copying pattern:', err);
         res.status(500).json({ error: 'Failed to copy pattern', message: err.message });
     }
 });
