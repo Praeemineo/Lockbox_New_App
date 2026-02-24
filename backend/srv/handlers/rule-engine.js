@@ -74,7 +74,7 @@ async function executeRule001(mappings, extractedData, ruleDestination) {
         logger.info(`RULE-001: Calling SAP API via ${ruleDestination} for Invoice ${invoiceNumber}`);
         
         // Step 2: Fetch BELNR and CompanyCode from SAP using DYNAMIC API mapping
-        const companyCode = row.CompanyCode || '1000'; // Default company code if not already set
+        const companyCode = row.CompanyCode || '1710'; // Default company code if not already set
         const fiscalYear = row.FiscalYear || new Date().getFullYear().toString();
         
         // ⚡ DYNAMIC: Pass apiMapping and destination
@@ -103,7 +103,7 @@ async function executeRule001(mappings, extractedData, ruleDestination) {
             row.PaymentReference = invoiceNumber;
             row.Paymentreference = invoiceNumber;
             row.BELNR = invoiceNumber;
-            row.CompanyCode = companyCode || '1000';  // Use existing or default company code
+            row.CompanyCode = companyCode || '1710';  // Use existing or default company code
             row.FiscalYear = fiscalYear || new Date().getFullYear().toString();
             row._rule001_status = 'FALLBACK';
             row._rule001_message = result.error || 'SAP unavailable - using invoice number as payment reference';
