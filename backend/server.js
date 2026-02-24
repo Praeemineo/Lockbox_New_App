@@ -4426,6 +4426,62 @@ app.delete('/api/field-mapping/processing-rules/:ruleId', async (req, res) => {
     }
 });
 
+// SYNC JSON to PostgreSQL - Force sync current JSON data to database
+app.post('/api/field-mapping/processing-rules/sync-to-db', async (req, res) => {
+    try {
+        console.log('🔄 Starting Processing Rules JSON to PostgreSQL sync...');
+        
+        if (!dbAvailable) {
+            return res.status(503).json({ 
+                success: false, 
+                error: 'Database not available',
+                message: 'Cannot sync - PostgreSQL is not connected'
+            });
+        }
+        
+        // Clear existing rules in database
+        console.log('🗑️  Clearing old processing rules from database...');
+        await pool.query('DELETE FROM processing_rule');
+        console.log('✅ Old rules cleared');
+        
+        // Insert all rules from JSON
+        console.log(`📝 Inserting ${processingRules.length} processing rules from JSON...`);
+        let successCount = 0;
+        let errorCount = 0;
+        const errors = [];
+        
+        for (const rule of processingRules) {
+            try {
+                await saveProcessingRuleToDb(rule);
+                successCount++;
+                console.log(`  ✅ Synced: ${rule.ruleId} - ${rule.ruleName}`);
+            } catch (err) {
+                errorCount++;
+                errors.push({ ruleId: rule.ruleId, error: err.message });
+                console.error(`  ❌ Failed: ${rule.ruleId} - ${err.message}`);
+            }
+        }
+        
+        console.log(`✅ Sync complete: ${successCount} succeeded, ${errorCount} failed`);
+        
+        res.json({ 
+            success: true, 
+            message: 'Processing rules synced to database',
+            synced: successCount,
+            failed: errorCount,
+            errors: errors,
+            total: processingRules.length
+        });
+    } catch (err) {
+        console.error('❌ Error syncing processing rules to database:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to sync processing rules', 
+            message: err.message 
+        });
+    }
+});
+
 // ============ API Fields APIs ============
 
 // GET all API fields
