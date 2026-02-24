@@ -9187,7 +9187,7 @@ app.post('/api/lockbox/process-pdf', upload.single('file'), async (req, res) => 
     await loadServicesFromDb();
     loadTemplatesFromFile();
     loadRefDocRulesFromFile(); // Load Reference Document Rules
-    loadProcessingRulesFromFile(); // Load Processing Rules
+    await loadProcessingRulesFromDb(); // Load Processing Rules from PostgreSQL
     loadApiFieldsFromFile(); // Load API Fields with saved default values
     
     console.log('');
@@ -9198,6 +9198,7 @@ app.post('/api/lockbox/process-pdf', upload.single('file'), async (req, res) => 
     console.log('Batch Templates:', batchTemplates.length);
     console.log('Reference Doc Rules:', referenceDocRules.length);
     console.log('Selected Reference Doc Rule:', selectedReferenceDocRule);
+    console.log('Processing Rules:', processingRules.length);
     console.log('API Fields:', apiFields.length);
     
     // Log constant values
