@@ -295,7 +295,7 @@ async function initTables() {
         // File Patterns table - Stores file pattern definitions
         await pool.query(`
             CREATE TABLE IF NOT EXISTS file_pattern (
-                id UUID PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 pattern_id VARCHAR(20) NOT NULL UNIQUE,
                 pattern_name VARCHAR(100) NOT NULL,
                 file_type VARCHAR(30) NOT NULL,
@@ -305,9 +305,10 @@ async function initTables() {
                 delimiter VARCHAR(10),
                 active BOOLEAN DEFAULT true,
                 priority INTEGER DEFAULT 100,
+                conditions JSONB,
+                actions JSONB,
                 field_mappings JSONB,
                 detection JSONB,
-                conditions JSONB,
                 pdf_fields JSONB,
                 processing_rules JSONB,
                 bank_code VARCHAR(20),
@@ -377,16 +378,17 @@ async function initTables() {
         // Processing Rules table - Stores lockbox processing rules with conditions and actions
         await pool.query(`
             CREATE TABLE IF NOT EXISTS processing_rule (
-                id UUID PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 rule_id VARCHAR(30) NOT NULL UNIQUE,
+                rule_name VARCHAR(200) NOT NULL,
+                description TEXT,
                 file_type VARCHAR(50) NOT NULL,
                 rule_type VARCHAR(50) NOT NULL,
-                rule_description TEXT NOT NULL,
                 active BOOLEAN DEFAULT true,
                 priority INTEGER DEFAULT 10,
-                condition_logic VARCHAR(10) DEFAULT 'AND',
+                destination VARCHAR(100),
                 conditions JSONB,
-                actions JSONB,
+                api_mappings JSONB,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
