@@ -2932,6 +2932,122 @@ function saveProcessingRulesToFile() {
     }
 }
 
+// ============================================================================
+// PROCESSING RULES - PostgreSQL Functions
+// ============================================================================
+
+// Save processing rule to PostgreSQL
+async function saveProcessingRuleToDb(rule) {
+    if (!dbAvailable) {
+        console.log('Database not available, rule saved to file backup only');
+        return;
+    }
+    
+    try {
+        const query = `
+            INSERT INTO processing_rule 
+            (id, rule_id, rule_name, description, file_type, rule_type, active, priority, 
+             destination, conditions, api_mappings, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP)
+            ON CONFLICT (rule_id) DO UPDATE SET
+                rule_name = EXCLUDED.rule_name,
+                description = EXCLUDED.description,
+                file_type = EXCLUDED.file_type,
+                rule_type = EXCLUDED.rule_type,
+                active = EXCLUDED.active,
+                priority = EXCLUDED.priority,
+                destination = EXCLUDED.destination,
+                conditions = EXCLUDED.conditions,
+                api_mappings = EXCLUDED.api_mappings,
+                updated_at = CURRENT_TIMESTAMP
+        `;
+        
+        await pool.query(query, [
+            rule.id || uuidv4(),
+            rule.ruleId,
+            rule.ruleName || rule.rule_name || '',
+            rule.description || '',
+            rule.fileType || rule.file_type || 'EXCEL',
+            rule.ruleType || rule.rule_type || 'VALIDATION',
+            rule.active !== false,
+            rule.priority || 10,
+            rule.destination || '',
+            JSON.stringify(rule.conditions || []),
+            JSON.stringify(rule.apiMappings || rule.api_mappings || [])
+        ]);
+        
+        console.log('Processing rule saved to database:', rule.ruleId);
+    } catch (err) {
+        console.error('Error saving processing rule to database:', err.message);
+    }
+}
+
+// Load all processing rules from PostgreSQL
+async function loadProcessingRulesFromDb() {
+    if (!dbAvailable) {
+        console.log('Database not available, loading processing rules from file backup');
+        loadProcessingRulesFromFile();
+        return;
+    }
+    
+    try {
+        const result = await pool.query('SELECT * FROM processing_rule ORDER BY priority ASC');
+        
+        if (result.rows.length === 0) {
+            console.log('No processing rules in database, loading from file...');
+            loadProcessingRulesFromFile();
+        } else {
+            processingRules = result.rows.map(row => ({
+                id: row.id,
+                ruleId: row.rule_id,
+                ruleName: row.rule_name,
+                description: row.description,
+                fileType: row.file_type,
+                ruleType: row.rule_type,
+                active: row.active,
+                priority: row.priority,
+                destination: row.destination,
+                conditions: row.conditions || [],
+                apiMappings: row.api_mappings || [],
+                createdAt: row.created_at,
+                updatedAt: row.updated_at
+            }));
+            
+            console.log('Loaded', processingRules.length, 'processing rules from database');
+        }
+        
+        // Update rule counter
+        const maxId = processingRules.reduce((max, r) => {
+            const match = r.ruleId.match(/RULE-(\d+)/);
+            const num = match ? parseInt(match[1], 10) : 0;
+            return num > max ? num : max;
+        }, 0);
+        processingRuleIdCounter = maxId + 1;
+        
+        // Save to file as backup
+        saveProcessingRulesToFile();
+        
+    } catch (err) {
+        console.error('Error loading processing rules from database:', err.message);
+        loadProcessingRulesFromFile();
+    }
+}
+
+// Delete processing rule from PostgreSQL
+async function deleteProcessingRuleFromDb(ruleId) {
+    if (!dbAvailable) {
+        console.log('Database not available, rule deleted from file only');
+        return;
+    }
+    
+    try {
+        await pool.query('DELETE FROM processing_rule WHERE rule_id = $1', [ruleId]);
+        console.log('Processing rule deleted from database:', ruleId);
+    } catch (err) {
+        console.error('Error deleting processing rule from database:', err.message);
+    }
+}
+
 // ================================================================================
 // BATCH TEMPLATES - Store uploaded file structures
 // Each uploaded file is stored as a template with detected fields
