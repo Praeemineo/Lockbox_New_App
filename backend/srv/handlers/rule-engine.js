@@ -239,7 +239,7 @@ async function executeRule004(mapping, extractedData) {
     
     for (const row of extractedData) {
         const invoiceNumber = row.PaymentReference || row.BELNR;
-        const companyCode = row.CompanyCode || '1000';
+        const companyCode = row.CompanyCode || '1710';  // Default company code
         
         if (!invoiceNumber) {
             continue;
