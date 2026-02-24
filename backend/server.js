@@ -4005,24 +4005,37 @@ app.put('/api/field-mapping/patterns/:patternId', async (req, res) => {
 // DELETE file pattern
 app.delete('/api/field-mapping/patterns/:patternId', async (req, res) => {
     try {
+        console.log('🗑️  DELETE /api/field-mapping/patterns/:patternId');
+        console.log('Pattern ID:', req.params.patternId);
+        
         const idx = filePatterns.findIndex(p => p.patternId === req.params.patternId);
         if (idx === -1) {
-            return res.status(404).json({ error: 'Pattern not found' });
+            console.log('❌ Pattern not found:', req.params.patternId);
+            return res.status(404).json({ success: false, error: 'Pattern not found' });
         }
         
         const deleted = filePatterns.splice(idx, 1)[0];
+        console.log('📦 Removed from in-memory array:', deleted.patternId);
         
-        // Delete from PostgreSQL
-        await deletePatternFromDb(deleted.patternId);
+        // Delete from PostgreSQL FIRST
+        const dbResult = await deletePatternFromDb(deleted.patternId);
+        console.log('💾 PostgreSQL delete result:', dbResult);
         
-        // Save to file backup
+        // Save to JSON backup
         savePatternsToFile();
+        console.log('📄 Saved to JSON backup file');
         
-        console.log(`Deleted file pattern: ${deleted.patternId} - ${deleted.patternName}`);
-        res.json({ success: true, message: 'Pattern deleted', patternId: deleted.patternId });
+        console.log(`✅ Deleted pattern: ${deleted.patternId} - ${deleted.patternName}`);
+        
+        res.json({ 
+            success: true, 
+            message: 'Pattern deleted', 
+            patternId: deleted.patternId,
+            dbDeleted: dbResult?.success || false
+        });
     } catch (err) {
-        console.error('Error deleting pattern:', err);
-        res.status(500).json({ error: 'Failed to delete pattern', message: err.message });
+        console.error('❌ Error deleting pattern:', err);
+        res.status(500).json({ success: false, error: 'Failed to delete pattern', message: err.message });
     }
 });
 
