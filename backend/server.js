@@ -4026,6 +4026,62 @@ app.delete('/api/field-mapping/patterns/:patternId', async (req, res) => {
     }
 });
 
+// SYNC JSON to PostgreSQL - Force sync current JSON data to database
+app.post('/api/field-mapping/patterns/sync-to-db', async (req, res) => {
+    try {
+        console.log('🔄 Starting JSON to PostgreSQL sync...');
+        
+        if (!dbAvailable) {
+            return res.status(503).json({ 
+                success: false, 
+                error: 'Database not available',
+                message: 'Cannot sync - PostgreSQL is not connected'
+            });
+        }
+        
+        // Clear existing patterns in database
+        console.log('🗑️  Clearing old patterns from database...');
+        await pool.query('DELETE FROM file_pattern');
+        console.log('✅ Old patterns cleared');
+        
+        // Insert all patterns from JSON
+        console.log(`📝 Inserting ${filePatterns.length} patterns from JSON...`);
+        let successCount = 0;
+        let errorCount = 0;
+        const errors = [];
+        
+        for (const pattern of filePatterns) {
+            try {
+                await savePatternToDb(pattern);
+                successCount++;
+                console.log(`  ✅ Synced: ${pattern.patternId} - ${pattern.patternName}`);
+            } catch (err) {
+                errorCount++;
+                errors.push({ patternId: pattern.patternId, error: err.message });
+                console.error(`  ❌ Failed: ${pattern.patternId} - ${err.message}`);
+            }
+        }
+        
+        console.log(`✅ Sync complete: ${successCount} succeeded, ${errorCount} failed`);
+        
+        res.json({ 
+            success: true, 
+            message: 'Patterns synced to database',
+            synced: successCount,
+            failed: errorCount,
+            errors: errors,
+            total: filePatterns.length
+        });
+    } catch (err) {
+        console.error('❌ Error syncing patterns to database:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to sync patterns', 
+            message: err.message 
+        });
+    }
+});
+
 // PATCH toggle pattern active status
 app.patch('/api/field-mapping/patterns/:patternId/toggle', async (req, res) => {
     try {
