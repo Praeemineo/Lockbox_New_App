@@ -3930,6 +3930,7 @@ app.get('/api/field-mapping/patterns/:patternId', (req, res) => {
 // POST create new file pattern
 app.post('/api/field-mapping/patterns', async (req, res) => {
     try {
+        console.log('📝 POST /api/field-mapping/patterns - Creating new pattern');
         const patternData = req.body;
         
         if (!patternData.patternName || !patternData.fileType) {
@@ -3946,6 +3947,7 @@ app.post('/api/field-mapping/patterns', async (req, res) => {
         }
         
         const newPattern = {
+            id: uuidv4(),
             patternId,
             patternName: patternData.patternName,
             fileType: patternData.fileType,
@@ -3955,15 +3957,49 @@ app.post('/api/field-mapping/patterns', async (req, res) => {
             delimiter: patternData.delimiter || '',
             active: patternData.active !== false,
             priority: patternData.priority || 100,
-            conditions: patternData.conditions || []
+            conditions: patternData.conditions || [],
+            actions: patternData.actions || [],
+            fieldMappings: patternData.fieldMappings || {},
+            detection: patternData.detection || {},
+            pdfFields: patternData.pdfFields || [],
+            processingRules: patternData.processingRules || [],
+            bankCode: patternData.bankCode || '',
+            accountIdentifier: patternData.accountIdentifier || '',
+            transactionCodes: patternData.transactionCodes || '',
+            splitType: patternData.splitType || '',
+            amountThreshold: patternData.amountThreshold || null,
+            autoMatchOpenItems: patternData.autoMatchOpenItems || false,
+            createSuspenseEntry: patternData.createSuspenseEntry || false,
+            commonPrefixDetection: patternData.commonPrefixDetection || false,
+            padCheckNumbers: patternData.padCheckNumbers || false,
+            sumInvoiceAmounts: patternData.sumInvoiceAmounts || false,
+            headerRow: patternData.headerRow || 1,
+            dataStartRow: patternData.dataStartRow || 2,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
         };
         
+        // Add to in-memory array
         filePatterns.push(newPattern);
-        savePatternsToFile();
         
-        res.status(201).json({ success: true, pattern: newPattern, message: 'Pattern created successfully' });
+        // Save to PostgreSQL FIRST
+        const dbResult = await savePatternToDb(newPattern);
+        console.log('💾 PostgreSQL save result:', dbResult);
+        
+        // Save to JSON backup
+        savePatternsToFile();
+        console.log('📄 Saved to JSON backup file');
+        
+        console.log(`✅ Created pattern: ${newPattern.patternId} - ${newPattern.patternName}`);
+        
+        res.status(201).json({ 
+            success: true, 
+            pattern: newPattern, 
+            message: 'Pattern created successfully',
+            dbSaved: dbResult?.success || false
+        });
     } catch (err) {
-        console.error('Error creating pattern:', err);
+        console.error('❌ Error creating pattern:', err);
         res.status(500).json({ success: false, error: 'Failed to create pattern', message: err.message });
     }
 });
