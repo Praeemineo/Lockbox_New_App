@@ -18,7 +18,6 @@ applications:
       SAP_PASSWORD: "Welcome1"
       SAP_API_TIMEOUT: "10000"
     services:
-      - lockbox-db
       - lockbox-destination
       - lockbox-xsuaa
       - lockbox-connectivity
