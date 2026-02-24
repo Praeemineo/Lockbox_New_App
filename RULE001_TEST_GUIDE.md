@@ -142,7 +142,7 @@ curl -X POST "$API_URL/api/lockbox/test-rule" \
     "Amount": 1500.00,
     "PaymentReference": "90000334",     // ← Fallback: Uses invoice number
     "BELNR": "90000334",
-    "CompanyCode": "1000",              // ← Default company code
+    "CompanyCode": "1710",              // ← Default company code
     "FiscalYear": "2026",
     "_rule001_status": "FALLBACK",
     "_rule001_message": "SAP unavailable - using invoice number as payment reference"
@@ -167,7 +167,7 @@ RULE-001 using destination: S4HANA_SYSTEM_DESTINATION
 RULE-001: Calling SAP API via S4HANA_SYSTEM_DESTINATION for Invoice 90000334
 Dynamic SAP API Call via S4HANA_SYSTEM_DESTINATION: GET /sap/opu/odata4/...
 ✅ SAP API Success via S4HANA_SYSTEM_DESTINATION: GET /sap/opu/odata4/...
-RULE-001 SUCCESS: Invoice 90000334 → BELNR 1900000123, CompanyCode 1000
+RULE-001 SUCCESS: Invoice 90000334 → BELNR 1900000123, CompanyCode 1710
 ```
 
 **Expected logs (Fallback):**
