@@ -329,14 +329,17 @@ async function executeRule(rule, extractedData, patternResult) {
     // Execute rule based on rule ID
     let result;
     
+    // Use destination from rule config, or default to S4HANA_SYSTEM_DESTINATION
+    const destination = rule.destination || process.env.SAP_DESTINATION_NAME || 'S4HANA_SYSTEM_DESTINATION';
+    
     switch (rule.ruleId) {
         case 'RULE-001':
             // Pass all apiMappings for multiple field retrieval (BELNR, CompanyCode)
-            result = await executeRule001(rule.apiMappings, extractedData, rule.destination);
+            result = await executeRule001(rule.apiMappings, extractedData, destination);
             break;
         case 'RULE-002':
             // Pass all apiMappings for multiple field retrieval (BANKS, BANKL, BANKN) with destination
-            result = await executeRule002(rule.apiMappings, extractedData, rule.destination);
+            result = await executeRule002(rule.apiMappings, extractedData, destination);
             break;
         case 'RULE-003':
             result = await executeRule003(rule.apiMappings?.[0], extractedData);
