@@ -4268,13 +4268,13 @@ app.get('/api/field-mapping/processing-rules/:ruleId', (req, res) => {
 });
 
 // POST create new processing rule
-app.post('/api/field-mapping/processing-rules', (req, res) => {
+app.post('/api/field-mapping/processing-rules', async (req, res) => {
     try {
         const ruleData = req.body;
         const ruleId = ruleData.ruleId || `RULE-${String(processingRuleIdCounter++).padStart(3, '0')}`;
         
         const newRule = {
-            id: String(processingRules.length + 1),
+            id: uuidv4(),
             ruleId,
             ...ruleData,
             createdAt: new Date().toISOString(),
@@ -4282,8 +4282,14 @@ app.post('/api/field-mapping/processing-rules', (req, res) => {
         };
         
         processingRules.push(newRule);
+        
+        // Save to PostgreSQL
+        await saveProcessingRuleToDb(newRule);
+        
+        // Save to file backup
         saveProcessingRulesToFile();
         
+        console.log(`Created processing rule: ${newRule.ruleId}`);
         res.status(201).json({ success: true, rule: newRule });
     } catch (err) {
         console.error('Error creating processing rule:', err);
@@ -4292,7 +4298,7 @@ app.post('/api/field-mapping/processing-rules', (req, res) => {
 });
 
 // PUT update processing rule
-app.put('/api/field-mapping/processing-rules/:ruleId', (req, res) => {
+app.put('/api/field-mapping/processing-rules/:ruleId', async (req, res) => {
     try {
         const ruleData = req.body;
         const idx = processingRules.findIndex(r => r.ruleId === req.params.ruleId);
@@ -4307,8 +4313,13 @@ app.put('/api/field-mapping/processing-rules/:ruleId', (req, res) => {
             updatedAt: new Date().toISOString() 
         };
         
+        // Save to PostgreSQL
+        await saveProcessingRuleToDb(processingRules[idx]);
+        
+        // Save to file backup
         saveProcessingRulesToFile();
         
+        console.log(`Updated processing rule: ${processingRules[idx].ruleId}`);
         res.json({ success: true, message: 'Processing rule updated', rule: processingRules[idx] });
     } catch (err) {
         console.error('Error updating processing rule:', err);
@@ -4317,7 +4328,7 @@ app.put('/api/field-mapping/processing-rules/:ruleId', (req, res) => {
 });
 
 // DELETE processing rule
-app.delete('/api/field-mapping/processing-rules/:ruleId', (req, res) => {
+app.delete('/api/field-mapping/processing-rules/:ruleId', async (req, res) => {
     try {
         const idx = processingRules.findIndex(r => r.ruleId === req.params.ruleId);
         if (idx === -1) {
@@ -4325,8 +4336,14 @@ app.delete('/api/field-mapping/processing-rules/:ruleId', (req, res) => {
         }
         
         const deleted = processingRules.splice(idx, 1)[0];
+        
+        // Delete from PostgreSQL
+        await deleteProcessingRuleFromDb(deleted.ruleId);
+        
+        // Save to file backup
         saveProcessingRulesToFile();
         
+        console.log(`Deleted processing rule: ${deleted.ruleId}`);
         res.json({ success: true, message: 'Processing rule deleted', rule: deleted });
     } catch (err) {
         console.error('Error deleting processing rule:', err);
