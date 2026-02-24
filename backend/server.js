@@ -3088,12 +3088,12 @@ async function savePatternToDb(pattern) {
         const query = `
             INSERT INTO file_pattern 
             (id, pattern_id, pattern_name, file_type, pattern_type, category, description, 
-             delimiter, active, priority, field_mappings, detection, conditions, pdf_fields,
+             delimiter, active, priority, conditions, actions, field_mappings, detection, pdf_fields,
              processing_rules, bank_code, account_identifier, transaction_codes, split_type,
              amount_threshold, auto_match_open_items, create_suspense_entry, 
              common_prefix_detection, pad_check_numbers, sum_invoice_amounts, 
              header_row, data_start_row, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, CURRENT_TIMESTAMP)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, CURRENT_TIMESTAMP)
             ON CONFLICT (pattern_id) DO UPDATE SET
                 pattern_name = EXCLUDED.pattern_name,
                 file_type = EXCLUDED.file_type,
@@ -3103,9 +3103,10 @@ async function savePatternToDb(pattern) {
                 delimiter = EXCLUDED.delimiter,
                 active = EXCLUDED.active,
                 priority = EXCLUDED.priority,
+                conditions = EXCLUDED.conditions,
+                actions = EXCLUDED.actions,
                 field_mappings = EXCLUDED.field_mappings,
                 detection = EXCLUDED.detection,
-                conditions = EXCLUDED.conditions,
                 pdf_fields = EXCLUDED.pdf_fields,
                 processing_rules = EXCLUDED.processing_rules,
                 bank_code = EXCLUDED.bank_code,
@@ -3134,9 +3135,10 @@ async function savePatternToDb(pattern) {
             pattern.delimiter,
             pattern.active,
             pattern.priority,
+            JSON.stringify(pattern.conditions || []),
+            JSON.stringify(pattern.actions || []),
             JSON.stringify(pattern.fieldMappings || {}),
             JSON.stringify(pattern.detection || {}),
-            JSON.stringify(pattern.conditions || []),
             JSON.stringify(pattern.pdfFields || []),
             JSON.stringify(pattern.processingRules || []),
             pattern.bankCode,
