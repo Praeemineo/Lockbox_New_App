@@ -389,28 +389,53 @@ async function executeRule(rule, extractedData, patternResult) {
 }
 
 /**
- * Execute all active processing rules
+ * Execute all active processing rules for a given file type
  * @param {array} extractedData - Lockbox data
  * @param {object} patternResult - Pattern detection result
+ * @param {string} fileType - File type (EXCEL, CSV, PDF)
  * @returns {Promise<object>} - Execution summary
  */
-async function executeAllRules(extractedData, patternResult) {
-    logger.info('=== VALIDATION & RULE EXECUTION (DYNAMIC) ===');
+async function executeAllRules(extractedData, patternResult, fileType = 'EXCEL') {
+    logger.info('=== VALIDATION & RULE EXECUTION (DYNAMIC FROM DB) ===');
+    logger.info(`File Type: ${fileType}`);
     
-    const activeRules = dataModels.getActiveProcessingRules();
-    logger.info(`Found ${activeRules.length} active processing rules to execute`);
+    const activeRules = getActiveRulesForFileType(fileType);
+    logger.info(`Found ${activeRules.length} active processing rules for ${fileType}`);
+    
+    if (activeRules.length === 0) {
+        logger.warn('No active rules found! Check lb_processing_rules table');
+        return {
+            success: true,
+            rulesExecuted: 0,
+            totalRules: 0,
+            recordsEnriched: 0,
+            warnings: 0,
+            errors: 0,
+            ruleExecutionLogs: []
+        };
+    }
     
     const ruleExecutionLogs = [];
     
     for (const rule of activeRules) {
-        const ruleLog = await executeRule(rule, extractedData, patternResult);
-        ruleExecutionLogs.push(ruleLog);
+        try {
+            const ruleLog = await executeRule(rule, extractedData, patternResult);
+            ruleExecutionLogs.push(ruleLog);
+        } catch (err) {
+            logger.error(`Error executing ${rule.ruleId}:`, err.message);
+            ruleExecutionLogs.push({
+                ruleId: rule.ruleId,
+                ruleName: rule.ruleName,
+                errors: [err.message],
+                recordsEnriched: 0
+            });
+        }
     }
     
     const totalRecordsEnriched = ruleExecutionLogs.reduce((sum, log) => sum + log.recordsEnriched, 0);
     const rulesExecuted = ruleExecutionLogs.filter(log => log.conditionsMet > 0).length;
-    const totalWarnings = ruleExecutionLogs.reduce((sum, log) => sum + log.warnings.length, 0);
-    const totalErrors = ruleExecutionLogs.reduce((sum, log) => sum + log.errors.length, 0);
+    const totalWarnings = ruleExecutionLogs.reduce((sum, log) => sum + (log.warnings?.length || 0), 0);
+    const totalErrors = ruleExecutionLogs.reduce((sum, log) => sum + (log.errors?.length || 0), 0);
     
     logger.info(`\n✓ Validation complete. Rules executed: ${rulesExecuted}/${activeRules.length}, Records enriched: ${totalRecordsEnriched}`);
     
@@ -426,6 +451,8 @@ async function executeAllRules(extractedData, patternResult) {
 }
 
 module.exports = {
+    loadProcessingRules,
+    getActiveRulesForFileType,
     checkRuleCondition,
     executeRule,
     executeAllRules,
