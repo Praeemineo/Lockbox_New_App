@@ -3046,10 +3046,10 @@ async function deleteProcessingRuleFromDb(ruleId) {
     }
     
     try {
-        await pool.query('DELETE FROM processing_rule WHERE rule_id = $1', [ruleId]);
-        console.log('Processing rule deleted from database:', ruleId);
+        await pool.query('DELETE FROM lb_processing_rules WHERE rule_id = $1', [ruleId]);
+        console.log('Processing rule deleted from LB_Processing_Rules table:', ruleId);
     } catch (err) {
-        console.error('Error deleting processing rule from database:', err.message);
+        console.error('Error deleting processing rule from LB_Processing_Rules:', err.message);
     }
 }
 
