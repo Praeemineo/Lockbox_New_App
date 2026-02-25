@@ -5103,7 +5103,7 @@ app.delete('/api/processing-rules/:ruleId', async (req, res) => {
             return res.status(503).json({ error: 'Database not available' });
         }
         
-        await pool.query('DELETE FROM processing_rule WHERE rule_id = $1', [req.params.ruleId]);
+        await pool.query('DELETE FROM lb_processing_rules WHERE rule_id = $1', [req.params.ruleId]);
         
         res.json({ success: true });
     } catch (err) {
