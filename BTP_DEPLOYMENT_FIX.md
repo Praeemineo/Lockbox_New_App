@@ -51,7 +51,7 @@ After deployment, verify the application at:
 ```
 Frontend Service (port 3000) → /app/frontend/public/
 Backend Service (port 8001) → APIs only
-URL: https://payment-processor-32.preview.emergentagent.com
+URL: https://lockbox-processor-2.preview.emergentagent.com
 Status: ✅ WORKING
 ```
 
