@@ -3382,6 +3382,11 @@ async function loadPatternsFromDb() {
         // Save to file as backup
         savePatternsToFile();
         
+        // Pass patterns to pattern engine
+        const patternEngine = require('./srv/handlers/pattern-engine');
+        patternEngine.loadFilePatterns(filePatterns);
+        console.log(`✅ File patterns loaded into pattern engine: ${filePatterns.length}`);
+        
     } catch (err) {
         console.error('Error loading patterns from database:', err.message);
         loadPatternsFromFile();
