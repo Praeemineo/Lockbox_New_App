@@ -401,7 +401,7 @@ async function initTables() {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS rules_column_config (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                config_type VARCHAR(50) NOT NULL,
+                config_type VARCHAR(50) NOT NULL UNIQUE,
                 visible_columns JSONB DEFAULT '[]'::jsonb,
                 custom_columns JSONB DEFAULT '[]'::jsonb,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
