@@ -395,7 +395,7 @@ async function initTables() {
         `);
         
         console.log('Database tables initialized (CREATE IF NOT EXISTS)');
-        console.log('Tables created: lockbox_run_log, sap_response_log, line_level_clearing, lockbox_processing_run, file_pattern, odata_service, processing_rule');
+        console.log('Tables created: lockbox_run_log, sap_response_log, line_level_clearing, lockbox_processing_run, file_pattern, odata_service, lb_processing_rules');
     } catch (tableErr) {
         console.error('Error creating tables:', tableErr.message);
         // Tables might already exist, that's ok - db is still available
