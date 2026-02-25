@@ -5009,7 +5009,7 @@ app.get('/api/processing-rules/:ruleId', async (req, res) => {
             return res.json(rule);
         }
         
-        const result = await pool.query('SELECT * FROM processing_rule WHERE rule_id = $1', [req.params.ruleId]);
+        const result = await pool.query('SELECT * FROM lb_processing_rules WHERE rule_id = $1', [req.params.ruleId]);
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Rule not found' });
         }
