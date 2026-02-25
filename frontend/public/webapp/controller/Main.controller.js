@@ -8983,6 +8983,12 @@ sap.ui.define([
             oDialogModel.setProperty("/rule", JSON.parse(JSON.stringify(oRule)));
             
             // Load and open fragment
+            // Force reload fragment to get latest changes
+            if (this._processingRuleDialog) {
+                this._processingRuleDialog.destroy();
+                this._processingRuleDialog = null;
+            }
+            
             if (!this._processingRuleDialog) {
                 sap.ui.core.Fragment.load({
                     id: this.getView().getId(),
