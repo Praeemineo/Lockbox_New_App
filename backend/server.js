@@ -5047,7 +5047,7 @@ app.post('/api/processing-rules', async (req, res) => {
         
         const id = require('crypto').randomUUID();
         await pool.query(`
-            INSERT INTO processing_rule 
+            INSERT INTO lb_processing_rules 
             (id, rule_id, file_type, rule_type, rule_description, active, priority,
              condition_logic, conditions, actions)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
