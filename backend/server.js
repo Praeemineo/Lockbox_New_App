@@ -4971,7 +4971,7 @@ app.get('/api/processing-rules', async (req, res) => {
             return res.json(processingRules);
         }
         
-        const result = await pool.query('SELECT * FROM processing_rule ORDER BY priority, rule_id');
+        const result = await pool.query('SELECT * FROM lb_processing_rules ORDER BY priority, rule_id');
         const rules = result.rows.map(row => ({
             ruleId: row.rule_id,
             fileType: row.file_type,
