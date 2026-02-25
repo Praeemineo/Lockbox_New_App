@@ -1,0 +1,55 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    
+    <Dialog
+        id="columnSettingsDialog"
+        title="Column Settings"
+        contentWidth="600px"
+        contentHeight="auto">
+        
+        <content>
+            <VBox class="sapUiSmallMargin">
+                <Title text="Visible Columns" level="H5" class="sapUiSmallMarginBottom" />
+                <Text text="Select which columns to display in the Rules table:" class="sapUiSmallMarginBottom" />
+                
+                <List
+                    id="columnVisibilityList"
+                    items="{columnSettings>/availableColumns}"
+                    mode="MultiSelect"
+                    includeItemInSelection="true">
+                    <items>
+                        <StandardListItem 
+                            title="{columnSettings>name}"
+                            description="{columnSettings>description}"
+                            selected="{columnSettings>visible}"
+                            type="Active" />
+                    </items>
+                </List>
+                
+                <Title text="Custom Columns" level="H5" class="sapUiSmallMarginTop" />
+                <Text text="Manage your custom columns:" class="sapUiSmallMarginBottom" />
+                
+                <List
+                    id="customColumnsList"
+                    items="{columnSettings>/customColumns}"
+                    mode="Delete"
+                    delete="onDeleteCustomColumn">
+                    <items>
+                        <StandardListItem 
+                            title="{columnSettings>name}"
+                            description="Type: {columnSettings>type}"
+                            type="Active" />
+                    </items>
+                </List>
+            </VBox>
+        </content>
+        
+        <beginButton>
+            <Button text="Save" type="Emphasized" press="onSaveColumnSettings" />
+        </beginButton>
+        <endButton>
+            <Button text="Cancel" press="onCancelColumnSettings" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>
