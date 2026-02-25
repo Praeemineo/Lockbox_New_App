@@ -121,6 +121,28 @@ async function executeRule001(mappings, extractedData, ruleDestination) {
             row.FiscalYear = result.fiscalYear;
             row._rule001_status = 'SUCCESS';
             row._rule001_message = `BELNR retrieved: ${result.belnr}, CompanyCode: ${result.companyCode}`;
+            
+            // Mark as API-derived fields for Field Mapping Preview
+            row._apiDerivedFields = row._apiDerivedFields || [];
+            row._apiDerivedFields.push('Paymentreference', 'PaymentReference', 'BELNR', 'CompanyCode');
+            row._apiFieldMappings = row._apiFieldMappings || {};
+            row._apiFieldMappings.Paymentreference = {
+                source: 'SAP API',
+                apiEndpoint: firstMapping?.apiReference || 'ZFI_I_ACC_DOCUMENT',
+                sourceField: 'BELNR (Accounting Document)',
+                derivedFrom: 'RULE-001',
+                inputField: 'InvoiceNumber',
+                inputValue: invoiceNumber
+            };
+            row._apiFieldMappings.CompanyCode = {
+                source: 'SAP API',
+                apiEndpoint: firstMapping?.apiReference || 'ZFI_I_ACC_DOCUMENT',
+                sourceField: 'CompanyCode',
+                derivedFrom: 'RULE-001',
+                inputField: 'InvoiceNumber',
+                inputValue: invoiceNumber
+            };
+            
             recordsEnriched++;
             
             logger.info(`RULE-001 SUCCESS: Invoice ${invoiceNumber} → BELNR ${result.belnr}, CompanyCode ${result.companyCode}`);
