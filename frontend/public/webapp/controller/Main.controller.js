@@ -9223,6 +9223,7 @@ sap.ui.define([
             aMappings.push({
                 httpMethod: "GET",
                 apiReference: "",
+                destination: "",
                 inputField: "",
                 sourceInput: "",
                 outputField: "",
