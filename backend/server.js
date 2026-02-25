@@ -7395,89 +7395,40 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         console.log('Extraction complete. Rows:', extractedData.length);
         
         // ═══════════════════════════════════════════════════════════════════
-        // STAGE 4: VALIDATION & ENRICHMENT - Execute Processing Rules Dynamically
+        // STAGE 4: VALIDATION & ENRICHMENT - Execute Processing Rules Dynamically from DB
         // ═══════════════════════════════════════════════════════════════════
         run.currentStage = 'validation';
-        console.log('=== VALIDATION & RULE EXECUTION (PHASE 3: DYNAMIC) ===');
+        console.log('=== VALIDATION & RULE EXECUTION (FROM LB_PROCESSING_RULES TABLE) ===');
         
-        const warnings = [];
-        const errors = [];
-        const ruleExecutionLogs = [];
-        
-        // Phase 3: Execute active processing rules dynamically
-        const activeRules = processingRules.filter(r => r.active);
-        console.log(`Found ${activeRules.length} active processing rules to execute`);
-        
-        for (const rule of activeRules) {
-            console.log(`\n--- Executing ${rule.ruleId}: ${rule.ruleName} ---`);
-            const ruleLog = {
-                ruleId: rule.ruleId,
-                ruleName: rule.ruleName,
-                conditionsChecked: 0,
-                conditionsMet: 0,
-                apiCallsMade: 0,
-                recordsEnriched: 0,
-                errors: [],
-                warnings: []
-            };
+        try {
+            // Execute all active rules using the rule engine
+            const validationResult = await ruleEngine.executeAllRules(
+                extractedData,
+                patternResult,
+                fileType
+            );
             
-            // Check rule conditions against extracted data
-            let ruleApplies = true;
-            if (rule.conditions && Array.isArray(rule.conditions)) {
-                for (const condition of rule.conditions) {
-                    ruleLog.conditionsChecked++;
-                    const conditionMet = checkRuleCondition(condition, extractedData, patternResult);
-                    if (conditionMet) {
-                        ruleLog.conditionsMet++;
-                        console.log(`  ✓ Condition met: ${condition.documentFormat} - ${condition.condition}`);
-                    } else {
-                        console.log(`  ✗ Condition not met: ${condition.documentFormat} - ${condition.condition}`);
-                    }
-                }
-                
-                // Rule applies if at least 50% of conditions are met
-                const conditionMatchRate = rule.conditions.length > 0 
-                    ? ruleLog.conditionsMet / rule.conditions.length 
-                    : 1;
-                ruleApplies = conditionMatchRate >= 0.5;
-            }
+            run.stages.validation.status = 'completed';
+            run.stages.validation.message = `${validationResult.rulesExecuted}/${validationResult.totalRules} rules executed, ${validationResult.recordsEnriched} records enriched`;
+            run.stages.validation.errors = [];
+            run.stages.validation.warnings = validationResult.warnings > 0 ? [`${validationResult.warnings} warnings generated`] : [];
+            run.stages.validation.completedAt = new Date().toISOString();
             
-            if (!ruleApplies) {
-                console.log(`  ⊘ Rule ${rule.ruleId} skipped - conditions not met`);
-                ruleLog.warnings.push('Rule skipped - conditions not met');
-                ruleExecutionLogs.push(ruleLog);
-                continue;
-            }
+            // Store rule execution logs
+            run.ruleExecutionLogs = validationResult.ruleExecutionLogs;
             
-            // Execute rule's API mappings
-            if (rule.apiMappings && Array.isArray(rule.apiMappings)) {
-                console.log(`  Executing ${rule.apiMappings.length} API mappings...`);
-                
-                // Special handling for RULE-002: needs all mappings at once
-                if (rule.ruleId === 'RULE-002' && rule.apiMappings.length > 1) {
-                    console.log(`  ⚡ RULE-002: Executing all ${rule.apiMappings.length} mappings together`);
-                    ruleLog.apiCallsMade++;
-                    try {
-                        const enrichmentResult = await ruleEngine.executeRule002(
-                            rule.apiMappings,  // Pass all mappings
-                            extractedData
-                        );
-                        
-                        if (enrichmentResult.success) {
-                            ruleLog.recordsEnriched += enrichmentResult.recordsEnriched || 0;
-                            console.log(`  ✓ RULE-002 successful: ${enrichmentResult.recordsEnriched} records enriched`);
-                        } else {
-                            ruleLog.warnings.push(enrichmentResult.message);
-                            console.log(`  ⚠ RULE-002 warning: ${enrichmentResult.message}`);
-                        }
-                    } catch (error) {
-                        ruleLog.errors.push(`RULE-002 failed: ${error.message}`);
-                        console.error(`  ✗ RULE-002 error:`, error.message);
-                    }
-                } else {
-                    // Normal handling: execute each mapping individually
-                    for (const mapping of rule.apiMappings) {
-                        ruleLog.apiCallsMade++;
+            console.log(`✅ Validation completed: ${validationResult.message}`);
+            console.log(`   Rules executed: ${validationResult.rulesExecuted}/${validationResult.totalRules}`);
+            console.log(`   Records enriched: ${validationResult.recordsEnriched}`);
+            console.log(`   Warnings: ${validationResult.warnings}`);
+            console.log(`   Errors: ${validationResult.errors}`);
+            
+        } catch (validationError) {
+            console.error('❌ Validation error:', validationError);
+            run.stages.validation.status = 'error';
+            run.stages.validation.message = validationError.message;
+            run.stages.validation.errors = [validationError.message];
+        }
                         try {
                             // Execute API mapping dynamically
                             const enrichmentResult = await executeApiMapping(
