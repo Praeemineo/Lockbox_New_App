@@ -5120,7 +5120,7 @@ async function initializeProcessingRules() {
     }
     
     try {
-        const result = await pool.query('SELECT COUNT(*) FROM processing_rule');
+        const result = await pool.query('SELECT COUNT(*) FROM lb_processing_rules');
         const count = parseInt(result.rows[0].count);
         
         if (count === 0) {
@@ -5128,7 +5128,7 @@ async function initializeProcessingRules() {
             for (const rule of defaultProcessingRules) {
                 const id = require('crypto').randomUUID();
                 await pool.query(`
-                    INSERT INTO processing_rule 
+                    INSERT INTO lb_processing_rules 
                     (id, rule_id, file_type, rule_type, rule_description, active, priority,
                      condition_logic, conditions, actions)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -5138,7 +5138,7 @@ async function initializeProcessingRules() {
                     JSON.stringify(rule.conditions), JSON.stringify(rule.actions)
                 ]);
             }
-            console.log('Processing rules initialized:', defaultProcessingRules.length);
+            console.log('Processing rules initialized in LB_Processing_Rules:', defaultProcessingRules.length);
         }
     } catch (err) {
         console.error('Error initializing processing rules:', err.message);
