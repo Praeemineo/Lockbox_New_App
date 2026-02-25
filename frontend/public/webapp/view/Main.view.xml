@@ -598,6 +598,7 @@
                             <OverflowToolbar>
                                 <Title text="Processing Rules ({= ${app>/processingRules} ? ${app>/processingRules}.length : 0})" />
                                 <ToolbarSpacer />
+                                <Button text="Add Column" icon="sap-icon://add-column" type="Transparent" press="onAddRuleCustomColumn" />
                                 <Button text="Create" icon="sap-icon://add" type="Emphasized" press="onCreateProcessingRule" />
                                 <Button text="Edit" icon="sap-icon://edit" press="onEditProcessingRule" enabled="{= !!${app>/selectedProcessingRule}}" />
                                 <Button text="Delete" icon="sap-icon://delete" type="Reject" press="onDeleteProcessingRule" enabled="{= !!${app>/selectedProcessingRule}}" />
