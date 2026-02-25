@@ -5076,7 +5076,7 @@ app.put('/api/processing-rules/:ruleId', async (req, res) => {
         }
         
         await pool.query(`
-            UPDATE processing_rule 
+            UPDATE lb_processing_rules 
             SET file_type = $1, rule_type = $2, rule_description = $3, active = $4,
                 priority = $5, condition_logic = $6, conditions = $7, actions = $8,
                 updated_at = CURRENT_TIMESTAMP
