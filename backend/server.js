@@ -2944,10 +2944,10 @@ async function saveProcessingRuleToDb(rule) {
     }
     
     try {
-        console.log('💾 Saving processing rule to PostgreSQL:', rule.ruleId);
+        console.log('💾 Saving processing rule to PostgreSQL (LB_Processing_Rules):', rule.ruleId);
         
         const query = `
-            INSERT INTO processing_rule 
+            INSERT INTO lb_processing_rules 
             (id, rule_id, rule_name, description, file_type, rule_type, active, priority, 
              destination, conditions, api_mappings, updated_at)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP)
@@ -2978,10 +2978,10 @@ async function saveProcessingRuleToDb(rule) {
             JSON.stringify(rule.apiMappings || rule.api_mappings || [])
         ]);
         
-        console.log('✅ Processing rule saved to database:', rule.ruleId);
+        console.log('✅ Processing rule saved to LB_Processing_Rules table:', rule.ruleId);
         return { success: true };
     } catch (err) {
-        console.error('❌ Error saving processing rule to database:', err.message);
+        console.error('❌ Error saving processing rule to LB_Processing_Rules:', err.message);
         console.error('Rule data:', JSON.stringify(rule, null, 2));
         return { success: false, error: err.message };
     }
