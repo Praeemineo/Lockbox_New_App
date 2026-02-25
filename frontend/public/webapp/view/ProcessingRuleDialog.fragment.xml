@@ -116,12 +116,13 @@
                                 items="{processingRuleDialog>/rule/apiMappings}"
                                 class="sapUiSizeCompact">
                                 <columns>
-                                    <Column width="15%"><Text text="HTTP Method" /></Column>
+                                    <Column width="10%"><Text text="HTTP Method" /></Column>
                                     <Column width="20%"><Text text="API Reference" /></Column>
-                                    <Column width="20%"><Text text="Input Field" /></Column>
-                                    <Column width="15%"><Text text="Source/Input" /></Column>
-                                    <Column width="15%"><Text text="Output Field" /></Column>
-                                    <Column width="10%"><Text text="Lockbox API Field" /></Column>
+                                    <Column width="15%"><Text text="Destination" /></Column>
+                                    <Column width="15%"><Text text="Input Field" /></Column>
+                                    <Column width="12%"><Text text="Source/Input" /></Column>
+                                    <Column width="12%"><Text text="Output Field" /></Column>
+                                    <Column width="11%"><Text text="Lockbox API Field" /></Column>
                                     <Column width="5%" hAlign="Center"><Text text="" /></Column>
                                 </columns>
                                 <items>
@@ -134,6 +135,7 @@
                                                 <core:Item key="DELETE" text="DELETE" />
                                             </Select>
                                             <Input value="{processingRuleDialog>apiReference}" />
+                                            <Input value="{processingRuleDialog>destination}" placeholder="e.g., S4HANA_SYSTEM_DESTINATION" />
                                             <Input value="{processingRuleDialog>inputField}" />
                                             <Input value="{processingRuleDialog>sourceInput}" />
                                             <Input value="{processingRuleDialog>outputField}" />
