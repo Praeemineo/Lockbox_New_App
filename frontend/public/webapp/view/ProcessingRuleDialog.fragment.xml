@@ -67,8 +67,9 @@
                     <IconTabFilter key="conditions" text="Conditions" count="{= ${processingRuleDialog>/rule/conditions} ? ${processingRuleDialog>/rule/conditions}.length : 0}" icon="sap-icon://filter">
                         <VBox class="sapUiSmallMargin">
                             <Toolbar>
-                                <Title text="Pattern Conditions" level="H4" />
+                                <Title text="Conditions" level="H4" />
                                 <ToolbarSpacer />
+                                <Button text="Add Column" icon="sap-icon://add-column" type="Transparent" press="onAddConditionsColumn" />
                                 <Button text="Add Condition" icon="sap-icon://add" type="Emphasized" press="onAddRuleCondition" />
                             </Toolbar>
                             
