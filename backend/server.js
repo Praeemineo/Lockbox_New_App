@@ -7427,7 +7427,12 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
             // Store rule execution logs
             run.ruleExecutionLogs = validationResult.ruleExecutionLogs;
             
-            console.log(`✅ Validation completed: ${validationResult.message}`);
+            // Build Field Mapping Preview with API-derived fields
+            const fieldMappingPreview = buildFieldMappingPreview(extractedData);
+            run.fieldMappingPreview = fieldMappingPreview;
+            
+            console.log(`✅ Validation completed: ${validationResult.rulesExecuted}/${validationResult.totalRules} rules`);
+            console.log(`   Records enriched: ${validationResult.recordsEnriched}`);
             console.log(`   Rules executed: ${validationResult.rulesExecuted}/${validationResult.totalRules}`);
             console.log(`   Records enriched: ${validationResult.recordsEnriched}`);
             console.log(`   Warnings: ${validationResult.warnings}`);
