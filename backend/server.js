@@ -3057,6 +3057,11 @@ async function loadProcessingRulesFromDb() {
         // Save to file as backup
         saveProcessingRulesToFile();
         
+        // Pass rules to rule engine
+        const ruleEngine = require('./srv/handlers/rule-engine');
+        ruleEngine.loadProcessingRules(processingRules);
+        console.log(`✅ Processing rules loaded into rule engine: ${processingRules.length}`);
+        
     } catch (err) {
         console.error('Error loading processing rules from LB_Processing_Rules:', err.message);
         loadProcessingRulesFromFile();
