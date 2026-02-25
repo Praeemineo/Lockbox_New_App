@@ -188,6 +188,29 @@ async function executeRule002(mappings, extractedData, ruleDestination) {
         row._rule002_status = result.success ? 'SUCCESS' : 'DEFAULTS_USED';
         row._rule002_message = result.usedDefaults ? 'Used default bank details' : 'Bank details retrieved';
         
+        // Mark as API-derived fields for Field Mapping Preview
+        row._apiDerivedFields = row._apiDerivedFields || [];
+        row._apiDerivedFields.push('PartnerBank', 'PartnerBankAccount', 'PartnerBankCountry');
+        row._apiFieldMappings = row._apiFieldMappings || {};
+        row._apiFieldMappings.PartnerBank = {
+            source: 'SAP API',
+            apiEndpoint: mappings[0]?.apiReference || 'API_BUSINESSPARTNER',
+            sourceField: 'BankNumber (BANKS)',
+            derivedFrom: 'RULE-002'
+        };
+        row._apiFieldMappings.PartnerBankAccount = {
+            source: 'SAP API',
+            apiEndpoint: mappings[0]?.apiReference || 'API_BUSINESSPARTNER',
+            sourceField: 'BankAccount (BANKL)',
+            derivedFrom: 'RULE-002'
+        };
+        row._apiFieldMappings.PartnerBankCountry = {
+            source: 'SAP API',
+            apiEndpoint: mappings[0]?.apiReference || 'API_BUSINESSPARTNER',
+            sourceField: 'BankCountryKey (BANKN)',
+            derivedFrom: 'RULE-002'
+        };
+        
         recordsEnriched++;
         
         if (result.usedDefaults) {
