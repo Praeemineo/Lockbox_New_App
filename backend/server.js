@@ -7201,6 +7201,85 @@ function buildSapPayloadFromHierarchy(hierarchy) {
 }
 
 // Process uploaded file - automated workflow
+/**
+ * Build Field Mapping Preview showing source fields vs API-derived fields
+ * @param {array} extractedData - Data with API-enriched fields
+ * @returns {object} - Field mapping preview structure
+ */
+function buildFieldMappingPreview(extractedData) {
+    const preview = {
+        sourceFields: [],
+        apiDerivedFields: [],
+        fieldMappings: []
+    };
+    
+    if (!extractedData || extractedData.length === 0) {
+        return preview;
+    }
+    
+    // Get sample row
+    const sampleRow = extractedData[0];
+    const allFields = Object.keys(sampleRow);
+    
+    // Get API-derived fields from metadata
+    const apiDerivedFieldNames = sampleRow._apiDerivedFields || [];
+    const apiFieldMappings = sampleRow._apiFieldMappings || {};
+    
+    // Classify fields
+    allFields.forEach(fieldName => {
+        // Skip internal metadata fields
+        if (fieldName.startsWith('_')) return;
+        
+        const isApiDerived = apiDerivedFieldNames.includes(fieldName);
+        
+        if (isApiDerived) {
+            const mapping = apiFieldMappings[fieldName] || {};
+            preview.apiDerivedFields.push({
+                fieldName,
+                value: sampleRow[fieldName],
+                source: 'SAP API',
+                apiEndpoint: mapping.apiEndpoint,
+                sourceApiField: mapping.sourceField,
+                derivedFromRule: mapping.derivedFrom,
+                inputField: mapping.inputField,
+                inputValue: mapping.inputValue
+            });
+        } else {
+            preview.sourceFields.push({
+                fieldName,
+                value: sampleRow[fieldName],
+                source: 'Uploaded File'
+            });
+        }
+    });
+    
+    // Build comprehensive field mappings
+    preview.fieldMappings = [
+        ...preview.sourceFields.map(f => ({
+            fieldName: f.fieldName,
+            sourceType: 'File Upload',
+            targetType: 'Lockbox Field',
+            value: f.value
+        })),
+        ...preview.apiDerivedFields.map(f => ({
+            fieldName: f.fieldName,
+            sourceType: 'SAP API',
+            sourceApiField: f.sourceApiField,
+            targetType: 'Lockbox API Field (Derived)',
+            apiEndpoint: f.apiEndpoint,
+            derivedFromRule: f.derivedFromRule,
+            inputMapping: f.inputField ? `${f.inputField} = ${f.inputValue}` : '',
+            value: f.value
+        }))
+    ];
+    
+    return preview;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LOCKBOX TRANSACTION PROCESSING
+// ═══════════════════════════════════════════════════════════════════
+
 app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
     // NOTE: Each file upload creates a NEW batch run with unique runId
     // Uploading the same file multiple times is allowed - each is treated as separate batch
