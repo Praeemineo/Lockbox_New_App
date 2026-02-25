@@ -9076,6 +9076,12 @@ sap.ui.define([
                 apiMappings: []
             });
             
+            // Force reload fragment to get latest changes
+            if (this._processingRuleDialog) {
+                this._processingRuleDialog.destroy();
+                this._processingRuleDialog = null;
+            }
+            
             // Load and open fragment
             if (!this._processingRuleDialog) {
                 sap.ui.core.Fragment.load({
