@@ -109,6 +109,7 @@
                             <Toolbar>
                                 <Title text="API Field Mappings" level="H5" />
                                 <ToolbarSpacer />
+                                <Button text="Add Column" icon="sap-icon://add-column" type="Transparent" press="onAddApiMappingsColumn" />
                                 <Button text="Add Mapping" icon="sap-icon://add" press="onAddApiMapping" />
                             </Toolbar>
                             
