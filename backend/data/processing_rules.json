@@ -212,22 +212,27 @@
   {
     "id": "385af664-3543-4e86-b912-6b05f8c94cac",
     "ruleId": "RULE-006",
-    "ruleName": "Test Migration Rule",
-    "description": "Testing LB_Processing_Rules table",
-    "fileType": "EXCEL",
-    "ruleType": "VALIDATION",
-    "active": true,
-    "priority": 20,
-    "destination": "TEST_DESTINATION",
+    "ruleName": "Updated Migration Test",
+    "description": "Testing UPDATE operation on LB_Processing_Rules",
+    "fileType": "CSV",
+    "ruleType": "API_LOOKUP",
+    "active": false,
+    "priority": 15,
+    "destination": "UPDATED_DESTINATION",
     "conditions": [
       {
-        "field": "test",
-        "operator": "equals",
+        "field": "updated",
+        "operator": "contains",
         "value": "test"
       }
     ],
-    "apiMappings": [],
+    "apiMappings": [
+      {
+        "httpMethod": "POST",
+        "endpoint": "/test"
+      }
+    ],
     "createdAt": "2026-02-25T05:09:23.834Z",
-    "updatedAt": "2026-02-25T05:09:23.834Z"
+    "updatedAt": "2026-02-25T05:10:04.721Z"
   }
 ]
