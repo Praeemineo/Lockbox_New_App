@@ -1,6 +1,7 @@
 /**
  * Rule Execution Engine
  * Dynamically executes processing rules based on conditions and API mappings
+ * Reads rules from lb_processing_rules table and executes them
  * 
  * ⚠️ NEW CODE LOCATION: All rule execution logic goes HERE, not in server.js
  */
@@ -8,6 +9,31 @@
 const sapClient = require('../integrations/sap-client');
 const dataModels = require('../models/data-models');
 const logger = require('../utils/logger');
+const axios = require('axios');
+
+// Global variable to store loaded processing rules
+let cachedProcessingRules = [];
+
+/**
+ * Load processing rules from parent process (server.js provides this)
+ * @param {array} rules - Array of processing rules
+ */
+function loadProcessingRules(rules) {
+    cachedProcessingRules = rules || [];
+    console.log(`Rule Engine: Loaded ${cachedProcessingRules.length} processing rules`);
+}
+
+/**
+ * Get active rules for a specific file type
+ * @param {string} fileType - File type (EXCEL, CSV, PDF)
+ * @returns {array} - Array of active rules for the file type
+ */
+function getActiveRulesForFileType(fileType) {
+    return cachedProcessingRules.filter(rule => 
+        rule.active && 
+        rule.fileType === fileType
+    );
+}
 
 /**
  * Check if rule condition is met
