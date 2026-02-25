@@ -2929,6 +2929,11 @@ function loadProcessingRulesFromFile() {
                 return num > max ? num : max;
             }, 0);
             processingRuleIdCounter = maxId + 1;
+            
+            // Pass rules to rule engine
+            const ruleEngine = require('./srv/handlers/rule-engine');
+            ruleEngine.loadProcessingRules(processingRules);
+            console.log(`✅ Processing rules loaded into rule engine from file: ${processingRules.length}`);
         }
     } catch (err) {
         console.error('Error loading processing rules from file:', err.message);
