@@ -7352,21 +7352,24 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         console.log(`Batch template ${batchTemplate.templateId} created and linked to run ${runId}`);
         
         // ═══════════════════════════════════════════════════════════════════
-        // STAGE 2: PATTERN DETECTION - Detect file pattern from data structure
+        // STAGE 2: PATTERN DETECTION - Detect file pattern from data structure (FROM DATABASE)
         // ═══════════════════════════════════════════════════════════════════
         run.currentStage = 'templateMatch';
-        console.log('=== PATTERN DETECTION ===');
+        console.log('=== PATTERN DETECTION (DYNAMIC FROM file_pattern TABLE) ===');
         console.log('Headers:', jsonData[0]);
         
-        const patternResult = detectFilePattern(dataRows, jsonData[0], fileType);
+        // Use pattern engine for dynamic detection
+        const patternEngine = require('./srv/handlers/pattern-engine');
+        const patternResult = patternEngine.detectPattern(dataRows, fileType);
         
-        if (!patternResult.pattern) { 
+        if (!patternResult.matched || !patternResult.pattern) { 
             run.stages.templateMatch.status = 'error'; 
             run.stages.templateMatch.message = `No matching file pattern found. Please create a pattern in Field Mapping Rules → File Patterns.`; 
             run.stages.templateMatch.detectedHeaders = jsonData[0];
+            run.stages.templateMatch.error = patternResult.error || 'No pattern matched';
             run.overallStatus = 'failed'; 
             run.lastFailedStage = 'templateMatch'; 
-            console.log('Pattern detection failed - no pattern found');
+            console.log('❌ Pattern detection failed:', patternResult.error);
             return res.json({ success: false, run }); 
         }
         
@@ -7376,24 +7379,20 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
             patternId: patternResult.pattern.patternId, 
             patternName: patternResult.pattern.patternName,
             patternType: patternResult.pattern.patternType,
-            matchScore: patternResult.score, 
+            matchScore: patternResult.confidence, 
             analysis: patternResult.analysis,
-            headerMapping: patternResult.headerMapping 
+            completedAt: new Date().toISOString()
         };
-        console.log('Pattern detection success:', patternResult.pattern.patternId, 'Score:', patternResult.score);
+        console.log(`✅ Pattern detection success: ${patternResult.pattern.patternId}  - Confidence: ${patternResult.confidence}%`);
         
         // ═══════════════════════════════════════════════════════════════════
-        // STAGE 3: EXTRACTION - Extract data according to detected pattern
+        // STAGE 3: EXTRACTION - Extract data according to detected pattern (DYNAMIC FROM DATABASE)
         // ═══════════════════════════════════════════════════════════════════
         run.currentStage = 'extraction';
-        console.log('=== EXTRACTION ===');
+        console.log('=== EXTRACTION (PATTERN-BASED FROM DATABASE) ===');
         
-        const extractedData = extractDataByPattern(
-            dataRows, 
-            jsonData[0], 
-            patternResult.pattern, 
-            patternResult.headerMapping
-        );
+        // Use pattern engine for dynamic extraction
+        const extractedData = patternEngine.executePatternExtraction(dataRows, patternResult.pattern);
         
         run.extractedData = extractedData;
         run.stages.extraction = { 
