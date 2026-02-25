@@ -4574,6 +4574,71 @@ app.post('/api/field-mapping/processing-rules/sync-to-db', async (req, res) => {
     }
 });
 
+// ============ Column Configuration APIs ============
+
+// GET column configuration
+app.get('/api/field-mapping/column-config/:configType', async (req, res) => {
+    try {
+        const { configType } = req.params;
+        
+        if (!dbAvailable) {
+            // Return default configuration
+            return res.json({
+                visibleColumns: [],
+                customColumns: []
+            });
+        }
+        
+        const result = await pool.query(
+            'SELECT * FROM rules_column_config WHERE config_type = $1 LIMIT 1',
+            [configType]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.json({
+                visibleColumns: [],
+                customColumns: []
+            });
+        }
+        
+        res.json({
+            visibleColumns: result.rows[0].visible_columns || [],
+            customColumns: result.rows[0].custom_columns || []
+        });
+    } catch (err) {
+        console.error('Error fetching column config:', err);
+        res.status(500).json({ error: 'Failed to fetch column config', message: err.message });
+    }
+});
+
+// POST/PUT save column configuration
+app.post('/api/field-mapping/column-config/:configType', async (req, res) => {
+    try {
+        const { configType } = req.params;
+        const { visibleColumns, customColumns } = req.body;
+        
+        if (!dbAvailable) {
+            return res.json({ success: true, message: 'Saved to local storage only' });
+        }
+        
+        await pool.query(`
+            INSERT INTO rules_column_config (config_type, visible_columns, custom_columns, updated_at)
+            VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+            ON CONFLICT (config_type) 
+            DO UPDATE SET
+                visible_columns = EXCLUDED.visible_columns,
+                custom_columns = EXCLUDED.custom_columns,
+                updated_at = CURRENT_TIMESTAMP
+        `, [configType, JSON.stringify(visibleColumns || []), JSON.stringify(customColumns || [])]);
+        
+        console.log('Column configuration saved:', configType);
+        res.json({ success: true, message: 'Column configuration saved' });
+    } catch (err) {
+        console.error('Error saving column config:', err);
+        res.status(500).json({ error: 'Failed to save column config', message: err.message });
+    }
+});
+
 // ============ API Fields APIs ============
 
 // GET all API fields
