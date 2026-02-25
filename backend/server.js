@@ -375,9 +375,9 @@ async function initTables() {
             )
         `);
         
-        // Processing Rules table - Stores lockbox processing rules with conditions and actions
+        // LB_Processing_Rules table - Stores lockbox processing rules with conditions and API mappings
         await pool.query(`
-            CREATE TABLE IF NOT EXISTS processing_rule (
+            CREATE TABLE IF NOT EXISTS lb_processing_rules (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 rule_id VARCHAR(30) NOT NULL UNIQUE,
                 rule_name VARCHAR(200) NOT NULL,
