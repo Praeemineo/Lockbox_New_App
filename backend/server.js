@@ -2996,10 +2996,10 @@ async function loadProcessingRulesFromDb() {
     }
     
     try {
-        const result = await pool.query('SELECT * FROM processing_rule ORDER BY priority ASC');
+        const result = await pool.query('SELECT * FROM lb_processing_rules ORDER BY priority ASC');
         
         if (result.rows.length === 0) {
-            console.log('No processing rules in database, loading from file...');
+            console.log('No processing rules in LB_Processing_Rules table, loading from file...');
             loadProcessingRulesFromFile();
         } else {
             processingRules = result.rows.map(row => ({
@@ -3018,7 +3018,7 @@ async function loadProcessingRulesFromDb() {
                 updatedAt: row.updated_at
             }));
             
-            console.log('Loaded', processingRules.length, 'processing rules from database');
+            console.log('Loaded', processingRules.length, 'processing rules from LB_Processing_Rules table');
         }
         
         // Update rule counter
@@ -3033,7 +3033,7 @@ async function loadProcessingRulesFromDb() {
         saveProcessingRulesToFile();
         
     } catch (err) {
-        console.error('Error loading processing rules from database:', err.message);
+        console.error('Error loading processing rules from LB_Processing_Rules:', err.message);
         loadProcessingRulesFromFile();
     }
 }
