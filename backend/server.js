@@ -3222,6 +3222,11 @@ function loadPatternsFromFile() {
                 return num > max ? num : max;
             }, 0);
             patternIdCounter = maxId + 1;
+            
+            // Pass patterns to pattern engine
+            const patternEngine = require('./srv/handlers/pattern-engine');
+            patternEngine.loadFilePatterns(filePatterns);
+            console.log(`✅ File patterns loaded into pattern engine from file: ${filePatterns.length}`);
         } else {
             // Use defaults and save to file
             filePatterns = [...DEFAULT_FILE_PATTERNS];
