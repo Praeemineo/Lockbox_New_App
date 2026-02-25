@@ -4496,7 +4496,7 @@ app.delete('/api/field-mapping/processing-rules/:ruleId', async (req, res) => {
 // SYNC JSON to PostgreSQL - Force sync current JSON data to database
 app.post('/api/field-mapping/processing-rules/sync-to-db', async (req, res) => {
     try {
-        console.log('🔄 Starting Processing Rules JSON to PostgreSQL sync...');
+        console.log('🔄 Starting Processing Rules JSON to PostgreSQL (LB_Processing_Rules) sync...');
         
         if (!dbAvailable) {
             return res.status(503).json({ 
@@ -4507,8 +4507,8 @@ app.post('/api/field-mapping/processing-rules/sync-to-db', async (req, res) => {
         }
         
         // Clear existing rules in database
-        console.log('🗑️  Clearing old processing rules from database...');
-        await pool.query('DELETE FROM processing_rule');
+        console.log('🗑️  Clearing old processing rules from LB_Processing_Rules table...');
+        await pool.query('DELETE FROM lb_processing_rules');
         console.log('✅ Old rules cleared');
         
         // Insert all rules from JSON
@@ -4533,14 +4533,14 @@ app.post('/api/field-mapping/processing-rules/sync-to-db', async (req, res) => {
         
         res.json({ 
             success: true, 
-            message: 'Processing rules synced to database',
+            message: 'Processing rules synced to LB_Processing_Rules table',
             synced: successCount,
             failed: errorCount,
             errors: errors,
             total: processingRules.length
         });
     } catch (err) {
-        console.error('❌ Error syncing processing rules to database:', err);
+        console.error('❌ Error syncing processing rules to LB_Processing_Rules:', err);
         res.status(500).json({ 
             success: false, 
             error: 'Failed to sync processing rules', 
