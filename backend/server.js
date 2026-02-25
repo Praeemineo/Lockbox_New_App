@@ -2999,15 +2999,6 @@ async function saveProcessingRuleToDb(rule) {
             JSON.stringify(rule.apiMappingsColumns || rule.api_mappings_columns || []),
             JSON.stringify(rule.customFields || rule.custom_fields || {})
         ]);
-            rule.description || '',
-            rule.fileType || rule.file_type || 'EXCEL',
-            rule.ruleType || rule.rule_type || 'VALIDATION',
-            rule.active !== false,
-            rule.priority || 10,
-            rule.destination || '',
-            JSON.stringify(rule.conditions || []),
-            JSON.stringify(rule.apiMappings || rule.api_mappings || [])
-        ]);
         
         console.log('✅ Processing rule saved to LB_Processing_Rules table:', rule.ruleId);
         return { success: true };
