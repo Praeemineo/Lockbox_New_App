@@ -7399,9 +7399,10 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
             status: 'success', 
             message: `Extracted ${extractedData.length} records using pattern: ${patternResult.pattern.patternType}`, 
             rowCount: extractedData.length,
-            pattern: patternResult.pattern.patternType
+            pattern: patternResult.pattern.patternType,
+            completedAt: new Date().toISOString()
         };
-        console.log('Extraction complete. Rows:', extractedData.length);
+        console.log(`✅ Extraction complete. Rows: ${extractedData.length}`);
         
         // ═══════════════════════════════════════════════════════════════════
         // STAGE 4: VALIDATION & ENRICHMENT - Execute Processing Rules Dynamically from DB
