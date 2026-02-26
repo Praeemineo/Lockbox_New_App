@@ -393,18 +393,6 @@ async function initTables() {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-
-        // Table for storing column preferences and custom columns
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS rules_column_config (
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                config_type VARCHAR(50) NOT NULL UNIQUE,
-                visible_columns JSONB DEFAULT '[]'::jsonb,
-                custom_columns JSONB DEFAULT '[]'::jsonb,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
         
         console.log('Database tables initialized (CREATE IF NOT EXISTS)');
         console.log('Tables created: lockbox_run_log, sap_response_log, line_level_clearing, lockbox_processing_run, file_pattern, odata_service, lb_processing_rules');
