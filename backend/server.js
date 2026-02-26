@@ -388,10 +388,7 @@ async function initTables() {
                 priority INTEGER DEFAULT 10,
                 destination VARCHAR(100),
                 conditions JSONB,
-                conditions_columns JSONB DEFAULT '[]'::jsonb,
                 api_mappings JSONB,
-                api_mappings_columns JSONB DEFAULT '[]'::jsonb,
-                custom_fields JSONB DEFAULT '{}'::jsonb,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
