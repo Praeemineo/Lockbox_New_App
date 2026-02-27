@@ -284,6 +284,19 @@ async function executeDynamicRule(rule, data) {
                     row[lockboxField] = apiValue;
                     fieldsEnriched++;
                     console.log(`   ✅ ${lockboxField}: ${apiValue}`);
+                    
+                    // Add metadata for Field Mapping Preview
+                    if (!row._apiDerivedFields) row._apiDerivedFields = [];
+                    if (!row._apiFieldMappings) row._apiFieldMappings = {};
+                    
+                    row._apiDerivedFields.push(lockboxField);
+                    row._apiFieldMappings[lockboxField] = {
+                        apiEndpoint: mapping.apiReference,
+                        sourceField: mapping.outputField,
+                        derivedFrom: rule.ruleId,
+                        inputField: mapping.inputField,
+                        inputValue: sourceValue
+                    };
                 }
             }
             
