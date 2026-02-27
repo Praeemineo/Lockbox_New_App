@@ -1,11 +1,11 @@
 [
   {
-    "patternId": "PAT0001",
-    "patternName": "Single Check, Multiple Invoice",
+    "patternId": "PAT-001",
+    "patternName": "Single Check - Single Invoice",
     "fileType": "EXCEL",
-    "patternType": "Single Check Multi Invoice",
+    "patternType": "SINGLE_CHECK_SINGLE_INVOICE",
     "category": "CHECK",
-    "description": "Single Check, Multiple Invoice",
+    "description": "One check pays exactly one invoice. Simple 1:1 relationship.",
     "delimiter": "",
     "active": true,
     "priority": 10,
@@ -59,12 +59,12 @@
     ]
   },
   {
-    "patternId": "PAT0002",
-    "patternName": "Multiple Check, Multiple Invoice",
+    "patternId": "PAT-002",
+    "patternName": "Multiple Check - Multiple Invoices",
     "fileType": "EXCEL",
-    "patternType": "Multiple Check Multi Invoice",
+    "patternType": "MULTI_CHECK_MULTI_INVOICE",
     "category": "CHECK",
-    "description": "Multiple Check, Multiple Invoice",
+    "description": "Multiple Check Multiple Invoice",
     "delimiter": "",
     "active": true,
     "priority": 20,
@@ -118,15 +118,15 @@
     ]
   },
   {
-    "patternId": "PAT0003",
-    "patternName": "File Containing Comma",
+    "patternId": "PAT-003",
+    "patternName": "Document Split (Comma Delimited)",
     "fileType": "EXCEL",
-    "patternType": "File Containing Comma",
+    "patternType": "DOUCMENT_SPLIT_COMMA",
     "category": "INVOICE",
-    "description": "File Containing Comma",
+    "description": "Check/Invoice field contains comma-separated values like '90004206, 207, 208'. Common prefix detection enabled.",
     "delimiter": ",",
     "active": true,
-    "priority": 100,
+    "priority": 5,
     "conditions": [
       {
         "detectionCondition": "Comma delimited files Check",
@@ -177,15 +177,15 @@
     ]
   },
   {
-    "patternId": "PAT0004",
-    "patternName": "File Containing Comma",
+    "patternId": "PAT-004",
+    "patternName": "Invoice Range Pattern",
     "fileType": "EXCEL",
-    "patternType": "File Containing Comma",
+    "patternType": "DOCUMENT_RANGE",
     "category": "INVOICE",
-    "description": "File Containing Comma",
+    "description": "Invoice field contains ranges like '90004206-90004210'. Expands to individual invoices.",
     "delimiter": "-",
     "active": true,
-    "priority": 110,
+    "priority": 6,
     "conditions": [
       {
         "detectionCondition": "Comma delimited files Check",
@@ -242,12 +242,12 @@
     ]
   },
   {
-    "patternId": "PAT0005",
+    "patternId": "PAT-005",
     "patternName": "Date Pattern",
     "fileType": "EXCEL",
-    "patternType": "Date Pattern",
+    "patternType": "DATE_PATTERN",
     "category": "DATE",
-    "description": "Date Pattern",
+    "description": "Identifying Date Pattern in file and matching with API field",
     "delimiter": "",
     "active": true,
     "priority": 50,
@@ -303,15 +303,15 @@
     ]
   },
   {
-    "patternId": "PAT0006",
-    "patternName": "File containing multiple Sheets",
+    "patternId": "PAT-006",
+    "patternName": "Multiple Sheets",
     "fileType": "EXCEL",
-    "patternType": "File containing multiple Sheets",
+    "patternType": "MULTI_SHEET",
     "category": "MULTI_SHEET",
-    "description": "File containing multiple Sheets",
+    "description": "Excel workbook with multiple sheets. Each sheet processed separately.",
     "delimiter": "",
     "active": true,
-    "priority": 60,
+    "priority": 7,
     "conditions": [
       {
         "detectionCondition": "Header, Item data split Check Data",
