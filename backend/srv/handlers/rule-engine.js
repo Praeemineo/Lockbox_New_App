@@ -386,12 +386,24 @@ async function callSAPAPI(apiURL, httpMethod, destination) {
     try {
         console.log(`   📞 Calling SAP via destination: ${destination}`);
         console.log(`   🔗 Raw API URL: ${apiURL}`);
+        console.log(`   🔗 API URL type: ${typeof apiURL}`);
+        
+        // Validate apiURL
+        if (!apiURL || typeof apiURL !== 'string') {
+            throw new Error(`Invalid API URL: ${apiURL}`);
+        }
         
         // Parse the API URL to extract endpoint and query parameters
         const [endpoint, queryString] = apiURL.split('?');
         
         console.log(`   📍 Parsed endpoint: ${endpoint}`);
+        console.log(`   📍 Endpoint type: ${typeof endpoint}`);
         console.log(`   📋 Query string: ${queryString}`);
+        
+        // Validate endpoint
+        if (!endpoint) {
+            throw new Error(`Failed to parse endpoint from URL: ${apiURL}`);
+        }
         
         // Parse query parameters from $filter
         const queryParams = {};
@@ -403,6 +415,10 @@ async function callSAPAPI(apiURL, httpMethod, destination) {
         }
         
         console.log(`   🔧 Query params object:`, JSON.stringify(queryParams));
+        console.log(`   🎯 About to call executeSapGetRequest with:`);
+        console.log(`      - destination: "${destination}"`);
+        console.log(`      - endpoint: "${endpoint}"`);
+        console.log(`      - queryParams:`, queryParams);
         
         // Use SAP client's executeSapGetRequest which handles .env credentials
         const response = await sapClient.executeSapGetRequest(destination, endpoint, queryParams);
