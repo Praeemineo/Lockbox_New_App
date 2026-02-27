@@ -4895,5 +4895,113 @@
     "status": "ACTIVE",
     "createdAt": "2026-02-27T12:19:13.889Z",
     "updatedAt": "2026-02-27T12:19:13.889Z"
+  },
+  {
+    "id": "2f2727f2-0c1d-4d69-809e-4bc6f1aaf071",
+    "templateId": "TPL-0042",
+    "templateName": "Template for upload_8.xlsx",
+    "originalFilename": "upload_8.xlsx",
+    "fileType": "XLSX",
+    "fileSize": 0,
+    "uploadDate": "2026-02-27T12:26:38.655Z",
+    "detectedHeaders": [
+      "Customer",
+      "Check Number",
+      "Check Amount",
+      "Invoice Number",
+      "Invoice Amount",
+      "Deduction Amount",
+      "Reason Code",
+      "Deposit Date"
+    ],
+    "fieldMappings": {
+      "Customer": {
+        "index": 0,
+        "originalHeader": "Customer",
+        "normalizedHeader": "Customer",
+        "sapField": "Customer",
+        "dataType": "String",
+        "required": true
+      },
+      "Check Number": {
+        "index": 1,
+        "originalHeader": "Check Number",
+        "normalizedHeader": "CheckNumber",
+        "sapField": "Cheque",
+        "dataType": "String",
+        "required": true
+      },
+      "Check Amount": {
+        "index": 2,
+        "originalHeader": "Check Amount",
+        "normalizedHeader": "CheckAmount",
+        "sapField": "AmountInTransactionCurrency",
+        "dataType": "String",
+        "required": true
+      },
+      "Invoice Number": {
+        "index": 3,
+        "originalHeader": "Invoice Number",
+        "normalizedHeader": "InvoiceNumber",
+        "sapField": "PaymentReference",
+        "dataType": "String",
+        "required": false
+      },
+      "Invoice Amount": {
+        "index": 4,
+        "originalHeader": "Invoice Amount",
+        "normalizedHeader": "InvoiceAmount",
+        "sapField": "NetPaymentAmountInPaytCurrency",
+        "dataType": "String",
+        "required": false
+      },
+      "Deduction Amount": {
+        "index": 5,
+        "originalHeader": "Deduction Amount",
+        "normalizedHeader": "DeductionAmount",
+        "sapField": "DeductionAmountInPaytCurrency",
+        "dataType": "String",
+        "required": false
+      },
+      "Reason Code": {
+        "index": 6,
+        "originalHeader": "Reason Code",
+        "normalizedHeader": "ReasonCode",
+        "sapField": "PaymentDifferenceReason",
+        "dataType": "String",
+        "required": false
+      },
+      "Deposit Date": {
+        "index": 7,
+        "originalHeader": "Deposit Date",
+        "normalizedHeader": "DepositDate",
+        "sapField": "DepositDateTime",
+        "dataType": "String",
+        "required": false
+      }
+    },
+    "sampleData": [
+      [
+        17100009,
+        3456693,
+        18.43,
+        90000334,
+        18.43,
+        0,
+        null,
+        "02/05/2026"
+      ],
+      [],
+      [],
+      [],
+      []
+    ],
+    "rowCount": 34,
+    "columnCount": 8,
+    "headerRow": 1,
+    "dataStartRow": 2,
+    "status": "ACTIVE",
+    "createdAt": "2026-02-27T12:26:38.655Z",
+    "updatedAt": "2026-02-27T12:26:38.655Z"
   }
 ]
