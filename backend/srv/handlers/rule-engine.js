@@ -385,22 +385,29 @@ function buildDynamicAPIURL(mapping, row) {
 async function callSAPAPI(apiURL, httpMethod, destination) {
     try {
         console.log(`   📞 Calling SAP via destination: ${destination}`);
-        console.log(`   🔗 Full URL: ${apiURL}`);
+        console.log(`   🔗 Raw API URL: ${apiURL}`);
         
         // Parse the API URL to extract endpoint and query parameters
         const [endpoint, queryString] = apiURL.split('?');
         
-        // Parse query parameters
-        const params = new URLSearchParams(queryString);
+        console.log(`   📍 Parsed endpoint: ${endpoint}`);
+        console.log(`   📋 Query string: ${queryString}`);
+        
+        // Parse query parameters from $filter
         const queryParams = {};
-        for (const [key, value] of params.entries()) {
-            queryParams[key] = value;
+        if (queryString) {
+            const params = new URLSearchParams(queryString);
+            for (const [key, value] of params.entries()) {
+                queryParams[key] = value;
+            }
         }
+        
+        console.log(`   🔧 Query params object:`, JSON.stringify(queryParams));
         
         // Use SAP client's executeSapGetRequest which handles .env credentials
         const response = await sapClient.executeSapGetRequest(destination, endpoint, queryParams);
         
-        console.log(`   ✅ SAP API Response received (status: ${response.status})`);
+        console.log(`   ✅ SAP API Response received`);
         
         return response;
     } catch (error) {
