@@ -338,5 +338,57 @@
         "splitLogic": "Build hierarchy of 50 items per batch from multiple sheets"
       }
     ]
+  },
+  {
+    "patternId": "PAT-007",
+    "patternName": "BAI2 Bank Format",
+    "fileType": "BAI2",
+    "patternType": "BAI2_BANK",
+    "category": "BANK",
+    "description": "Standard BAI2 bank file format with record types 01, 02, 03, 16, 88, 49.",
+    "delimiter": "",
+    "active": true,
+    "priority": 100,
+    "conditions": [],
+    "actions": []
+  },
+  {
+    "patternId": "PAT-008",
+    "patternName": "PDF Payment Advice",
+    "fileType": "PDF",
+    "patternType": "PDF_EXTRACTION",
+    "category": "PDF",
+    "description": "Payment advice in PDF format. Uses OCR and pattern matching to extract payment details.",
+    "delimiter": "",
+    "active": true,
+    "priority": 110,
+    "conditions": [],
+    "actions": []
+  },
+  {
+    "patternId": "PAT-009",
+    "patternName": "Payment Advice Split",
+    "fileType": "PAYMENT_ADVICE",
+    "patternType": "PAYMENT_ADVICE_SPLIT",
+    "category": "PAYMENT",
+    "description": "Payment advice with split conditions for invoice matching and amount distribution.",
+    "delimiter": "",
+    "active": true,
+    "priority": 120,
+    "conditions": [],
+    "actions": []
+  },
+  {
+    "patternId": "PAT-010",
+    "patternName": "CSV Standard Format",
+    "fileType": "CSV",
+    "patternType": "SINGLE_CHECK_MULTI_INVOICE",
+    "category": "CSV",
+    "description": "Standard CSV format with comma-separated fields.",
+    "delimiter": ",",
+    "active": true,
+    "priority": 30,
+    "conditions": [],
+    "actions": []
   }
 ]
