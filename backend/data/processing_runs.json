@@ -1,5 +1,457 @@
 [
   {
+    "id": "3cfe3c03-f50d-4809-9b05-6569bff751e4",
+    "runId": "RUN-2026-00147",
+    "filename": "upload_10.xlsx",
+    "fileType": "XLSX",
+    "fileSize": 10660,
+    "startedAt": "2026-02-27T11:17:08.169Z",
+    "uploadedAt": "2026-02-27T11:17:08.169Z",
+    "batchNumber": 23,
+    "stages": {
+      "upload": {
+        "status": "success",
+        "message": "Parsed 33 data rows, 8 columns from XLSX file"
+      },
+      "templateMatch": {
+        "status": "success",
+        "message": "✅ Upload Successful | Pattern ID: PAT-004 | Pattern Type: DOCUMENT_RANGE | Hyphen ranges detected in: Invoice Number",
+        "patternId": "PAT-004",
+        "patternName": "Invoice Range Pattern",
+        "patternType": "DOCUMENT_RANGE",
+        "matchScore": 95,
+        "analysis": {
+          "totalRows": 1,
+          "uniqueCheckNumbers": 1,
+          "uniqueInvoices": 1,
+          "hasEmptyCheckRows": false,
+          "hasCommaSeparated": true,
+          "commaSeparatedFields": [
+            "Invoice Amount"
+          ],
+          "hasRanges": true,
+          "rangeFields": [
+            "Invoice Number"
+          ],
+          "hasMultipleSheets": false,
+          "hasMultipleSheetsWithData": false,
+          "sheetCount": 1,
+          "sheetsWithDataCount": 0,
+          "hasDateFields": true,
+          "dateFields": [
+            "Deposit Date"
+          ],
+          "detectedColumns": [
+            "Customer",
+            "Check Number",
+            "Check Amount",
+            "Invoice Number",
+            "Invoice Amount",
+            "Deduction Amount",
+            "Reason Code",
+            "Deposit Date"
+          ]
+        },
+        "completedAt": "2026-02-27T11:17:08.204Z"
+      },
+      "extraction": {
+        "status": "success",
+        "message": "✅ Extraction Complete | ✅ Hyphen ranges expanded successfully |    Expanded from 1 to 1 rows | ✅ Amount distributed proportionally across expanded rows | ✅ Date validation and conversion completed",
+        "rowCount": 1,
+        "pattern": "DOCUMENT_RANGE",
+        "extractionLog": [
+          "✅ Hyphen ranges expanded successfully",
+          "   Expanded from 1 to 1 rows",
+          "✅ Amount distributed proportionally across expanded rows",
+          "✅ Date validation and conversion completed"
+        ],
+        "completedAt": "2026-02-27T11:17:08.205Z"
+      },
+      "validation": {
+        "status": "completed",
+        "message": "0/0 rules executed, 0 records enriched",
+        "errors": [],
+        "warnings": [],
+        "completedAt": "2026-02-27T11:17:08.208Z"
+      },
+      "mapping": {
+        "status": "success",
+        "message": "Generated standard payload: Lockbox=1000147, Batch=001, 1 Items",
+        "lockboxId": "1000147",
+        "batchId": "001",
+        "itemCount": 1,
+        "totalAmount": "0.00"
+      }
+    },
+    "currentStage": "complete",
+    "overallStatus": "validated",
+    "rawData": [
+      [
+        "Customer",
+        "Check Number",
+        "Check Amount",
+        "Invoice Number",
+        "Invoice Amount",
+        "Deduction Amount",
+        "Reason Code",
+        "Deposit Date"
+      ],
+      [
+        17100009,
+        3456694,
+        1383.43,
+        "90003904-3905",
+        "1365, 18.43",
+        0,
+        null,
+        "02/05/2026"
+      ],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "extractedData": [
+      {
+        "Customer": 17100009,
+        "Check Number": 3456694,
+        "Check Amount": 1383.43,
+        "Invoice Number": "90003904-3905",
+        "Invoice Amount": "1365, 18.43",
+        "Deduction Amount": 0,
+        "Deposit Date": "2026-02-05",
+        "_original_Deposit Date": "02/05/2026",
+        "_dateConverted": true
+      }
+    ],
+    "mappedData": [
+      {
+        "Customer": 17100009,
+        "Check Number": 3456694,
+        "Check Amount": 1383.43,
+        "Invoice Number": "90003904-3905",
+        "Invoice Amount": "1365, 18.43",
+        "Deduction Amount": 0,
+        "Deposit Date": "2026-02-05",
+        "_original_Deposit Date": "02/05/2026",
+        "_dateConverted": true
+      }
+    ],
+    "hierarchy": [
+      {
+        "nodeId": "lockbox_1000147",
+        "level": 1,
+        "type": "LOCKBOX",
+        "lockbox": "1000147",
+        "displayText": "1000147",
+        "sourceFile": "upload_10.xlsx",
+        "batchId": "001",
+        "status": "UPLOADED",
+        "amount": 0,
+        "currency": "USD",
+        "deposit_datetime": "2026-02-27T11:17:08",
+        "customer": "",
+        "children": [
+          {
+            "nodeId": "cheque_CHK-177219102_001",
+            "level": 2,
+            "type": "CHEQUE",
+            "cheque": "CHK-177219102",
+            "displayText": "CHK-177219102",
+            "itemId": "001",
+            "customer": "",
+            "amount": 0,
+            "currency": "USD",
+            "depositDate": "2026-02-27T11:17:08",
+            "partnerBank": "15051554",
+            "partnerBankAccount": "314129119",
+            "partnerBankCountry": "US",
+            "children": [
+              {
+                "nodeId": "payment__001",
+                "level": 3,
+                "type": "PAYMENT",
+                "paymentReference": "",
+                "displayText": "",
+                "customer": "",
+                "netAmount": 0,
+                "deductionAmount": 0,
+                "currency": "USD",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "sapPayload": {
+      "Lockbox": "1000147",
+      "DepositDateTime": "2026-02-27T11:17:08",
+      "AmountInTransactionCurrency": "0.00",
+      "LockboxBatchOrigin": "LOCKBOXORI",
+      "LockboxBatchDestination": "LOCKBOXDES",
+      "to_Item": {
+        "results": [
+          {
+            "LockboxBatch": "001",
+            "LockboxBatchItem": "001",
+            "AmountInTransactionCurrency": "0.00",
+            "Currency": "USD",
+            "Cheque": "CHK-177219102",
+            "PartnerBank": "15051554",
+            "PartnerBankAccount": "314129119",
+            "PartnerBankCountry": "US",
+            "to_LockboxClearing": {
+              "results": [
+                {
+                  "PaymentReference": "",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
+                  "DeductionAmountInPaytCurrency": "0.00",
+                  "Currency": "USD"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "lastFailedStage": null,
+    "originalFileBuffer": "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",
+    "originalFileMimeType": "application/octet-stream",
+    "templateId": "TPL-0038",
+    "batchTemplate": {
+      "id": "705665c2-b5ae-4d85-9d56-4443cfabec62",
+      "templateId": "TPL-0038",
+      "templateName": "Template for upload_10.xlsx",
+      "originalFilename": "upload_10.xlsx",
+      "fileType": "XLSX",
+      "fileSize": 0,
+      "uploadDate": "2026-02-27T11:17:08.200Z",
+      "detectedHeaders": [
+        "Customer",
+        "Check Number",
+        "Check Amount",
+        "Invoice Number",
+        "Invoice Amount",
+        "Deduction Amount",
+        "Reason Code",
+        "Deposit Date"
+      ],
+      "fieldMappings": {
+        "Customer": {
+          "index": 0,
+          "originalHeader": "Customer",
+          "normalizedHeader": "Customer",
+          "sapField": "Customer",
+          "dataType": "String",
+          "required": true
+        },
+        "Check Number": {
+          "index": 1,
+          "originalHeader": "Check Number",
+          "normalizedHeader": "CheckNumber",
+          "sapField": "Cheque",
+          "dataType": "String",
+          "required": true
+        },
+        "Check Amount": {
+          "index": 2,
+          "originalHeader": "Check Amount",
+          "normalizedHeader": "CheckAmount",
+          "sapField": "AmountInTransactionCurrency",
+          "dataType": "String",
+          "required": true
+        },
+        "Invoice Number": {
+          "index": 3,
+          "originalHeader": "Invoice Number",
+          "normalizedHeader": "InvoiceNumber",
+          "sapField": "PaymentReference",
+          "dataType": "String",
+          "required": false
+        },
+        "Invoice Amount": {
+          "index": 4,
+          "originalHeader": "Invoice Amount",
+          "normalizedHeader": "InvoiceAmount",
+          "sapField": "NetPaymentAmountInPaytCurrency",
+          "dataType": "String",
+          "required": false
+        },
+        "Deduction Amount": {
+          "index": 5,
+          "originalHeader": "Deduction Amount",
+          "normalizedHeader": "DeductionAmount",
+          "sapField": "DeductionAmountInPaytCurrency",
+          "dataType": "String",
+          "required": false
+        },
+        "Reason Code": {
+          "index": 6,
+          "originalHeader": "Reason Code",
+          "normalizedHeader": "ReasonCode",
+          "sapField": "PaymentDifferenceReason",
+          "dataType": "String",
+          "required": false
+        },
+        "Deposit Date": {
+          "index": 7,
+          "originalHeader": "Deposit Date",
+          "normalizedHeader": "DepositDate",
+          "sapField": "DepositDateTime",
+          "dataType": "String",
+          "required": false
+        }
+      },
+      "sampleData": [
+        [
+          17100009,
+          3456694,
+          1383.43,
+          "90003904-3905",
+          "1365, 18.43",
+          0,
+          null,
+          "02/05/2026"
+        ],
+        [],
+        [],
+        [],
+        []
+      ],
+      "rowCount": 33,
+      "columnCount": 8,
+      "headerRow": 1,
+      "dataStartRow": 2,
+      "status": "ACTIVE",
+      "createdAt": "2026-02-27T11:17:08.201Z",
+      "updatedAt": "2026-02-27T11:17:08.201Z"
+    },
+    "ruleExecutionLogs": [],
+    "fieldMappingPreview": {
+      "sourceFields": [
+        {
+          "fieldName": "Customer",
+          "value": 17100009,
+          "source": "Uploaded File"
+        },
+        {
+          "fieldName": "Check Number",
+          "value": 3456694,
+          "source": "Uploaded File"
+        },
+        {
+          "fieldName": "Check Amount",
+          "value": 1383.43,
+          "source": "Uploaded File"
+        },
+        {
+          "fieldName": "Invoice Number",
+          "value": "90003904-3905",
+          "source": "Uploaded File"
+        },
+        {
+          "fieldName": "Invoice Amount",
+          "value": "1365, 18.43",
+          "source": "Uploaded File"
+        },
+        {
+          "fieldName": "Deduction Amount",
+          "value": 0,
+          "source": "Uploaded File"
+        },
+        {
+          "fieldName": "Reason Code",
+          "source": "Uploaded File"
+        },
+        {
+          "fieldName": "Deposit Date",
+          "value": "2026-02-05",
+          "source": "Uploaded File"
+        }
+      ],
+      "apiDerivedFields": [],
+      "fieldMappings": [
+        {
+          "fieldName": "Customer",
+          "sourceType": "File Upload",
+          "targetType": "Lockbox Field",
+          "value": 17100009
+        },
+        {
+          "fieldName": "Check Number",
+          "sourceType": "File Upload",
+          "targetType": "Lockbox Field",
+          "value": 3456694
+        },
+        {
+          "fieldName": "Check Amount",
+          "sourceType": "File Upload",
+          "targetType": "Lockbox Field",
+          "value": 1383.43
+        },
+        {
+          "fieldName": "Invoice Number",
+          "sourceType": "File Upload",
+          "targetType": "Lockbox Field",
+          "value": "90003904-3905"
+        },
+        {
+          "fieldName": "Invoice Amount",
+          "sourceType": "File Upload",
+          "targetType": "Lockbox Field",
+          "value": "1365, 18.43"
+        },
+        {
+          "fieldName": "Deduction Amount",
+          "sourceType": "File Upload",
+          "targetType": "Lockbox Field",
+          "value": 0
+        },
+        {
+          "fieldName": "Reason Code",
+          "sourceType": "File Upload",
+          "targetType": "Lockbox Field"
+        },
+        {
+          "fieldName": "Deposit Date",
+          "sourceType": "File Upload",
+          "targetType": "Lockbox Field",
+          "value": "2026-02-05"
+        }
+      ]
+    },
+    "completedAt": "2026-02-27T11:17:08.211Z"
+  },
+  {
     "id": "95fb589a-5010-4ad0-a045-34d2798bf8ce",
     "runId": "RUN-2026-00146",
     "filename": "upload_10.xlsx",
