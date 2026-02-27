@@ -7337,6 +7337,15 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         console.log(`   Total rows from file: ${allRows.length}`);
         console.log(`   Non-empty data rows: ${dataRows.length}`);
         
+        // Convert array rows to objects with header names for pattern detection
+        const dataObjects = dataRows.map(row => {
+            const obj = {};
+            headers.forEach((header, index) => {
+                obj[header] = row[index];
+            });
+            return obj;
+        });
+        
         const batchTemplate = createBatchTemplate(
             req.file.originalname,
             fileType,
@@ -7359,7 +7368,7 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         
         // Use pattern engine for dynamic detection
         const patternEngine = require('./srv/handlers/pattern-engine');
-        const patternResult = patternEngine.detectPattern(dataRows, fileType);
+        const patternResult = patternEngine.detectPattern(dataObjects, fileType);  // Use dataObjects instead of dataRows
         
         if (!patternResult.matched || !patternResult.pattern) { 
             run.stages.templateMatch.status = 'error'; 
@@ -7393,7 +7402,7 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         console.log('=== EXTRACTION (PATTERN-BASED FROM DATABASE) ===');
         
         // Use pattern engine for dynamic extraction
-        const extractedData = patternEngine.executePatternExtraction(dataRows, patternResult.pattern);
+        const extractedData = patternEngine.executePatternExtraction(dataObjects, patternResult.pattern);  // Use dataObjects
         
         // Get extraction log
         const extractionLog = extractedData._extractionLog || [];
