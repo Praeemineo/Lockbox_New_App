@@ -860,6 +860,7 @@ function applyFieldMapping(data, mappings) {
 }
 
 module.exports = {
+    normalizeFileType,
     loadFilePatterns,
     getActivePatternsForFileType,
     detectPattern,
