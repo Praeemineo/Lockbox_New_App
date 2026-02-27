@@ -127,38 +127,127 @@ async function processLockboxRules(extractedData, fileType = 'EXCEL') {
 }
 
 /**
- * Check if rule condition is met
- * @param {object} condition - Rule condition from processing_rules.json
- * @param {array} extractedData - Extracted lockbox data
- * @param {object} patternResult - Pattern detection result
+ * Evaluate Rule Condition Dynamically
+ * Supports: InvoiceNumber EXIST, CustomerNumber AND BankIdentification EXIST
+ * @param {array} conditions - Rule conditions
+ * @param {array} data - Extracted data
  * @returns {boolean} - True if condition is met
  */
-function checkRuleCondition(condition, extractedData, patternResult) {
-    const docFormat = (condition.documentFormat || condition.fieldName || '').toLowerCase();
-    const conditionValue = (condition.condition || condition.value || '').toLowerCase();
+function evaluateRuleCondition(conditions, data) {
+    if (!conditions || conditions.length === 0) return false;
     
-    // Check if document format exists in the data
-    if (docFormat) {
-        const hasField = extractedData.some(row => {
-            const keys = Object.keys(row).map(k => k.toLowerCase());
-            return keys.some(k => k.includes(docFormat));
-        });
+    // Check if at least one data row meets all conditions
+    for (const row of data) {
+        let allConditionsMet = true;
         
-        if (hasField) return true;
+        for (const condition of conditions) {
+            const fieldName = condition.documentFormat || condition.fieldName || '';
+            const conditionType = (condition.condition || '').toLowerCase();
+            
+            // Normalize field name (remove spaces, case-insensitive)
+            const normalizedField = fieldName.replace(/\s+/g, '');
+            
+            // Check if field exists in row (try multiple variations)
+            const fieldValue = row[fieldName] || 
+                               row[normalizedField] || 
+                               row[fieldName.toLowerCase()] || 
+                               row[normalizedField.toLowerCase()];
+            
+            // EXIST condition
+            if (conditionType === 'exist') {
+                if (!fieldValue || fieldValue === '' || fieldValue === null) {
+                    allConditionsMet = false;
+                    break;
+                }
+            }
+            // Specific value check
+            else if (condition.condition && condition.condition !== 'Exist') {
+                if (fieldValue !== condition.condition) {
+                    allConditionsMet = false;
+                    break;
+                }
+            }
+        }
+        
+        if (allConditionsMet) {
+            return true;
+        }
     }
     
-    // Check condition value against pattern analysis
-    if (conditionValue) {
-        if (conditionValue.includes('single') && conditionValue.includes('check')) {
-            return patternResult.analysis?.checkUnique === true;
-        }
-        if (conditionValue.includes('multiple') && conditionValue.includes('check')) {
-            return patternResult.analysis?.checkUnique === false;
+    return false;
+}
+
+/**
+ * Execute Rule Dynamically (Database-Driven)
+ * @param {object} rule - Rule configuration
+ * @param {array} data - Lockbox data
+ * @returns {Promise<object>} - Execution result
+ */
+async function executeDynamicRule(rule, data) {
+    const result = {
+        recordsEnriched: 0,
+        errors: [],
+        warnings: []
+    };
+    
+    const mappings = rule.apiMappings || [];
+    
+    if (mappings.length === 0) {
+        result.warnings.push(`${rule.ruleId}: No API mappings configured`);
+        return result;
+    }
+    
+    // Process each data row
+    for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        
+        try {
+            // Step 1: Check if required source fields exist
+            const firstMapping = mappings[0];
+            const sourceField = firstMapping.sourceInput || firstMapping.sourceField;
+            const sourceValue = row[sourceField] || row[sourceField?.replace(/\s+/g, '')];
+            
+            if (!sourceValue || sourceValue === '' || sourceValue === null) {
+                continue; // Skip row if source field is missing
+            }
+            
+            // Step 2: Build dynamic API URL
+            const apiURL = buildDynamicAPIURL(firstMapping, row);
+            
+            console.log(`   📞 API Call for row ${i + 1}: ${apiURL}`);
+            
+            // Step 3: Call SAP API via destination
+            const response = await callSAPAPI(apiURL, firstMapping.httpMethod, rule.destination);
+            
+            if (!response || !response.data) {
+                result.errors.push(`Row ${i + 1}: API returned no data`);
+                continue;
+            }
+            
+            // Step 4: Extract and map output fields dynamically
+            let fieldsEnriched = 0;
+            for (const mapping of mappings) {
+                const apiValue = extractDynamicField(response.data, mapping.outputField);
+                
+                if (apiValue !== null && apiValue !== undefined) {
+                    const lockboxField = mapping.lockboxApiField || mapping.lockboxField;
+                    row[lockboxField] = apiValue;
+                    fieldsEnriched++;
+                    console.log(`   ✅ ${lockboxField}: ${apiValue}`);
+                }
+            }
+            
+            if (fieldsEnriched > 0) {
+                result.recordsEnriched++;
+            }
+            
+        } catch (rowError) {
+            console.error(`   ❌ Row ${i + 1} error:`, rowError.message);
+            result.errors.push(`Row ${i + 1}: ${rowError.message}`);
         }
     }
     
-    // Default: condition is met
-    return true;
+    return result;
 }
 
 /**
