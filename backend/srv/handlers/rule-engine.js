@@ -135,6 +135,8 @@ async function processLockboxRules(extractedData, fileType = 'EXCEL') {
 function evaluateRuleCondition(conditions, data) {
     if (!conditions || conditions.length === 0) return false;
     
+    console.log(`   🔍 Evaluating conditions for ${conditions.length} condition(s)`);
+    
     // Check if at least one data row meets all conditions
     for (const row of data) {
         let allConditionsMet = true;
@@ -143,25 +145,45 @@ function evaluateRuleCondition(conditions, data) {
             const fieldName = condition.documentFormat || condition.fieldName || '';
             const conditionType = (condition.condition || '').toLowerCase();
             
-            // Normalize field name (remove spaces, case-insensitive)
-            const normalizedField = fieldName.replace(/\s+/g, '');
+            console.log(`      Checking condition: ${fieldName} ${conditionType}`);
             
-            // Check if field exists in row (try multiple variations)
-            const fieldValue = row[fieldName] || 
-                               row[normalizedField] || 
-                               row[fieldName.toLowerCase()] || 
-                               row[normalizedField.toLowerCase()];
+            // Try multiple field name variations (case-insensitive, with/without spaces)
+            const normalizedField = fieldName.replace(/\s+/g, '');
+            const possibleFields = [
+                fieldName,
+                normalizedField,
+                fieldName.toLowerCase(),
+                normalizedField.toLowerCase(),
+                // Common variations
+                'InvoiceNumber', 'Invoice Number', 'Invoice', 'invoicenumber',
+                'CustomerNumber', 'Customer Number', 'Customer', 'customernumber',
+                'BankIdentification', 'Bank Identification', 'bankidentification'
+            ];
+            
+            // Check if field exists in row
+            let fieldValue = null;
+            for (const possibleField of possibleFields) {
+                if (row[possibleField] !== undefined && row[possibleField] !== null) {
+                    fieldValue = row[possibleField];
+                    console.log(`      ✅ Found field "${possibleField}" with value: ${fieldValue}`);
+                    break;
+                }
+            }
             
             // EXIST condition
             if (conditionType === 'exist') {
                 if (!fieldValue || fieldValue === '' || fieldValue === null) {
+                    console.log(`      ❌ Field ${fieldName} not found or empty`);
                     allConditionsMet = false;
                     break;
+                } else {
+                    console.log(`      ✅ Field ${fieldName} exists with value`);
                 }
             }
             // Specific value check
             else if (condition.condition && condition.condition !== 'Exist') {
                 if (fieldValue !== condition.condition) {
+                    console.log(`      ❌ Field ${fieldName} value mismatch: ${fieldValue} !== ${condition.condition}`);
                     allConditionsMet = false;
                     break;
                 }
@@ -169,10 +191,12 @@ function evaluateRuleCondition(conditions, data) {
         }
         
         if (allConditionsMet) {
+            console.log(`   ✅ All conditions met for this row`);
             return true;
         }
     }
     
+    console.log(`   ❌ No rows matched all conditions`);
     return false;
 }
 
