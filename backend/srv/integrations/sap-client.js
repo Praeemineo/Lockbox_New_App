@@ -85,14 +85,13 @@ async function executeSapGetRequest(destinationName, url, queryParams = {}) {
     
     logger.info('🚀 SAP GET Request', { 
         destination: destinationName,
-        url, 
-        urlType: typeof url,
+        endpoint: url,
         queryParams 
     });
     
     // Validate url parameter
     if (!url || typeof url !== 'string') {
-        const errorMsg = `Invalid URL parameter: ${url} (type: ${typeof url})`;
+        const errorMsg = `Invalid URL parameter: ${url}`;
         logger.error(errorMsg);
         throw new Error(errorMsg);
     }
@@ -139,7 +138,7 @@ async function executeSapGetRequest(destinationName, url, queryParams = {}) {
         throw new Error(`SAP connection failed for destination ${destinationName}: BTP unavailable and .env credentials missing`);
     }
     
-    logger.info('Direct SAP GET', { destination: destinationName, baseUrl: SAP_URL, endpoint: url, user: SAP_USER });
+    logger.info('Direct SAP GET', { destination: destinationName, baseUrl: SAP_URL, endpoint: url });
     
     try {
         const queryString = new URLSearchParams({
@@ -148,7 +147,7 @@ async function executeSapGetRequest(destinationName, url, queryParams = {}) {
         }).toString();
         
         const fullUrl = `${SAP_URL}${url}?${queryString}`;
-        logger.info('Full GET URL:', { destination: destinationName, fullUrl });
+        logger.info('Full GET URL constructed', { destination: destinationName, fullUrl });
         
         const response = await axios({
             method: 'GET',
@@ -173,8 +172,7 @@ async function executeSapGetRequest(destinationName, url, queryParams = {}) {
     } catch (error) {
         logger.error(`Direct SAP GET Error for destination ${destinationName}`, {
             status: error.response?.status,
-            message: error.message,
-            data: error.response?.data
+            message: error.message
         });
         throw error;
     }
