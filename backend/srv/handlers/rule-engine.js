@@ -59,12 +59,16 @@ async function processLockboxRules(extractedData, fileType = 'EXCEL') {
     
     try {
         // Step 1: Fetch applicable rules (RULE-001 and RULE-002 only)
-        const applicableRules = cachedProcessingRules.filter(rule => 
-            rule.active && 
-            rule.fileType === fileType &&
-            rule.destination === 'S4HANA_SYSTEM_DESTINATION' &&
-            (rule.ruleId === 'RULE-001' || rule.ruleId === 'RULE-002')
-        );
+        console.log(`   Filtering rules with: fileType="${fileType}", destination="S4HANA_SYSTEM_DESTINATION"`);
+        console.log(`   Total cached rules: ${cachedProcessingRules.length}`);
+        
+        const applicableRules = cachedProcessingRules.filter(rule => {
+            console.log(`   Checking rule ${rule.ruleId}: active=${rule.active}, fileType=${rule.fileType}, destination=${rule.destination}`);
+            return rule.active && 
+                rule.fileType === fileType &&
+                rule.destination === 'S4HANA_SYSTEM_DESTINATION' &&
+                (rule.ruleId === 'RULE-001' || rule.ruleId === 'RULE-002');
+        });
         
         console.log(`\n📋 Found ${applicableRules.length} applicable validation rules`);
         
