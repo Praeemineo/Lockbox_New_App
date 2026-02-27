@@ -2,114 +2,119 @@
 The user's primary objective is to build a Lockbox Processing application. The application's core logic must be dynamically driven by File Patterns and Processing Rules configurations stored in a PostgreSQL database. Initially, these configurations were in JSON files, but the user has mandated a full migration to PostgreSQL.
 
 PRODUCT REQUIREMENTS:
-1.  **PostgreSQL Migration:** Migrate all configurations from JSON files to PostgreSQL tables. A new table  has been created for this.
-2.  **Dynamic Fallback:** The application must attempt to connect to PostgreSQL. If the connection fails (as expected in the preview environment), it must fall back to using local JSON files.
-3.  **Real-time Persistence:** All CRUD operations from the frontend must instantly save to both PostgreSQL (if available) and the JSON backup files.
-4.  **Dynamic Pattern & Rule Engines:** The file processing logic must be entirely database-driven.
-    -   **Pattern Engine:** It must dynamically identify the file structure (e.g., single vs. multi-check, document splitting, date formats) based on rules in the  table.
-    -   **Rule Engine:** It must dynamically execute validation and data enrichment rules (e.g., calling SAP APIs for RULE-001, RULE-002) based on configurations in the  table.
-5.  **UI Enhancements:**
+1.  **PostgreSQL Migration & Fallback:** All configurations for patterns and rules must be read from PostgreSQL. The application must gracefully fall back to using local JSON files if the database connection fails (which is expected in the preview environment).
+2.  **Real-time Persistence:** All CRUD operations from the frontend must instantly save to both PostgreSQL (if available) and the JSON backup files.
+3.  **Dynamic Pattern Engine:** The file processing logic must dynamically identify the file structure (e.g., single vs. multi-check, document splitting via comma or hyphen) based on rules in the  table. The user has provided 10 specific patterns (PAT-001 to PAT-010) that must be correctly detected based on priority.
+4.  **Dynamic Rule Engine (Step 4 Validation):** The application must dynamically execute validation and data enrichment rules (RULE-001 and RULE-002) based on configurations in the  table. This involves calling SAP APIs to derive new fields.
+    -   **RULE-001:** If  exists, call an SAP API to derive .
+    -   **RULE-002:** If  number exists, call an SAP API using the customer number and a hardcoded  value ('0001') to derive partner bank details.
+5.  **SAP Integration:** The application must connect to SAP. The architecture supports two paths: a BTP Destination Service () for production, and a direct connection using credentials from the  file as a fallback for the preview environment.
+6.  **UI Enhancements:**
+    -   The Field Mapping Preview screen must show both the original source values from the uploaded file and the final values enriched by the SAP validation rules.
     -   Add a Destination field to the API Mappings dialog.
-    -   Implement dynamic column management (add columns, manage visibility) for rules, conditions, and API mappings.
-6.  **SAP Integration:** Use user-provided SAP credentials for API calls.
+    -   Implement dynamic column management for rules, conditions, and API mappings.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a Node.js/SAPUI5 hybrid. The backend is a large  file, but key logic has been moved to new modules. The migration to PostgreSQL is complete, with a robust fallback mechanism to JSON files.
-
-Two critical modules have been implemented:
-1.  : Dynamically detects file patterns based on rules from the  table. It includes specific logic for various patterns (PAT-001 to PAT-006) like document splitting and date format conversion.
-2.  : Dynamically executes validation and enrichment rules by reading configurations from the  PostgreSQL table.
-
-The frontend has been updated with UI elements (buttons) for a requested dynamic column management feature, but the underlying JavaScript controller logic is incomplete, and there's a conflicting instruction where the agent removed the backend support for this feature.
+The application is a Node.js/SAPUI5 hybrid. The backend has been significantly refactored. The core business logic now resides in two key modules:
+1.  : A robust, database-driven engine that correctly detects 10 different file patterns based on content and priority. It handles various data formats, including empty row filtering and file type normalization.
+2.  : A fully dynamic rule engine that processes RULE-001 and RULE-002. It reads configurations from the database (or JSON fallback), evaluates complex conditions (including hardcoded values), and constructs dynamic SAP API calls.
+3.  : A client responsible for handling SAP API calls, with logic to support both BTP Destination and direct credential-based connections.
+The backend logic for the Field Mapping Preview has been implemented to provide the necessary data structure for the UI.
 
 **Last working item**:
--   **Last item agent was working:** The agent was actively analyzing a user-uploaded Excel file (). The goal was to process this file and demonstrate the new, robust pattern detection and validation logic implemented in the  module, fulfilling a direct user request to detect and show me message.
--   **Status:** IN PROGRESS
+-   **Last item agent was working:** The agent was attempting to fix the SAP integration for the preview environment. The system was generating an Invalid URL error because the API endpoint path was becoming  during the call (). This was the final step to make the end-to-end validation flow work (with mocked SAP data) in the preview environment.
+-   **Status:** BLOCKED
 -   **Agent Testing Done:** N
--   **Which testing method agent to use?** The agent should first use a Python script or similar tool to analyze the file and report the findings. Afterward, to confirm the end-to-end flow, it should use  to test the  endpoint with the uploaded file.
+-   **Which testing method agent to use?** Backend testing. The agent must first resolve the Node.js caching issue (Issue 2). Afterward, it should use  to call the  endpoint with a test file () and inspect the backend logs to trace how the URL is being constructed and passed between  and .
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Demonstrate Pattern Detection on User's File (P0)
--   Issue 2: Incomplete and Conflicted Dynamic Column Feature (P1)
--   Issue 3: Persistent Frontend UI Update/Caching Issue (P2)
--   Issue 4: SAP & PostgreSQL Connection Failure in Kubernetes (Blocked)
+-   Issue 1: Fix SAP API Invalid URL Error (P0)
+-   Issue 2: Severe Node.js Module Caching Issue (P0 - CRITICAL BLOCKER)
+-   Issue 3: Implement Frontend for Field Mapping Preview (P1)
+-   Issue 4: Incomplete and Conflicted Dynamic Column Feature (P2)
+-   Issue 5: Persistent Frontend UI Update/Caching Issue (P3)
 
 **Issues Detail:**
--   **Issue 1: Demonstrate Pattern Detection on User's File**
-    -   **Description:** The agent needs to finish analyzing the user's uploaded file () and provide a clear output showing which pattern was detected and what validation messages were generated, according to the logic in .
+-   **Issue 1: Fix SAP API Invalid URL Error**
+    -   **Description:** When a validation rule triggers an SAP call in the preview environment, the backend constructs an invalid URL like . The endpoint path is being lost when passed to the SAP client.
     -   **Next debug checklist:**
-        1.  Parse the Excel file to analyze its structure (sheets, columns, data format).
-        2.  Apply the logic from  to the parsed data.
-        3.  Formulate a clear message for the user that states the detected Pattern ID and Type (e.g., Pattern ID: PAT-006, Type: Multi-Sheet determined) and any other relevant validation messages (e.g., Date format validated and extracted).
-        4.  Follow up by testing the  endpoint with the file to confirm the live system works as analyzed.
-    -   **Why fix this issue and what will be achieved with the fix?** Fulfills the user's immediate request and validates the complex pattern detection logic that was just implemented.
-    -   **Status:** IN PROGRESS
+        1.  In  (inside ), log the full  being passed to the SAP client.
+        2.  In  (inside ), log the received  parameter to see if it's undefined.
+        3.  Correct the logic in  to properly parse the endpoint path from the full URL and pass it as the  parameter to .
+    -   **Why fix this issue and what will be achieved with the fix?** This will complete the end-to-end validation logic in the preview environment, allowing RULE-001 and RULE-002 to execute successfully.
+    -   **Status:** BLOCKED
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** Backend
+    -   **Blocked on other issue:** Issue 2: Severe Node.js Module Caching Issue
 
--   **Issue 2: Incomplete and Conflicted Dynamic Column Feature**
-    -   **Description:** The user requested a feature to dynamically add columns to the Rules table, Conditions, and API Mappings sections. The agent added UI buttons but then, following a later, conflicting instruction, **removed the backend APIs and database table () needed to support this feature.** The feature is now broken and cannot be completed in its current state.
-    -   **Attempted fixes:** UI buttons were added to XML views. The supporting backend was created and then deleted.
+-   **Issue 2: Severe Node.js Module Caching Issue**
+    -   **Description:** This is a critical environment blocker. Changes made to backend  files (specifically ) are not being loaded by the Node.js process, even after supervisor restarts. The previous agent confirmed files were saved to disk, but the running process executed old, cached code, making debugging impossible.
+    -   **Attempted fixes:** backend: stopped
+backend: started, , manually touching the file. None of these worked consistently.
     -   **Next debug checklist:**
-        1.  **Clarify with the user:** Explain that the backend for this feature was removed based on their instruction to simplify the schema and ask if they want to re-implement it.
-        2.  If they confirm, re-create the  table and the associated backend CRUD APIs.
-        3.  Implement the frontend JavaScript functions (, , etc.) in  to handle the button clicks, open the dialogs, and call the backend APIs.
-    -   **Why fix this issue and what will be achieved with the fix?** To resolve a major feature request that is currently in a broken, conflicted state.
-    -   **Status:** BLOCKED (on user clarification and backend re-implementation)
+        1.  Add a unique  statement with a timestamp at the top level (outside any function) of  and .
+        2.  Restart the backend and check the logs to see if the new timestamp appears.
+        3.  If it doesn't, the issue is with the environment's hot-reload/caching mechanism. Call the  immediately for environment-level diagnostics. Do not attempt further code changes until this is resolved.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a fundamental blocker for all backend development. No progress can be made until code changes can be reliably tested.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** Backend
+
+-   **Issue 3: Implement Frontend for Field Mapping Preview**
+    -   **Description:** The backend  endpoint now returns a  object with  and . The SAPUI5 frontend needs to be updated to consume this data and render a view that clearly distinguishes between original file values and values enriched by SAP rules.
+    -   **Next debug checklist:**
+        1.  Modify .
+        2.  In the success handler for the file upload, get the  data from the API response.
+        3.  Bind this data to a model used by the Field Mapping Preview view/dialog.
+        4.  Update the corresponding XML view to display the data, potentially using formatters to style the API-derived values differently.
+    -   **Why fix this issue and what will be achieved with the fix?** It fulfills a key user requirement to visualize the data enrichment process.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Frontend
+
+-   **Issue 4: Incomplete and Conflicted Dynamic Column Feature**
+    -   **Description:** The user requested a feature to dynamically add columns. The agent added UI buttons but later removed the necessary backend APIs and database table () based on a conflicting user instruction to simplify the schema. The feature is now broken.
+    -   **Next debug checklist:**
+        1.  **Clarify with the user:** Explain the conflict and ask if they want to re-implement the backend for this feature.
+        2.  If confirmed, re-create the backend APIs and  table.
+        3.  Implement the frontend JavaScript controller logic to handle the button clicks and API calls.
+    -   **Why fix this issue and what will be achieved with the fix?** Resolves a broken feature and clarifies conflicting requirements.
+    -   **Status:** BLOCKED (on user clarification)
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** Both
-    -   **Blocked on other issue:** User decision is required due to conflicting past instructions.
 
--   **Issue 3: Persistent Frontend UI Update/Caching Issue**
-    -   **Description:** The user has repeatedly reported that UI changes made by the agent (e.g., new buttons, new columns) are not visible on the frontend, even after a frontend restart.
-    -   **Attempted fixes:** The agent tried restarting the  service and adding code to destroy/re-create dialog fragments. These are temporary workarounds.
+-   **Issue 5: Persistent Frontend UI Update/Caching Issue**
+    -   **Description:** The user has repeatedly reported that UI changes (e.g., new buttons) are not visible on the frontend, suggesting an aggressive browser or application caching issue.
     -   **Next debug checklist:**
-        1.  Investigate the root cause of the caching. Check the UI5 bootstrap configuration in .
-        2.  Review  for any aggressive caching settings.
-        3.  Instruct the user to perform a hard refresh (Ctrl+Shift+R or Cmd+Shift+R) in their browser as a first step.
-        4.  Consider adding cache-busting parameters to the application's resource loading.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a fundamental development workflow issue that wastes time and causes user frustration. Fixing it will make future UI development reliable.
+        1.  Instruct the user to perform a hard refresh (Ctrl+Shift+R).
+        2.  Investigate UI5 bootstrap configuration in  and  for caching settings.
+        3.  Consider adding cache-busting parameters.
+    -   **Why fix this issue and what will be achieved with the fix?** Improves development velocity and user confidence.
     -   **Status:** NOT STARTED
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** Frontend
 
--   **Issue 4: SAP & PostgreSQL Connection Failure in Kubernetes**
-    -   **Description:** The application cannot connect to the external PostgreSQL database or the SAP system from the Kubernetes preview environment. This is a known network limitation of the environment. The application correctly falls back to using local JSON files.
-    -   **Status:** BLOCKED (environmental constraint, no fix required by agent).
-    -   **Is recurring issue?** Y
-
-**In progress Task List**:
--   **Task 1: Dynamic Pattern Matching Enhancement**
-    -   **Where to resume:** The core logic is implemented in . The next step is to use it to analyze the user's file (see Issue 1) and confirm it works as expected.
-    -   **What will be achieved with this?** A fully database-driven, robust pattern detection system that meets the user's detailed specifications.
-    -   **Status:** TESTING PENDING
-    -   **Should Test frontend/backend/both after fix?** Backend
-    -   **Blocked on something:** Blocked on completing Issue 1.
-
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks:**
-    *   (P1) Implement frontend logic for the Field Mapping Preview to visually distinguish between source fields and API-derived fields. The backend logic for this is complete, and a guide is in .
-*   **Future Tasks:**
     *   (P1) Create comprehensive automated tests for the pattern and rule engines.
+*   **Future Tasks:**
     *   (P2) Implement the Approval Workflow feature for processing rules.
-    *   (P2) Continue refactoring the monolithic .
+    -   (P2) Continue refactoring the monolithic .
 
 **Completed work in this session**
--   **DB Table Migration:** Dropped the old  table and created the new  table, updating all backend code in  accordingly.
--   **Data Synchronization:** Provided the user with a clean, executable SQL script to populate the new  table.
--   **Dynamic Rule Engine:** Rewrote  to be fully database-driven, loading and executing rules from PostgreSQL.
--   **Dynamic Pattern Engine:** Created  to dynamically detect file patterns (PAT-001 to PAT-006) based on rules from the  table.
--   **Field Mapping Preview Enhancement (Backend):** The backend now provides metadata to distinguish between source file fields and API-derived fields in the validation output.
--   **Code Cleanup:** Removed the backend implementation for the dynamic column feature ( table, APIs) to align the schema with a user request, inadvertently creating a conflict with another feature request.
+-   **Advanced Pattern Detection:** The pattern engine was extensively debugged and enhanced. It now correctly identifies all 10 user-defined patterns by handling empty rows, normalizing file types (XLSX -> EXCEL), parsing data into header-based objects, and applying correct priority logic (e.g., PAT-004 over PAT-003).
+-   **Dynamic Rule Engine Refactoring:** The rule engine () was completely rewritten to be database-driven for RULE-001 and RULE-002. It now features flexible field matching (e.g., Customer vs Customer Number) and handles hardcoded conditions from the database (e.g., ).
+-   **Field Mapping Preview (Backend):** Updated the  function in  to produce a UI-friendly data structure that separates source file values from API-derived values.
+-   **Code Cleanup:** Removed all old rule functions and logs from the backend, and cleared temporary documentation files to create a clean slate.
 
 **Earlier issues found/mentioned but not fixed**
 -   The root cause of the **Frontend Caching/Visibility Issue** has not been identified or fixed, only patched with workarounds.
 
 **Known issue recurrence from previous fork**
--   **SAP & PostgreSQL Connection Failure from Kubernetes Environment:** This was present in the previous fork and remains a known limitation of the preview environment.
+-   **SAP & PostgreSQL Connection Failure from Kubernetes Environment:** This remains a known limitation. The agent has now correctly configured the application to use direct  credentials for SAP as a fallback, though a bug in this path is the current .
 
 **Code Architecture**
 
@@ -118,78 +123,70 @@ The frontend has been updated with UI elements (buttons) for a requested dynamic
 -   **Frontend:** SAPUI5 (XML Views, JS Controllers)
 -   **Backend:** Node.js, Express.js
 -   **Database:** PostgreSQL ( library) with a fallback to local JSON files.
--   **Architecture:** The backend is shifting from a monolith () to a modular design with business logic in  and .
--   **Deployment:** Dual-target (Kubernetes for preview, SAP BTP for production).
+-   **Architecture:** The backend is shifting from a monolith () to a modular design. Business logic is now concentrated in  and .
 
 **key DB schema**
 -   **file_pattern:** 
 -   **lb_processing_rules:** 
 
 **All files of reference**
--   **Core Logic:**
-    -   : Contains the new dynamic pattern detection logic.
-    -   : Contains the new dynamic rule execution logic.
--   **Main Application Files:**
-    -   : The central backend file, modified to integrate the new engines.
-    -   : The main UI view.
-    -   : The main UI controller.
--   **Data Stores:**
-    -   
-    -   
+-   : Contains the new, dynamic rule logic.
+-   : Contains the enhanced dynamic pattern logic.
+-   : The main server file, orchestrates the calls to the new engines.
+-   : Handles the dual-path SAP connection.
+-   : Contains the SAP credentials for the preview environment.
+-   : Needs to be modified for the Field Mapping Preview UI.
 
 **Areas that need refactoring**:
--    is still a large monolith and is the top priority for ongoing refactoring.
--   The frontend controller () needs refactoring to fix caching workarounds and properly implement the dynamic column feature logic once the requirements are clarified.
+-    remains a large monolith that should be broken down further.
+-   The Node.js environment needs investigation to resolve the critical module caching issue.
 
 **key api endpoints**
--   : The primary endpoint for file processing, which now utilizes the new dynamic pattern and rule engines.
--   CRUD endpoints for  and .
+-   : The primary endpoint for all file processing, testing, and validation.
 
 **Critical Info for New Agent**
-1.  **Resolve Conflicting Requirements First:** The most critical task is to address the conflict regarding the dynamic column management feature. The user requested it, then requested the backend support be removed. The feature is now broken. You MUST clarify with the user whether to re-implement the backend portion before proceeding with the frontend work.
-2.  **Demonstrate Pattern Engine:** The user's last request was to see the new pattern engine in action with their uploaded file. This is your highest priority task (Issue #1).
-3.  **Beware of Frontend Caching:** User-facing UI changes have not been appearing reliably. Do not assume a simple frontend restart will apply your changes. Be prepared to investigate the caching issue (Issue #3) and always verify your UI changes with screenshots.
-4.  **Embrace Modular Engines:** The core business logic now lives in  and . All future enhancements to file processing should be made in these modules, not directly in .
-5.  **Environment Limitations are Expected:** Do not waste time trying to fix the PostgreSQL or SAP connection failures in the Kubernetes preview environment. This is expected behavior, and the application's fallback to JSON files is the correct design for this environment.
+1.  **CRITICAL BLOCKER: Node.js Module Caching:** You MUST resolve the module caching issue first. Backend JavaScript changes are not being loaded by the Node process, which makes any backend debugging impossible. After two failed restart attempts, call the  to diagnose the environment.
+2.  **SAP Connection Logic:** The application uses a dual-path SAP connection. The current bug (Issue #1) is in the fallback path, which uses direct credentials from . Fix this after resolving the caching blocker.
+3.  **Frontend Work is Next:** Once the backend is stable, the highest priority feature is to implement the frontend for the Field Mapping Preview (Issue #3), as the backend is already providing the necessary data.
+4.  **Clarify Conflicting Feature:** The Dynamic Column Management feature is broken and blocked on user input. Do not work on this until the user clarifies the requirement.
 
 **documents and test reports created in this job**
 -   
 -   
 -   
 -   
--   
--   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **Now I will upload a file can you detect and show me message**: The current highest priority task. The user is waiting for a demonstration of the new pattern engine. (INCOMPLETE)
-2.  **In Lockbox Processing-The Patterns and Rules have to determined properly...**: A detailed request to implement specific, robust logic for patterns PAT-001 through PAT-006. (Completed)
-3.  **PostgreysQL table lb_processing_rules contain following colomns... please remove the colomns which are available in addition**: The instruction that created the conflict with the dynamic column feature by having the agent remove its backend support. (Completed)
-4.  **One thing is once the rule-001 and rule-002 is executed... should be derived field from API**: Request to improve the UI to show the origin of data. (Backend part completed)
-5.  **Step 2... Please enhance to identify the pattern from table... Step 3... Please enhance to dynamically update lb_processing rule**: Confirmation to make the pattern and rule engines fully database-driven. (Completed)
-6.  **User provides Excel spec image**: A request for the agent to align the implementation with the provided specification. (Completed)
-7.  **There are totally 6 steps in the Lockbox process...**: User provides high-level business context. (Informational)
-8.  **You are missing some trick still the front end is not catching the same... in the meanwhile... rewrite the logic related to dynamic rule**: User reports the frontend UI issue again and pivots the agent to work on the backend rule engine. (Completed backend part, UI issue remains)
-9.  **I do not see any buttons... just wasted my credits...**: User expresses frustration about the frontend changes for the dynamic column feature not being visible. (INCOMPLETE)
-10. **1. Setting Button... 2. Add ColumnButton...**: User details the requirements for the dynamic column management feature. (Partially implemented, now in a conflicted state)
+1.  **User asks to use specific SAP credentials from  (BTP Destination) and  (direct connection).** (Status: In Progress, agent was debugging the  path).
+2.  **User requests Field Mapping Preview to show source and derived values.** (Status: Backend COMPLETE, Frontend NOT STARTED).
+3.  **User requests cleanup of old rule engine code and logs.** (Status: COMPLETE).
+4.  **User provides image and clarifies API mapping for RULE-002, specifying how Customer should be mapped.** (Status: COMPLETE, logic was fixed).
+5.  **User clarifies RULE-002 condition:  from file and  from the rule table.** (Status: COMPLETE, logic was fixed after several attempts due to caching issues).
+6.  **User requests testing of a file with a hyphenated invoice range (PAT-004).** (Status: COMPLETE, priority logic was fixed).
+7.  **User provides detailed specs and sample code for the Step-4 Dynamic Validation engine (RULE-001, RULE-002).** (Status: COMPLETE, engine was rewritten based on this).
+8.  **User asks agent to detect patterns for two new files ( and ).** (Status: COMPLETE, revealed and led to a fix for the empty row bug).
+9.  **User provides a file and expects a message showing the detected pattern.** (Status: COMPLETE, led to extensive debugging and fixing of the pattern engine).
+10. **User confirms uploaded  and asks for the  message after validation.** (Status: In Progress, this is part of the main validation flow).
 
 **Project Health Check:**
 -   **Broken:**
-    -   The Dynamic Column Management feature is broken due to a conflicting user instruction that led to the removal of its backend.
-    -   The frontend development workflow suffers from a caching/visibility issue, making UI updates unreliable.
+    -   **Backend Development Environment:** Critically broken due to a Node.js module caching issue preventing code changes from being loaded.
+    -   **SAP Integration (Preview):** Broken due to an Invalid URL construction error.
+    -   **Dynamic Column Management Feature:** Remains in a broken state with UI elements but no backend.
 -   **Mocked:**
-    -   In the Kubernetes preview environment, all database and SAP interactions are mocked by falling back to JSON files and placeholder logic, which is the intended design for this environment.
+    -   All SAP API calls are effectively mocked in the preview environment as they cannot reach the external system. This is intended, but the current bug prevents even the attempt of a call.
 
 **3rd Party Integrations**
--   **PostgreSQL:** Hosted on AWS RDS. Used as the primary data store.
--   **SAP S/4HANA:** Integrated via SAP Cloud SDK and  for API calls.
+-   **PostgreSQL:** Hosted on AWS RDS. Used as the primary data store, with a JSON fallback.
+-   **SAP S/4HANA:** Integrated via a custom Node.js client. Supports both BTP Destination and direct credential authentication.
 -   **Claude AI (Text Generation):** Previously used for an OCR feature. Uses the **Emergent LLM Key**.
 
 **Testing status**
 -   **Testing agent used after significant changes:** NO
 -   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** None. Testing has been ad-hoc via .
--   **Known regressions:** The Dynamic Column Management feature was partially built and then its backend was removed, which could be considered a regression.
+-   **Test files created:** None
+-   **Known regressions:** The Dynamic Column Management feature remains in a regressed state from a previous session.
 
 **What agent forgot to execute**
-- The agent failed to resolve the root cause of the persistent frontend caching issue, leading to repeated user complaints.
-- The agent did not recognize the direct conflict created by removing the backend for the dynamic column feature while the frontend implementation and user expectation for it remained. This should have been clarified immediately.</analysis>
+-   The agent failed to use the  after getting stuck in a loop trying to fix the SAP URL bug, where the root cause was the environment's module caching issue. This wasted significant time and effort.
+-   The agent did not start the pending frontend implementation for the Field Mapping Preview after completing the backend work for it.</analysis>
