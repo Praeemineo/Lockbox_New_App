@@ -80,6 +80,30 @@ function detectPattern(data, fileType = 'XLSX') {
     let detectedPattern = null;
     let detectedAnalysis = analysis;
     
+    // Special case: If BOTH ranges and commas exist, check which fields have ranges
+    // If Invoice Number or Check Number has ranges, prioritize PAT-004 over PAT-003
+    const hasRangeInKeyFields = analysis.hasRanges && analysis.rangeFields.some(field => 
+        field.toLowerCase().includes('invoice') || field.toLowerCase().includes('check')
+    );
+    
+    // PAT-004: Document Range (Priority 6, but elevated if ranges are in key fields)
+    if (hasRangeInKeyFields) {
+        detectedPattern = activePatterns.find(p => p.patternId === 'PAT-004' || p.patternType === 'DOCUMENT_RANGE');
+        if (detectedPattern) {
+            console.log(`✅ Pattern Matched: PAT-004 - DOCUMENT_RANGE (elevated priority)`);
+            console.log(`   Range fields: ${analysis.rangeFields.join(', ')}`);
+            return {
+                matched: true,
+                pattern: detectedPattern,
+                confidence: 95,
+                analysis: detectedAnalysis,
+                patternId: 'PAT-004',
+                patternType: 'DOCUMENT_RANGE',
+                message: `Hyphen ranges detected in: ${analysis.rangeFields.join(', ')}`
+            };
+        }
+    }
+    
     // PAT-003: Document Split Comma (Priority 5 - HIGHEST for data patterns)
     // Check for comma-separated values in key fields
     if (analysis.hasCommaSeparated) {
@@ -99,7 +123,7 @@ function detectPattern(data, fileType = 'XLSX') {
         }
     }
     
-    // PAT-004: Document Range (Priority 6)
+    // PAT-004: Document Range (Priority 6) - for ranges in non-key fields
     if (analysis.hasRanges) {
         detectedPattern = activePatterns.find(p => p.patternId === 'PAT-004' || p.patternType === 'DOCUMENT_RANGE');
         if (detectedPattern) {
