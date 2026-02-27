@@ -39,15 +39,91 @@ function loadProcessingRules(rules) {
 }
 
 /**
- * Get active rules for a specific file type
+ * Main Function: Process Lockbox with Dynamic Rules (RULE-001 & RULE-002 only)
+ * @param {array} extractedData - Lockbox data from file
  * @param {string} fileType - File type (EXCEL, CSV, PDF)
- * @returns {array} - Array of active rules for the file type
+ * @returns {Promise<object>} - Validation result with enriched data
  */
-function getActiveRulesForFileType(fileType) {
-    return cachedProcessingRules.filter(rule => 
-        rule.active && 
-        rule.fileType === fileType
-    );
+async function processLockboxRules(extractedData, fileType = 'EXCEL') {
+    console.log('='.repeat(80));
+    console.log('🔍 LOCKBOX DYNAMIC VALIDATION - RULE-001 & RULE-002');
+    console.log('='.repeat(80));
+    
+    const result = {
+        success: true,
+        rulesExecuted: [],
+        recordsEnriched: 0,
+        errors: [],
+        warnings: [],
+        enrichedData: JSON.parse(JSON.stringify(extractedData)) // Deep copy
+    };
+    
+    try {
+        // Step 1: Fetch applicable rules (RULE-001 and RULE-002 only)
+        const applicableRules = cachedProcessingRules.filter(rule => 
+            rule.active && 
+            rule.fileType === fileType &&
+            rule.destination === 'S4HANA_SYSTEM_DESTINATION' &&
+            (rule.ruleId === 'RULE-001' || rule.ruleId === 'RULE-002')
+        );
+        
+        console.log(`\n📋 Found ${applicableRules.length} applicable validation rules`);
+        
+        if (applicableRules.length === 0) {
+            result.warnings.push('No active validation rules found for file type: ' + fileType);
+            return result;
+        }
+        
+        // Step 2: Execute each rule sequentially
+        for (const rule of applicableRules) {
+            console.log(`\n${'─'.repeat(80)}`);
+            console.log(`⚙️  Executing ${rule.ruleId}: ${rule.ruleName}`);
+            console.log(`${'─'.repeat(80)}`);
+            
+            try {
+                // Step 3: Evaluate rule condition
+                const conditionMet = evaluateRuleCondition(rule.conditions, result.enrichedData);
+                
+                if (!conditionMet) {
+                    console.log(`⏭️  ${rule.ruleId}: Condition not met - skipping`);
+                    result.warnings.push(`${rule.ruleId}: Condition not met`);
+                    continue;
+                }
+                
+                console.log(`✅ ${rule.ruleId}: Condition met - proceeding with API call`);
+                
+                // Step 4: Execute rule dynamically
+                const ruleResult = await executeDynamicRule(rule, result.enrichedData);
+                
+                result.rulesExecuted.push(rule.ruleId);
+                result.recordsEnriched += ruleResult.recordsEnriched;
+                result.errors.push(...ruleResult.errors);
+                result.warnings.push(...ruleResult.warnings);
+                
+                console.log(`✅ ${rule.ruleId}: Completed - ${ruleResult.recordsEnriched} records enriched`);
+                
+            } catch (ruleError) {
+                console.error(`❌ ${rule.ruleId}: Execution failed:`, ruleError.message);
+                result.errors.push(`${rule.ruleId}: ${ruleError.message}`);
+            }
+        }
+        
+        console.log(`\n${'='.repeat(80)}`);
+        console.log(`📊 VALIDATION SUMMARY`);
+        console.log(`${'='.repeat(80)}`);
+        console.log(`   Rules Executed: ${result.rulesExecuted.join(', ') || 'None'}`);
+        console.log(`   Records Enriched: ${result.recordsEnriched}`);
+        console.log(`   Errors: ${result.errors.length}`);
+        console.log(`   Warnings: ${result.warnings.length}`);
+        console.log(`${'='.repeat(80)}\n`);
+        
+    } catch (error) {
+        console.error('❌ Fatal error in rule processing:', error);
+        result.success = false;
+        result.errors.push(`Fatal error: ${error.message}`);
+    }
+    
+    return result;
 }
 
 /**
