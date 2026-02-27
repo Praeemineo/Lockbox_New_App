@@ -376,15 +376,32 @@ function buildDynamicAPIURL(mapping, row) {
 
 /**
  * Call SAP API via Destination
- * @param {string} apiURL - Complete API URL
+ * Uses SAP credentials from .env file with destination reference from rules
+ * @param {string} apiURL - Complete API URL with query parameters
  * @param {string} httpMethod - HTTP method (GET, POST)
- * @param {string} destination - Destination name
+ * @param {string} destination - Destination name from rule (e.g., 'S4HANA_SYSTEM_DESTINATION')
  * @returns {Promise<object>} - API response
  */
 async function callSAPAPI(apiURL, httpMethod, destination) {
     try {
-        // Use SAP client's executeDynamicApiCall function
-        const response = await sapClient.executeDynamicApiCall(apiURL, httpMethod || 'GET', destination);
+        console.log(`   📞 Calling SAP via destination: ${destination}`);
+        console.log(`   🔗 Full URL: ${apiURL}`);
+        
+        // Parse the API URL to extract endpoint and query parameters
+        const [endpoint, queryString] = apiURL.split('?');
+        
+        // Parse query parameters
+        const params = new URLSearchParams(queryString);
+        const queryParams = {};
+        for (const [key, value] of params.entries()) {
+            queryParams[key] = value;
+        }
+        
+        // Use SAP client's executeSapGetRequest which handles .env credentials
+        const response = await sapClient.executeSapGetRequest(destination, endpoint, queryParams);
+        
+        console.log(`   ✅ SAP API Response received (status: ${response.status})`);
+        
         return response;
     } catch (error) {
         console.error(`   ❌ SAP API call failed:`, error.message);
