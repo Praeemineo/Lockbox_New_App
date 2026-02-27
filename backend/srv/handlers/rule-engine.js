@@ -251,22 +251,92 @@ async function executeDynamicRule(rule, data) {
 }
 
 /**
- * Execute RULE-001: Fetch Accounting Document (BELNR) and CompanyCode - DYNAMIC with Destination
- * @param {array|object} mappings - API mapping(s) configuration from rule (can be array or single object)
- * @param {array} extractedData - Lockbox data
- * @param {string} ruleDestination - Destination from rule config (NEW!)
- * @returns {Promise<object>} - Execution result
+ * Build Dynamic API URL with Query Parameters
+ * Supports multi-input mapping (e.g., CustomerNumber + BankIdentification)
+ * @param {object} mapping - API mapping configuration
+ * @param {object} row - Data row
+ * @returns {string} - Complete API URL with query parameters
  */
-async function executeRule001(mappings, extractedData, ruleDestination) {
-    logger.info('=== Executing RULE-001: Accounting Document Lookup (DYNAMIC with Destination) ===');
-    logger.info(`RULE-001 using destination: ${ruleDestination || 'DEFAULT'}`);
+function buildDynamicAPIURL(mapping, row) {
+    const apiReference = mapping.apiReference;
+    const inputField = mapping.inputField;
+    const sourceField = mapping.sourceInput || mapping.sourceField;
     
-    const firstMapping = Array.isArray(mappings) ? mappings[0] : mappings;
-    logger.info(`API Mapping: ${firstMapping?.apiReference}`);
-    logger.info(`Fetching fields: BELNR (Paymentreference), CompanyCode`);
+    // Get source value from row
+    const sourceValue = row[sourceField] || row[sourceField?.replace(/\s+/g, '')];
     
-    let recordsEnriched = 0;
-    const errors = [];
+    // Build base query
+    let params = [`${inputField}='${sourceValue}'`];
+    
+    // Add filter conditions if present (for RULE-002)
+    if (mapping.filterConditions) {
+        for (const [filterKey, filterValue] of Object.entries(mapping.filterConditions)) {
+            // Check if filter value is from row or hardcoded
+            const actualValue = row[filterValue] || filterValue;
+            params.push(`${filterKey}='${actualValue}'`);
+        }
+    }
+    
+    return `${apiReference}?$filter=${params.join(' and ')}`;
+}
+
+/**
+ * Call SAP API via Destination
+ * @param {string} apiURL - Complete API URL
+ * @param {string} httpMethod - HTTP method (GET, POST)
+ * @param {string} destination - Destination name
+ * @returns {Promise<object>} - API response
+ */
+async function callSAPAPI(apiURL, httpMethod, destination) {
+    try {
+        // Use SAP Cloud SDK to call via destination
+        const response = await sapClient.callSAPODataAPI(apiURL, httpMethod, destination);
+        return response;
+    } catch (error) {
+        console.error(`   ❌ SAP API call failed:`, error.message);
+        throw new Error(`SAP API Error: ${error.message}`);
+    }
+}
+
+/**
+ * Extract Field from OData Response Dynamically
+ * Handles nested paths like: d.results[0].BELNR, value[0].BankNumber
+ * @param {object} responseData - API response
+ * @param {string} fieldPath - Path to extract (e.g., "BELNR", "results[0].BankNumber")
+ * @returns {any} - Extracted value or null
+ */
+function extractDynamicField(responseData, fieldPath) {
+    try {
+        // Handle direct field access
+        if (responseData[fieldPath]) {
+            return responseData[fieldPath];
+        }
+        
+        // Handle OData v4 format: { value: [...] }
+        if (responseData.value && Array.isArray(responseData.value) && responseData.value.length > 0) {
+            return responseData.value[0][fieldPath];
+        }
+        
+        // Handle OData v2 format: { d: { results: [...] } }
+        if (responseData.d && responseData.d.results && Array.isArray(responseData.d.results) && responseData.d.results.length > 0) {
+            return responseData.d.results[0][fieldPath];
+        }
+        
+        // Handle nested path extraction
+        return fieldPath.split('.').reduce((obj, key) => {
+            if (key.includes('[')) {
+                const arrKey = key.substring(0, key.indexOf('['));
+                const index = parseInt(key.match(/\[(\d+)\]/)[1]);
+                return obj[arrKey][index];
+            }
+            return obj[key];
+        }, responseData);
+        
+    } catch (e) {
+        console.log(`   ⚠️  Could not extract field "${fieldPath}":`, e.message);
+        return null;
+    }
+}
     
     for (const row of extractedData) {
         // Step 1: Get Invoice Number from uploaded file (as per mapping.sourceInput)
