@@ -698,33 +698,82 @@ function convertDateFormat(data, field = 'DepositDate', config = {}) {
 }
 
 /**
- * Parse various date formats to YYYYMMDD
- * @param {string} dateStr - Date string
- * @param {object} config - Format config
- * @returns {string} - YYYYMMDD format
+ * Parse various date formats to YYYY-MM-DD
+ * Handles: MMDDYYYY, DDMMYYYY with separators -, /, .
+ * @param {string|number} dateStr - Date string or Excel serial number
+ * @returns {string} - YYYY-MM-DD format or original if conversion fails
  */
-function parseDateToYYYYMMDD(dateStr, config = {}) {
+function parseDateToYYYYMMDD(dateStr) {
     if (!dateStr) return null;
     
-    const str = String(dateStr).replace(/[\/\-\.]/g, '');
+    // Handle Excel serial date numbers
+    if (typeof dateStr === 'number' && dateStr > 40000 && dateStr < 50000) {
+        const excelEpoch = new Date(1899, 11, 30);
+        const date = new Date(excelEpoch.getTime() + dateStr * 86400000);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
     
-    // Try MMDDYYYY
-    if (str.length === 8) {
-        const mm = str.substring(0, 2);
-        const dd = str.substring(2, 4);
-        const yyyy = str.substring(4, 8);
+    const str = String(dateStr).trim();
+    
+    // Already in YYYY-MM-DD format
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+        return str;
+    }
+    
+    // Remove separators and try different formats
+    const cleaned = str.replace(/[\/\-\.]/g, '');
+    
+    // YYYYMMDD (8 digits)
+    if (/^\d{8}$/.test(cleaned)) {
+        const yyyy = cleaned.substring(0, 4);
+        const mm = cleaned.substring(4, 6);
+        const dd = cleaned.substring(6, 8);
         
-        if (parseInt(mm) <= 12 && parseInt(dd) <= 31) {
-            return `${yyyy}${mm}${dd}`;
-        }
-        
-        // Try DDMMYYYY
-        if (parseInt(dd) <= 12 && parseInt(mm) <= 31) {
-            return `${yyyy}${dd}${mm}`;
+        // Validate
+        if (parseInt(mm) > 0 && parseInt(mm) <= 12 && parseInt(dd) > 0 && parseInt(dd) <= 31) {
+            return `${yyyy}-${mm}-${dd}`;
         }
     }
     
-    return dateStr;
+    // MMDDYYYY or DDMMYYYY (try both)
+    if (/^\d{6,8}$/.test(cleaned)) {
+        // Try MMDDYYYY
+        if (cleaned.length === 8) {
+            const mm = cleaned.substring(0, 2);
+            const dd = cleaned.substring(2, 4);
+            const yyyy = cleaned.substring(4, 8);
+            
+            // Validate month first (MMDDYYYY more common in US)
+            if (parseInt(mm) >= 1 && parseInt(mm) <= 12 && parseInt(dd) >= 1 && parseInt(dd) <= 31) {
+                return `${yyyy}-${mm}-${dd}`;
+            }
+            
+            // Try DDMMYYYY
+            if (parseInt(dd) >= 1 && parseInt(dd) <= 12 && parseInt(mm) >= 1 && parseInt(mm) <= 31) {
+                return `${yyyy}-${dd}-${mm}`;
+            }
+        }
+    }
+    
+    // Try parsing with Date object
+    try {
+        const date = new Date(str);
+        if (!isNaN(date.getTime())) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+    } catch (e) {
+        // Ignore parsing errors
+    }
+    
+    // Return original if no conversion possible
+    console.warn(`   Could not convert date: ${dateStr}`);
+    return str;
 }
 
 /**
