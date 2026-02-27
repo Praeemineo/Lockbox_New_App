@@ -351,8 +351,8 @@ function buildDynamicAPIURL(mapping, row) {
  */
 async function callSAPAPI(apiURL, httpMethod, destination) {
     try {
-        // Use SAP Cloud SDK to call via destination
-        const response = await sapClient.callSAPODataAPI(apiURL, httpMethod, destination);
+        // Use SAP client's executeDynamicApiCall function
+        const response = await sapClient.executeDynamicApiCall(apiURL, httpMethod || 'GET', destination);
         return response;
     } catch (error) {
         console.error(`   ❌ SAP API call failed:`, error.message);
