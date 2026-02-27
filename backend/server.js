@@ -7113,40 +7113,104 @@ function buildSapPayloadFromHierarchy(hierarchy) {
 // Process uploaded file - automated workflow
 /**
  * Build Field Mapping Preview showing source fields vs API-derived fields
- * @param {array} extractedData - Data with API-enriched fields
- * @returns {object} - Field mapping preview structure
+ * Displays in UI-friendly format for the Field Mapping Preview screen
+ * @param {array} extractedData - Extracted and enriched data
+ * @returns {object} - Field mapping preview with source and final values
  */
 function buildFieldMappingPreview(extractedData) {
     const preview = {
         sourceFields: [],
         apiDerivedFields: [],
-        fieldMappings: []
+        fieldMappings: [],
+        sections: {
+            item: [],
+            clearing: []
+        }
     };
     
     if (!extractedData || extractedData.length === 0) {
         return preview;
     }
     
-    // Get sample row
+    // Get first data row as sample
     const sampleRow = extractedData[0];
     const allFields = Object.keys(sampleRow);
     
-    // Get API-derived fields from metadata
+    // Get API-derived fields metadata
     const apiDerivedFieldNames = sampleRow._apiDerivedFields || [];
     const apiFieldMappings = sampleRow._apiFieldMappings || {};
     
-    // Classify fields
+    console.log('🔍 Building Field Mapping Preview');
+    console.log(`   Total fields: ${allFields.length}`);
+    console.log(`   API-derived fields: ${apiDerivedFieldNames.length}`);
+    
+    // Define field mappings for Item and Clearing sections
+    const itemFieldMappings = {
+        'CheckAmount': 'Check Amount',
+        'Check Amount': 'Check Amount',
+        'CheckNumber': 'Check Number',
+        'Check Number': 'Check Number',
+        'PartnerBank': 'Partner Bank',
+        'PartnerBankCountry': 'Partner Bank Country',
+        'PartnerBankAccount': 'Partner Bank Account'
+    };
+    
+    const clearingFieldMappings = {
+        'InvoiceNumber': 'Invoice Number',
+        'Invoice Number': 'Invoice Number',
+        'InvoiceAmount': 'Invoice Amount',
+        'Invoice Amount': 'Invoice Amount',
+        'DeductionAmount': 'Deduction Amount',
+        'Deduction Amount': 'Deduction Amount',
+        'ReasonCode': 'Reason Code',
+        'Reason Code': 'Reason Code',
+        'PaymentReference': 'Payment Reference',
+        'CompanyCode': 'Company Code'
+    };
+    
+    // Classify and build preview for each field
     allFields.forEach(fieldName => {
         // Skip internal metadata fields
         if (fieldName.startsWith('_')) return;
         
         const isApiDerived = apiDerivedFieldNames.includes(fieldName);
+        const fieldValue = sampleRow[fieldName] || '—';
         
+        // Determine which section this field belongs to
+        let section = null;
+        let displayName = fieldName;
+        
+        if (itemFieldMappings[fieldName]) {
+            section = 'item';
+            displayName = itemFieldMappings[fieldName];
+        } else if (clearingFieldMappings[fieldName]) {
+            section = 'clearing';
+            displayName = clearingFieldMappings[fieldName];
+        }
+        
+        const fieldInfo = {
+            fieldName: displayName,
+            originalFieldName: fieldName,
+            sourceValue: isApiDerived ? '—' : fieldValue,
+            finalValue: fieldValue,
+            isApiDerived: isApiDerived,
+            derivedFrom: isApiDerived ? (apiFieldMappings[fieldName]?.derivedFrom || 'SAP API') : 'File Upload'
+        };
+        
+        // Add to appropriate section
+        if (section === 'item') {
+            preview.sections.item.push(fieldInfo);
+        } else if (section === 'clearing') {
+            preview.sections.clearing.push(fieldInfo);
+        }
+        
+        // Add to classification arrays
         if (isApiDerived) {
             const mapping = apiFieldMappings[fieldName] || {};
             preview.apiDerivedFields.push({
                 fieldName,
-                value: sampleRow[fieldName],
+                displayName,
+                value: fieldValue,
                 source: 'SAP API',
                 apiEndpoint: mapping.apiEndpoint,
                 sourceApiField: mapping.sourceField,
@@ -7157,7 +7221,8 @@ function buildFieldMappingPreview(extractedData) {
         } else {
             preview.sourceFields.push({
                 fieldName,
-                value: sampleRow[fieldName],
+                displayName,
+                value: fieldValue,
                 source: 'Uploaded File'
             });
         }
@@ -7166,22 +7231,31 @@ function buildFieldMappingPreview(extractedData) {
     // Build comprehensive field mappings
     preview.fieldMappings = [
         ...preview.sourceFields.map(f => ({
-            fieldName: f.fieldName,
+            fieldName: f.displayName,
             sourceType: 'File Upload',
+            sourceValue: f.value,
             targetType: 'Lockbox Field',
-            value: f.value
+            finalValue: f.value,
+            isApiDerived: false
         })),
         ...preview.apiDerivedFields.map(f => ({
-            fieldName: f.fieldName,
+            fieldName: f.displayName,
             sourceType: 'SAP API',
+            sourceValue: '—',
             sourceApiField: f.sourceApiField,
             targetType: 'Lockbox API Field (Derived)',
             apiEndpoint: f.apiEndpoint,
             derivedFromRule: f.derivedFromRule,
             inputMapping: f.inputField ? `${f.inputField} = ${f.inputValue}` : '',
-            value: f.value
+            finalValue: f.value,
+            isApiDerived: true
         }))
     ];
+    
+    console.log(`   Item section fields: ${preview.sections.item.length}`);
+    console.log(`   Clearing section fields: ${preview.sections.clearing.length}`);
+    console.log(`   Source fields: ${preview.sourceFields.length}`);
+    console.log(`   API-derived fields: ${preview.apiDerivedFields.length}`);
     
     return preview;
 }
