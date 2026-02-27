@@ -307,36 +307,53 @@ function buildDynamicAPIURL(mapping, row) {
     const inputField = mapping.inputField;
     const sourceField = mapping.sourceInput || mapping.sourceField;
     
-    // Try multiple field name variations to find the source value
-    const possibleSourceFields = [
-        sourceField,
-        sourceField?.replace(/\s+/g, ''),
-        'InvoiceNumber', 'Invoice Number', 'Invoice',
-        'CustomerNumber', 'Customer Number', 'Customer',
-        'BankIdentification', 'Bank Identification'
-    ];
+    console.log(`      Building API URL: sourceField="${sourceField}"`);
     
+    // Smart field matching: Look for Customer, CustomerNumber, Customer Number
     let sourceValue = null;
-    for (const field of possibleSourceFields) {
-        if (row[field] !== undefined && row[field] !== null && row[field] !== '') {
-            sourceValue = row[field];
+    let foundKey = null;
+    
+    // Normalize the source field name for comparison
+    const normalizedSource = (sourceField || '').replace(/\s+/g, '').toLowerCase();
+    
+    // Search for matching field in row
+    for (const rowKey of Object.keys(row)) {
+        const normalizedRowKey = rowKey.replace(/\s+/g, '').toLowerCase();
+        
+        // Match if:
+        // 1. Exact match (customerumber === customernumber)
+        // 2. Row key starts with source (customer === customernumber)
+        // 3. Source contains row key (customernumber contains customer)
+        if (normalizedRowKey === normalizedSource ||
+            normalizedSource.startsWith(normalizedRowKey) ||
+            (normalizedRowKey.length >= 5 && normalizedSource.includes(normalizedRowKey))) {
+            sourceValue = row[rowKey];
+            foundKey = rowKey;
+            console.log(`      ✅ Matched "${rowKey}" for source "${sourceField}": ${sourceValue}`);
             break;
         }
+    }
+    
+    if (!sourceValue) {
+        console.log(`      ⚠️  Source field "${sourceField}" not found in row`);
+        throw new Error(`Source field "${sourceField}" not found in data`);
     }
     
     // Build base query
     let params = [`${inputField}='${sourceValue}'`];
     
-    // Add filter conditions if present (for RULE-002)
+    // Add filter conditions if present (for RULE-002: BankIdentification='0001')
     if (mapping.filterConditions) {
         for (const [filterKey, filterValue] of Object.entries(mapping.filterConditions)) {
-            // Check if filter value is from row or hardcoded
-            const actualValue = row[filterValue] || filterValue;
-            params.push(`${filterKey}='${actualValue}'`);
+            params.push(`${filterKey}='${filterValue}'`);
+            console.log(`      ➕ Added filter: ${filterKey}='${filterValue}'`);
         }
     }
     
-    return `${apiReference}?$filter=${params.join(' and ')}`;
+    const finalURL = `${apiReference}?$filter=${params.join(' and ')}`;
+    console.log(`      📋 Final URL: ${finalURL}`);
+    
+    return finalURL;
 }
 
 /**
