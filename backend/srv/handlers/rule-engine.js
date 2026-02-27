@@ -230,21 +230,23 @@ async function executeDynamicRule(rule, data) {
             const firstMapping = mappings[0];
             const sourceField = firstMapping.sourceInput || firstMapping.sourceField;
             
-            // Try multiple field name variations
-            const possibleSourceFields = [
-                sourceField,
-                sourceField?.replace(/\s+/g, ''),
-                'InvoiceNumber', 'Invoice Number', 'Invoice',
-                'CustomerNumber', 'Customer Number', 'Customer',
-                'BankIdentification', 'Bank Identification'
-            ];
+            console.log(`   🔍 Looking for source field: "${sourceField}"`);
             
+            // Smart field matching: Look for Customer, CustomerNumber, Invoice Number, etc.
             let sourceValue = null;
             let actualSourceField = null;
-            for (const field of possibleSourceFields) {
-                if (row[field] !== undefined && row[field] !== null && row[field] !== '') {
-                    sourceValue = row[field];
-                    actualSourceField = field;
+            
+            const normalizedSource = (sourceField || '').replace(/\s+/g, '').toLowerCase();
+            
+            for (const rowKey of Object.keys(row)) {
+                const normalizedRowKey = rowKey.replace(/\s+/g, '').toLowerCase();
+                
+                // Match if normalized keys match or contain each other
+                if (normalizedRowKey === normalizedSource ||
+                    normalizedSource.startsWith(normalizedRowKey) ||
+                    (normalizedRowKey.length >= 5 && normalizedSource.includes(normalizedRowKey))) {
+                    sourceValue = row[rowKey];
+                    actualSourceField = rowKey;
                     break;
                 }
             }
@@ -259,7 +261,7 @@ async function executeDynamicRule(rule, data) {
             // Step 2: Build dynamic API URL
             const apiURL = buildDynamicAPIURL(firstMapping, row);
             
-            console.log(`   📞 API Call for row ${i + 1}: ${apiURL}`);
+            console.log(`   📞 API Call for row ${i + 1}`);
             
             // Step 3: Call SAP API via destination
             const response = await callSAPAPI(apiURL, firstMapping.httpMethod, rule.destination);
