@@ -9,9 +9,6 @@ const axios = require('axios');
 const { executeHttpRequest } = require('@sap-cloud-sdk/http-client');
 require('dotenv').config();
 
-// 🔍 MODULE CACHE TEST - Timestamp: 2025-01-15T14:30:00.000Z
-console.log('🔍 [CACHE-TEST] server.js loaded at:', new Date().toISOString());
-
 // ============================================================================
 // MODULAR IMPORTS - Dynamic Rule Engine (NEW)
 // ============================================================================
