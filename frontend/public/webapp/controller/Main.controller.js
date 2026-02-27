@@ -7531,17 +7531,27 @@ sap.ui.define([
                 
                 // Get source value from extracted data - try multiple key formats
                 if (config.excelKey) {
-                    sSourceValue = oFirstRow[config.excelKey];
+                    // PRIORITY 1: Try with spaces (e.g., "Check Amount")
+                    var keyWithSpaces = config.excelKey.replace(/([A-Z])/g, ' $1').trim();
+                    sSourceValue = oFirstRow[keyWithSpaces];
                     
-                    // Try alternative key formats if not found
+                    // PRIORITY 2: Try original camelCase (e.g., "CheckAmount")
+                    if (sSourceValue === undefined || sSourceValue === null) {
+                        sSourceValue = oFirstRow[config.excelKey];
+                    }
+                    
+                    // PRIORITY 3: Try lowercase
                     if (sSourceValue === undefined || sSourceValue === null) {
                         sSourceValue = oFirstRow[config.excelKey.toLowerCase()];
                     }
+                    
+                    // PRIORITY 4: Try snake_case
                     if (sSourceValue === undefined || sSourceValue === null) {
                         sSourceValue = oFirstRow[that._toSnakeCase(config.excelKey)];
                     }
+                    
+                    // PRIORITY 5: Try with underscores
                     if (sSourceValue === undefined || sSourceValue === null) {
-                        // Try with underscores
                         var snakeKey = config.excelKey.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
                         sSourceValue = oFirstRow[snakeKey];
                     }
