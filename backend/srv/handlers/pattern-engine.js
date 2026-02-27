@@ -448,28 +448,35 @@ function executePatternExtraction(data, pattern) {
     
     // Execute pattern-specific extraction
     switch (pattern.patternType) {
-        case 'Single_Check_Single_Invoice':
         case 'SINGLE_CHECK_SINGLE_INVOICE':
+        case 'Single_Check_Single_Invoice':
             console.log('   Pattern PAT-001: Single check, single invoice - standard extraction');
             processedData = convertDateFormats(processedData);
             extractionLog.push('✅ Single check and single invoice extracted successfully');
             extractionLog.push(`✅ Date validation and conversion completed`);
             break;
         
+        case 'MULTI_CHECK_MULTI_INVOICE':
         case 'Multiple_Check_Multiple_Invoice':
-        case 'MULTIPLE_CHECK_MULTIPLE_INVOICE':
             console.log('   Pattern PAT-002: Multiple checks and invoices - multi-line extraction');
             processedData = convertDateFormats(processedData);
             extractionLog.push(`✅ Multiple checks and invoices extracted successfully (${processedData.length} rows)`);
             extractionLog.push(`✅ Date validation and conversion completed`);
             break;
         
+        case 'DOUCMENT_SPLIT_COMMA':
         case 'Document_Split_Comma':
         case 'DOCUMENT_SPLIT_COMMA':
             console.log('   Pattern PAT-003: Comma-separated values - splitting into multiple rows');
             const beforeSplit = processedData.length;
             processedData = splitByComma(processedData, 'InvoiceNumber');
+            processedData = splitByComma(processedData, 'Invoice Number');
             processedData = splitByComma(processedData, 'CheckNumber');
+            processedData = splitByComma(processedData, 'Check Number');
+            processedData = splitByComma(processedData, 'CheckAmount');
+            processedData = splitByComma(processedData, 'Check Amount');
+            processedData = splitByComma(processedData, 'InvoiceAmount');
+            processedData = splitByComma(processedData, 'Invoice Amount');
             processedData = convertDateFormats(processedData);
             const afterSplit = processedData.length;
             extractionLog.push(`✅ Comma-separated values split successfully`);
@@ -478,8 +485,8 @@ function executePatternExtraction(data, pattern) {
             extractionLog.push(`✅ Date validation and conversion completed`);
             break;
         
-        case 'Document_Range':
         case 'DOCUMENT_RANGE':
+        case 'Document_Range':
             console.log('   Pattern PAT-004: Hyphen ranges - expanding into multiple rows');
             const beforeExpand = processedData.length;
             processedData = expandRange(processedData, 'InvoiceNumber');
@@ -498,8 +505,8 @@ function executePatternExtraction(data, pattern) {
             extractionLog.push(`✅ Date format successfully validated and converted to YYYY-MM-DD`);
             break;
         
-        case 'Multi_Sheet':
         case 'MULTI_SHEET':
+        case 'Multi_Sheet':
             console.log('   Pattern PAT-006: Multiple sheets - consolidating data');
             processedData = combineSheets(processedData);
             processedData = convertDateFormats(processedData);
