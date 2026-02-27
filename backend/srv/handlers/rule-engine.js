@@ -306,8 +306,22 @@ function buildDynamicAPIURL(mapping, row) {
     const inputField = mapping.inputField;
     const sourceField = mapping.sourceInput || mapping.sourceField;
     
-    // Get source value from row
-    const sourceValue = row[sourceField] || row[sourceField?.replace(/\s+/g, '')];
+    // Try multiple field name variations to find the source value
+    const possibleSourceFields = [
+        sourceField,
+        sourceField?.replace(/\s+/g, ''),
+        'InvoiceNumber', 'Invoice Number', 'Invoice',
+        'CustomerNumber', 'Customer Number', 'Customer',
+        'BankIdentification', 'Bank Identification'
+    ];
+    
+    let sourceValue = null;
+    for (const field of possibleSourceFields) {
+        if (row[field] !== undefined && row[field] !== null && row[field] !== '') {
+            sourceValue = row[field];
+            break;
+        }
+    }
     
     // Build base query
     let params = [`${inputField}='${sourceValue}'`];
