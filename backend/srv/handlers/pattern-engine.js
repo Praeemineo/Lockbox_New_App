@@ -200,7 +200,9 @@ function analyzeFileStructure(data) {
         hasRanges: false,
         rangeFields: [],
         hasMultipleSheets: false,
+        hasMultipleSheetsWithData: false,
         sheetCount: 1,
+        sheetsWithDataCount: 0,
         hasDateFields: false,
         dateFields: [],
         detectedColumns: []
@@ -215,8 +217,24 @@ function analyzeFileStructure(data) {
     const checkNumbers = new Set();
     const invoices = new Set();
     
+    // Track sheets with actual data (non-empty rows)
+    const sheetsWithData = new Set();
+    
     // Analyze each row
     data.forEach((row, idx) => {
+        // Track sheets
+        const sheetName = row._sheet || row.SheetName || row['Sheet Name'];
+        if (sheetName) {
+            analysis.hasMultipleSheets = true;
+            // Only count sheets that have actual data (not just headers or empty rows)
+            const hasActualData = Object.keys(row).some(key => 
+                !key.startsWith('_') && row[key] !== null && row[key] !== undefined && row[key] !== ''
+            );
+            if (hasActualData) {
+                sheetsWithData.add(sheetName);
+            }
+        }
+        
         // Check for check numbers
         const checkNum = row.CheckNumber || row['Check Number'] || row.Check;
         if (checkNum) {
@@ -258,20 +276,19 @@ function analyzeFileStructure(data) {
                 }
             }
         });
-        
-        // Check for sheet indicator
-        if (row._sheet || row.SheetName || row['Sheet Name']) {
-            analysis.hasMultipleSheets = true;
-        }
     });
     
     analysis.uniqueCheckNumbers = checkNumbers.size;
     analysis.uniqueInvoices = invoices.size;
     
-    // Estimate sheet count if multiple sheets
+    // Update sheet counts
+    analysis.sheetsWithDataCount = sheetsWithData.size;
+    analysis.hasMultipleSheetsWithData = analysis.sheetsWithDataCount > 1;
+    
+    // Total sheet count (including empty sheets)
     if (analysis.hasMultipleSheets) {
-        const sheets = new Set(data.map(r => r._sheet || r.SheetName || r['Sheet Name']));
-        analysis.sheetCount = sheets.size || 1;
+        const allSheets = new Set(data.map(r => r._sheet || r.SheetName || r['Sheet Name']).filter(s => s));
+        analysis.sheetCount = allSheets.size || 1;
     }
     
     return analysis;
