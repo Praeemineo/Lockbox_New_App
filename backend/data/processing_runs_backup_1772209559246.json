@@ -1634,7 +1634,7 @@
         "lockboxId": "1000156",
         "batchId": "001",
         "itemCount": 1,
-        "totalAmount": "18.43"
+        "totalAmount": "0.00"
       }
     },
     "currentStage": "complete",
@@ -1730,7 +1730,7 @@
         "sourceFile": "Customer_Payments_upload_8.xlsx",
         "batchId": "001",
         "status": "UPLOADED",
-        "amount": 18.43,
+        "amount": 0,
         "currency": "USD",
         "deposit_datetime": "2026-02-27T16:16:37",
         "customer": "",
@@ -1743,7 +1743,7 @@
             "displayText": "CHK-177220899",
             "itemId": "001",
             "customer": "",
-            "amount": 18.43,
+            "amount": 0,
             "currency": "USD",
             "depositDate": "2026-02-27T16:16:37",
             "partnerBank": "15051554",
@@ -1757,7 +1757,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 18.43,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -1770,7 +1770,7 @@
     "sapPayload": {
       "Lockbox": "1000156",
       "DepositDateTime": "2026-02-27T16:16:37",
-      "AmountInTransactionCurrency": "18.43",
+      "AmountInTransactionCurrency": "0.00",
       "LockboxBatchOrigin": "LOCKBOXORI",
       "LockboxBatchDestination": "LOCKBOXDES",
       "to_Item": {
@@ -1778,7 +1778,7 @@
           {
             "LockboxBatch": "001",
             "LockboxBatchItem": "001",
-            "AmountInTransactionCurrency": "18.43",
+            "AmountInTransactionCurrency": "0.00",
             "Currency": "USD",
             "Cheque": "CHK-177220899",
             "PartnerBank": "15051554",
@@ -1788,7 +1788,7 @@
               "results": [
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "18.43",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 }
@@ -2153,7 +2153,7 @@
         "lockboxId": "1000155",
         "batchId": "001",
         "itemCount": 1,
-        "totalAmount": "18.43"
+        "totalAmount": "0.00"
       }
     },
     "currentStage": "complete",
@@ -2249,7 +2249,7 @@
         "sourceFile": "Customer_Payments_upload_8.xlsx",
         "batchId": "001",
         "status": "UPLOADED",
-        "amount": 18.43,
+        "amount": 0,
         "currency": "USD",
         "deposit_datetime": "2026-02-27T15:10:49",
         "customer": "",
@@ -2262,7 +2262,7 @@
             "displayText": "CHK-177220504",
             "itemId": "001",
             "customer": "",
-            "amount": 18.43,
+            "amount": 0,
             "currency": "USD",
             "depositDate": "2026-02-27T15:10:49",
             "partnerBank": "15051554",
@@ -2276,7 +2276,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 18.43,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -2289,7 +2289,7 @@
     "sapPayload": {
       "Lockbox": "1000155",
       "DepositDateTime": "2026-02-27T15:10:49",
-      "AmountInTransactionCurrency": "18.43",
+      "AmountInTransactionCurrency": "0.00",
       "LockboxBatchOrigin": "LOCKBOXORI",
       "LockboxBatchDestination": "LOCKBOXDES",
       "to_Item": {
@@ -2297,7 +2297,7 @@
           {
             "LockboxBatch": "001",
             "LockboxBatchItem": "001",
-            "AmountInTransactionCurrency": "18.43",
+            "AmountInTransactionCurrency": "0.00",
             "Currency": "USD",
             "Cheque": "CHK-177220504",
             "PartnerBank": "15051554",
@@ -2307,7 +2307,7 @@
               "results": [
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "18.43",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 }
@@ -2672,7 +2672,7 @@
         "lockboxId": "1000154",
         "batchId": "001",
         "itemCount": 1,
-        "totalAmount": "18.43"
+        "totalAmount": "0.00"
       }
     },
     "currentStage": "complete",
@@ -2768,7 +2768,7 @@
         "sourceFile": "Customer_Payments_upload_8.xlsx",
         "batchId": "001",
         "status": "UPLOADED",
-        "amount": 18.43,
+        "amount": 0,
         "currency": "USD",
         "deposit_datetime": "2026-02-27T15:08:14",
         "customer": "",
@@ -2781,7 +2781,7 @@
             "displayText": "CHK-177220489",
             "itemId": "001",
             "customer": "",
-            "amount": 18.43,
+            "amount": 0,
             "currency": "USD",
             "depositDate": "2026-02-27T15:08:14",
             "partnerBank": "15051554",
@@ -2795,7 +2795,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 18.43,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -2808,7 +2808,7 @@
     "sapPayload": {
       "Lockbox": "1000154",
       "DepositDateTime": "2026-02-27T15:08:14",
-      "AmountInTransactionCurrency": "18.43",
+      "AmountInTransactionCurrency": "0.00",
       "LockboxBatchOrigin": "LOCKBOXORI",
       "LockboxBatchDestination": "LOCKBOXDES",
       "to_Item": {
@@ -2816,7 +2816,7 @@
           {
             "LockboxBatch": "001",
             "LockboxBatchItem": "001",
-            "AmountInTransactionCurrency": "18.43",
+            "AmountInTransactionCurrency": "0.00",
             "Currency": "USD",
             "Cheque": "CHK-177220489",
             "PartnerBank": "15051554",
@@ -2826,7 +2826,7 @@
               "results": [
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "18.43",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 }
@@ -3191,7 +3191,7 @@
         "lockboxId": "1000153",
         "batchId": "001",
         "itemCount": 1,
-        "totalAmount": "18.43"
+        "totalAmount": "0.00"
       }
     },
     "currentStage": "complete",
@@ -3287,7 +3287,7 @@
         "sourceFile": "upload_8.xlsx",
         "batchId": "001",
         "status": "UPLOADED",
-        "amount": 18.43,
+        "amount": 0,
         "currency": "USD",
         "deposit_datetime": "2026-02-27T14:19:49",
         "customer": "",
@@ -3300,7 +3300,7 @@
             "displayText": "CHK-177220198",
             "itemId": "001",
             "customer": "",
-            "amount": 18.43,
+            "amount": 0,
             "currency": "USD",
             "depositDate": "2026-02-27T14:19:49",
             "partnerBank": "15051554",
@@ -3314,7 +3314,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 18.43,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -3327,7 +3327,7 @@
     "sapPayload": {
       "Lockbox": "1000153",
       "DepositDateTime": "2026-02-27T14:19:49",
-      "AmountInTransactionCurrency": "18.43",
+      "AmountInTransactionCurrency": "0.00",
       "LockboxBatchOrigin": "LOCKBOXORI",
       "LockboxBatchDestination": "LOCKBOXDES",
       "to_Item": {
@@ -3335,7 +3335,7 @@
           {
             "LockboxBatch": "001",
             "LockboxBatchItem": "001",
-            "AmountInTransactionCurrency": "18.43",
+            "AmountInTransactionCurrency": "0.00",
             "Currency": "USD",
             "Cheque": "CHK-177220198",
             "PartnerBank": "15051554",
@@ -3345,7 +3345,7 @@
               "results": [
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "18.43",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 }
@@ -3710,7 +3710,7 @@
         "lockboxId": "1000152",
         "batchId": "001",
         "itemCount": 1,
-        "totalAmount": "18.43"
+        "totalAmount": "0.00"
       }
     },
     "currentStage": "complete",
@@ -3806,7 +3806,7 @@
         "sourceFile": "upload_8.xlsx",
         "batchId": "001",
         "status": "UPLOADED",
-        "amount": 18.43,
+        "amount": 0,
         "currency": "USD",
         "deposit_datetime": "2026-02-27T14:12:11",
         "customer": "",
@@ -3819,7 +3819,7 @@
             "displayText": "CHK-177220153",
             "itemId": "001",
             "customer": "",
-            "amount": 18.43,
+            "amount": 0,
             "currency": "USD",
             "depositDate": "2026-02-27T14:12:11",
             "partnerBank": "15051554",
@@ -3833,7 +3833,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 18.43,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -3846,7 +3846,7 @@
     "sapPayload": {
       "Lockbox": "1000152",
       "DepositDateTime": "2026-02-27T14:12:11",
-      "AmountInTransactionCurrency": "18.43",
+      "AmountInTransactionCurrency": "0.00",
       "LockboxBatchOrigin": "LOCKBOXORI",
       "LockboxBatchDestination": "LOCKBOXDES",
       "to_Item": {
@@ -3854,7 +3854,7 @@
           {
             "LockboxBatch": "001",
             "LockboxBatchItem": "001",
-            "AmountInTransactionCurrency": "18.43",
+            "AmountInTransactionCurrency": "0.00",
             "Currency": "USD",
             "Cheque": "CHK-177220153",
             "PartnerBank": "15051554",
@@ -3864,7 +3864,7 @@
               "results": [
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "18.43",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 }
@@ -4163,7 +4163,7 @@
         "lockboxId": "1000151",
         "batchId": "001",
         "itemCount": 1,
-        "totalAmount": "18.43"
+        "totalAmount": "0.00"
       }
     },
     "currentStage": "complete",
@@ -4259,7 +4259,7 @@
         "sourceFile": "upload_8.xlsx",
         "batchId": "001",
         "status": "UPLOADED",
-        "amount": 18.43,
+        "amount": 0,
         "currency": "USD",
         "deposit_datetime": "2026-02-27T12:26:38",
         "customer": "",
@@ -4272,7 +4272,7 @@
             "displayText": "CHK-177219519",
             "itemId": "001",
             "customer": "",
-            "amount": 18.43,
+            "amount": 0,
             "currency": "USD",
             "depositDate": "2026-02-27T12:26:38",
             "partnerBank": "15051554",
@@ -4286,7 +4286,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 18.43,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -4299,7 +4299,7 @@
     "sapPayload": {
       "Lockbox": "1000151",
       "DepositDateTime": "2026-02-27T12:26:38",
-      "AmountInTransactionCurrency": "18.43",
+      "AmountInTransactionCurrency": "0.00",
       "LockboxBatchOrigin": "LOCKBOXORI",
       "LockboxBatchDestination": "LOCKBOXDES",
       "to_Item": {
@@ -4307,7 +4307,7 @@
           {
             "LockboxBatch": "001",
             "LockboxBatchItem": "001",
-            "AmountInTransactionCurrency": "18.43",
+            "AmountInTransactionCurrency": "0.00",
             "Currency": "USD",
             "Cheque": "CHK-177219519",
             "PartnerBank": "15051554",
@@ -4317,7 +4317,7 @@
               "results": [
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "18.43",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 }
@@ -4609,7 +4609,7 @@
         "lockboxId": "1000150",
         "batchId": "001",
         "itemCount": 1,
-        "totalAmount": "1365.00"
+        "totalAmount": "0.00"
       }
     },
     "currentStage": "complete",
@@ -4705,7 +4705,7 @@
         "sourceFile": "upload_9.xlsx",
         "batchId": "001",
         "status": "UPLOADED",
-        "amount": 1365,
+        "amount": 0,
         "currency": "USD",
         "deposit_datetime": "2026-02-27T12:19:13",
         "customer": "",
@@ -4718,7 +4718,7 @@
             "displayText": "CHK-177219475",
             "itemId": "001",
             "customer": "",
-            "amount": 1365,
+            "amount": 0,
             "currency": "USD",
             "depositDate": "2026-02-27T12:19:13",
             "partnerBank": "15051554",
@@ -4732,7 +4732,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 1365,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -4745,7 +4745,7 @@
     "sapPayload": {
       "Lockbox": "1000150",
       "DepositDateTime": "2026-02-27T12:19:13",
-      "AmountInTransactionCurrency": "1365.00",
+      "AmountInTransactionCurrency": "0.00",
       "LockboxBatchOrigin": "LOCKBOXORI",
       "LockboxBatchDestination": "LOCKBOXDES",
       "to_Item": {
@@ -4753,7 +4753,7 @@
           {
             "LockboxBatch": "001",
             "LockboxBatchItem": "001",
-            "AmountInTransactionCurrency": "1365.00",
+            "AmountInTransactionCurrency": "0.00",
             "Currency": "USD",
             "Cheque": "CHK-177219475",
             "PartnerBank": "15051554",
@@ -4763,7 +4763,7 @@
               "results": [
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "1365.00",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 }
@@ -5049,7 +5049,7 @@
         "lockboxId": "1000149",
         "batchId": "001",
         "itemCount": 1,
-        "totalAmount": "1365.00"
+        "totalAmount": "0.00"
       }
     },
     "currentStage": "complete",
@@ -5145,7 +5145,7 @@
         "sourceFile": "upload_9.xlsx",
         "batchId": "001",
         "status": "UPLOADED",
-        "amount": 1365,
+        "amount": 0,
         "currency": "USD",
         "deposit_datetime": "2026-02-27T12:18:55",
         "customer": "",
@@ -5158,7 +5158,7 @@
             "displayText": "CHK-177219473",
             "itemId": "001",
             "customer": "",
-            "amount": 1365,
+            "amount": 0,
             "currency": "USD",
             "depositDate": "2026-02-27T12:18:55",
             "partnerBank": "15051554",
@@ -5172,7 +5172,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 1365,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -5185,7 +5185,7 @@
     "sapPayload": {
       "Lockbox": "1000149",
       "DepositDateTime": "2026-02-27T12:18:55",
-      "AmountInTransactionCurrency": "1365.00",
+      "AmountInTransactionCurrency": "0.00",
       "LockboxBatchOrigin": "LOCKBOXORI",
       "LockboxBatchDestination": "LOCKBOXDES",
       "to_Item": {
@@ -5193,7 +5193,7 @@
           {
             "LockboxBatch": "001",
             "LockboxBatchItem": "001",
-            "AmountInTransactionCurrency": "1365.00",
+            "AmountInTransactionCurrency": "0.00",
             "Currency": "USD",
             "Cheque": "CHK-177219473",
             "PartnerBank": "15051554",
@@ -5203,7 +5203,7 @@
               "results": [
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "1365.00",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 }
@@ -5488,7 +5488,7 @@
         "lockboxId": "1000148",
         "batchId": "001",
         "itemCount": 1,
-        "totalAmount": "1365.00"
+        "totalAmount": "0.00"
       }
     },
     "currentStage": "complete",
@@ -5584,7 +5584,7 @@
         "sourceFile": "upload_9.xlsx",
         "batchId": "001",
         "status": "UPLOADED",
-        "amount": 1365,
+        "amount": 0,
         "currency": "USD",
         "deposit_datetime": "2026-02-27T12:15:01",
         "customer": "",
@@ -5597,7 +5597,7 @@
             "displayText": "CHK-177219450",
             "itemId": "001",
             "customer": "",
-            "amount": 1365,
+            "amount": 0,
             "currency": "USD",
             "depositDate": "2026-02-27T12:15:01",
             "partnerBank": "15051554",
@@ -5611,7 +5611,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 1365,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -5624,7 +5624,7 @@
     "sapPayload": {
       "Lockbox": "1000148",
       "DepositDateTime": "2026-02-27T12:15:01",
-      "AmountInTransactionCurrency": "1365.00",
+      "AmountInTransactionCurrency": "0.00",
       "LockboxBatchOrigin": "LOCKBOXORI",
       "LockboxBatchDestination": "LOCKBOXDES",
       "to_Item": {
@@ -5632,7 +5632,7 @@
           {
             "LockboxBatch": "001",
             "LockboxBatchItem": "001",
-            "AmountInTransactionCurrency": "1365.00",
+            "AmountInTransactionCurrency": "0.00",
             "Currency": "USD",
             "Cheque": "CHK-177219450",
             "PartnerBank": "15051554",
@@ -5642,7 +5642,7 @@
               "results": [
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "1365.00",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 }
@@ -5847,7 +5847,7 @@
         "lockboxId": "1000147",
         "batchId": "001",
         "itemCount": 1,
-        "totalAmount": "1383.43"
+        "totalAmount": "0.00"
       }
     },
     "currentStage": "complete",
@@ -5942,7 +5942,7 @@
         "sourceFile": "upload_10.xlsx",
         "batchId": "001",
         "status": "UPLOADED",
-        "amount": 1383.43,
+        "amount": 0,
         "currency": "USD",
         "deposit_datetime": "2026-02-27T11:17:08",
         "customer": "",
@@ -5955,7 +5955,7 @@
             "displayText": "CHK-177219102",
             "itemId": "001",
             "customer": "",
-            "amount": 1383.43,
+            "amount": 0,
             "currency": "USD",
             "depositDate": "2026-02-27T11:17:08",
             "partnerBank": "15051554",
@@ -5969,7 +5969,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 1365,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -5982,7 +5982,7 @@
     "sapPayload": {
       "Lockbox": "1000147",
       "DepositDateTime": "2026-02-27T11:17:08",
-      "AmountInTransactionCurrency": "1383.43",
+      "AmountInTransactionCurrency": "0.00",
       "LockboxBatchOrigin": "LOCKBOXORI",
       "LockboxBatchDestination": "LOCKBOXDES",
       "to_Item": {
@@ -5990,7 +5990,7 @@
           {
             "LockboxBatch": "001",
             "LockboxBatchItem": "001",
-            "AmountInTransactionCurrency": "1383.43",
+            "AmountInTransactionCurrency": "0.00",
             "Currency": "USD",
             "Cheque": "CHK-177219102",
             "PartnerBank": "15051554",
@@ -6000,7 +6000,7 @@
               "results": [
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "1365.00",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 }
@@ -6299,7 +6299,7 @@
         "lockboxId": "1000146",
         "batchId": "001",
         "itemCount": 1,
-        "totalAmount": "2766.86"
+        "totalAmount": "0.00"
       }
     },
     "currentStage": "complete",
@@ -6428,7 +6428,7 @@
         "sourceFile": "upload_10.xlsx",
         "batchId": "001",
         "status": "UPLOADED",
-        "amount": 2766.86,
+        "amount": 0,
         "currency": "USD",
         "deposit_datetime": "2026-02-27T11:15:00",
         "customer": "",
@@ -6441,7 +6441,7 @@
             "displayText": "CHK-177219090",
             "itemId": "001",
             "customer": "",
-            "amount": 1383.43,
+            "amount": 0,
             "currency": "USD",
             "depositDate": "2026-02-27T11:15:00",
             "partnerBank": "15051554",
@@ -6455,7 +6455,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 1365,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -6467,7 +6467,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 1365,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -6480,7 +6480,7 @@
     "sapPayload": {
       "Lockbox": "1000146",
       "DepositDateTime": "2026-02-27T11:15:00",
-      "AmountInTransactionCurrency": "2766.86",
+      "AmountInTransactionCurrency": "0.00",
       "LockboxBatchOrigin": "LOCKBOXORI",
       "LockboxBatchDestination": "LOCKBOXDES",
       "to_Item": {
@@ -6488,7 +6488,7 @@
           {
             "LockboxBatch": "001",
             "LockboxBatchItem": "001",
-            "AmountInTransactionCurrency": "1383.43",
+            "AmountInTransactionCurrency": "0.00",
             "Currency": "USD",
             "Cheque": "CHK-177219090",
             "PartnerBank": "15051554",
@@ -6498,13 +6498,13 @@
               "results": [
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "1365.00",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 },
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "1365.00",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 }
@@ -6814,7 +6814,7 @@
         "lockboxId": "1000145",
         "batchId": "001",
         "itemCount": 1,
-        "totalAmount": "2766.86"
+        "totalAmount": "0.00"
       }
     },
     "currentStage": "complete",
@@ -6943,7 +6943,7 @@
         "sourceFile": "upload_10.xlsx",
         "batchId": "001",
         "status": "UPLOADED",
-        "amount": 2766.86,
+        "amount": 0,
         "currency": "USD",
         "deposit_datetime": "2026-02-27T11:14:43",
         "customer": "",
@@ -6956,7 +6956,7 @@
             "displayText": "CHK-177219088",
             "itemId": "001",
             "customer": "",
-            "amount": 1383.43,
+            "amount": 0,
             "currency": "USD",
             "depositDate": "2026-02-27T11:14:43",
             "partnerBank": "15051554",
@@ -6970,7 +6970,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 1365,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -6982,7 +6982,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 1365,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -6995,7 +6995,7 @@
     "sapPayload": {
       "Lockbox": "1000145",
       "DepositDateTime": "2026-02-27T11:14:43",
-      "AmountInTransactionCurrency": "2766.86",
+      "AmountInTransactionCurrency": "0.00",
       "LockboxBatchOrigin": "LOCKBOXORI",
       "LockboxBatchDestination": "LOCKBOXDES",
       "to_Item": {
@@ -7003,7 +7003,7 @@
           {
             "LockboxBatch": "001",
             "LockboxBatchItem": "001",
-            "AmountInTransactionCurrency": "1383.43",
+            "AmountInTransactionCurrency": "0.00",
             "Currency": "USD",
             "Cheque": "CHK-177219088",
             "PartnerBank": "15051554",
@@ -7013,13 +7013,13 @@
               "results": [
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "1365.00",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 },
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "1365.00",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 }
@@ -7323,7 +7323,7 @@
         "lockboxId": "1000144",
         "batchId": "001",
         "itemCount": 1,
-        "totalAmount": "1365.00"
+        "totalAmount": "0.00"
       }
     },
     "currentStage": "complete",
@@ -7419,7 +7419,7 @@
         "sourceFile": "upload_9.xlsx",
         "batchId": "001",
         "status": "UPLOADED",
-        "amount": 1365,
+        "amount": 0,
         "currency": "USD",
         "deposit_datetime": "2026-02-27T11:12:34",
         "customer": "",
@@ -7432,7 +7432,7 @@
             "displayText": "CHK-177219075",
             "itemId": "001",
             "customer": "",
-            "amount": 1365,
+            "amount": 0,
             "currency": "USD",
             "depositDate": "2026-02-27T11:12:34",
             "partnerBank": "15051554",
@@ -7446,7 +7446,7 @@
                 "paymentReference": "",
                 "displayText": "",
                 "customer": "",
-                "netAmount": 1365,
+                "netAmount": 0,
                 "deductionAmount": 0,
                 "currency": "USD",
                 "children": []
@@ -7459,7 +7459,7 @@
     "sapPayload": {
       "Lockbox": "1000144",
       "DepositDateTime": "2026-02-27T11:12:34",
-      "AmountInTransactionCurrency": "1365.00",
+      "AmountInTransactionCurrency": "0.00",
       "LockboxBatchOrigin": "LOCKBOXORI",
       "LockboxBatchDestination": "LOCKBOXDES",
       "to_Item": {
@@ -7467,7 +7467,7 @@
           {
             "LockboxBatch": "001",
             "LockboxBatchItem": "001",
-            "AmountInTransactionCurrency": "1365.00",
+            "AmountInTransactionCurrency": "0.00",
             "Currency": "USD",
             "Cheque": "CHK-177219075",
             "PartnerBank": "15051554",
@@ -7477,7 +7477,7 @@
               "results": [
                 {
                   "PaymentReference": "",
-                  "NetPaymentAmountInPaytCurrency": "1365.00",
+                  "NetPaymentAmountInPaytCurrency": "0.00",
                   "DeductionAmountInPaytCurrency": "0.00",
                   "Currency": "USD"
                 }
