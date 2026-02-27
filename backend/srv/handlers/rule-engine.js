@@ -162,35 +162,30 @@ function evaluateRuleCondition(conditions, data) {
             // For EXIST conditions, check if field is in file
             if (conditionType === 'exist') {
                 // Build field-specific possible variations
-                const normalizedField = fieldName.replace(/\s+/g, '').toLowerCase();
-                const possibleFields = [
-                    fieldName,
-                    fieldName.replace(/\s+/g, ''),
-                    fieldName.toLowerCase(),
-                    fieldName.replace(/\s+/g, '').toLowerCase()
-                ];
+                const normalizedSearch = fieldName.replace(/\s+/g, '').toLowerCase();
                 
-                // Check if field exists in row
+                // Check if field exists in row with fuzzy matching
                 let fieldValue = null;
                 let foundField = null;
-                for (const possibleField of possibleFields) {
-                    // Check exact match or case-insensitive match
-                    for (const rowKey of Object.keys(row)) {
-                        if (rowKey.toLowerCase().replace(/\s+/g, '') === possibleField.toLowerCase().replace(/\s+/g, '')) {
-                            fieldValue = row[rowKey];
-                            foundField = rowKey;
-                            break;
-                        }
+                
+                for (const rowKey of Object.keys(row)) {
+                    const normalizedRowKey = rowKey.replace(/\s+/g, '').toLowerCase();
+                    
+                    // Exact match or fuzzy match (e.g., "Customer" matches "Customer Number")
+                    if (normalizedRowKey === normalizedSearch || 
+                        normalizedSearch.includes(normalizedRowKey) ||
+                        normalizedRowKey.includes(normalizedSearch)) {
+                        fieldValue = row[rowKey];
+                        foundField = rowKey;
+                        console.log(`      ✅ Found field "${foundField}" with value: ${fieldValue}`);
+                        break;
                     }
-                    if (fieldValue !== null) break;
                 }
                 
                 if (!fieldValue || fieldValue === '' || fieldValue === null) {
                     console.log(`      ❌ Field ${fieldName} not found or empty`);
                     allConditionsMet = false;
                     break;
-                } else {
-                    console.log(`      ✅ Found field "${foundField}" with value: ${fieldValue}`);
                 }
             }
         }
