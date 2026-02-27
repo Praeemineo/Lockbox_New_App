@@ -161,27 +161,28 @@ function evaluateRuleCondition(conditions, data) {
             
             // For EXIST conditions, check if field is in file
             if (conditionType === 'exist') {
-                // Try multiple field name variations (case-insensitive, with/without spaces)
-                const normalizedField = fieldName.replace(/\s+/g, '');
+                // Build field-specific possible variations
+                const normalizedField = fieldName.replace(/\s+/g, '').toLowerCase();
                 const possibleFields = [
                     fieldName,
-                    normalizedField,
+                    fieldName.replace(/\s+/g, ''),
                     fieldName.toLowerCase(),
-                    normalizedField.toLowerCase(),
-                    // Common variations
-                    'InvoiceNumber', 'Invoice Number', 'Invoice', 'invoicenumber',
-                    'CustomerNumber', 'Customer Number', 'Customer', 'customernumber',
-                    'BankIdentification', 'Bank Identification', 'bankidentification'
+                    fieldName.replace(/\s+/g, '').toLowerCase()
                 ];
                 
                 // Check if field exists in row
                 let fieldValue = null;
+                let foundField = null;
                 for (const possibleField of possibleFields) {
-                    if (row[possibleField] !== undefined && row[possibleField] !== null) {
-                        fieldValue = row[possibleField];
-                        console.log(`      ✅ Found field "${possibleField}" with value: ${fieldValue}`);
-                        break;
+                    // Check exact match or case-insensitive match
+                    for (const rowKey of Object.keys(row)) {
+                        if (rowKey.toLowerCase().replace(/\s+/g, '') === possibleField.toLowerCase().replace(/\s+/g, '')) {
+                            fieldValue = row[rowKey];
+                            foundField = rowKey;
+                            break;
+                        }
                     }
+                    if (fieldValue !== null) break;
                 }
                 
                 if (!fieldValue || fieldValue === '' || fieldValue === null) {
@@ -189,7 +190,7 @@ function evaluateRuleCondition(conditions, data) {
                     allConditionsMet = false;
                     break;
                 } else {
-                    console.log(`      ✅ Field ${fieldName} exists with value`);
+                    console.log(`      ✅ Found field "${foundField}" with value: ${fieldValue}`);
                 }
             }
         }
