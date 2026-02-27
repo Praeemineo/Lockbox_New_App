@@ -7426,10 +7426,14 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         console.log('=== VALIDATION & API MATCHING (RULE-001 & RULE-002) ===');
         
         try {
+            // Normalize file type for rule matching (XLSX/XLS → EXCEL)
+            const normalizedFileType = patternEngine.normalizeFileType(fileType);
+            console.log(`   File Type Normalization: ${fileType} → ${normalizedFileType}`);
+            
             // Execute RULE-001 and RULE-002 using dynamic rule engine
             const validationResult = await ruleEngine.processLockboxRules(
                 extractedData,
-                fileType
+                normalizedFileType  // Use normalized file type
             );
             
             // Update extracted data with enriched values
