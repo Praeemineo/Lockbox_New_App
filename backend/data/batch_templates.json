@@ -3896,5 +3896,248 @@
     "status": "ACTIVE",
     "createdAt": "2026-02-27T11:09:53.562Z",
     "updatedAt": "2026-02-27T11:09:53.562Z"
+  },
+  {
+    "id": "64b7a42d-364d-4f8b-9422-17ccdd0116ac",
+    "templateId": "TPL-0033",
+    "templateName": "Template for upload_9.xlsx",
+    "originalFilename": "upload_9.xlsx",
+    "fileType": "XLSX",
+    "fileSize": 0,
+    "uploadDate": "2026-02-27T11:10:30.647Z",
+    "detectedHeaders": [
+      "Customer",
+      "Check Number",
+      "Check Amount",
+      "Invoice Number",
+      "Invoice Amount",
+      "Deduction Amount",
+      "Reason Code",
+      "Deposit Date"
+    ],
+    "fieldMappings": {
+      "Customer": {
+        "index": 0,
+        "originalHeader": "Customer",
+        "normalizedHeader": "Customer",
+        "sapField": "Customer",
+        "dataType": "String",
+        "required": true
+      },
+      "Check Number": {
+        "index": 1,
+        "originalHeader": "Check Number",
+        "normalizedHeader": "CheckNumber",
+        "sapField": "Cheque",
+        "dataType": "String",
+        "required": true
+      },
+      "Check Amount": {
+        "index": 2,
+        "originalHeader": "Check Amount",
+        "normalizedHeader": "CheckAmount",
+        "sapField": "AmountInTransactionCurrency",
+        "dataType": "String",
+        "required": true
+      },
+      "Invoice Number": {
+        "index": 3,
+        "originalHeader": "Invoice Number",
+        "normalizedHeader": "InvoiceNumber",
+        "sapField": "PaymentReference",
+        "dataType": "String",
+        "required": false
+      },
+      "Invoice Amount": {
+        "index": 4,
+        "originalHeader": "Invoice Amount",
+        "normalizedHeader": "InvoiceAmount",
+        "sapField": "NetPaymentAmountInPaytCurrency",
+        "dataType": "String",
+        "required": false
+      },
+      "Deduction Amount": {
+        "index": 5,
+        "originalHeader": "Deduction Amount",
+        "normalizedHeader": "DeductionAmount",
+        "sapField": "DeductionAmountInPaytCurrency",
+        "dataType": "String",
+        "required": false
+      },
+      "Reason Code": {
+        "index": 6,
+        "originalHeader": "Reason Code",
+        "normalizedHeader": "ReasonCode",
+        "sapField": "PaymentDifferenceReason",
+        "dataType": "String",
+        "required": false
+      },
+      "Deposit Date": {
+        "index": 7,
+        "originalHeader": "Deposit Date",
+        "normalizedHeader": "DepositDate",
+        "sapField": "DepositDateTime",
+        "dataType": "String",
+        "required": false
+      }
+    },
+    "sampleData": [
+      [
+        17100009,
+        3456694,
+        1365,
+        90003904,
+        1365,
+        0,
+        null,
+        "02/05/2026"
+      ],
+      [],
+      [],
+      [],
+      []
+    ],
+    "rowCount": 34,
+    "columnCount": 8,
+    "headerRow": 1,
+    "dataStartRow": 2,
+    "status": "ACTIVE",
+    "createdAt": "2026-02-27T11:10:30.647Z",
+    "updatedAt": "2026-02-27T11:10:30.647Z"
+  },
+  {
+    "id": "f01f108e-3fc1-4475-ac7f-52974197b5ed",
+    "templateId": "TPL-0034",
+    "templateName": "Template for upload_7.xlsx",
+    "originalFilename": "upload_7.xlsx",
+    "fileType": "XLSX",
+    "fileSize": 0,
+    "uploadDate": "2026-02-27T11:10:31.005Z",
+    "detectedHeaders": [
+      "Customer",
+      "Check Number",
+      "Check Amount",
+      "Invoice Number",
+      "Invoice Amount",
+      "Deduction Amount",
+      "Reason Code",
+      "Deposit Date"
+    ],
+    "fieldMappings": {
+      "Customer": {
+        "index": 0,
+        "originalHeader": "Customer",
+        "normalizedHeader": "Customer",
+        "sapField": "Customer",
+        "dataType": "String",
+        "required": true
+      },
+      "Check Number": {
+        "index": 1,
+        "originalHeader": "Check Number",
+        "normalizedHeader": "CheckNumber",
+        "sapField": "Cheque",
+        "dataType": "String",
+        "required": true
+      },
+      "Check Amount": {
+        "index": 2,
+        "originalHeader": "Check Amount",
+        "normalizedHeader": "CheckAmount",
+        "sapField": "AmountInTransactionCurrency",
+        "dataType": "String",
+        "required": true
+      },
+      "Invoice Number": {
+        "index": 3,
+        "originalHeader": "Invoice Number",
+        "normalizedHeader": "InvoiceNumber",
+        "sapField": "PaymentReference",
+        "dataType": "String",
+        "required": false
+      },
+      "Invoice Amount": {
+        "index": 4,
+        "originalHeader": "Invoice Amount",
+        "normalizedHeader": "InvoiceAmount",
+        "sapField": "NetPaymentAmountInPaytCurrency",
+        "dataType": "String",
+        "required": false
+      },
+      "Deduction Amount": {
+        "index": 5,
+        "originalHeader": "Deduction Amount",
+        "normalizedHeader": "DeductionAmount",
+        "sapField": "DeductionAmountInPaytCurrency",
+        "dataType": "String",
+        "required": false
+      },
+      "Reason Code": {
+        "index": 6,
+        "originalHeader": "Reason Code",
+        "normalizedHeader": "ReasonCode",
+        "sapField": "PaymentDifferenceReason",
+        "dataType": "String",
+        "required": false
+      },
+      "Deposit Date": {
+        "index": 7,
+        "originalHeader": "Deposit Date",
+        "normalizedHeader": "DepositDate",
+        "sapField": "DepositDateTime",
+        "dataType": "String",
+        "required": false
+      }
+    },
+    "sampleData": [
+      [
+        17100003,
+        3456692,
+        3500,
+        1800000052,
+        1450,
+        0,
+        null,
+        "02/03/2026"
+      ],
+      [
+        17100003,
+        null,
+        null,
+        1800000053,
+        1500,
+        0,
+        null,
+        "02/03/2026"
+      ],
+      [
+        17100001,
+        3456693,
+        900,
+        1800000051,
+        800,
+        0,
+        null,
+        "02/03/2026"
+      ],
+      [
+        17100001,
+        null,
+        null,
+        1800000050,
+        100,
+        0,
+        null,
+        "02/03/2026"
+      ],
+      []
+    ],
+    "rowCount": 37,
+    "columnCount": 8,
+    "headerRow": 1,
+    "dataStartRow": 2,
+    "status": "ACTIVE",
+    "createdAt": "2026-02-27T11:10:31.005Z",
+    "updatedAt": "2026-02-27T11:10:31.005Z"
   }
 ]
