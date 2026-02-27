@@ -6182,13 +6182,14 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
     // Group by Check Number (one item per check)
     const checkGroups = {};
     for (const row of extractedData) {
-        const checkKey = row.CheckNumber || row.Cheque || `CHK-${Date.now()}`;
+        // Handle field names with spaces (e.g., "Check Number" vs "CheckNumber")
+        const checkKey = row['Check Number'] || row.CheckNumber || row.Cheque || `CHK-${Date.now()}`;
         if (!checkGroups[checkKey]) {
             checkGroups[checkKey] = {
                 checkNumber: checkKey,
                 customer: row.Customer || '',  // Customer from file (for GET LockboxClearing)
-                checkAmount: parseFloat(row.CheckAmount || row.AmountInTransactionCurrency) || 0,
-                depositDate: row.DepositDate || row.DepositDateTime || '',
+                checkAmount: parseFloat(row['Check Amount'] || row.CheckAmount || row.AmountInTransactionCurrency) || 0,
+                depositDate: row['Deposit Date'] || row.DepositDate || row.DepositDateTime || '',
                 // Bank information FROM FILE - not hardcoded
                 partnerBank: row.PartnerBank || '',
                 partnerBankAccount: row.PartnerBankAccount || '',
@@ -6199,10 +6200,10 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
         // Add invoice/payment reference under this check
         // Include XBLNR and BELNR for reference document rule processing
         checkGroups[checkKey].invoices.push({
-            invoiceNumber: row.InvoiceNumber || row.PaymentReference || '',
-            invoiceAmount: parseFloat(row.InvoiceAmount || row.NetPaymentAmountInPaytCurrency) || 0,
-            deductionAmount: parseFloat(row.DeductionAmount || row.DeductionAmountInPaytCurrency) || 0,
-            reasonCode: row.ReasonCode || row.PaymentDifferenceReason || '',
+            invoiceNumber: row['Invoice Number'] || row.InvoiceNumber || row.PaymentReference || '',
+            invoiceAmount: parseFloat(row['Invoice Amount'] || row.InvoiceAmount || row.NetPaymentAmountInPaytCurrency) || 0,
+            deductionAmount: parseFloat(row['Deduction Amount'] || row.DeductionAmount || row.DeductionAmountInPaytCurrency) || 0,
+            reasonCode: row['Reason Code'] || row.ReasonCode || row.PaymentDifferenceReason || '',
             customer: row.Customer || '', // Customer for each invoice line
             // Reference Document Rule fields
             xblnr: row.XBLNR || '',  // External reference / Invoice reference
