@@ -161,23 +161,24 @@ function evaluateRuleCondition(conditions, data) {
             
             // For EXIST conditions, check if field is in file
             if (conditionType === 'exist') {
-                // Build field-specific possible variations
-                const normalizedSearch = fieldName.replace(/\s+/g, '').toLowerCase();
-                
-                // Check if field exists in row with fuzzy matching
+                // Check if field exists in row with smart matching
                 let fieldValue = null;
                 let foundField = null;
                 
+                // Extract the key part of the field name (first word)
+                const fieldParts = fieldName.split(' ');
+                const mainField = fieldParts[0]; // e.g., "Customer" from "Customer Number"
+                
                 for (const rowKey of Object.keys(row)) {
                     const normalizedRowKey = rowKey.replace(/\s+/g, '').toLowerCase();
+                    const normalizedMainField = mainField.replace(/\s+/g, '').toLowerCase();
                     
-                    // Exact match or fuzzy match (e.g., "Customer" matches "Customer Number")
-                    if (normalizedRowKey === normalizedSearch || 
-                        normalizedSearch.includes(normalizedRowKey) ||
-                        normalizedRowKey.includes(normalizedSearch)) {
+                    // Match if the main field part is in the row key
+                    if (normalizedRowKey.startsWith(normalizedMainField) || 
+                        normalizedRowKey === normalizedMainField) {
                         fieldValue = row[rowKey];
                         foundField = rowKey;
-                        console.log(`      ✅ Found field "${foundField}" with value: ${fieldValue}`);
+                        console.log(`      ✅ Found field "${foundField}" (matches "${fieldName}") with value: ${fieldValue}`);
                         break;
                     }
                 }
