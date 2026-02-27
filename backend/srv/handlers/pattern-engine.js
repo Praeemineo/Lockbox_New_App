@@ -55,35 +55,225 @@ function detectPattern(data, fileType = 'EXCEL') {
     
     console.log(`   Checking ${activePatterns.length} active patterns...`);
     
-    // Try each pattern in priority order
-    for (const pattern of activePatterns) {
-        const matchResult = checkPatternMatch(data, pattern);
-        
-        if (matchResult.matched) {
-            console.log(`✅ Pattern Matched: ${pattern.patternId} - ${pattern.patternName}`);
-            console.log(`   Pattern Type: ${pattern.patternType}`);
-            console.log(`   Confidence: ${matchResult.confidence}%`);
-            
+    // Analyze file structure first
+    const analysis = analyzeFileStructure(data);
+    console.log('   File Analysis:', JSON.stringify(analysis, null, 2));
+    
+    // Pattern detection with priority order
+    let detectedPattern = null;
+    let detectedAnalysis = analysis;
+    
+    // PAT-006: Multi-Sheet (highest priority if multiple sheets detected)
+    if (analysis.hasMultipleSheets || analysis.sheetCount > 1) {
+        detectedPattern = activePatterns.find(p => p.patternId === 'PAT-006' || p.patternType === 'Multi_Sheet');
+        if (detectedPattern) {
+            console.log(`✅ Pattern Matched: PAT-006 - Multi_Sheet`);
             return {
                 matched: true,
-                pattern: pattern,
-                confidence: matchResult.confidence,
-                analysis: matchResult.analysis,
-                patternId: pattern.patternId,
-                patternType: pattern.patternType
+                pattern: detectedPattern,
+                confidence: 95,
+                analysis: detectedAnalysis,
+                patternId: 'PAT-006',
+                patternType: 'Multi_Sheet',
+                message: 'Multiple sheets detected. Data will be consolidated.'
             };
         }
     }
     
-    // No pattern matched - use default
-    console.log('⚠️  No specific pattern matched, using default pattern');
+    // PAT-003: Document Split Comma (check for comma-separated values)
+    if (analysis.hasCommaSeparated) {
+        detectedPattern = activePatterns.find(p => p.patternId === 'PAT-003' || p.patternType === 'Document_Split_Comma');
+        if (detectedPattern) {
+            console.log(`✅ Pattern Matched: PAT-003 - Document_Split_Comma`);
+            console.log(`   Comma-separated fields: ${analysis.commaSeparatedFields.join(', ')}`);
+            return {
+                matched: true,
+                pattern: detectedPattern,
+                confidence: 90,
+                analysis: detectedAnalysis,
+                patternId: 'PAT-003',
+                patternType: 'Document_Split_Comma',
+                message: `Comma-separated values detected in: ${analysis.commaSeparatedFields.join(', ')}`
+            };
+        }
+    }
+    
+    // PAT-004: Document Range (check for hyphen ranges)
+    if (analysis.hasRanges) {
+        detectedPattern = activePatterns.find(p => p.patternId === 'PAT-004' || p.patternType === 'Document_Range');
+        if (detectedPattern) {
+            console.log(`✅ Pattern Matched: PAT-004 - Document_Range`);
+            console.log(`   Range fields: ${analysis.rangeFields.join(', ')}`);
+            return {
+                matched: true,
+                pattern: detectedPattern,
+                confidence: 90,
+                analysis: detectedAnalysis,
+                patternId: 'PAT-004',
+                patternType: 'Document_Range',
+                message: `Hyphen ranges detected in: ${analysis.rangeFields.join(', ')}`
+            };
+        }
+    }
+    
+    // PAT-001: Single Check Single Invoice
+    if (analysis.totalRows === 1 && analysis.uniqueCheckNumbers === 1 && analysis.uniqueInvoices === 1) {
+        detectedPattern = activePatterns.find(p => p.patternId === 'PAT-001' || p.patternType === 'Single_Check_Single_Invoice');
+        if (detectedPattern) {
+            console.log(`✅ Pattern Matched: PAT-001 - Single_Check_Single_Invoice`);
+            return {
+                matched: true,
+                pattern: detectedPattern,
+                confidence: 100,
+                analysis: detectedAnalysis,
+                patternId: 'PAT-001',
+                patternType: 'Single_Check_Single_Invoice',
+                message: 'Single check with single invoice detected'
+            };
+        }
+    }
+    
+    // PAT-002: Multiple Check Multiple Invoice
+    if (analysis.totalRows > 1 && (analysis.uniqueCheckNumbers > 1 || analysis.uniqueInvoices > 1)) {
+        detectedPattern = activePatterns.find(p => p.patternId === 'PAT-002' || p.patternType === 'Multiple_Check_Multiple_Invoice');
+        if (detectedPattern) {
+            console.log(`✅ Pattern Matched: PAT-002 - Multiple_Check_Multiple_Invoice`);
+            console.log(`   Rows: ${analysis.totalRows}, Checks: ${analysis.uniqueCheckNumbers}, Invoices: ${analysis.uniqueInvoices}`);
+            return {
+                matched: true,
+                pattern: detectedPattern,
+                confidence: 95,
+                analysis: detectedAnalysis,
+                patternId: 'PAT-002',
+                patternType: 'Multiple_Check_Multiple_Invoice',
+                message: `Multiple checks (${analysis.uniqueCheckNumbers}) and invoices (${analysis.uniqueInvoices}) detected`
+            };
+        }
+    }
+    
+    // PAT-005: Date Pattern (as fallback or additional detection)
+    if (analysis.hasDateFields) {
+        detectedPattern = activePatterns.find(p => p.patternId === 'PAT-005' || p.patternType === 'DATE_PATTERN');
+        if (detectedPattern && !detectedPattern) {
+            console.log(`✅ Pattern Matched: PAT-005 - DATE_PATTERN`);
+            return {
+                matched: true,
+                pattern: detectedPattern,
+                confidence: 80,
+                analysis: detectedAnalysis,
+                patternId: 'PAT-005',
+                patternType: 'DATE_PATTERN',
+                message: 'Date format conversion required'
+            };
+        }
+    }
+    
+    // Default: Use PAT-002 as fallback
+    console.log('⚠️  No specific pattern matched, using default PAT-002');
+    detectedPattern = activePatterns.find(p => p.patternId === 'PAT-002') || activePatterns[0];
+    
     return {
-        matched: false,
-        pattern: activePatterns[0] || null,
-        confidence: 0,
-        analysis: {},
-        error: 'No matching pattern found'
+        matched: true,
+        pattern: detectedPattern,
+        confidence: 50,
+        analysis: detectedAnalysis,
+        patternId: detectedPattern.patternId,
+        patternType: detectedPattern.patternType,
+        message: 'Using default pattern'
     };
+}
+
+/**
+ * Analyze file structure to determine characteristics
+ * @param {array} data - Raw data
+ * @returns {object} - Analysis results
+ */
+function analyzeFileStructure(data) {
+    const analysis = {
+        totalRows: data.length,
+        uniqueCheckNumbers: 0,
+        uniqueInvoices: 0,
+        hasEmptyCheckRows: false,
+        hasCommaSeparated: false,
+        commaSeparatedFields: [],
+        hasRanges: false,
+        rangeFields: [],
+        hasMultipleSheets: false,
+        sheetCount: 1,
+        hasDateFields: false,
+        dateFields: [],
+        detectedColumns: []
+    };
+    
+    if (data.length === 0) return analysis;
+    
+    const firstRow = data[0];
+    analysis.detectedColumns = Object.keys(firstRow);
+    
+    // Track unique values
+    const checkNumbers = new Set();
+    const invoices = new Set();
+    
+    // Analyze each row
+    data.forEach((row, idx) => {
+        // Check for check numbers
+        const checkNum = row.CheckNumber || row['Check Number'] || row.Check;
+        if (checkNum) {
+            checkNumbers.add(checkNum);
+        } else {
+            analysis.hasEmptyCheckRows = true;
+        }
+        
+        // Check for invoices
+        const invoice = row.InvoiceNumber || row['Invoice Number'] || row.Invoice;
+        if (invoice) invoices.add(invoice);
+        
+        // Check all fields for patterns
+        Object.entries(row).forEach(([key, value]) => {
+            if (!value) return;
+            const strValue = String(value);
+            
+            // Check for comma-separated values (e.g., "100,101,102" or "100, 101, 102")
+            if (/\d+\s*,\s*\d+/.test(strValue)) {
+                analysis.hasCommaSeparated = true;
+                if (!analysis.commaSeparatedFields.includes(key)) {
+                    analysis.commaSeparatedFields.push(key);
+                }
+            }
+            
+            // Check for hyphen ranges (e.g., "100-105")
+            if (/\d+-\d+/.test(strValue)) {
+                analysis.hasRanges = true;
+                if (!analysis.rangeFields.includes(key)) {
+                    analysis.rangeFields.push(key);
+                }
+            }
+            
+            // Check for date patterns
+            if (key.toLowerCase().includes('date') || key.toLowerCase().includes('time')) {
+                analysis.hasDateFields = true;
+                if (!analysis.dateFields.includes(key)) {
+                    analysis.dateFields.push(key);
+                }
+            }
+        });
+        
+        // Check for sheet indicator
+        if (row._sheet || row.SheetName || row['Sheet Name']) {
+            analysis.hasMultipleSheets = true;
+        }
+    });
+    
+    analysis.uniqueCheckNumbers = checkNumbers.size;
+    analysis.uniqueInvoices = invoices.size;
+    
+    // Estimate sheet count if multiple sheets
+    if (analysis.hasMultipleSheets) {
+        const sheets = new Set(data.map(r => r._sheet || r.SheetName || r['Sheet Name']));
+        analysis.sheetCount = sheets.size || 1;
+    }
+    
+    return analysis;
 }
 
 /**
