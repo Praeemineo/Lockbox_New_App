@@ -228,11 +228,32 @@ async function executeDynamicRule(rule, data) {
             // Step 1: Check if required source fields exist
             const firstMapping = mappings[0];
             const sourceField = firstMapping.sourceInput || firstMapping.sourceField;
-            const sourceValue = row[sourceField] || row[sourceField?.replace(/\s+/g, '')];
             
-            if (!sourceValue || sourceValue === '' || sourceValue === null) {
+            // Try multiple field name variations
+            const possibleSourceFields = [
+                sourceField,
+                sourceField?.replace(/\s+/g, ''),
+                'InvoiceNumber', 'Invoice Number', 'Invoice',
+                'CustomerNumber', 'Customer Number', 'Customer',
+                'BankIdentification', 'Bank Identification'
+            ];
+            
+            let sourceValue = null;
+            let actualSourceField = null;
+            for (const field of possibleSourceFields) {
+                if (row[field] !== undefined && row[field] !== null && row[field] !== '') {
+                    sourceValue = row[field];
+                    actualSourceField = field;
+                    break;
+                }
+            }
+            
+            if (!sourceValue) {
+                console.log(`   ⏭️  Row ${i + 1}: Source field "${sourceField}" not found - skipping`);
                 continue; // Skip row if source field is missing
             }
+            
+            console.log(`   📝 Row ${i + 1}: Found ${actualSourceField}=${sourceValue}`);
             
             // Step 2: Build dynamic API URL
             const apiURL = buildDynamicAPIURL(firstMapping, row);
