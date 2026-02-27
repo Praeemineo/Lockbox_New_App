@@ -146,6 +146,7 @@ function evaluateRuleCondition(conditions, data) {
     // Check if at least one data row meets all conditions
     for (const row of data) {
         let allConditionsMet = true;
+        const matchedFields = new Set(); // Track which row fields have been used
         
         for (const condition of conditions) {
             const fieldName = condition.documentFormat || condition.fieldName || '';
@@ -165,19 +166,21 @@ function evaluateRuleCondition(conditions, data) {
                 let fieldValue = null;
                 let foundField = null;
                 
-                // Extract the key part of the field name (first word)
+                // Extract the main keyword from field name (first word before space)
                 const fieldParts = fieldName.split(' ');
-                const mainField = fieldParts[0]; // e.g., "Customer" from "Customer Number"
+                const mainKeyword = fieldParts[0].toLowerCase(); // e.g., "Customer", "Invoice"
                 
+                // Find matching field that hasn't been used yet
                 for (const rowKey of Object.keys(row)) {
-                    const normalizedRowKey = rowKey.replace(/\s+/g, '').toLowerCase();
-                    const normalizedMainField = mainField.replace(/\s+/g, '').toLowerCase();
+                    if (matchedFields.has(rowKey)) continue; // Skip already matched fields
                     
-                    // Match if the main field part is in the row key
-                    if (normalizedRowKey.startsWith(normalizedMainField) || 
-                        normalizedRowKey === normalizedMainField) {
+                    const normalizedRowKey = rowKey.replace(/\s+/g, '').toLowerCase();
+                    
+                    // Match if the row key starts with the main keyword
+                    if (normalizedRowKey.startsWith(mainKeyword)) {
                         fieldValue = row[rowKey];
                         foundField = rowKey;
+                        matchedFields.add(rowKey); // Mark this field as used
                         console.log(`      ✅ Found field "${foundField}" (matches "${fieldName}") with value: ${fieldValue}`);
                         break;
                     }
