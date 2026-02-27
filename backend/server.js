@@ -7326,13 +7326,23 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         // ═══════════════════════════════════════════════════════════════════
         console.log('=== CREATING BATCH TEMPLATE ===');
         const headers = jsonData[0];
-        const dataRows = jsonData.slice(1);
+        const allRows = jsonData.slice(1);
+        
+        // Filter out empty rows for pattern detection
+        // A row is considered empty if all its values are null, undefined, or empty string
+        const dataRows = allRows.filter(row => {
+            return row.some(cell => cell !== null && cell !== undefined && String(cell).trim() !== '');
+        });
+        
+        console.log(`   Total rows from file: ${allRows.length}`);
+        console.log(`   Non-empty data rows: ${dataRows.length}`);
+        
         const batchTemplate = createBatchTemplate(
             req.file.originalname,
             fileType,
             headers,
-            dataRows,
-            dataRows.length
+            allRows,  // Use all rows for template (including empty for structure reference)
+            allRows.length
         );
         
         // Link template to run
