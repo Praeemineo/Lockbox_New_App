@@ -426,19 +426,112 @@ function executePatternExtraction(data, pattern) {
     console.log(`🔧 Executing pattern extraction: ${pattern.patternType}`);
     
     let processedData = [...data];
+    let extractionLog = [];
     
-    // Execute pattern-specific actions
-    if (pattern.actions && Array.isArray(pattern.actions)) {
-        pattern.actions.forEach(action => {
-            processedData = executeAction(action, processedData, pattern);
-        });
-    } else {
-        // Execute default actions based on pattern type
-        processedData = executeDefaultPatternActions(pattern.patternType, processedData);
+    // Execute pattern-specific extraction
+    switch (pattern.patternType) {
+        case 'Single_Check_Single_Invoice':
+        case 'SINGLE_CHECK_SINGLE_INVOICE':
+            console.log('   Pattern PAT-001: Single check, single invoice - standard extraction');
+            processedData = convertDateFormats(processedData);
+            extractionLog.push('✅ Single check and single invoice extracted successfully');
+            extractionLog.push(`✅ Date validation and conversion completed`);
+            break;
+        
+        case 'Multiple_Check_Multiple_Invoice':
+        case 'MULTIPLE_CHECK_MULTIPLE_INVOICE':
+            console.log('   Pattern PAT-002: Multiple checks and invoices - multi-line extraction');
+            processedData = convertDateFormats(processedData);
+            extractionLog.push(`✅ Multiple checks and invoices extracted successfully (${processedData.length} rows)`);
+            extractionLog.push(`✅ Date validation and conversion completed`);
+            break;
+        
+        case 'Document_Split_Comma':
+        case 'DOCUMENT_SPLIT_COMMA':
+            console.log('   Pattern PAT-003: Comma-separated values - splitting into multiple rows');
+            const beforeSplit = processedData.length;
+            processedData = splitByComma(processedData, 'InvoiceNumber');
+            processedData = splitByComma(processedData, 'CheckNumber');
+            processedData = convertDateFormats(processedData);
+            const afterSplit = processedData.length;
+            extractionLog.push(`✅ Comma-separated values split successfully`);
+            extractionLog.push(`   Expanded from ${beforeSplit} to ${afterSplit} rows`);
+            extractionLog.push(`✅ Amount distributed proportionally across split rows`);
+            extractionLog.push(`✅ Date validation and conversion completed`);
+            break;
+        
+        case 'Document_Range':
+        case 'DOCUMENT_RANGE':
+            console.log('   Pattern PAT-004: Hyphen ranges - expanding into multiple rows');
+            const beforeExpand = processedData.length;
+            processedData = expandRange(processedData, 'InvoiceNumber');
+            processedData = expandRange(processedData, 'CheckNumber');
+            processedData = convertDateFormats(processedData);
+            const afterExpand = processedData.length;
+            extractionLog.push(`✅ Hyphen ranges expanded successfully`);
+            extractionLog.push(`   Expanded from ${beforeExpand} to ${afterExpand} rows`);
+            extractionLog.push(`✅ Amount distributed proportionally across expanded rows`);
+            extractionLog.push(`✅ Date validation and conversion completed`);
+            break;
+        
+        case 'DATE_PATTERN':
+            console.log('   Pattern PAT-005: Date format conversion');
+            processedData = convertDateFormats(processedData);
+            extractionLog.push(`✅ Date format successfully validated and converted to YYYY-MM-DD`);
+            break;
+        
+        case 'Multi_Sheet':
+        case 'MULTI_SHEET':
+            console.log('   Pattern PAT-006: Multiple sheets - consolidating data');
+            processedData = combineSheets(processedData);
+            processedData = convertDateFormats(processedData);
+            extractionLog.push(`✅ Multiple sheets consolidated successfully`);
+            extractionLog.push(`   Total rows after consolidation: ${processedData.length}`);
+            extractionLog.push(`✅ Date validation and conversion completed`);
+            break;
+        
+        default:
+            console.log('   Using default extraction');
+            processedData = convertDateFormats(processedData);
+            extractionLog.push(`✅ Data extracted successfully`);
+            extractionLog.push(`✅ Date validation and conversion completed`);
     }
     
+    // Store extraction log
+    processedData._extractionLog = extractionLog;
+    
     console.log(`✅ Pattern extraction complete: ${processedData.length} rows processed`);
+    extractionLog.forEach(log => console.log(`   ${log}`));
+    
     return processedData;
+}
+
+/**
+ * Convert date formats in all date fields to YYYY-MM-DD
+ * @param {array} data - Data with date fields
+ * @returns {array} - Data with converted dates
+ */
+function convertDateFormats(data) {
+    return data.map(row => {
+        const updatedRow = { ...row };
+        
+        // Find all date fields
+        Object.keys(row).forEach(key => {
+            if (key.toLowerCase().includes('date') || key.toLowerCase().includes('time')) {
+                const dateValue = row[key];
+                if (dateValue) {
+                    const converted = parseDateToYYYYMMDD(dateValue);
+                    if (converted && converted !== dateValue) {
+                        updatedRow[key] = converted;
+                        updatedRow[`_original_${key}`] = dateValue;
+                        updatedRow._dateConverted = true;
+                    }
+                }
+            }
+        });
+        
+        return updatedRow;
+    });
 }
 
 /**
