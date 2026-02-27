@@ -7364,7 +7364,7 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         
         run.stages.templateMatch = { 
             status: 'success', 
-            message: `Matched pattern: ${patternResult.pattern.patternName} (${patternResult.pattern.patternType})`, 
+            message: `✅ Upload Successful | Pattern ID: ${patternResult.pattern.patternId} | Pattern Type: ${patternResult.pattern.patternType} | ${patternResult.message || 'Successfully determined'}`, 
             patternId: patternResult.pattern.patternId, 
             patternName: patternResult.pattern.patternName,
             patternType: patternResult.pattern.patternType,
@@ -7372,7 +7372,9 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
             analysis: patternResult.analysis,
             completedAt: new Date().toISOString()
         };
-        console.log(`✅ Pattern detection success: ${patternResult.pattern.patternId}  - Confidence: ${patternResult.confidence}%`);
+        console.log(`✅ Pattern detection success: ${patternResult.pattern.patternId} - ${patternResult.pattern.patternType}`);
+        console.log(`   Confidence: ${patternResult.confidence}%`);
+        console.log(`   ${patternResult.message}`);
         
         // ═══════════════════════════════════════════════════════════════════
         // STAGE 3: EXTRACTION - Extract data according to detected pattern (DYNAMIC FROM DATABASE)
@@ -7383,12 +7385,17 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         // Use pattern engine for dynamic extraction
         const extractedData = patternEngine.executePatternExtraction(dataRows, patternResult.pattern);
         
+        // Get extraction log
+        const extractionLog = extractedData._extractionLog || [];
+        delete extractedData._extractionLog;
+        
         run.extractedData = extractedData;
         run.stages.extraction = { 
             status: 'success', 
-            message: `Extracted ${extractedData.length} records using pattern: ${patternResult.pattern.patternType}`, 
+            message: `✅ Extraction Complete | ${extractionLog.join(' | ')}`, 
             rowCount: extractedData.length,
             pattern: patternResult.pattern.patternType,
+            extractionLog: extractionLog,
             completedAt: new Date().toISOString()
         };
         console.log(`✅ Extraction complete. Rows: ${extractedData.length}`);
