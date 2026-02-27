@@ -131,7 +131,9 @@ async function processLockboxRules(extractedData, fileType = 'EXCEL') {
 
 /**
  * Evaluate Rule Condition Dynamically
- * Supports: InvoiceNumber EXIST, CustomerNumber AND BankIdentification EXIST
+ * Supports: 
+ * - InvoiceNumber EXIST (field must exist in file)
+ * - BankIdentification = "0001" (hardcoded value, doesn't need to be in file)
  * @param {array} conditions - Rule conditions
  * @param {array} data - Extracted data
  * @returns {boolean} - True if condition is met
@@ -149,47 +151,45 @@ function evaluateRuleCondition(conditions, data) {
             const fieldName = condition.documentFormat || condition.fieldName || '';
             const conditionType = (condition.condition || '').toLowerCase();
             
-            console.log(`      Checking condition: ${fieldName} ${conditionType}`);
+            console.log(`      Checking condition: ${fieldName} ${condition.condition}`);
             
-            // Try multiple field name variations (case-insensitive, with/without spaces)
-            const normalizedField = fieldName.replace(/\s+/g, '');
-            const possibleFields = [
-                fieldName,
-                normalizedField,
-                fieldName.toLowerCase(),
-                normalizedField.toLowerCase(),
-                // Common variations
-                'InvoiceNumber', 'Invoice Number', 'Invoice', 'invoicenumber',
-                'CustomerNumber', 'Customer Number', 'Customer', 'customernumber',
-                'BankIdentification', 'Bank Identification', 'bankidentification'
-            ];
-            
-            // Check if field exists in row
-            let fieldValue = null;
-            for (const possibleField of possibleFields) {
-                if (row[possibleField] !== undefined && row[possibleField] !== null) {
-                    fieldValue = row[possibleField];
-                    console.log(`      ✅ Found field "${possibleField}" with value: ${fieldValue}`);
-                    break;
-                }
+            // If condition is a specific value (e.g., "0001"), it's hardcoded - always pass
+            if (conditionType !== 'exist' && condition.condition) {
+                console.log(`      ✅ Hardcoded value "${condition.condition}" - condition passes`);
+                continue; // Hardcoded values don't need to be in the file
             }
             
-            // EXIST condition
+            // For EXIST conditions, check if field is in file
             if (conditionType === 'exist') {
+                // Try multiple field name variations (case-insensitive, with/without spaces)
+                const normalizedField = fieldName.replace(/\s+/g, '');
+                const possibleFields = [
+                    fieldName,
+                    normalizedField,
+                    fieldName.toLowerCase(),
+                    normalizedField.toLowerCase(),
+                    // Common variations
+                    'InvoiceNumber', 'Invoice Number', 'Invoice', 'invoicenumber',
+                    'CustomerNumber', 'Customer Number', 'Customer', 'customernumber',
+                    'BankIdentification', 'Bank Identification', 'bankidentification'
+                ];
+                
+                // Check if field exists in row
+                let fieldValue = null;
+                for (const possibleField of possibleFields) {
+                    if (row[possibleField] !== undefined && row[possibleField] !== null) {
+                        fieldValue = row[possibleField];
+                        console.log(`      ✅ Found field "${possibleField}" with value: ${fieldValue}`);
+                        break;
+                    }
+                }
+                
                 if (!fieldValue || fieldValue === '' || fieldValue === null) {
                     console.log(`      ❌ Field ${fieldName} not found or empty`);
                     allConditionsMet = false;
                     break;
                 } else {
                     console.log(`      ✅ Field ${fieldName} exists with value`);
-                }
-            }
-            // Specific value check
-            else if (condition.condition && condition.condition !== 'Exist') {
-                if (fieldValue !== condition.condition) {
-                    console.log(`      ❌ Field ${fieldName} value mismatch: ${fieldValue} !== ${condition.condition}`);
-                    allConditionsMet = false;
-                    break;
                 }
             }
         }
