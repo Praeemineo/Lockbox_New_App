@@ -7402,7 +7402,7 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         console.log('=== EXTRACTION (PATTERN-BASED FROM DATABASE) ===');
         
         // Use pattern engine for dynamic extraction
-        const extractedData = patternEngine.executePatternExtraction(dataObjects, patternResult.pattern);  // Use dataObjects
+        let extractedData = patternEngine.executePatternExtraction(dataObjects, patternResult.pattern);  // Use dataObjects
         
         // Get extraction log
         const extractionLog = extractedData._extractionLog || [];
