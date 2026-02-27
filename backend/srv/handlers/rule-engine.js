@@ -19,6 +19,9 @@
  * ⚠️ All rule logic is DATABASE-DRIVEN. No hardcoded field names.
  */
 
+// 🔍 MODULE CACHE TEST - Timestamp: 2025-01-15T14:30:00.000Z
+console.log('🔍 [CACHE-TEST] rule-engine.js loaded at:', new Date().toISOString());
+
 const sapClient = require('../integrations/sap-client');
 
 // Global variable to store loaded processing rules
