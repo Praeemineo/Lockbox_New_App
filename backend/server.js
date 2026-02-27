@@ -7423,24 +7423,30 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         // STAGE 4: VALIDATION & ENRICHMENT - Execute Processing Rules Dynamically from DB
         // ═══════════════════════════════════════════════════════════════════
         run.currentStage = 'validation';
-        console.log('=== VALIDATION & RULE EXECUTION (FROM LB_PROCESSING_RULES TABLE) ===');
+        console.log('=== VALIDATION & API MATCHING (RULE-001 & RULE-002) ===');
         
         try {
-            // Execute all active rules using the rule engine
-            const validationResult = await ruleEngine.executeAllRules(
+            // Execute RULE-001 and RULE-002 using dynamic rule engine
+            const validationResult = await ruleEngine.processLockboxRules(
                 extractedData,
-                patternResult,
                 fileType
             );
             
+            // Update extracted data with enriched values
+            extractedData = validationResult.enrichedData;
+            
             run.stages.validation.status = 'completed';
-            run.stages.validation.message = `${validationResult.rulesExecuted}/${validationResult.totalRules} rules executed, ${validationResult.recordsEnriched} records enriched`;
-            run.stages.validation.errors = [];
-            run.stages.validation.warnings = validationResult.warnings > 0 ? [`${validationResult.warnings} warnings generated`] : [];
+            run.stages.validation.message = `${validationResult.rulesExecuted.length}/2 rules executed, ${validationResult.recordsEnriched} records enriched`;
+            run.stages.validation.errors = validationResult.errors;
+            run.stages.validation.warnings = validationResult.warnings;
             run.stages.validation.completedAt = new Date().toISOString();
             
             // Store rule execution logs
-            run.ruleExecutionLogs = validationResult.ruleExecutionLogs;
+            run.ruleExecutionLogs = validationResult.rulesExecuted.map(ruleId => ({
+                ruleId,
+                status: 'SUCCESS',
+                recordsEnriched: validationResult.recordsEnriched
+            }));
             
             // Build Field Mapping Preview with API-derived fields
             const fieldMappingPreview = buildFieldMappingPreview(extractedData);
