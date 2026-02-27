@@ -1,15 +1,26 @@
 /**
- * Rule Execution Engine
- * Dynamically executes processing rules based on conditions and API mappings
- * Reads rules from lb_processing_rules table and executes them
+ * LOCKBOX DYNAMIC VALIDATION ENGINE
  * 
- * ⚠️ NEW CODE LOCATION: All rule execution logic goes HERE, not in server.js
+ * Fully database-driven rule execution for RULE-001 and RULE-002
+ * 
+ * Step-1: Read uploaded file payload as JSON input
+ * Step-2: Identify applicable rules from lb_processing_rules where condition_type = 'EXIST' and destination = 'S4HANA_SYSTEM_DESTINATION'
+ * Step-3: For each rule - validate condition dynamically (if source fields contain value → proceed)
+ * Step-4: Construct S4 OData API dynamically: api_reference + '?' + api_input_fields=value pairs
+ * Step-5: Call S4 using BTP Destination: S4HANA_SYSTEM_DESTINATION
+ * Step-6: Extract api_output_field dynamically from response
+ * Step-7: Map extracted values to lockbox_field dynamically
+ * Step-8: Return enriched Lockbox payload
+ * 
+ * Rules Supported:
+ * - RULE-001: InvoiceNumber → BELNR → PaymentReference
+ * - RULE-002: CustomerNumber + BankIdentification → BankCountryKey, BankNumber, BankAccount → Partner fields
+ * 
+ * ⚠️ All rule logic is DATABASE-DRIVEN. No hardcoded field names.
  */
 
 const sapClient = require('../integrations/sap-client');
-const dataModels = require('../models/data-models');
 const logger = require('../utils/logger');
-const axios = require('axios');
 
 // Global variable to store loaded processing rules
 let cachedProcessingRules = [];
@@ -20,7 +31,11 @@ let cachedProcessingRules = [];
  */
 function loadProcessingRules(rules) {
     cachedProcessingRules = rules || [];
-    console.log(`Rule Engine: Loaded ${cachedProcessingRules.length} processing rules`);
+    console.log(`✅ Rule Engine: Loaded ${cachedProcessingRules.length} processing rules`);
+    
+    // Log active RULE-001 and RULE-002
+    const activeRules = cachedProcessingRules.filter(r => r.active && (r.ruleId === 'RULE-001' || r.ruleId === 'RULE-002'));
+    console.log(`   Active Validation Rules: ${activeRules.map(r => r.ruleId).join(', ')}`);
 }
 
 /**
