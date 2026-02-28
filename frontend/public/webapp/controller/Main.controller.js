@@ -7500,8 +7500,8 @@ sap.ui.define([
                 // HEADER LEVEL FIELDS (LockboxBatch entity - top level)
                 // ============================================================
                 { excelKey: null, sapField: "Lockbox", sapParent: "header", mappingType: "CONSTANT", transformation: "Lockbox identifier (max 7 chars)", section: "Header" },
-                { excelKey: "DepositDate", sapField: "DepositDateTime", sapParent: "header", mappingType: "DIRECT", transformation: "Date format: YYYY-MM-DDTHH:mm:ss", section: "Header" },
-                { excelKey: "CheckAmount", sapField: "AmountInTransactionCurrency", sapParent: "header", mappingType: "DIRECT", transformation: "Total batch amount (sum of checks)", section: "Header" },
+                { excelKey: "DepositDate", searchTerms: ["deposit", "date"], sapField: "DepositDateTime", sapParent: "header", mappingType: "DIRECT", transformation: "Date format: YYYY-MM-DDTHH:mm:ss", section: "Header" },
+                { excelKey: "CheckAmount", searchTerms: ["check", "amount"], sapField: "AmountInTransactionCurrency", sapParent: "header", mappingType: "DIRECT", transformation: "Total batch amount (sum of checks)", section: "Header" },
                 { excelKey: null, sapField: "LockboxBatchOrigin", sapParent: "header", mappingType: "CONSTANT", transformation: "Origin identifier (max 10 chars)", section: "Header" },
                 { excelKey: null, sapField: "LockboxBatchDestination", sapParent: "header", mappingType: "CONSTANT", transformation: "Destination identifier (max 10 chars)", section: "Header" },
                 
@@ -7510,26 +7510,26 @@ sap.ui.define([
                 // ============================================================
                 { excelKey: null, sapField: "LockboxBatch", sapParent: "item", mappingType: "CONSTANT", transformation: "Batch sequence number (max 3 chars)", section: "Item" },
                 { excelKey: null, sapField: "LockboxBatchItem", sapParent: "item", mappingType: "SYSTEM", transformation: "Item sequence number (max 5 chars)", section: "Item" },
-                { excelKey: "CheckAmount", sapField: "AmountInTransactionCurrency", sapParent: "item", mappingType: "DIRECT", transformation: "Check amount in transaction currency", section: "Item" },
+                { excelKey: "CheckAmount", searchTerms: ["check", "amount"], sapField: "AmountInTransactionCurrency", sapParent: "item", mappingType: "DIRECT", transformation: "Check amount in transaction currency", section: "Item" },
                 { excelKey: null, sapField: "Currency", sapParent: "item", mappingType: "DEFAULT", transformation: "Currency code (default: USD)", section: "Item" },
-                { excelKey: "CheckNumber", sapField: "Cheque", sapParent: "item", mappingType: "DIRECT", transformation: "Check/Cheque number (max 13 chars)", section: "Item" },
-                { excelKey: "BankCode", sapField: "PartnerBank", sapParent: "item", mappingType: "DEFAULT", transformation: "Partner bank code (max 15 chars)", section: "Item" },
-                { excelKey: "BankAccount", sapField: "PartnerBankAccount", sapParent: "item", mappingType: "DEFAULT", transformation: "Partner bank account (max 18 chars)", section: "Item" },
+                { excelKey: "CheckNumber", searchTerms: ["check", "number", "cheque"], sapField: "Cheque", sapParent: "item", mappingType: "DIRECT", transformation: "Check/Cheque number (max 13 chars)", section: "Item" },
+                { excelKey: "BankCode", searchTerms: ["bank", "code"], sapField: "PartnerBank", sapParent: "item", mappingType: "DEFAULT", transformation: "Partner bank code (max 15 chars)", section: "Item" },
+                { excelKey: "BankAccount", searchTerms: ["bank", "account"], sapField: "PartnerBankAccount", sapParent: "item", mappingType: "DEFAULT", transformation: "Partner bank account (max 18 chars)", section: "Item" },
                 { excelKey: null, sapField: "PartnerBankCountry", sapParent: "item", mappingType: "DEFAULT", transformation: "Partner bank country (default: US)", section: "Item" },
                 
                 // ============================================================
                 // CLEARING LEVEL FIELDS (LockboxClearing entity - to_LockboxClearing.results[])
                 // ============================================================
-                { excelKey: "InvoiceNumber", sapField: "PaymentReference", sapParent: "clearing", mappingType: "DIRECT", transformation: "Invoice/Payment reference (max 30 chars)", section: "Clearing" },
-                { excelKey: "InvoiceAmount", sapField: "NetPaymentAmountInPaytCurrency", sapParent: "clearing", mappingType: "DIRECT", transformation: "Net payment amount for clearing", section: "Clearing" },
-                { excelKey: "DeductionAmount", sapField: "DeductionAmountInPaytCurrency", sapParent: "clearing", mappingType: "DIRECT", transformation: "Deduction/discount amount", section: "Clearing" },
-                { excelKey: "ReasonCode", sapField: "PaymentDifferenceReason", sapParent: "clearing", mappingType: "DIRECT", transformation: "Reason code (max 3 chars)", section: "Clearing" },
+                { excelKey: "InvoiceNumber", searchTerms: ["invoice", "number", "payment", "reference"], sapField: "PaymentReference", sapParent: "clearing", mappingType: "DIRECT", transformation: "Invoice/Payment reference (max 30 chars)", section: "Clearing" },
+                { excelKey: "InvoiceAmount", searchTerms: ["invoice", "amount", "payment", "net"], sapField: "NetPaymentAmountInPaytCurrency", sapParent: "clearing", mappingType: "DIRECT", transformation: "Net payment amount for clearing", section: "Clearing" },
+                { excelKey: "DeductionAmount", searchTerms: ["deduction", "amount", "discount"], sapField: "DeductionAmountInPaytCurrency", sapParent: "clearing", mappingType: "DIRECT", transformation: "Deduction/discount amount", section: "Clearing" },
+                { excelKey: "ReasonCode", searchTerms: ["reason", "code"], sapField: "PaymentDifferenceReason", sapParent: "clearing", mappingType: "DIRECT", transformation: "Reason code (max 3 chars)", section: "Clearing" },
                 { excelKey: null, sapField: "Currency", sapParent: "clearing", mappingType: "DEFAULT", transformation: "Clearing currency (default: USD)", section: "Clearing" },
                 
                 // ============================================================
                 // REFERENCE FIELDS (Used for GET API lookups, NOT in POST payload)
                 // ============================================================
-                { excelKey: "Customer", sapField: "Customer (GET API only)", sapParent: "source", mappingType: "SOURCE", transformation: "Used for PaymentAdviceAccount in GET LockboxClearing - NOT in POST", section: "Reference" }
+                { excelKey: "Customer", searchTerms: ["customer", "account"], sapField: "Customer (GET API only)", sapParent: "source", mappingType: "SOURCE", transformation: "Used for PaymentAdviceAccount in GET LockboxClearing - NOT in POST", section: "Reference" }
             ];
             
             // Build mapping entries with section grouping
