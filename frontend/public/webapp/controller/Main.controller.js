@@ -7543,10 +7543,12 @@ sap.ui.define([
                     // PRIORITY 1: Try with spaces (e.g., "Check Amount")
                     var keyWithSpaces = config.excelKey.replace(/([A-Z])/g, ' $1').trim();
                     sSourceValue = oFirstRow[keyWithSpaces];
+                    console.log("Trying '" + keyWithSpaces + "' = ", sSourceValue);
                     
                     // PRIORITY 2: Try original camelCase (e.g., "CheckAmount")
                     if (sSourceValue === undefined || sSourceValue === null) {
                         sSourceValue = oFirstRow[config.excelKey];
+                        console.log("Trying '" + config.excelKey + "' = ", sSourceValue);
                     }
                     
                     // PRIORITY 3: Try lowercase
@@ -7563,6 +7565,13 @@ sap.ui.define([
                     if (sSourceValue === undefined || sSourceValue === null) {
                         var snakeKey = config.excelKey.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
                         sSourceValue = oFirstRow[snakeKey];
+                    }
+                    
+                    // Log the final source value found
+                    if (sSourceValue !== undefined && sSourceValue !== null) {
+                        console.log("✅ Found source value for " + config.excelKey + ": ", sSourceValue);
+                    } else {
+                        console.log("❌ No source value found for " + config.excelKey);
                     }
                 }
                 
