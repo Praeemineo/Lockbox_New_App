@@ -18,7 +18,7 @@ modules:
       health-check-http-endpoint: /api/health
     properties:
       NODE_ENV: production
-      SAP_URL: "https://44.194.22.195:44301"
+      SAP_URL: "https://44.196.95.84:44301"
       SAP_CLIENT: "100"
       SAP_USER: "S4H_FIN"
       SAP_PASSWORD: "Welcome1"
