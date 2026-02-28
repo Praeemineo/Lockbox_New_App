@@ -7540,57 +7540,55 @@ sap.ui.define([
                 
                 // FUZZY SEARCH: Get source value from extracted data using multiple strategies
                 if (config.excelKey) {
-                    // FUZZY SEARCH: Get source value from extracted data using multiple strategies
-                    if (config.excelKey) {
-                        // Strategy 1: Try exact match with spaces (e.g., "Check Amount")
-                        var keyWithSpaces = config.excelKey.replace(/([A-Z])/g, ' $1').trim();
-                        sSourceValue = oFirstRow[keyWithSpaces];
+                    // Strategy 1: Try exact match with spaces (e.g., "Check Amount")
+                    var keyWithSpaces = config.excelKey.replace(/([A-Z])/g, ' $1').trim();
+                    sSourceValue = oFirstRow[keyWithSpaces];
+                    
+                    // Strategy 2: Try original camelCase (e.g., "CheckAmount")
+                    if (sSourceValue === undefined || sSourceValue === null) {
+                        sSourceValue = oFirstRow[config.excelKey];
+                    }
+                    
+                    // Strategy 3: FUZZY MATCH - Search for field containing key terms
+                    if ((sSourceValue === undefined || sSourceValue === null) && config.searchTerms) {
+                        var availableFields = Object.keys(oFirstRow);
                         
-                        // Strategy 2: Try original camelCase (e.g., "CheckAmount")
-                        if (sSourceValue === undefined || sSourceValue === null) {
-                            sSourceValue = oFirstRow[config.excelKey];
-                        }
-                        
-                        // Strategy 3: FUZZY MATCH - Search for field containing key terms
-                        if ((sSourceValue === undefined || sSourceValue === null) && config.searchTerms) {
-                            var availableFields = Object.keys(oFirstRow);
+                        for (var i = 0; i < availableFields.length; i++) {
+                            var fieldName = availableFields[i].toLowerCase();
+                            var allTermsMatch = true;
                             
-                            for (var i = 0; i < availableFields.length; i++) {
-                                var fieldName = availableFields[i].toLowerCase();
-                                var allTermsMatch = true;
-                                
-                                // Check if ALL search terms are present in this field name
-                                for (var j = 0; j < config.searchTerms.length; j++) {
-                                    if (fieldName.indexOf(config.searchTerms[j].toLowerCase()) === -1) {
-                                        allTermsMatch = false;
-                                        break;
-                                    }
-                                }
-                                
-                                // If all terms match, use this field
-                                if (allTermsMatch) {
-                                    sSourceValue = oFirstRow[availableFields[i]];
-                                    console.log("✅ FUZZY MATCH: Found '" + availableFields[i] + "' for " + config.excelKey + " = ", sSourceValue);
+                            // Check if ALL search terms are present in this field name
+                            for (var j = 0; j < config.searchTerms.length; j++) {
+                                if (fieldName.indexOf(config.searchTerms[j].toLowerCase()) === -1) {
+                                    allTermsMatch = false;
                                     break;
                                 }
                             }
-                        }
-                        
-                        // Strategy 4: Try lowercase
-                        if (sSourceValue === undefined || sSourceValue === null) {
-                            sSourceValue = oFirstRow[config.excelKey.toLowerCase()];
-                        }
-                        
-                        // Strategy 5: Try snake_case
-                        if (sSourceValue === undefined || sSourceValue === null) {
-                            sSourceValue = oFirstRow[that._toSnakeCase(config.excelKey)];
-                        }
-                        
-                        // Final log
-                        if (sSourceValue !== undefined && sSourceValue !== null && sSourceValue !== '') {
-                            console.log("✅ SUCCESS: " + config.sapField + " ← " + config.excelKey + " = ", sSourceValue);
+                            
+                            // If all terms match, use this field
+                            if (allTermsMatch) {
+                                sSourceValue = oFirstRow[availableFields[i]];
+                                console.log("✅ FUZZY MATCH: Found '" + availableFields[i] + "' for " + config.excelKey + " = ", sSourceValue);
+                                break;
+                            }
                         }
                     }
+                    
+                    // Strategy 4: Try lowercase
+                    if (sSourceValue === undefined || sSourceValue === null) {
+                        sSourceValue = oFirstRow[config.excelKey.toLowerCase()];
+                    }
+                    
+                    // Strategy 5: Try snake_case
+                    if (sSourceValue === undefined || sSourceValue === null) {
+                        sSourceValue = oFirstRow[that._toSnakeCase(config.excelKey)];
+                    }
+                    
+                    // Final log
+                    if (sSourceValue !== undefined && sSourceValue !== null && sSourceValue !== '') {
+                        console.log("✅ SUCCESS: " + config.sapField + " ← " + config.excelKey + " = ", sSourceValue);
+                    }
+                }
                 
                 // Get final value from SAP payload based on parent
                 switch (config.sapParent) {
