@@ -7464,8 +7464,17 @@ sap.ui.define([
                 oFirstRow = aMappedData[0] || {};
             }
             
-            console.log("Field Mapping Preview - Source Data:", oFirstRow);
-            console.log("Available source fields:", Object.keys(oFirstRow));
+            console.log("=== FIELD MAPPING PREVIEW DEBUG ===");
+            console.log("Run ID:", oRun.runId);
+            console.log("Extracted Data Length:", aExtractedData.length);
+            console.log("First Row Data:", JSON.stringify(oFirstRow));
+            console.log("Available Fields:", Object.keys(oFirstRow));
+            console.log("Sample Values:");
+            console.log("  - Customer:", oFirstRow["Customer"] || oFirstRow.Customer);
+            console.log("  - Check Number:", oFirstRow["Check Number"] || oFirstRow.CheckNumber);
+            console.log("  - Check Amount:", oFirstRow["Check Amount"] || oFirstRow.CheckAmount);
+            console.log("  - Invoice Number:", oFirstRow["Invoice Number"] || oFirstRow.InvoiceNumber);
+            console.log("===================================");
             
             // Get SAP payload
             var oSapPayload = oRun.sapPayload || oRun.sap_payload || {};
