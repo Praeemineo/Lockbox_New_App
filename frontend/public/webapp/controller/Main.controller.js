@@ -7538,40 +7538,61 @@ sap.ui.define([
                 var sSourceValue = null;
                 var sFinalValue = null;
                 
-                // Get source value from extracted data - try multiple key formats
+                // FUZZY SEARCH: Get source value from extracted data using multiple strategies
                 if (config.excelKey) {
-                    // PRIORITY 1: Try with spaces (e.g., "Check Amount")
+                    // Strategy 1: Try exact match with spaces (e.g., "Check Amount")
                     var keyWithSpaces = config.excelKey.replace(/([A-Z])/g, ' $1').trim();
                     sSourceValue = oFirstRow[keyWithSpaces];
-                    console.log("Trying '" + keyWithSpaces + "' = ", sSourceValue);
+                    console.log("Strategy 1 (with spaces) '" + keyWithSpaces + "' = ", sSourceValue);
                     
-                    // PRIORITY 2: Try original camelCase (e.g., "CheckAmount")
+                    // Strategy 2: Try original camelCase (e.g., "CheckAmount")
                     if (sSourceValue === undefined || sSourceValue === null) {
                         sSourceValue = oFirstRow[config.excelKey];
-                        console.log("Trying '" + config.excelKey + "' = ", sSourceValue);
+                        console.log("Strategy 2 (camelCase) '" + config.excelKey + "' = ", sSourceValue);
                     }
                     
-                    // PRIORITY 3: Try lowercase
+                    // Strategy 3: FUZZY MATCH - Search for field containing key terms
+                    if ((sSourceValue === undefined || sSourceValue === null) && config.searchTerms) {
+                        var availableFields = Object.keys(oFirstRow);
+                        console.log("Strategy 3 (fuzzy) - Available fields:", availableFields);
+                        console.log("Looking for terms:", config.searchTerms);
+                        
+                        for (var i = 0; i < availableFields.length; i++) {
+                            var fieldName = availableFields[i].toLowerCase();
+                            var matchCount = 0;
+                            
+                            // Count how many search terms match this field name
+                            for (var j = 0; j < config.searchTerms.length; j++) {
+                                if (fieldName.indexOf(config.searchTerms[j].toLowerCase()) !== -1) {
+                                    matchCount++;
+                                }
+                            }
+                            
+                            // If at least 2 terms match (or all terms if less than 2), use this field
+                            var requiredMatches = Math.min(2, config.searchTerms.length);
+                            if (matchCount >= requiredMatches) {
+                                sSourceValue = oFirstRow[availableFields[i]];
+                                console.log("✅ FUZZY MATCH: Found '" + availableFields[i] + "' for " + config.excelKey + " = ", sSourceValue);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Strategy 4: Try lowercase
                     if (sSourceValue === undefined || sSourceValue === null) {
                         sSourceValue = oFirstRow[config.excelKey.toLowerCase()];
                     }
                     
-                    // PRIORITY 4: Try snake_case
+                    // Strategy 5: Try snake_case
                     if (sSourceValue === undefined || sSourceValue === null) {
                         sSourceValue = oFirstRow[that._toSnakeCase(config.excelKey)];
                     }
                     
-                    // PRIORITY 5: Try with underscores
-                    if (sSourceValue === undefined || sSourceValue === null) {
-                        var snakeKey = config.excelKey.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
-                        sSourceValue = oFirstRow[snakeKey];
-                    }
-                    
-                    // Log the final source value found
+                    // Log the final result
                     if (sSourceValue !== undefined && sSourceValue !== null) {
-                        console.log("✅ Found source value for " + config.excelKey + ": ", sSourceValue);
+                        console.log("✅ FINAL: Found source value for " + config.excelKey + ": ", sSourceValue);
                     } else {
-                        console.log("❌ No source value found for " + config.excelKey);
+                        console.log("❌ FINAL: No source value found for " + config.excelKey);
                     }
                 }
                 
