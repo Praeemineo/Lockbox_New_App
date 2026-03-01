@@ -50,52 +50,39 @@
       {
         "documentFormat": "Customer Number",
         "condition": "Exist"
-      },
-      {
-        "documentFormat": "BankIdentification",
-        "condition": "0001"
       }
     ],
     "apiMappings": [
       {
         "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartnerBank",
+        "apiReference": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
         "destination": "S4HANA_SYSTEM_DESTINATION",
-        "inputField": "A_BusinessPartner",
+        "inputField": "BusinessPartner",
         "sourceInput": "CustomerNumber",
-        "filterConditions": {
-          "BankIdentification": "0001"
-        },
-        "outputField": "BankNumber",
+        "outputField": "to_BusinessPartnerBank/results/0/BankNumber",
         "lockboxApiField": "PartnerBank"
       },
       {
         "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartnerBank",
+        "apiReference": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
         "destination": "S4HANA_SYSTEM_DESTINATION",
-        "inputField": "A_BusinessPartner",
+        "inputField": "BusinessPartner",
         "sourceInput": "CustomerNumber",
-        "filterConditions": {
-          "BankIdentification": "0001"
-        },
-        "outputField": "BankAccount",
+        "outputField": "to_BusinessPartnerBank/results/0/BankAccount",
         "lockboxApiField": "PartnerBankAccount"
       },
       {
         "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_BUSINESSPARTNER/A_BusinessPartnerBank",
+        "apiReference": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
         "destination": "S4HANA_SYSTEM_DESTINATION",
-        "inputField": "A_BusinessPartner",
+        "inputField": "BusinessPartner",
         "sourceInput": "CustomerNumber",
-        "filterConditions": {
-          "BankIdentification": "0001"
-        },
-        "outputField": "BankCountryKey",
+        "outputField": "to_BusinessPartnerBank/results/0/BankCountryKey",
         "lockboxApiField": "PartnerBankCountry"
       }
     ],
     "createdAt": "2026-02-16T12:00:00Z",
-    "updatedAt": "2026-02-16T12:00:00Z"
+    "updatedAt": "2026-02-28T13:45:00Z"
   },
   {
     "id": "3",
