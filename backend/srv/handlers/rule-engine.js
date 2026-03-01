@@ -315,7 +315,10 @@ async function executeDynamicRule(rule, data) {
 
 /**
  * Build Dynamic API URL with Query Parameters
- * Supports multi-input mapping (e.g., CustomerNumber + BankIdentification)
+ * Supports:
+ * - OData V2/V4 $filter queries: /EntitySet?$filter=Field='Value'
+ * - OData V4 function imports: /Function(Parameter='Value')/Set
+ * - Multi-input mapping (e.g., CustomerNumber + BankIdentification)
  * @param {object} mapping - API mapping configuration
  * @param {object} row - Data row
  * @returns {string} - Complete API URL with query parameters
@@ -357,6 +360,16 @@ function buildDynamicAPIURL(mapping, row) {
         throw new Error(`Source field "${sourceField}" not found in data`);
     }
     
+    // Check if this is an OData V4 function import pattern
+    // Pattern: /Function(Parameter='')/Set or /Function(Parameter='')
+    if (apiReference.includes("('')")) {
+        // OData V4 Function Import - Inject value into URL path
+        const finalURL = apiReference.replace("('')", `('${sourceValue}')`);
+        console.log(`      📋 Final URL (OData V4 Function): ${finalURL}`);
+        return finalURL;
+    }
+    
+    // Standard OData query with $filter
     // Build base query
     let params = [`${inputField}='${sourceValue}'`];
     
@@ -369,7 +382,7 @@ function buildDynamicAPIURL(mapping, row) {
     }
     
     const finalURL = `${apiReference}?$filter=${params.join(' and ')}`;
-    console.log(`      📋 Final URL: ${finalURL}`);
+    console.log(`      📋 Final URL (OData Query): ${finalURL}`);
     
     return finalURL;
 }
