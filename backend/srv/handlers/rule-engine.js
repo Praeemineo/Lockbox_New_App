@@ -318,6 +318,7 @@ async function executeDynamicRule(rule, data) {
  * Supports:
  * - OData V2/V4 $filter queries: /EntitySet?$filter=Field='Value'
  * - OData V4 function imports: /Function(Parameter='Value')/Set
+ * - OData entity keys with $expand: /Entity(Key='Value')?$expand=Navigation&$format=json
  * - Multi-input mapping (e.g., CustomerNumber + BankIdentification)
  * @param {object} mapping - API mapping configuration
  * @param {object} row - Data row
@@ -342,7 +343,7 @@ function buildDynamicAPIURL(mapping, row) {
         const normalizedRowKey = rowKey.replace(/\s+/g, '').toLowerCase();
         
         // Match if:
-        // 1. Exact match (customerumber === customernumber)
+        // 1. Exact match (customernumber === customernumber)
         // 2. Row key starts with source (customer === customernumber)
         // 3. Source contains row key (customernumber contains customer)
         if (normalizedRowKey === normalizedSource ||
@@ -360,20 +361,26 @@ function buildDynamicAPIURL(mapping, row) {
         throw new Error(`Source field "${sourceField}" not found in data`);
     }
     
-    // Check if this is an OData V4 function import pattern
-    // Pattern: /Function(Parameter='')/Set or /Function(Parameter='')
-    if (apiReference.includes("('')")) {
-        // OData V4 Function Import - Inject value into URL path
+    // PATTERN 1: OData V4 Function Import - /Function(Parameter='')/Set
+    if (apiReference.includes("('')/Set")) {
         const finalURL = apiReference.replace("('')", `('${sourceValue}')`);
         console.log(`      📋 Final URL (OData V4 Function): ${finalURL}`);
         return finalURL;
     }
     
-    // Standard OData query with $filter
+    // PATTERN 2: OData Entity Key with $expand - /Entity(Key='')?$expand=...
+    // Example: /A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank
+    if (apiReference.includes("('')?$expand=") || apiReference.includes("('')?$")) {
+        const finalURL = apiReference.replace("('')", `('${sourceValue}')`);
+        console.log(`      📋 Final URL (OData Entity Key with $expand): ${finalURL}`);
+        return finalURL;
+    }
+    
+    // PATTERN 3: Standard OData $filter query
     // Build base query
     let params = [`${inputField}='${sourceValue}'`];
     
-    // Add filter conditions if present (for RULE-002: BankIdentification='0001')
+    // Add filter conditions if present (for legacy RULE-002: BankIdentification='0001')
     if (mapping.filterConditions) {
         for (const [filterKey, filterValue] of Object.entries(mapping.filterConditions)) {
             params.push(`${filterKey}='${filterValue}'`);
