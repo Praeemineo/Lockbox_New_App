@@ -52,7 +52,7 @@
 - Gray when disabled, clickable when enabled
 
 ## Deployment Status:
-- ✅ **Kubernetes:** Live and working at https://invoice-validation-3.preview.emergentagent.com
+- ✅ **Kubernetes:** Live and working at https://sap-integrator-1.preview.emergentagent.com
 - ⚠️ **BTP Cloud Foundry:** Requires `cf push` to deploy updated code
 
 ## User Verification:
