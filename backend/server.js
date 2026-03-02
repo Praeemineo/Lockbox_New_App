@@ -6182,6 +6182,11 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
     // Group by Check Number (one item per check)
     const checkGroups = {};
     for (const row of extractedData) {
+        // DEBUG: Log enriched fields
+        if (row.Paymentreference || row.CompanyCode) {
+            console.log(`  📊 DEBUG: Row has enriched fields - Paymentreference: ${row.Paymentreference}, CompanyCode: ${row.CompanyCode}`);
+        }
+        
         // Handle field names with spaces (e.g., "Check Number" vs "CheckNumber")
         const checkKey = row['Check Number'] || row.CheckNumber || row.Cheque || `CHK-${Date.now()}`;
         if (!checkGroups[checkKey]) {
