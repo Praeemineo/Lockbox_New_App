@@ -453,38 +453,97 @@ async function callSAPAPI(apiURL, httpMethod, destination) {
 }
 
 /**
- * Extract Field from OData Response Dynamically
+ * Extract Dynamic Field from SAP Response
  * Handles nested paths like: d.results[0].BELNR, value[0].BankNumber
+ * Handles navigation properties: to_BusinessPartnerBank/results/0/BankNumber
  * @param {object} responseData - API response
- * @param {string} fieldPath - Path to extract (e.g., "BELNR", "results[0].BankNumber")
+ * @param {string} fieldPath - Path to extract (e.g., "BELNR", "to_BusinessPartnerBank/results/0/BankNumber")
  * @returns {any} - Extracted value or null
  */
 function extractDynamicField(responseData, fieldPath) {
     try {
-        // Handle direct field access
+        console.log(`      🔍 Extracting field: "${fieldPath}" from response`);
+        
+        // Handle direct field access (e.g., "BELNR", "CompanyCode")
         if (responseData[fieldPath]) {
+            console.log(`      ✅ Found direct field: ${responseData[fieldPath]}`);
             return responseData[fieldPath];
         }
         
+        // Handle OData v2 wrapped response: { d: { ... } }
+        let data = responseData.d || responseData;
+        
+        // Handle navigation property paths with slashes (e.g., "to_BusinessPartnerBank/results/0/BankNumber")
+        if (fieldPath.includes('/')) {
+            const parts = fieldPath.split('/');
+            console.log(`      🔗 Navigating path: ${parts.join(' → ')}`);
+            
+            let current = data;
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+                
+                // Handle array index (e.g., "0", "1")
+                if (/^\d+$/.test(part)) {
+                    const index = parseInt(part);
+                    if (Array.isArray(current) && current.length > index) {
+                        current = current[index];
+                        console.log(`      📍 Array[${index}]: Found`);
+                    } else {
+                        console.log(`      ⚠️  Array[${index}]: Not found or empty`);
+                        return null;
+                    }
+                }
+                // Handle object property (e.g., "to_BusinessPartnerBank", "results", "BankNumber")
+                else if (current && current[part] !== undefined) {
+                    current = current[part];
+                    console.log(`      📍 ${part}: ${Array.isArray(current) ? `Array[${current.length}]` : typeof current === 'object' ? 'Object' : current}`);
+                } else {
+                    console.log(`      ⚠️  Property "${part}" not found in response`);
+                    return null;
+                }
+            }
+            
+            console.log(`      ✅ Final value: ${current}`);
+            return current;
+        }
+        
         // Handle OData v4 format: { value: [...] }
-        if (responseData.value && Array.isArray(responseData.value) && responseData.value.length > 0) {
-            return responseData.value[0][fieldPath];
+        if (data.value && Array.isArray(data.value) && data.value.length > 0) {
+            const val = data.value[0][fieldPath];
+            if (val !== undefined) {
+                console.log(`      ✅ Found in value[0]: ${val}`);
+                return val;
+            }
         }
         
         // Handle OData v2 format: { d: { results: [...] } }
-        if (responseData.d && responseData.d.results && Array.isArray(responseData.d.results) && responseData.d.results.length > 0) {
-            return responseData.d.results[0][fieldPath];
+        if (data.results && Array.isArray(data.results) && data.results.length > 0) {
+            const val = data.results[0][fieldPath];
+            if (val !== undefined) {
+                console.log(`      ✅ Found in results[0]: ${val}`);
+                return val;
+            }
         }
         
-        // Handle nested path extraction
-        return fieldPath.split('.').reduce((obj, key) => {
-            if (key.includes('[')) {
-                const arrKey = key.substring(0, key.indexOf('['));
-                const index = parseInt(key.match(/\[(\d+)\]/)[1]);
-                return obj[arrKey][index];
+        // Handle nested path extraction with dots (legacy support)
+        if (fieldPath.includes('.')) {
+            const value = fieldPath.split('.').reduce((obj, key) => {
+                if (key.includes('[')) {
+                    const arrKey = key.substring(0, key.indexOf('['));
+                    const index = parseInt(key.match(/\[(\d+)\]/)[1]);
+                    return obj[arrKey][index];
+                }
+                return obj[key];
+            }, data);
+            
+            if (value !== undefined) {
+                console.log(`      ✅ Found via nested path: ${value}`);
+                return value;
             }
-            return obj[key];
-        }, responseData);
+        }
+        
+        console.log(`      ❌ Field not found in any format`);
+        return null;
         
     } catch (e) {
         console.log(`   ⚠️  Could not extract field "${fieldPath}":`, e.message);
