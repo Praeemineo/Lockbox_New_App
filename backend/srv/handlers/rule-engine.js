@@ -331,7 +331,7 @@ function buildDynamicAPIURL(mapping, row) {
     
     console.log(`      Building API URL: sourceField="${sourceField}"`);
     
-    // Smart field matching: Look for Customer, CustomerNumber, Customer Number
+    // Smart field matching: Look for Customer, CustomerNumber, Customer Number, Invoice Number, etc.
     let sourceValue = null;
     let foundKey = null;
     
@@ -361,6 +361,14 @@ function buildDynamicAPIURL(mapping, row) {
         throw new Error(`Source field "${sourceField}" not found in data`);
     }
     
+    // TRANSFORMATION: For Invoice Numbers (P_DocumentNumber), pad with leading zeros to 10 digits
+    if (inputField === 'P_DocumentNumber' || sourceField.toLowerCase().includes('invoice')) {
+        const originalValue = sourceValue;
+        // Convert to string and pad with leading zeros to 10 digits
+        sourceValue = String(sourceValue).padStart(10, '0');
+        console.log(`      🔢 Invoice Number Transformation: ${originalValue} → ${sourceValue} (padded to 10 digits)`);
+    }
+    
     // PATTERN 1: OData V4 Function Import - /Function(Parameter='')/Set
     if (apiReference.includes("('')/Set")) {
         const finalURL = apiReference.replace("('')", `('${sourceValue}')`);
@@ -380,7 +388,7 @@ function buildDynamicAPIURL(mapping, row) {
     // Build base query
     let params = [`${inputField}='${sourceValue}'`];
     
-    // Add filter conditions if present (for legacy RULE-002: BankIdentification='0001')
+    // Add filter conditions if present (for legacy rules)
     if (mapping.filterConditions) {
         for (const [filterKey, filterValue] of Object.entries(mapping.filterConditions)) {
             params.push(`${filterKey}='${filterValue}'`);
