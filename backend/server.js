@@ -6214,9 +6214,9 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
             // Reference Document Rule fields
             xblnr: row.XBLNR || '',  // External reference / Invoice reference
             belnr: row.BELNR || '',   // Accounting document number
-            // RULE-001 enriched fields
+            // RULE-001 enriched fields (note: capital P in Paymentreference)
             paymentreference: row.Paymentreference || '', // AccountingDocument from SAP (RULE-001)
-            companyCode: row.CompanyCode || '' // CompanyCode from SAP (RULE-001)
+            companyCode: row.CompanyCode || '' // CompanyCode from SAP (RULE-001) - for reporting only
         });
     }
     
