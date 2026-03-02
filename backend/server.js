@@ -6199,6 +6199,7 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
         }
         // Add invoice/payment reference under this check
         // Include XBLNR and BELNR for reference document rule processing
+        // PRIORITY: Use Paymentreference (enriched by RULE-001 with AccountingDocument) if available
         checkGroups[checkKey].invoices.push({
             invoiceNumber: row['Invoice Number'] || row.InvoiceNumber || row.PaymentReference || '',
             invoiceAmount: parseFloat(row['Invoice Amount'] || row.InvoiceAmount || row.NetPaymentAmountInPaytCurrency) || 0,
@@ -6207,7 +6208,10 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
             customer: row.Customer || '', // Customer for each invoice line
             // Reference Document Rule fields
             xblnr: row.XBLNR || '',  // External reference / Invoice reference
-            belnr: row.BELNR || ''   // Accounting document number
+            belnr: row.BELNR || '',   // Accounting document number
+            // RULE-001 enriched fields
+            paymentreference: row.Paymentreference || '', // AccountingDocument from SAP (RULE-001)
+            companyCode: row.CompanyCode || '' // CompanyCode from SAP (RULE-001)
         });
     }
     
