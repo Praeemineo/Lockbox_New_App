@@ -21,7 +21,7 @@
         "destination": "S4HANA_SYSTEM_DESTINATION",
         "inputField": "P_DocumentNumber",
         "sourceInput": "InvoiceNumber",
-        "outputField": "Belnr",
+        "outputField": "AccountingDocument",
         "lockboxApiField": "Paymentreference"
       },
       {
