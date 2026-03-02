@@ -446,7 +446,8 @@ async function callSAPAPI(apiURL, httpMethod, destination) {
         // Use SAP client's executeSapGetRequest which handles .env credentials
         const response = await sapClient.executeSapGetRequest(destination, endpoint, queryParams);
         
-        console.log(`   ✅ SAP API Response received`);
+        console.log(`   ✅ SAP API Response received (Status: ${response.status})`);
+        console.log(`   📦 RAW RESPONSE DATA:`, JSON.stringify(response.data, null, 2));
         
         return response;
     } catch (error) {
