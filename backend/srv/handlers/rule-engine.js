@@ -370,7 +370,7 @@ function buildDynamicAPIURL(mapping, row) {
     }
     
     // PATTERN 1: OData V4 Function Import - /Function(Parameter='')/Set
-    // Check for the pattern with empty quotes in parentheses
+    // Check for the pattern with empty quotes in parentheses followed by /Set
     if (apiReference.includes("='')/Set") || apiReference.includes("='')")) {
         const finalURL = apiReference.replace("=''", `='${sourceValue}'`);
         console.log(`      📋 Final URL (OData V4 Function): ${finalURL}`);
@@ -379,6 +379,9 @@ function buildDynamicAPIURL(mapping, row) {
     
     // PATTERN 2: OData Entity Key with $expand - /Entity(Key='')?$expand=...
     // Example: /A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank
+    console.log(`      🔍 Checking Pattern 2: apiReference includes "='')?$expand="? ${apiReference.includes("='')?$expand=")}`);
+    console.log(`      🔍 Checking Pattern 2: apiReference includes "='')?$"? ${apiReference.includes("='')?$")}`);
+    
     if (apiReference.includes("='')?$expand=") || apiReference.includes("='')?$")) {
         const finalURL = apiReference.replace("=''", `='${sourceValue}'`);
         console.log(`      📋 Final URL (OData Entity Key with $expand): ${finalURL}`);
