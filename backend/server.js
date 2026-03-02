@@ -6388,11 +6388,7 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
                     Currency: currency
                 };
                 
-                // Add CompanyCode if enriched by RULE-001
-                if (companyCode) {
-                    clearing.CompanyCode = companyCode.substring(0, 4);
-                    console.log(`    ✅ Adding CompanyCode from RULE-001: ${clearing.CompanyCode}`);
-                }
+                // Note: CompanyCode is stored in mappedData for reporting but NOT sent in SAP payload
                 
                 // ONLY include PaymentDifferenceReason if it has a value (SAP rejects empty strings)
                 const reasonCode = (inv.reasonCode || '').trim().substring(0, 3);
