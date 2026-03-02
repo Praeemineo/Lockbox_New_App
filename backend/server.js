@@ -7541,6 +7541,9 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
             // Update extracted data with enriched values
             extractedData = validationResult.enrichedData;
             
+            // DEBUG: Check if enrichment worked
+            console.log(`  🔍 DEBUG: After enrichment, first row Paymentreference: ${extractedData[0]?.Paymentreference}, CompanyCode: ${extractedData[0]?.CompanyCode}`);
+            
             run.stages.validation.status = 'completed';
             run.stages.validation.message = `${validationResult.rulesExecuted.length}/2 rules executed, ${validationResult.recordsEnriched} records enriched`;
             run.stages.validation.errors = validationResult.errors;
