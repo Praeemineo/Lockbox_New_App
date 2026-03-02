@@ -7542,7 +7542,13 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
             extractedData = validationResult.enrichedData;
             
             // DEBUG: Check if enrichment worked
-            console.log(`  🔍 DEBUG: After enrichment, first row Paymentreference: ${extractedData[0]?.Paymentreference}, CompanyCode: ${extractedData[0]?.CompanyCode}`);
+            console.log(`  🔍 DEBUG POST-ENRICHMENT: extractedData length: ${extractedData.length}`);
+            if (extractedData.length > 0) {
+                const firstRow = extractedData[0];
+                console.log(`  🔍 First row keys: ${Object.keys(firstRow).join(', ')}`);
+                console.log(`  🔍 Paymentreference value: "${firstRow.Paymentreference}"`);
+                console.log(`  🔍 CompanyCode value: "${firstRow.CompanyCode}"`);
+            }
             
             run.stages.validation.status = 'completed';
             run.stages.validation.message = `${validationResult.rulesExecuted.length}/2 rules executed, ${validationResult.recordsEnriched} records enriched`;
