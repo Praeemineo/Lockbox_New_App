@@ -1186,44 +1186,10 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
     // Try destination service approach first
     if (destinationResolved) {
         try {
-            // STEP 1: Fetch CSRF Token via Cloud SDK
-            console.log('=== FETCHING CSRF TOKEN (Cloud SDK) ===');
-            let csrfToken = null;
-            try {
-                const csrfResponse = await executeHttpRequest(
-                    { destinationName: destination },
-                    {
-                        method: 'GET',
-                        url: serviceBaseUrl,
-                        params: {
-                            'sap-client': SAP_CLIENT
-                        },
-                        headers: {
-                            'X-CSRF-Token': 'Fetch',
-                            'Accept': 'application/json'
-                        }
-                    }
-                );
-                csrfToken = csrfResponse.headers['x-csrf-token'];
-                console.log('✓ CSRF Token fetched:', csrfToken ? 'SUCCESS' : 'FAILED');
-                console.log('CSRF Token value:', csrfToken);
-            } catch (csrfError) {
-                console.warn('⚠ CSRF token fetch failed:', csrfError.message);
-                console.warn('Proceeding without CSRF token (POST may fail)');
-            }
+            console.log('=== MAKING POST REQUEST (Cloud SDK - CSRF auto-handled) ===');
             
-            // STEP 2: Make POST request with CSRF token
-            console.log('=== MAKING POST REQUEST (Cloud SDK) ===');
-            const headers = {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            };
-            
-            if (csrfToken) {
-                headers['X-CSRF-Token'] = csrfToken;
-                console.log('✓ Including CSRF token in POST request');
-            }
-            
+            // SAP Cloud SDK automatically handles CSRF tokens
+            // It will fetch the token and manage session cookies internally
             const response = await executeHttpRequest(
                 { destinationName: destination },
                 {
@@ -1233,7 +1199,10 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
                         'sap-client': SAP_CLIENT
                     },
                     data: payload,
-                    headers: headers
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
                 }
             );
             
@@ -1245,6 +1214,8 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
         } catch (error) {
             console.error('Destination service approach failed, will try fallback...');
             console.error('Error:', error.message);
+            console.error('Error response:', error.response?.data);
+            console.error('Error status:', error.response?.status);
             // Continue to fallback below
         }
     }
