@@ -1146,91 +1146,6 @@ async function getFromSapApi(url, queryParams = {}) {
 // Helper function to POST to SAP using SAP Cloud SDK via BTP Destination
 // SAP Cloud SDK handles Cloud Connector routing automatically
 // FALLBACK: If destination service fails, use direct axios with env variables
-/**
- * Fetch CSRF Token from SAP
- * Required for all POST/PUT/DELETE operations on SAP OData services
- * 
- * @param {string} destinationName - SAP destination name
- * @param {string} serviceUrl - OData service URL (e.g., '/sap/opu/odata/sap/API_LOCKBOXPOST_IN/')
- * @returns {Promise<string>} - CSRF token
- */
-async function fetchCsrfToken(destinationName, serviceUrl) {
-    console.log('=== FETCHING CSRF TOKEN ===');
-    console.log('Destination:', destinationName);
-    console.log('Service URL:', serviceUrl);
-    
-    try {
-        // Try Cloud SDK approach first
-        const { getDestination } = require('@sap-cloud-sdk/connectivity');
-        try {
-            const destination = await getDestination(destinationName);
-            console.log('Fetching CSRF token via Cloud SDK...');
-            
-            const response = await executeHttpRequest(
-                { destinationName: destinationName },
-                {
-                    method: 'GET',
-                    url: serviceUrl,
-                    params: {
-                        'sap-client': SAP_CLIENT
-                    },
-                    headers: {
-                        'X-CSRF-Token': 'Fetch',
-                        'Accept': 'application/json'
-                    }
-                }
-            );
-            
-            const csrfToken = response.headers['x-csrf-token'];
-            console.log('✓ CSRF Token fetched via Cloud SDK:', csrfToken ? 'SUCCESS' : 'FAILED');
-            return csrfToken;
-            
-        } catch (error) {
-            console.log('Cloud SDK CSRF fetch failed, trying direct connection...');
-        }
-    } catch (error) {
-        console.log('Cloud SDK not available, using direct connection...');
-    }
-    
-    // FALLBACK: Direct connection
-    const SAP_URL = process.env.SAP_URL;
-    const SAP_USER = process.env.SAP_USER;
-    const SAP_PASSWORD = process.env.SAP_PASSWORD;
-    
-    if (!SAP_URL || !SAP_USER || !SAP_PASSWORD) {
-        throw new Error('Cannot fetch CSRF token: No connection method available');
-    }
-    
-    console.log('Fetching CSRF token via direct connection...');
-    const fullUrl = `${SAP_URL}${serviceUrl}?sap-client=${SAP_CLIENT}`;
-    
-    try {
-        const response = await axios({
-            method: 'GET',
-            url: fullUrl,
-            headers: {
-                'X-CSRF-Token': 'Fetch',
-                'Accept': 'application/json'
-            },
-            auth: {
-                username: SAP_USER,
-                password: SAP_PASSWORD
-            },
-            httpsAgent: new (require('https').Agent)({
-                rejectUnauthorized: false
-            })
-        });
-        
-        const csrfToken = response.headers['x-csrf-token'];
-        console.log('✓ CSRF Token fetched via direct connection:', csrfToken ? 'SUCCESS' : 'FAILED');
-        return csrfToken;
-        
-    } catch (error) {
-        console.error('Failed to fetch CSRF token:', error.message);
-        throw new Error('CSRF token fetch failed: ' + error.message);
-    }
-}
-
 async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, apiPath = SAP_API_PATH) {
     const url = apiPath;
     const destination = destinationName;
@@ -1240,22 +1155,6 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
     console.log('URL:', url);
     console.log('sap-client:', SAP_CLIENT);
     console.log('Payload:', JSON.stringify(payload, null, 2));
-    
-    // ========================================================
-    // STEP 0: FETCH CSRF TOKEN (Required for POST operations)
-    // ========================================================
-    // Extract base service URL from the API path
-    // e.g., '/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxBatch' -> '/sap/opu/odata/sap/API_LOCKBOXPOST_IN/'
-    const serviceBaseUrl = url.substring(0, url.lastIndexOf('/') + 1);
-    
-    let csrfToken = null;
-    try {
-        csrfToken = await fetchCsrfToken(destination, serviceBaseUrl);
-        console.log('✓ CSRF Token obtained');
-    } catch (error) {
-        console.warn('⚠ CSRF Token fetch failed:', error.message);
-        console.warn('Attempting POST without CSRF token (may fail)...');
-    }
     
     // ENHANCED DEBUGGING: Check if destination service is accessible
     console.log('=== DESTINATION SERVICE CHECK ===');
@@ -1280,17 +1179,6 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
     // Try destination service approach first
     if (destinationResolved) {
         try {
-            const headers = {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            };
-            
-            // Add CSRF token if available
-            if (csrfToken) {
-                headers['X-CSRF-Token'] = csrfToken;
-                console.log('✓ Including CSRF token in POST request');
-            }
-            
             const response = await executeHttpRequest(
                 { destinationName: destination },
                 {
@@ -1300,7 +1188,10 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
                         'sap-client': SAP_CLIENT
                     },
                     data: payload,
-                    headers: headers
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
                 }
             );
             
@@ -1333,22 +1224,14 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
         const fullUrl = `${SAP_URL}${url}?sap-client=${SAP_CLIENT}`;
         console.log('Full URL:', fullUrl);
         
-        const headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        };
-        
-        // Add CSRF token if available
-        if (csrfToken) {
-            headers['X-CSRF-Token'] = csrfToken;
-            console.log('✓ Including CSRF token in POST request (direct)');
-        }
-        
         const response = await axios({
             method: 'POST',
             url: fullUrl,
             data: payload,
-            headers: headers,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
             auth: {
                 username: SAP_USER,
                 password: SAP_PASSWORD
