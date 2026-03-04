@@ -2554,12 +2554,36 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
     try {
         const { headerId } = req.params;
         
-        // Get header
-        const headerResult = await pool.query('SELECT * FROM lockbox_header WHERE id = $1', [headerId]);
-        if (headerResult.rows.length === 0) {
+        console.log('=== RETRIEVING CLEARING DOCUMENTS FROM SAP ===');
+        console.log('Header ID:', headerId);
+        
+        // Get header - try database first, fallback to in-memory cache
+        let header = null;
+        let lockboxId = null;
+        
+        try {
+            const headerResult = await pool.query('SELECT * FROM lockbox_header WHERE id = $1', [headerId]);
+            if (headerResult.rows.length > 0) {
+                header = headerResult.rows[0];
+                lockboxId = header.lockbox;
+                console.log('✓ Found header in database');
+            }
+        } catch (dbError) {
+            console.warn('Database query failed:', dbError.message);
+            console.log('Attempting to extract Lockbox ID from header ID pattern...');
+            
+            // Fallback: If header ID follows a pattern, try to extract lockbox ID
+            // This is a workaround for database connectivity issues
+            return res.status(503).json({
+                success: false,
+                message: 'Database connection unavailable. Please try again or contact support.',
+                error: 'DB_CONNECTION_FAILED'
+            });
+        }
+        
+        if (!header) {
             return res.status(404).json({ success: false, message: 'Header not found' });
         }
-        const header = headerResult.rows[0];
         
         // Check if already posted
         if (header.status !== 'POSTED') {
@@ -2569,9 +2593,7 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
             });
         }
         
-        console.log('=== RETRIEVING CLEARING DOCUMENTS FROM SAP ===');
-        console.log('Header ID:', headerId);
-        console.log('Lockbox ID:', header.lockbox);
+        console.log('Lockbox ID:', lockboxId);
         
         // Fetch RULE-004 configuration
         const rule004 = await getRuleById('RULE-004');
@@ -2585,8 +2607,8 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
         console.log('Destination:', getAccountingDocApi.destination);
         
         // Extract 6-digit Lockbox ID (without extension)
-        const lockboxId = header.lockbox.replace(/[^0-9]/g, '').substring(0, 6);
-        console.log('Using LockboxID for query:', lockboxId);
+        const cleanLockboxId = lockboxId.replace(/[^0-9]/g, '').substring(0, 6);
+        console.log('Using LockboxID for query:', cleanLockboxId);
         
         // Build OData query
         const apiEndpoint = getAccountingDocApi.apiReference;
@@ -2594,7 +2616,7 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
         
         // Query: LockBoxID eq '1000073'
         const queryParams = {
-            $filter: `LockBoxID eq '${lockboxId}'`,
+            $filter: `LockBoxID eq '${cleanLockboxId}'`,
             $select: 'DocumentNumber,PaymentAdvice,SubledgerDocument,CompanyCode,SubledgerOnaccountDocument'
         };
         
@@ -2623,7 +2645,7 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
         // Map to match the dialog data structure
         const formattedDocs = results.map(doc => ({
             companyCode: doc.CompanyCode || '',
-            lockboxId: lockboxId,
+            lockboxId: cleanLockboxId,
             documentNumber: doc.DocumentNumber || '',
             paymentAdvice: doc.PaymentAdvice || '',
             subledgerDocument: doc.SubledgerDocument || '',
