@@ -398,8 +398,6 @@
                                     <core:Item key="EXCEL" text="Excel" />
                                     <core:Item key="CSV" text="CSV" />
                                     <core:Item key="BAI2" text="BAI2" />
-                                    <core:Item key="PDF" text="PDF" />
-                                    <core:Item key="PAYMENT_ADVICE" text="Payment Advice" />
                                 </Select>
                             </VBox>
                             <!-- Category Filter -->
