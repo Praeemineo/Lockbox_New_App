@@ -2546,6 +2546,122 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
 });
 
 // ============================================================================
+// RETRIEVE CLEARING DOCUMENTS - Using RULE-004
+// Fetch accounting document details from SAP after production run
+// ============================================================================
+app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
+    try {
+        const { headerId } = req.params;
+        
+        // Get header
+        const headerResult = await pool.query('SELECT * FROM lockbox_header WHERE id = $1', [headerId]);
+        if (headerResult.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Header not found' });
+        }
+        const header = headerResult.rows[0];
+        
+        // Check if already posted
+        if (header.status !== 'POSTED') {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Lockbox must be posted before retrieving clearing documents. Current status: ' + header.status
+            });
+        }
+        
+        console.log('=== RETRIEVING CLEARING DOCUMENTS FROM SAP ===');
+        console.log('Header ID:', headerId);
+        console.log('Lockbox ID:', header.lockbox);
+        
+        // Fetch RULE-004 configuration
+        const rule004 = await getRuleById('RULE-004');
+        const getAccountingDocApi = getApiConfig(rule004, 'GET');
+        
+        if (!getAccountingDocApi || !getAccountingDocApi.apiReference) {
+            return res.status(500).json({ success: false, message: 'RULE-004 API configuration not found' });
+        }
+        
+        console.log('RULE-004 API Endpoint:', getAccountingDocApi.apiReference);
+        console.log('Destination:', getAccountingDocApi.destination);
+        
+        // Extract 6-digit Lockbox ID (without extension)
+        const lockboxId = header.lockbox.replace(/[^0-9]/g, '').substring(0, 6);
+        console.log('Using LockboxID for query:', lockboxId);
+        
+        // Build OData query
+        const apiEndpoint = getAccountingDocApi.apiReference;
+        const destination = getAccountingDocApi.destination || 'S4HANA_SYSTEM_DESTINATION';
+        
+        // Query: LockBoxID eq '1000073'
+        const queryParams = {
+            $filter: `LockBoxID eq '${lockboxId}'`,
+            $select: 'DocumentNumber,PaymentAdvice,SubledgerDocument,CompanyCode,SubledgerOnaccountDocument'
+        };
+        
+        console.log('Query parameters:', queryParams);
+        
+        // Call SAP API using sap-client
+        const response = await sapClient.executeSapGetRequest(
+            destination,
+            apiEndpoint,
+            queryParams
+        );
+        
+        const results = response.data?.d?.results || response.data?.value || [];
+        console.log('Retrieved', results.length, 'clearing document entries from SAP');
+        console.log('Clearing documents:', JSON.stringify(results, null, 2));
+        
+        if (results.length === 0) {
+            return res.json({
+                success: true,
+                message: 'No clearing documents found for this Lockbox ID',
+                documents: []
+            });
+        }
+        
+        // Update lockbox items with retrieved document details
+        const items = await pool.query('SELECT * FROM lockbox_item WHERE header_id = $1', [headerId]);
+        
+        for (const item of items.rows) {
+            // Find matching clearing document (you can match by amount, cheque number, or other criteria)
+            const clearingDoc = results[0]; // For now, use first document (you can add matching logic)
+            
+            // Update item with document details
+            await pool.query(`
+                UPDATE lockbox_item 
+                SET 
+                    ar_posting_doc = $1,
+                    payment_advice = $2,
+                    clearing_doc = $3,
+                    subledger_onaccount_doc = $4
+                WHERE id = $5
+            `, [
+                clearingDoc.DocumentNumber || '',
+                clearingDoc.PaymentAdvice || '',
+                clearingDoc.SubledgerDocument || '',
+                clearingDoc.SubledgerOnaccountDocument || '',
+                item.id
+            ]);
+        }
+        
+        console.log('✓ Updated', items.rows.length, 'items with clearing document details');
+        
+        res.json({
+            success: true,
+            message: 'Clearing documents retrieved and updated successfully',
+            documents: results,
+            updatedItems: items.rows.length
+        });
+        
+    } catch (err) {
+        console.error('Retrieve clearing documents error:', err);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to retrieve clearing documents: ' + err.message 
+        });
+    }
+});
+
+// ============================================================================
 // LOCKBOX RUN LOG API ENDPOINTS - Fetch immutable audit logs
 // ============================================================================
 
