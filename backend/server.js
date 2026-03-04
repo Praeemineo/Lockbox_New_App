@@ -2548,6 +2548,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
 // ============================================================================
 // RETRIEVE CLEARING DOCUMENTS - Using RULE-004
 // Fetch accounting document details from SAP after production run
+// Returns data for dialog display only (no database update)
 // ============================================================================
 app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
     try {
@@ -2618,38 +2619,24 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
             });
         }
         
-        // Update lockbox items with retrieved document details
-        const items = await pool.query('SELECT * FROM lockbox_item WHERE header_id = $1', [headerId]);
+        // Format response for frontend dialog display
+        // Map to match the dialog data structure
+        const formattedDocs = results.map(doc => ({
+            companyCode: doc.CompanyCode || '',
+            lockboxId: lockboxId,
+            documentNumber: doc.DocumentNumber || '',
+            paymentAdvice: doc.PaymentAdvice || '',
+            subledgerDocument: doc.SubledgerDocument || '',
+            subledgerOnaccountDocument: doc.SubledgerOnaccountDocument || ''
+        }));
         
-        for (const item of items.rows) {
-            // Find matching clearing document (you can match by amount, cheque number, or other criteria)
-            const clearingDoc = results[0]; // For now, use first document (you can add matching logic)
-            
-            // Update item with document details
-            await pool.query(`
-                UPDATE lockbox_item 
-                SET 
-                    ar_posting_doc = $1,
-                    payment_advice = $2,
-                    clearing_doc = $3,
-                    subledger_onaccount_doc = $4
-                WHERE id = $5
-            `, [
-                clearingDoc.DocumentNumber || '',
-                clearingDoc.PaymentAdvice || '',
-                clearingDoc.SubledgerDocument || '',
-                clearingDoc.SubledgerOnaccountDocument || '',
-                item.id
-            ]);
-        }
-        
-        console.log('✓ Updated', items.rows.length, 'items with clearing document details');
+        console.log('✓ Retrieved', formattedDocs.length, 'clearing documents for dialog display');
         
         res.json({
             success: true,
-            message: 'Clearing documents retrieved and updated successfully',
-            documents: results,
-            updatedItems: items.rows.length
+            message: 'Clearing documents retrieved successfully',
+            documents: formattedDocs,
+            count: formattedDocs.length
         });
         
     } catch (err) {
