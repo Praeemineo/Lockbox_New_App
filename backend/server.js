@@ -15,6 +15,7 @@ require('dotenv').config();
 const ruleEngine = require('./srv/handlers/rule-engine');
 const sapClient = require('./srv/integrations/sap-client');
 const dataModels = require('./srv/models/data-models');
+const { getRuleById, getApiConfig } = require('./services/rule.service'); // For dynamic API calls
 
 // ============================================================================
 // MODULAR IMPORTS - SAP and Database Services
