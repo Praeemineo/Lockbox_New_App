@@ -7298,6 +7298,66 @@ sap.ui.define([
                 });
         },
         
+        // Retrieve Clearing Documents - RULE-004
+        onRetrieveClearingDocs: function (oEvent) {
+            var that = this;
+            var oButton = oEvent.getSource();
+            var oContext = oButton.getBindingContext("app");
+            var oItem = oContext.getObject();
+            
+            if (!oItem.runId) {
+                MessageBox.warning("No run ID associated with this item");
+                return;
+            }
+            
+            BusyIndicator.show(0);
+            
+            console.log("Retrieving clearing documents for Run ID:", oItem.runId);
+            
+            fetch(API_BASE + "/lockbox/retrieve-clearing/" + oItem.runId, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            })
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    BusyIndicator.hide();
+                    
+                    if (data.success) {
+                        MessageToast.show("Clearing documents retrieved successfully: " + data.count + " documents");
+                        
+                        // Update the dialog if it's open
+                        if (that._oDetailsDialog && that._oDetailsDialog.isOpen()) {
+                            var oDialogModel = that._oDetailsDialog.getModel("dialog");
+                            if (oDialogModel) {
+                                var dialogData = oDialogModel.getData();
+                                
+                                // Update lockbox data with retrieved documents
+                                if (dialogData.lockboxData && data.documents.length > 0) {
+                                    dialogData.lockboxData.forEach(function(item, index) {
+                                        if (data.documents[index]) {
+                                            item.postingDoc = data.documents[index].documentNumber;
+                                            item.paytAdvice = data.documents[index].paymentAdvice;
+                                            item.clearingDoc = data.documents[index].subledgerDocument;
+                                            item.subledgerOnaccountDoc = data.documents[index].subledgerOnaccountDocument;
+                                        }
+                                    });
+                                    oDialogModel.setData(dialogData);
+                                }
+                            }
+                        }
+                        
+                        // Reload the run history to reflect any updates
+                        that._loadRunHistory();
+                    } else {
+                        MessageBox.error("Failed to retrieve clearing documents: " + (data.message || "Unknown error"));
+                    }
+                })
+                .catch(function (err) {
+                    BusyIndicator.hide();
+                    MessageBox.error("Error retrieving clearing documents: " + err.message);
+                });
+        },
+        
         // Reprocess at item level
         onReprocessItem: function (oEvent) {
             var that = this;
