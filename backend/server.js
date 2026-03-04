@@ -2177,25 +2177,27 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
             console.log('API Endpoint:', getLockboxClearingApi.apiReference);
             console.log('Destination:', getLockboxClearingApi.destination);
             
-            const clearingApiEndpoint = getLockboxClearingApi.apiReference || '/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxClearing';
-            const clearingApiDestination = getLockboxClearingApi.destination || 'S4HANA_SYSTEM_DESTINATION';
-            
-            const clearingQueryParams = {
-                LockboxBatchInternalKey: lockboxBatchInternalKey,
-                LockboxBatch: lockboxBatch,
-                PaymentAdvice: paymentAdvice,
-                CompanyCode: RUNTIME_COMPANY_CODE
-            };
-            
-            console.log('Query Parameters:', clearingQueryParams);
-            
-            const clearingResponse = await getLockboxClearing(clearingQueryParams, clearingApiDestination, clearingApiEndpoint);
-            clearingData = clearingResponse.data?.d?.results || [];
-            
-            console.log('✓ Retrieved', clearingData.length, 'clearing entries from SAP');
-            console.log('Clearing Data:', JSON.stringify(clearingData, null, 2));
-            
-            // Parse clearing data to extract document details
+            if (lockboxBatchInternalKey && lockboxBatch) {
+                try {
+                    const clearingApiEndpoint = getLockboxClearingApi.apiReference || '/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxClearing';
+                    const clearingApiDestination = getLockboxClearingApi.destination || 'S4HANA_SYSTEM_DESTINATION';
+                    
+                    const clearingQueryParams = {
+                        LockboxBatchInternalKey: lockboxBatchInternalKey,
+                        LockboxBatch: lockboxBatch,
+                        PaymentAdvice: paymentAdvice,
+                        CompanyCode: RUNTIME_COMPANY_CODE
+                    };
+                    
+                    console.log('Query Parameters:', clearingQueryParams);
+                    
+                    const clearingResponse = await getLockboxClearing(clearingQueryParams, clearingApiDestination, clearingApiEndpoint);
+                    clearingData = clearingResponse.data?.d?.results || [];
+                    
+                    console.log('✓ Retrieved', clearingData.length, 'clearing entries from SAP');
+                    console.log('Clearing Data:', JSON.stringify(clearingData, null, 2));
+                    
+                    // Parse clearing data to extract document details
                     // Based on actual LockboxClearing API response structure after posting:
                     // - PaymentAdvice = "0100001218"
                     // - AccountingDocument = "1900005678"
