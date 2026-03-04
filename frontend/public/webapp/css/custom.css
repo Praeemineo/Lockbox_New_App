@@ -430,3 +430,114 @@
     font-weight: bold !important;
 }
 
+/* ===================================================================
+   RF Framework Style Landing Page
+   =================================================================== */
+
+/* Landing Page Background */
+.lockboxLandingPage {
+    background-color: #f5f7fa !important;
+    min-height: 100vh;
+}
+
+/* Main Title Styling */
+.landingMainTitle {
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+    color: #2b3e50 !important;
+    margin-bottom: 0.5rem !important;
+    text-align: center !important;
+}
+
+/* Subtitle Styling */
+.landingSubTitle {
+    font-size: 1.125rem !important;
+    color: #6b7a86 !important;
+    font-weight: 400 !important;
+    margin-bottom: 2rem !important;
+    text-align: center !important;
+}
+
+/* RF Framework Tiles */
+.rfFrameworkTile {
+    background-color: #ffffff !important;
+    border: 2px dashed #d1d9e0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    width: 320px !important;
+    height: 240px !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+}
+
+.rfFrameworkTile:hover {
+    border-color: #007bff !important;
+    box-shadow: 0 4px 16px rgba(0, 123, 255, 0.15) !important;
+    transform: translateY(-4px) !important;
+}
+
+/* Tile Header (Title) */
+.rfFrameworkTile .sapMGT .sapMGTHdrTxt {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    color: #2b3e50 !important;
+    text-align: left !important;
+    padding-left: 1.5rem !important;
+    padding-top: 1.5rem !important;
+}
+
+/* Tile Subheader (Description) */
+.rfFrameworkTile .sapMGT .sapMGTSubHdrTxt {
+    font-size: 0.9375rem !important;
+    color: #6b7a86 !important;
+    font-weight: 400 !important;
+    text-align: left !important;
+    padding-left: 1.5rem !important;
+    margin-top: 0.25rem !important;
+}
+
+/* Icon Styling */
+.rfFrameworkTile .sapMTileCnt .sapMIGC {
+    margin-top: 1rem !important;
+    text-align: center !important;
+}
+
+.rfFrameworkTile .sapMTileCnt .sapMIGC .sapUiIcon {
+    font-size: 4rem !important;
+    color: #007bff !important;
+}
+
+/* Remove default tile content padding */
+.rfFrameworkTile .sapMTileCnt {
+    padding: 0 !important;
+}
+
+/* Landing Footer */
+.landingFooter {
+    position: absolute;
+    bottom: 2rem;
+    width: 100%;
+    text-align: center;
+}
+
+.landingFooterText {
+    font-size: 0.875rem !important;
+    color: #6b7a86 !important;
+    font-weight: 400 !important;
+}
+
+/* Responsive adjustments for tiles */
+@media (max-width: 768px) {
+    .rfFrameworkTile {
+        width: 280px !important;
+        height: 200px !important;
+    }
+    
+    .landingMainTitle {
+        font-size: 2rem !important;
+    }
+    
+    .landingSubTitle {
+        font-size: 1rem !important;
+    }
+}
