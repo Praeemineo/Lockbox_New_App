@@ -58,7 +58,6 @@ sap.ui.define([
             oModel.setProperty("/showLockbox", true);
             oModel.setProperty("/showFieldMappingRules", false);
             oModel.setProperty("/showRuleDetail", false);
-            oModel.setProperty("/showPdfLockbox", false);
             oModel.setProperty("/showNavButton", true);
             oModel.setProperty("/currentView", "lockbox");
             // Load headers and run history when entering Lockbox Transaction
