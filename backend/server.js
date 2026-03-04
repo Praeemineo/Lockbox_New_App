@@ -2045,33 +2045,8 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
         // Use the saved payload from simulation
         const payload = JSON.parse(header.sap_payload);
         
-        // ========================================================
-        // GENERATE UNIQUE LOCKBOX BATCH ID AND TIMESTAMP
-        // SAP validates uniqueness based on combination of Lockbox + DepositDateTime
-        // Each production run must have a unique combination
-        // ========================================================
-        console.log('=== GENERATING UNIQUE LOCKBOX BATCH ID ===');
-        
-        // Strategy 1: Use timestamp-based unique Lockbox ID
-        const baseId = '1000';
-        const timestamp = Date.now().toString();
-        const uniqueSuffix = timestamp.slice(-3); // Last 3 digits
-        const uniqueLockboxId = baseId + uniqueSuffix; // e.g., "1000789"
-        
-        // Strategy 2: Update DepositDateTime to current timestamp
-        const currentDateTime = new Date().toISOString().replace(/\.\d{3}Z$/, '');
-        
-        console.log('Original Lockbox ID:', payload.Lockbox);
-        console.log('Generated unique Lockbox ID:', uniqueLockboxId);
-        console.log('Original DepositDateTime:', payload.DepositDateTime);
-        console.log('Updated DepositDateTime:', currentDateTime);
-        
-        // Update payload with unique values
-        payload.Lockbox = uniqueLockboxId.substring(0, 7); // Max 7 chars
-        payload.DepositDateTime = currentDateTime; // Current timestamp
-        
         console.log('=== PRODUCTION RUN: Committing to SAP ===');
-        console.log('Using payload with unique Lockbox ID and timestamp:');
+        console.log('Using saved simulation payload:');
         console.log(JSON.stringify(payload, null, 2));
         
         // ========================================================
