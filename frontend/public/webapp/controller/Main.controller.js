@@ -72,12 +72,10 @@ sap.ui.define([
             oModel.setProperty("/showLockbox", false);
             oModel.setProperty("/showFieldMappingRules", true);
             oModel.setProperty("/showRuleDetail", false);
-            oModel.setProperty("/showPdfLockbox", false);
             oModel.setProperty("/showNavButton", true);
             oModel.setProperty("/currentView", "fieldMappingRules");
             // Initialize and load rules
             this._initFieldMappingRules();
-            this._loadFieldMappingRules();
         },
         
 
