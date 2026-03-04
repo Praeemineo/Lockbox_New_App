@@ -2193,59 +2193,9 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
             clearingData = clearingResponse.data?.d?.results || [];
             
             console.log('✓ Retrieved', clearingData.length, 'clearing entries from SAP');
-            console.log('Clearing Data:', JSON.stringify(clearingData, null, 2)); 
-                                   clearingResponse.data?.d || 
-                                   clearingResponse.data?.results || 
-                                   clearingResponse.data?.value ||
-                                   clearingResponse.data;
-                    
-                    // If no data, try with just batch
-                    if (!Array.isArray(clearingData) || clearingData.length === 0) {
-                        console.log('No data with full filter, trying with just batch...');
-                        if (batch) {
-                            clearingResponse = await getLockboxClearing({
-                                batch: batch,
-                                companyCode: RUNTIME_COMPANY_CODE
-                            });
-                            clearingData = clearingResponse.data?.d?.results || 
-                                           clearingResponse.data?.d || 
-                                           clearingResponse.data?.results || 
-                                           clearingResponse.data?.value ||
-                                           clearingResponse.data;
-                        }
-                    }
-                    
-                    // If still no data, try with just paymentAdvice
-                    if (!Array.isArray(clearingData) || clearingData.length === 0) {
-                        console.log('No data with batch, trying with just paymentAdvice...');
-                        if (paymentAdviceFromPost) {
-                            clearingResponse = await getLockboxClearing({
-                                paymentAdvice: paymentAdviceFromPost,
-                                companyCode: RUNTIME_COMPANY_CODE
-                            });
-                            clearingData = clearingResponse.data?.d?.results || 
-                                           clearingResponse.data?.d || 
-                                           clearingResponse.data?.results || 
-                                           clearingResponse.data?.value ||
-                                           clearingResponse.data;
-                        }
-                    }
-                    
-                    console.log('Parsed clearing data:', JSON.stringify(clearingData, null, 2));
-                    console.log('Is array:', Array.isArray(clearingData));
-                    console.log('Length:', clearingData?.length);
-                    
-                    // Log ALL fields from the first clearing entry to identify correct field names
-                    if (Array.isArray(clearingData) && clearingData.length > 0) {
-                        console.log('=== ALL FIELDS IN LockboxClearing RESPONSE ===');
-                        const firstEntry = clearingData[0];
-                        Object.keys(firstEntry).forEach(key => {
-                            console.log(`  ${key}: ${firstEntry[key]}`);
-                        });
-                        console.log('=== END OF FIELDS ===');
-                    }
-                    
-                    // Parse clearing data to extract document details
+            console.log('Clearing Data:', JSON.stringify(clearingData, null, 2));
+            
+            // Parse clearing data to extract document details
                     // Based on actual LockboxClearing API response structure after posting:
                     // - PaymentAdvice = "0100001218"
                     // - AccountingDocument = "1900005678"
