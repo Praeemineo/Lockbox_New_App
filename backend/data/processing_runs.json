@@ -1,5 +1,718 @@
 [
   {
+    "id": "c7cf4796-c7b2-482a-93c6-13b70219973e",
+    "runId": "RUN-2026-00172",
+    "filename": "Customer Payments upload 9.xlsx",
+    "fileType": "XLSX",
+    "fileSize": 10331,
+    "startedAt": "2026-03-04T17:59:09.535Z",
+    "uploadedAt": "2026-03-04T17:59:09.535Z",
+    "batchNumber": 48,
+    "stages": {
+      "upload": {
+        "status": "success",
+        "message": "Parsed 34 data rows, 8 columns from XLSX file"
+      },
+      "templateMatch": {
+        "status": "success",
+        "message": "✅ Upload Successful | Pattern ID: PAT-001 | Pattern Type: SINGLE_CHECK_SINGLE_INVOICE | Single check with single invoice detected",
+        "patternId": "PAT-001",
+        "patternName": "Single Check - Single Invoice",
+        "patternType": "SINGLE_CHECK_SINGLE_INVOICE",
+        "matchScore": 100,
+        "analysis": {
+          "totalRows": 1,
+          "uniqueCheckNumbers": 1,
+          "uniqueInvoices": 1,
+          "hasEmptyCheckRows": false,
+          "hasCommaSeparated": false,
+          "commaSeparatedFields": [],
+          "hasRanges": false,
+          "rangeFields": [],
+          "hasMultipleSheets": false,
+          "hasMultipleSheetsWithData": false,
+          "sheetCount": 1,
+          "sheetsWithDataCount": 0,
+          "hasDateFields": true,
+          "dateFields": [
+            "Deposit Date"
+          ],
+          "detectedColumns": [
+            "Customer",
+            "Check Number",
+            "Check Amount",
+            "Invoice Number",
+            "Invoice Amount",
+            "Deduction Amount",
+            "Reason Code",
+            "Deposit Date"
+          ]
+        },
+        "completedAt": "2026-03-04T17:59:09.553Z"
+      },
+      "extraction": {
+        "status": "success",
+        "message": "✅ Extraction Complete | ✅ Single check and single invoice extracted successfully | ✅ Date validation and conversion completed",
+        "rowCount": 1,
+        "pattern": "SINGLE_CHECK_SINGLE_INVOICE",
+        "extractionLog": [
+          "✅ Single check and single invoice extracted successfully",
+          "✅ Date validation and conversion completed"
+        ],
+        "completedAt": "2026-03-04T17:59:09.553Z"
+      },
+      "validation": {
+        "status": "completed",
+        "message": "2/2 rules executed, 2 records enriched",
+        "errors": [],
+        "warnings": [],
+        "completedAt": "2026-03-04T17:59:11.481Z"
+      },
+      "mapping": {
+        "status": "success",
+        "message": "Generated standard payload: Lockbox=1000172, Batch=001, 1 Items",
+        "lockboxId": "1000172",
+        "batchId": "001",
+        "itemCount": 1,
+        "totalAmount": "1365.00"
+      }
+    },
+    "currentStage": "complete",
+    "overallStatus": "validated",
+    "rawData": [
+      [
+        "Customer",
+        "Check Number",
+        "Check Amount",
+        "Invoice Number",
+        "Invoice Amount",
+        "Deduction Amount",
+        "Reason Code",
+        "Deposit Date"
+      ],
+      [
+        17100009,
+        3456694,
+        1365,
+        90003904,
+        1365,
+        0,
+        null,
+        "03/04/2026"
+      ],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "extractedData": [
+      {
+        "Customer": 17100009,
+        "Check Number": 3456694,
+        "Check Amount": 1365,
+        "Invoice Number": 90003904,
+        "Invoice Amount": 1365,
+        "Deduction Amount": 0,
+        "Deposit Date": "2026-03-04",
+        "_original_Deposit Date": "03/04/2026",
+        "_dateConverted": true
+      }
+    ],
+    "mappedData": [
+      {
+        "Customer": 17100009,
+        "Check Number": 3456694,
+        "Check Amount": 1365,
+        "Invoice Number": 90003904,
+        "Invoice Amount": 1365,
+        "Deduction Amount": 0,
+        "Deposit Date": "2026-03-04",
+        "_original_Deposit Date": "03/04/2026",
+        "_dateConverted": true,
+        "Paymentreference": "9400000440",
+        "_apiDerivedFields": [
+          "Paymentreference",
+          "CompanyCode",
+          "PartnerBank",
+          "PartnerBankAccount",
+          "PartnerBankCountry"
+        ],
+        "_apiFieldMappings": {
+          "Paymentreference": {
+            "apiEndpoint": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT(P_DocumentNumber='')/Set",
+            "sourceField": "AccountingDocument",
+            "derivedFrom": "RULE-001",
+            "inputField": "P_DocumentNumber",
+            "inputValue": 90003904
+          },
+          "CompanyCode": {
+            "apiEndpoint": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT(P_DocumentNumber='')/Set",
+            "sourceField": "CompanyCode",
+            "derivedFrom": "RULE-001",
+            "inputField": "P_DocumentNumber",
+            "inputValue": 90003904
+          },
+          "PartnerBank": {
+            "apiEndpoint": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
+            "sourceField": "to_BusinessPartnerBank/results/0/BankNumber",
+            "derivedFrom": "RULE-002",
+            "inputField": "BusinessPartner",
+            "inputValue": 17100009
+          },
+          "PartnerBankAccount": {
+            "apiEndpoint": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
+            "sourceField": "to_BusinessPartnerBank/results/0/BankAccount",
+            "derivedFrom": "RULE-002",
+            "inputField": "BusinessPartner",
+            "inputValue": 17100009
+          },
+          "PartnerBankCountry": {
+            "apiEndpoint": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
+            "sourceField": "to_BusinessPartnerBank/results/0/BankCountryKey",
+            "derivedFrom": "RULE-002",
+            "inputField": "BusinessPartner",
+            "inputValue": 17100009
+          }
+        },
+        "CompanyCode": "1710",
+        "PartnerBank": "011000390",
+        "PartnerBankAccount": "415391",
+        "PartnerBankCountry": "US"
+      }
+    ],
+    "hierarchy": [
+      {
+        "nodeId": "lockbox_1000172",
+        "level": 1,
+        "type": "LOCKBOX",
+        "lockbox": "1000172",
+        "displayText": "1000172",
+        "sourceFile": "Customer Payments upload 9.xlsx",
+        "batchId": "001",
+        "status": "UPLOADED",
+        "amount": 1365,
+        "currency": "USD",
+        "deposit_datetime": "2026-03-04T00:00:00",
+        "customer": "",
+        "children": [
+          {
+            "nodeId": "cheque_3456694_001",
+            "level": 2,
+            "type": "CHEQUE",
+            "cheque": "3456694",
+            "displayText": "3456694",
+            "itemId": "001",
+            "customer": "",
+            "amount": 1365,
+            "currency": "USD",
+            "depositDate": "2026-03-04T00:00:00",
+            "partnerBank": "011000390",
+            "partnerBankAccount": "415391",
+            "partnerBankCountry": "US",
+            "children": [
+              {
+                "nodeId": "payment_9400000440_001",
+                "level": 3,
+                "type": "PAYMENT",
+                "paymentReference": "9400000440",
+                "displayText": "9400000440",
+                "customer": "",
+                "netAmount": 1365,
+                "deductionAmount": 0,
+                "currency": "USD",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "sapPayload": {
+      "Lockbox": "1000172",
+      "DepositDateTime": "2026-03-04T00:00:00",
+      "AmountInTransactionCurrency": "1365.00",
+      "LockboxBatchOrigin": "LOCKBOXORI",
+      "LockboxBatchDestination": "LOCKBOXDES",
+      "to_Item": {
+        "results": [
+          {
+            "LockboxBatch": "001",
+            "LockboxBatchItem": "001",
+            "AmountInTransactionCurrency": "1365.00",
+            "Currency": "USD",
+            "Cheque": "3456694",
+            "PartnerBank": "011000390",
+            "PartnerBankAccount": "415391",
+            "PartnerBankCountry": "US",
+            "to_LockboxClearing": {
+              "results": [
+                {
+                  "PaymentReference": "9400000440",
+                  "NetPaymentAmountInPaytCurrency": "1365.00",
+                  "DeductionAmountInPaytCurrency": "0.00",
+                  "Currency": "USD"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "lastFailedStage": null,
+    "originalFileBuffer": "UEsDBBQABgAIAAAAIQASGN7dZAEAABgFAAATAAgCW0NvbnRlbnRfVHlwZXNdLnhtbCCiBAIooAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADElM9uwjAMxu+T9g5VrlMb4DBNE4XD/hw3pLEHyBpDI9Ikig2Dt58bYJqmDoRA2qVRG/v7fnFjD8frxmYriGi8K0W/6IkMXOW1cfNSvE+f8zuRISmnlfUOSrEBFOPR9dVwugmAGWc7LEVNFO6lxKqGRmHhAzjemfnYKOLXOJdBVQs1Bzno9W5l5R2Bo5xaDTEaPsJMLS1lT2v+vCWJYFFkD9vA1qsUKgRrKkVMKldO/3LJdw4FZ6YYrE3AG8YQstOh3fnbYJf3yqWJRkM2UZFeVMMYcm3lp4+LD+8XxWGRDko/m5kKtK+WDVegwBBBaawBqLFFWotGGbfnPuCfglGmpX9hkPZ8SfhEjsE/cRDfO5DpeX4pksyRgyNtLOClf38SPeZcqwj6jSJ36MUBfmof4uD7O4k+IHdyhNOrsG/VNjsPLASRDHw3a9el/3bkKXB22aGdMxp0h7dMc230BQAA//8DAFBLAwQUAAYACAAAACEAtVUwI/QAAABMAgAACwAIAl9yZWxzLy5yZWxzIKIEAiigAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKySTU/DMAyG70j8h8j31d2QEEJLd0FIuyFUfoBJ3A+1jaMkG92/JxwQVBqDA0d/vX78ytvdPI3qyCH24jSsixIUOyO2d62Gl/pxdQcqJnKWRnGs4cQRdtX11faZR0p5KHa9jyqruKihS8nfI0bT8USxEM8uVxoJE6UchhY9mYFaxk1Z3mL4rgHVQlPtrYawtzeg6pPPm3/XlqbpDT+IOUzs0pkVyHNiZ9mufMhsIfX5GlVTaDlpsGKecjoieV9kbMDzRJu/E/18LU6cyFIiNBL4Ms9HxyWg9X9atDTxy515xDcJw6vI8MmCix+o3gEAAP//AwBQSwMEFAAGAAgAAAAhACO6JhJ6AwAA2wgAAA8AAAB4bC93b3JrYm9vay54bWysVW1vozgQ/n7S/QfEdwrmLQSVrHjVVWqrKs22t1KlygWn+AqYM6ZJVe1/vzGEtN2sTrnuRYmNPZPHz8w8Y06/bOtKeSa8o6wJVHRiqAppclbQ5jFQv64yzVOVTuCmwBVrSKC+kE79svj9t9MN408PjD0pANB0gVoK0fq63uUlqXF3wlrSgGXNeI0FLPmj3rWc4KIrCRF1pZuG4eo1po06Ivj8GAy2XtOcJCzva9KIEYSTCgug35W07Sa0Oj8Grsb8qW+1nNUtQDzQioqXAVRV6tw/e2wYxw8VhL1FjrLl8HXhhwwYzOkkMB0cVdOcs46txQlA6yPpg/iRoSP0IQXbwxwch2TrnDxTWcM9K+5+kpW7x3LfwJDxy2gIpDVoxYfkfRLN2XMz1cXpmlbkZpSugtv2EteyUpWqVLgTaUEFKQJ1Bku2IR82eN9GPa3Aas5d01P1xV7OVxwWUPuwEoQ3WJCYNQKktqP+q7IasOOSgYiVJfm7p5xA74CEIBwYce7jh+4Ki1LpeRWosX/3tYMI7y6xwBz/hRvl8i5hm6Zi0El37ySID/X+H0SIc5kDHeIeuY3PP+YAKHJ/EtqV4Ao8nyXnkOxr/AyphwIXu848g9wi677JuY/uX2M3TM1sFmtWGjuabTq2Fkauo2WmG4ZeZM5Cw/sOwXDXzxnuRbmrqoQOVBtKeGC6wNvJggy/p8UbjVdj99Hk/MMw2b7LgOX9dUPJpnurv1wq21vaFGwTqBqSqn35uNwMxltaiBKCnNsmuIx7fxD6WAJjhBxDqp2bklmgvs6dzEJelmoWMjzNTqxY82zT0ww7s2YQfYRMNDDS31EabkqgNsxKM6j7Wt6eCK5kOQ9JVhXuyzP4WYFkTAfecFHtveF5720OJZ8OyXGVX3FFTgPsHBljY5CtOO/E4hRm0CSFYJBthDNjbmtGakE1vbkJwVimFtuJmTqzNEkjR1ZTvhf8/+N2HFrDn144kmWJuVhxnD/Ba2pJ1hHuQH5D+DrwfE82crzIsICinaFMs9Hc0KLItTUnySxnhpI4dbI3sjL89SfvJk8f/k2w6KGpZT8Pa1+O2W53v7keN3ZV/dCp/jKRldn9+98cryH6ihzpnN0c6RhfXqwujvQ9T1f3t9mxzuFFlITH+4fLZfhtlf45HaH/NKFjweU4yFSfZLL4BwAA//8DAFBLAwQUAAYACAAAACEASqmmYfoAAABHAwAAGgAIAXhsL19yZWxzL3dvcmtib29rLnhtbC5yZWxzIKIEASigAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAvJLNasQwDITvhb6D0b1xkv5Qyjp7KYW9ttsHMLESh01sY6k/efualO42sKSX0KMkNPMxzGb7OfTiHSN13ikoshwEutqbzrUKXvdPV/cgiLUzuvcOFYxIsK0uLzbP2GtOT2S7QCKpOFJgmcODlFRbHDRlPqBLl8bHQXMaYyuDrg+6RVnm+Z2MvzWgmmmKnVEQd+YaxH4Myflvbd80XY2Pvn4b0PEZC8mJC5Ogji2ygmn8XhZZAgV5nqFck+HDxwNZRD5xHFckp0u5BFP8M8xiMrdrwpDVEc0Lx1Q+OqUzWy8lc7MqDI996vqxKzTNP/ZyVv/qCwAA//8DAFBLAwQUAAYACAAAACEA6lQvw+wDAABsDQAAGAAAAHhsL3dvcmtzaGVldHMvc2hlZXQxLnhtbJxX0Y6bOBR9r7T/gPyegA0hEIVUk0no9KHSarfdfXaIk6ABnBonmarqv++1CRCCGWU7monJ4fjc63uuDTP/+JZn1pmJMuVFhPDYQRYrEr5Ni32Evn2NRwGySkmLLc14wSL0g5Xo4+KPD/MLF6/lgTFpgUJRRugg5XFm22VyYDktx/zICriz4yKnEr6KvV0eBaNbPSnPbOI4vp3TtECVwkw8osF3uzRhK56cclbISkSwjErIvzykx7JWy5NH5HIqXk/HUcLzI0hs0iyVP7QosvJk9nlfcEE3Gaz7DXs0sd4E/BL4c+swGu9FytNE8JLv5BiU7Srn/vJDO7Rp0ij11/+QDPZswc6pMrCVIr+XEp40WqQVc39TzG/EVLnE7JRuI/QTx08hwUE8Wq3jeOR5IR4FjjcdreL10yrw1rEzcX+hxXybgsNqVZZguwg94dmLO0H2Yq4b6J+UXcqba0vSzd8sY4lkEAQjS/XnhvNXRfwMkAOSpSYoSZrI9MyeWZZFaDmFFv+ug8AlBLCbCLfXdbRYd/SfwtqyHT1l8i9+eWHp/iAhrDfWGSY8AzZ8WnmqdhU0E32rskq38gBXeBw6PpkgKzmVkuf/XmEVvZkGDuhpMF6u993xxCOhH0zfnwnl1jNhrGeGyNqwUsapSvPdsN51Moz15OCxsJCUDgtjm7DruyTAaqkPxvevKjDWKpO6Wg9KgKE6ERj/Z+XgtNMzYbzOJM67i7crr3XHrKiki7ngFwu2MhS5PFJ1MOJZAL2XKPBJoRGC0oINJaDnhTO3z9BmyZWx7DNwl/FcMaCgjQbpMlZ9httlrPsMr8uIKwZ8NlEmXcanPsPvMl4qBhjZaEwbhg11aooFLW4olkJVIVWZ8BQ78BPeVeuW4noT3w/v1vFcMUgl4vp3i1hVt119O4QAbujcKazfV4hvU7gz81N9T21r5f/LFYCnbFOSwFwSdSj1+kcfVRGqTqnbAqqndJ+t0AgF+ky7ZcNhYGAr1MTGkK2BrmEj39j6S1x1Qz8bbHR/qWGjPhxrpnwUbOTDdjPxFWzkw9Yy8RVs5EODm/gKNvJba8lMNaZujSVWsJHfmtvhD7mLW3s7/CF/SevvLV/DpnxI62+HP+Qvaf3t8Ku90O8H0vrb4Q/5S1p/O/whf9Wz6OpXhz/kL2n97fCH/CVmfzVsrKfZXzLkLzH7q2GTvmv2V8NGvtlfd8hf1+yvho36Zn/dIX9ds78aNuqb/YWXR7W/wvY0rN7zqqf2ke7ZFyr2aVFaGdvB6eyMwUdRvdjpa8mPGlWvMlzCW1v97QD/1TA43Z0xLGHHuay/qHfJ5v+kxX8AAAD//wMAUEsDBBQABgAIAAAAIQCDsQT1qQEAAH8DAAAYAAAAeGwvd29ya3NoZWV0cy9zaGVldDIueG1snJNNa+MwEIbvC/0PQndb/ojTOMQpCd6yPRSWZbd3RR7bIpbGSEqTUvrfKzvEXcglFGzQSKNn5vW8Xj2cVEdewViJuqBxGFECWmAldVPQf38fgwUl1nFd8Q41FPQNLH1Y3/1YHdHsbQvgiCdoW9DWuX7JmBUtKG5D7EH7kxqN4s6HpmG2N8Cr8ZLqWBJFc6a41PRMWJpbGFjXUkCJ4qBAuzPEQMed79+2srcXmhK34BQ3+0MfCFS9R+xkJ93bCKVEieVTo9HwXed1n+IZF+Rk/JP4N72UGfevKikpDFqsXejJ7Nzztfyc5YyLiXSt/yZMPGMGXuUwwC9U8r2W4mxiJV+w9Juw+QQbPpdZHmRV0Pd8Ey3S7H4ebDeLLJiV2zjIN+XPIE+itCzzbbrY5h90vaqkn/CgihioC7qJKVuvRvO8SDja/9Zk8OIOcT8cPPka0ZDKrnIfRy/+NqSCmh869wePv0A2rfPGn4XZxC+54x7Q8waeuWmktqSD2mdF4T0l5nxjXDvsx92Mkh06h+oStd7o4AcahV56jeguwdDY9OusPwEAAP//AwBQSwMEFAAGAAgAAAAhAPZgtEG4BwAAESIAABMAAAB4bC90aGVtZS90aGVtZTEueG1s7FrNjxu3Fb8HyP9AzF3WzOh7YTnQpzf27nrhlV3kSEmUhl7OcEBSuysUAQrn1EuBAmnRS4HeeiiKBmiABrnkjzFgI03/iDxyRprhioq9/kCSYncvM9TvPf7mvcfHN49z95OrmKELIiTlSdcL7vgeIsmMz2my7HpPJuNK20NS4WSOGU9I11sT6X1y7+OP7uIDFZGYIJBP5AHuepFS6UG1KmcwjOUdnpIEfltwEWMFt2JZnQt8CXpjVg19v1mNMU08lOAY1D5aLOiMoIlW6d3bKB8xuE2U1AMzJs60amJJGOz8PNAIuZYDJtAFZl0P5pnzywm5Uh5iWCr4oev55s+r3rtbxQe5EFN7ZEtyY/OXy+UC8/PQzCmW0+2k/ihs14OtfgNgahc3auv/rT4DwLMZPGnGpawzaDT9dphjS6Ds0qG70wpqNr6kv7bDOeg0+2Hd0m9Amf767jOOO6Nhw8IbUIZv7OB7ftjv1Cy8AWX45g6+Puq1wpGFN6CI0eR8F91stdvNHL2FLDg7dMI7zabfGubwAgXRsI0uPcWCJ2pfrMX4GRdjAGggw4omSK1TssAziOJeqrhEQypThtceSnHCJQz7YRBA6NX9cPtvLI4PCC5Ja17ARO4MaT5IzgRNVdd7AFq9EuTlN9+8eP71i+f/efHFFy+e/wsd0WWkMlWW3CFOlmW5H/7+x//99Xfov//+2w9f/smNl2X8q3/+/tW33/2UelhqhSle/vmrV19/9fIvf/j+H186tPcEnpbhExoTiU7IJXrMY3hAYwqbP5mKm0lMIkwtCRyBbofqkYos4MkaMxeuT2wTPhWQZVzA+6tnFtezSKwUdcz8MIot4DHnrM+F0wAP9VwlC09WydI9uViVcY8xvnDNPcCJ5eDRKoX0Sl0qBxGxaJ4ynCi8JAlRSP/GzwlxPN1nlFp2PaYzwSVfKPQZRX1MnSaZ0KkVSIXQIY3BL2sXQXC1ZZvjp6jPmeuph+TCRsKywMxBfkKYZcb7eKVw7FI5wTErG/wIq8hF8mwtZmXcSCrw9JIwjkZzIqVL5pGA5y05/SGGxOZ0+zFbxzZSKHru0nmEOS8jh/x8EOE4dXKmSVTGfirPIUQxOuXKBT/m9grR9+AHnOx191NKLHe/PhE8gQRXplQEiP5lJRy+vE+4vR7XbIGJK8v0RGxl156gzujor5ZWaB8RwvAlnhOCnnzqYNDnqWXzgvSDCLLKIXEF1gNsx6q+T4iEMknXNbsp8ohKK2TPyJLv4XO8vpZ41jiJsdin+QS8boXuVMBidFB4xGbnZeAJhfIP4sVplEcSdJSCe7RP62mErb1L30t3vK6F5b83WWOwLp/ddF2CDLmxDCT2N7bNBDNrgiJgJpiiI1e6BRHL/YWI3leN2Mopt7AXbeEGKIyseiemyeuKnxMsBL/8eWqfD1b1uBW/S72zL68cXqty9uF+hbXNEK+SUwLbyW7iui1tbksb7/++tNm3lm8LmtuC5ragcb2CfZCCpqhhoLwpWj2m8RPv7fssKGNnas3IkTStHwmvNfMxDJqelGlMbvuAaQSX+nlgAgu3FNjIIMHVb6iKziKcQn8oMF3MpcxVLyVKuYS2kRk2/VRyTbdpPq3iYz7P2p2mv+RnJpRYFeN+AxpP2Ti0qlSGbrbyQc1vQ92wXZpW64aAlr0JidJkNomag0RrM/gaErpz9n5YdBws2lr9xlU7pgBqW6/AezeCt/Wu16hnjKAjBzX6XPspc/XGu9o579XT+4zJyhEArcVdT3c0172Pp58uC7U38LRFwjglCyubhPGVKfBkBG/DeXSW++4/FXA39XWncKlFT5tisxoKGq32h/C1TiLXcgNLypmCJegS1ngIi85DM5x2vQX0jeEyTiF4pH73wmwJhy8zJbIV/zapJRVSDbGMMoubrJP5J6aKCMRo3PX082/DgSUmiWTkOrB0f6nkQr3gfmnkwOu2l8liQWaq7PfSiLZ0dgspPksWzl+N+NuDtSRfgbvPovklmrKVeIwhxBqtQHt3TiUcHwSZq+cUzsO2mayIv2s7U579rUOuIh9jlkY431LK2TyDmw1lS8fcbW1QusufGQy6a8LpUu+w77ztvn6v1pYr9sdOsWlaaUVvm+5s+uF2+RKrYhe1WGW5+3rO7WySHQSqc5t4972/RK2YzKKmGe/mYZ2081Gb2nusCEq7T3OP3babhNMSb7v1g9z1qNU7xKawNIFvDs7LZ9t8+gySxxBOEVcsO+1mCdyZ0jI9Fca3Uz5f55dMZokm87kuSrNU/pgsEJ1fdb3QVTnmh8d5NcASQJuaF1bYVtBZ7dmCerPLRbMFuxXOythr9aotvJXYHLNuhU1r0UVbXW1O1HWtbmbWDsue2qRhYym42rUitMkFhtI5O8zNci/kmSuVV9pwhVaCdr3f+o1efRA2BhW/3RhV6rW6X2k3erVKr9GoBaNG4A/74edAT0Vx0Mi+fBjDaRBb598/mPGdbyDizYHXnRmPq9x841A13jffQATh/m8gwJFAKxwF9bAXDiqDYdCs1MNhs9Ju1XqVQdgchj3YtJvj3uceujDgoD8cjseNsNIcAK7u9xqVXr82qDTbo344Dkb1oQ/gfPu5grcYnXNzW8Cl4XXvRwAAAP//AwBQSwMEFAAGAAgAAAAhAPG2E+D1AwAA4g0AAA0AAAB4bC9zdHlsZXMueG1sxFdtb9o6FP4+6f4Hy9/TvEAYIMJUSiNN2qpJ7aT71SQOWNexM8d0YdP97/fYSUgohdJW2uUDsU+On/Mcnxc7s09VztEjVSWTIsL+lYcRFYlMmVhH+PtD7IwxKjURKeFS0AjvaIk/zf/6MCv1jtP7DaUaAYQoI7zRupi6bplsaE7KK1lQAW8yqXKiYarWblkoStLSLMq5G3jeyM0JE7hGmObJJSA5Uf9sCyeReUE0WzHO9M5iYZQn089rIRVZcaBa+UOSoMofqQBVqjVipUd2cpYoWcpMXwGuK7OMJfSY7sSduCTpkAD5bUh+6HrBge+VeiPS0FX0kZnw4flMbPM41yVK5FZoCOdehOo3n1MQjoYY1VG5kSnsk2d/2J3P3Gb9fJZJ0cEMAcYI5rPyF3okHDB8o55ILhXSEG5AsRJBclprXBdaluiOKCV/Gt2M5Izv6neBEdg0aZRzBkGzBGoz9f/KaP1Jg3tjXuedWq8iHMf+dfBxMDDinouKEY6+CwblQtHX+yMHzuCNx2bTL8ZzbTxgFxnn++gOTFhAMJ9BIWiqRAwT1IwfdgUERUDN1rSs3gvaa0V2fhBevqCUnKWGxfrGpkKzWbH9GZhV84KJlFYUkg9yz+RZjzDMalr2UcIaqVLoR20OGy9r0XzGaaZhuWLrjXlqWRgbUmuo2fksZWQtBeHGQLuivxL6GLSsCOsNtJw2e58yMyYaCxfpWy6WykXqQLllfJF+7dz/7ttL29zsN0QvoZzfm33+OztoQ1XWa0FwyJiENt3IDCE3m2EdrnpiwthHq7H7sKa9vR4XVdnewGtX+9D7m9WIFAXfLWyyNt3vAM022fM+HqHdbfMVVbE9MQ3mSzaaVn65lR9bqek3RTNWdfivtdqLHlB8NnpHnsUQ7uc8qj285mwtctoeWaSdop+KFA+0sktNPlTZ6Yi/mwsYOJUPp7CDp/lwys8z2IOTFfAk1w6xT+4ZXOY0S8wpncCO0vpcPbdx4MSJEvzzBIBLvwecJWCOuy6n3rkf/ivr9a2VZFsaNLFepzzok/uOh8xFI8J3phnwXpqttoxrJp7pkYCZVl3XtbcLba7Cth/vrUD5pjQjW64f9i8j3I2/0pRtcwhEo/WNPUptISLcjb+YM9gfmdMc6vNLCYcmPNFWsQj/vl18nCxv48AZe4uxMxzQ0JmEi6UTDm8Wy2U88QLv5t/ehfwd13H7/QCF6w+nJYdLu2qcbcjfd7II9yY1fXsXAdp97pNg5F2HvufEA893hiMydsajQejEoR8sR8PFbRiHPe7hG6/tnuv79QeAIR9ONcspZ6KNVRuhvhSCBNMzTrhtJNzu42z+HwAAAP//AwBQSwMEFAAGAAgAAAAhAAqfKcTlAAAAnQEAABQAAAB4bC9zaGFyZWRTdHJpbmdzLnhtbHSQ0UoDMRBF3wX/IeTdJlYpKkmK7CL44oPoB8Rk7AY3k3VnUvTvTcEi1Pbx3sOZgWvWX3kUW5gpFbTycqGlAAwlJtxY+frycHEjBbHH6MeCYOU3kFy78zNDxKK5SFYOzNOdUhQGyJ4WZQJs5L3M2XOL80bRNIOPNABwHtVS65XKPqEUoVRkK2+lqJg+K3T77AwlZ9h1lbhkmI1iZ9Su++0HCB/iqea3U+w+724deo+4LSnACXNPj7s9xBq4DSWO82fw1GBXIhy+7WEqlFj0nv8xfaX0dRtlufqzVJvX/QAAAP//AwBQSwMEFAAGAAgAAAAhAKuMcLKvAQAAOgMAABEACAFkb2NQcm9wcy9jb3JlLnhtbCCiBAEooAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHySwW7bMAyG7wP2DobujmxnyRYjcYFt6KktijbDht04iU2UWpIhMXX99pXlxEmKYieL5M9P1G8ur151nbyg88qaFcsnGUvQCCuV2azYr/V1+o0lnsBIqK3BFevQs6vq86elaEphHd4726AjhT4JJONL0azYlqgpOfdiixr8JChMKD5Zp4FC6Da8AfEMG+RFls25RgIJBLwHps1IZAekFCOy2bs6AqTgWKNGQ57nk5yftIRO+w8bYuVMqRV1TXjTYdxzthRDcVS/ejUK27adtNM4Rpg/539ubx7jU1Nleq8EsmopRUmKaqyW/HQMJ7//t0NBQ3oMQkE4BLKuegCzU7RNHlDKLjYfK73nz9i11kkf+i+iAJDohVMNhT850C8SQV2Dp9vwa58Uyu9ddRcsd7ADk9yFbwcGfAtaRfA7aX+zwxfVb8lw8ymSIvo6zI8yCU6Vg6/Hyu/pj5/ra1YVWTFLs0VaLNZ5VhZFOfv6t3/gRX/v3JDQh1H/T5yn2TTNvqzzecCVs8UZ8Qio4rIC4ca6bhhfjFHcY0NhkR4JaH8wVtgPUufbXr0BAAD//wMAUEsDBBQABgAIAAAAIQC3FAWLnwEAAF4DAAAQAAgBZG9jUHJvcHMvYXBwLnhtbCCiBAEooAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJyTQW/bMAyF7wP2HwzdGznZUAyBrGJLN/SwYgGSdmdOpmOhtmSIbJDs14+2UdfpDgN2I/mI589Pkrk5tU12xEQ+hkItF7nKMLhY+nAo1MP+29UnlRFDKKGJAQt1RlI39v07s02xw8QeKROLQIWqmbu11uRqbIEWIgdRqphaYGnTQceq8g5vo3tuMbBe5fm1xhNjKLG86iZDNTquj/y/pmV0PR897s+dAFvzuesa74DlL+29dylSrDj7enLYGD0XjdDt0D0nz2ebGz1vzc5BgxsxthU0hEa/DswdQh/aFnwia468PqLjmDLyvyW2lcp+AWGPU6gjJA+BBatfG5uhbjriZH/G9EQ1IpPRsjAOh3K+O6/9R7saFqS4XOwNRhARLhH3nhukH9UWEv+LeGAYeUecXc+3nPNNpIM04szRhzQE4s1n7yHAAZMIU7WJbQfhLKOp+u7DEz10+3gLjC/hXw7NroaEpZzXdDjTwNxJ7qkRky9yCH0Sl/3U0qaGcMDyxeJvob9Jj+NzscvrRf4hl0symxn9+jDsHwAAAP//AwBQSwECLQAUAAYACAAAACEAEhje3WQBAAAYBQAAEwAAAAAAAAAAAAAAAAAAAAAAW0NvbnRlbnRfVHlwZXNdLnhtbFBLAQItABQABgAIAAAAIQC1VTAj9AAAAEwCAAALAAAAAAAAAAAAAAAAAJ0DAABfcmVscy8ucmVsc1BLAQItABQABgAIAAAAIQAjuiYSegMAANsIAAAPAAAAAAAAAAAAAAAAAMIGAAB4bC93b3JrYm9vay54bWxQSwECLQAUAAYACAAAACEASqmmYfoAAABHAwAAGgAAAAAAAAAAAAAAAABpCgAAeGwvX3JlbHMvd29ya2Jvb2sueG1sLnJlbHNQSwECLQAUAAYACAAAACEA6lQvw+wDAABsDQAAGAAAAAAAAAAAAAAAAACjDAAAeGwvd29ya3NoZWV0cy9zaGVldDEueG1sUEsBAi0AFAAGAAgAAAAhAIOxBPWpAQAAfwMAABgAAAAAAAAAAAAAAAAAxRAAAHhsL3dvcmtzaGVldHMvc2hlZXQyLnhtbFBLAQItABQABgAIAAAAIQD2YLRBuAcAABEiAAATAAAAAAAAAAAAAAAAAKQSAAB4bC90aGVtZS90aGVtZTEueG1sUEsBAi0AFAAGAAgAAAAhAPG2E+D1AwAA4g0AAA0AAAAAAAAAAAAAAAAAjRoAAHhsL3N0eWxlcy54bWxQSwECLQAUAAYACAAAACEACp8pxOUAAACdAQAAFAAAAAAAAAAAAAAAAACtHgAAeGwvc2hhcmVkU3RyaW5ncy54bWxQSwECLQAUAAYACAAAACEAq4xwsq8BAAA6AwAAEQAAAAAAAAAAAAAAAADEHwAAZG9jUHJvcHMvY29yZS54bWxQSwECLQAUAAYACAAAACEAtxQFi58BAABeAwAAEAAAAAAAAAAAAAAAAACqIgAAZG9jUHJvcHMvYXBwLnhtbFBLBQYAAAAACwALAMYCAAB/JQAAAAA=",
+    "originalFileMimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "templateId": "TPL-0063",
+    "batchTemplate": {
+      "id": "20b04846-ca55-44b0-8867-d2d47d740e5d",
+      "templateId": "TPL-0063",
+      "templateName": "Template for Customer Payments upload 9.xlsx",
+      "originalFilename": "Customer Payments upload 9.xlsx",
+      "fileType": "XLSX",
+      "fileSize": 0,
+      "uploadDate": "2026-03-04T17:59:09.550Z",
+      "detectedHeaders": [
+        "Customer",
+        "Check Number",
+        "Check Amount",
+        "Invoice Number",
+        "Invoice Amount",
+        "Deduction Amount",
+        "Reason Code",
+        "Deposit Date"
+      ],
+      "fieldMappings": {
+        "Customer": {
+          "index": 0,
+          "originalHeader": "Customer",
+          "normalizedHeader": "Customer",
+          "sapField": "Customer",
+          "dataType": "String",
+          "required": true
+        },
+        "Check Number": {
+          "index": 1,
+          "originalHeader": "Check Number",
+          "normalizedHeader": "CheckNumber",
+          "sapField": "Cheque",
+          "dataType": "String",
+          "required": true
+        },
+        "Check Amount": {
+          "index": 2,
+          "originalHeader": "Check Amount",
+          "normalizedHeader": "CheckAmount",
+          "sapField": "AmountInTransactionCurrency",
+          "dataType": "String",
+          "required": true
+        },
+        "Invoice Number": {
+          "index": 3,
+          "originalHeader": "Invoice Number",
+          "normalizedHeader": "InvoiceNumber",
+          "sapField": "PaymentReference",
+          "dataType": "String",
+          "required": false
+        },
+        "Invoice Amount": {
+          "index": 4,
+          "originalHeader": "Invoice Amount",
+          "normalizedHeader": "InvoiceAmount",
+          "sapField": "NetPaymentAmountInPaytCurrency",
+          "dataType": "String",
+          "required": false
+        },
+        "Deduction Amount": {
+          "index": 5,
+          "originalHeader": "Deduction Amount",
+          "normalizedHeader": "DeductionAmount",
+          "sapField": "DeductionAmountInPaytCurrency",
+          "dataType": "String",
+          "required": false
+        },
+        "Reason Code": {
+          "index": 6,
+          "originalHeader": "Reason Code",
+          "normalizedHeader": "ReasonCode",
+          "sapField": "PaymentDifferenceReason",
+          "dataType": "String",
+          "required": false
+        },
+        "Deposit Date": {
+          "index": 7,
+          "originalHeader": "Deposit Date",
+          "normalizedHeader": "DepositDate",
+          "sapField": "DepositDateTime",
+          "dataType": "String",
+          "required": false
+        }
+      },
+      "sampleData": [
+        [
+          17100009,
+          3456694,
+          1365,
+          90003904,
+          1365,
+          0,
+          null,
+          "03/04/2026"
+        ],
+        [],
+        [],
+        [],
+        []
+      ],
+      "rowCount": 34,
+      "columnCount": 8,
+      "headerRow": 1,
+      "dataStartRow": 2,
+      "status": "ACTIVE",
+      "createdAt": "2026-03-04T17:59:09.550Z",
+      "updatedAt": "2026-03-04T17:59:09.550Z"
+    },
+    "ruleExecutionLogs": [
+      {
+        "ruleId": "RULE-001",
+        "status": "SUCCESS",
+        "recordsEnriched": 2
+      },
+      {
+        "ruleId": "RULE-002",
+        "status": "SUCCESS",
+        "recordsEnriched": 2
+      }
+    ],
+    "fieldMappingPreview": {
+      "sourceFields": [
+        {
+          "fieldName": "Customer",
+          "displayName": "Customer",
+          "value": 17100009,
+          "source": "Uploaded File"
+        },
+        {
+          "fieldName": "Check Number",
+          "displayName": "Check Number",
+          "value": 3456694,
+          "source": "Uploaded File"
+        },
+        {
+          "fieldName": "Check Amount",
+          "displayName": "Check Amount",
+          "value": 1365,
+          "source": "Uploaded File"
+        },
+        {
+          "fieldName": "Invoice Number",
+          "displayName": "Invoice Number",
+          "value": 90003904,
+          "source": "Uploaded File"
+        },
+        {
+          "fieldName": "Invoice Amount",
+          "displayName": "Invoice Amount",
+          "value": 1365,
+          "source": "Uploaded File"
+        },
+        {
+          "fieldName": "Deduction Amount",
+          "displayName": "Deduction Amount",
+          "value": "—",
+          "source": "Uploaded File"
+        },
+        {
+          "fieldName": "Deposit Date",
+          "displayName": "Deposit Date",
+          "value": "2026-03-04",
+          "source": "Uploaded File"
+        }
+      ],
+      "apiDerivedFields": [
+        {
+          "fieldName": "Paymentreference",
+          "displayName": "Paymentreference",
+          "value": "9400000440",
+          "source": "SAP API",
+          "apiEndpoint": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT(P_DocumentNumber='')/Set",
+          "sourceApiField": "AccountingDocument",
+          "derivedFromRule": "RULE-001",
+          "inputField": "P_DocumentNumber",
+          "inputValue": 90003904
+        },
+        {
+          "fieldName": "CompanyCode",
+          "displayName": "Company Code",
+          "value": "1710",
+          "source": "SAP API",
+          "apiEndpoint": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT(P_DocumentNumber='')/Set",
+          "sourceApiField": "CompanyCode",
+          "derivedFromRule": "RULE-001",
+          "inputField": "P_DocumentNumber",
+          "inputValue": 90003904
+        },
+        {
+          "fieldName": "PartnerBank",
+          "displayName": "Partner Bank",
+          "value": "011000390",
+          "source": "SAP API",
+          "apiEndpoint": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
+          "sourceApiField": "to_BusinessPartnerBank/results/0/BankNumber",
+          "derivedFromRule": "RULE-002",
+          "inputField": "BusinessPartner",
+          "inputValue": 17100009
+        },
+        {
+          "fieldName": "PartnerBankAccount",
+          "displayName": "Partner Bank Account",
+          "value": "415391",
+          "source": "SAP API",
+          "apiEndpoint": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
+          "sourceApiField": "to_BusinessPartnerBank/results/0/BankAccount",
+          "derivedFromRule": "RULE-002",
+          "inputField": "BusinessPartner",
+          "inputValue": 17100009
+        },
+        {
+          "fieldName": "PartnerBankCountry",
+          "displayName": "Partner Bank Country",
+          "value": "US",
+          "source": "SAP API",
+          "apiEndpoint": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
+          "sourceApiField": "to_BusinessPartnerBank/results/0/BankCountryKey",
+          "derivedFromRule": "RULE-002",
+          "inputField": "BusinessPartner",
+          "inputValue": 17100009
+        }
+      ],
+      "fieldMappings": [
+        {
+          "fieldName": "Customer",
+          "sourceType": "File Upload",
+          "sourceValue": 17100009,
+          "targetType": "Lockbox Field",
+          "finalValue": 17100009,
+          "isApiDerived": false
+        },
+        {
+          "fieldName": "Check Number",
+          "sourceType": "File Upload",
+          "sourceValue": 3456694,
+          "targetType": "Lockbox Field",
+          "finalValue": 3456694,
+          "isApiDerived": false
+        },
+        {
+          "fieldName": "Check Amount",
+          "sourceType": "File Upload",
+          "sourceValue": 1365,
+          "targetType": "Lockbox Field",
+          "finalValue": 1365,
+          "isApiDerived": false
+        },
+        {
+          "fieldName": "Invoice Number",
+          "sourceType": "File Upload",
+          "sourceValue": 90003904,
+          "targetType": "Lockbox Field",
+          "finalValue": 90003904,
+          "isApiDerived": false
+        },
+        {
+          "fieldName": "Invoice Amount",
+          "sourceType": "File Upload",
+          "sourceValue": 1365,
+          "targetType": "Lockbox Field",
+          "finalValue": 1365,
+          "isApiDerived": false
+        },
+        {
+          "fieldName": "Deduction Amount",
+          "sourceType": "File Upload",
+          "sourceValue": "—",
+          "targetType": "Lockbox Field",
+          "finalValue": "—",
+          "isApiDerived": false
+        },
+        {
+          "fieldName": "Deposit Date",
+          "sourceType": "File Upload",
+          "sourceValue": "2026-03-04",
+          "targetType": "Lockbox Field",
+          "finalValue": "2026-03-04",
+          "isApiDerived": false
+        },
+        {
+          "fieldName": "Paymentreference",
+          "sourceType": "SAP API",
+          "sourceValue": "—",
+          "sourceApiField": "AccountingDocument",
+          "targetType": "Lockbox API Field (Derived)",
+          "apiEndpoint": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT(P_DocumentNumber='')/Set",
+          "derivedFromRule": "RULE-001",
+          "inputMapping": "P_DocumentNumber = 90003904",
+          "finalValue": "9400000440",
+          "isApiDerived": true
+        },
+        {
+          "fieldName": "Company Code",
+          "sourceType": "SAP API",
+          "sourceValue": "—",
+          "sourceApiField": "CompanyCode",
+          "targetType": "Lockbox API Field (Derived)",
+          "apiEndpoint": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT(P_DocumentNumber='')/Set",
+          "derivedFromRule": "RULE-001",
+          "inputMapping": "P_DocumentNumber = 90003904",
+          "finalValue": "1710",
+          "isApiDerived": true
+        },
+        {
+          "fieldName": "Partner Bank",
+          "sourceType": "SAP API",
+          "sourceValue": "—",
+          "sourceApiField": "to_BusinessPartnerBank/results/0/BankNumber",
+          "targetType": "Lockbox API Field (Derived)",
+          "apiEndpoint": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
+          "derivedFromRule": "RULE-002",
+          "inputMapping": "BusinessPartner = 17100009",
+          "finalValue": "011000390",
+          "isApiDerived": true
+        },
+        {
+          "fieldName": "Partner Bank Account",
+          "sourceType": "SAP API",
+          "sourceValue": "—",
+          "sourceApiField": "to_BusinessPartnerBank/results/0/BankAccount",
+          "targetType": "Lockbox API Field (Derived)",
+          "apiEndpoint": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
+          "derivedFromRule": "RULE-002",
+          "inputMapping": "BusinessPartner = 17100009",
+          "finalValue": "415391",
+          "isApiDerived": true
+        },
+        {
+          "fieldName": "Partner Bank Country",
+          "sourceType": "SAP API",
+          "sourceValue": "—",
+          "sourceApiField": "to_BusinessPartnerBank/results/0/BankCountryKey",
+          "targetType": "Lockbox API Field (Derived)",
+          "apiEndpoint": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
+          "derivedFromRule": "RULE-002",
+          "inputMapping": "BusinessPartner = 17100009",
+          "finalValue": "US",
+          "isApiDerived": true
+        }
+      ],
+      "sections": {
+        "item": [
+          {
+            "fieldName": "Check Number",
+            "originalFieldName": "Check Number",
+            "sourceValue": 3456694,
+            "finalValue": 3456694,
+            "isApiDerived": false,
+            "derivedFrom": "File Upload"
+          },
+          {
+            "fieldName": "Check Amount",
+            "originalFieldName": "Check Amount",
+            "sourceValue": 1365,
+            "finalValue": 1365,
+            "isApiDerived": false,
+            "derivedFrom": "File Upload"
+          },
+          {
+            "fieldName": "Partner Bank",
+            "originalFieldName": "PartnerBank",
+            "sourceValue": "—",
+            "finalValue": "011000390",
+            "isApiDerived": true,
+            "derivedFrom": "RULE-002"
+          },
+          {
+            "fieldName": "Partner Bank Account",
+            "originalFieldName": "PartnerBankAccount",
+            "sourceValue": "—",
+            "finalValue": "415391",
+            "isApiDerived": true,
+            "derivedFrom": "RULE-002"
+          },
+          {
+            "fieldName": "Partner Bank Country",
+            "originalFieldName": "PartnerBankCountry",
+            "sourceValue": "—",
+            "finalValue": "US",
+            "isApiDerived": true,
+            "derivedFrom": "RULE-002"
+          }
+        ],
+        "clearing": [
+          {
+            "fieldName": "Invoice Number",
+            "originalFieldName": "Invoice Number",
+            "sourceValue": 90003904,
+            "finalValue": 90003904,
+            "isApiDerived": false,
+            "derivedFrom": "File Upload"
+          },
+          {
+            "fieldName": "Invoice Amount",
+            "originalFieldName": "Invoice Amount",
+            "sourceValue": 1365,
+            "finalValue": 1365,
+            "isApiDerived": false,
+            "derivedFrom": "File Upload"
+          },
+          {
+            "fieldName": "Deduction Amount",
+            "originalFieldName": "Deduction Amount",
+            "sourceValue": "—",
+            "finalValue": "—",
+            "isApiDerived": false,
+            "derivedFrom": "File Upload"
+          },
+          {
+            "fieldName": "Company Code",
+            "originalFieldName": "CompanyCode",
+            "sourceValue": "—",
+            "finalValue": "1710",
+            "isApiDerived": true,
+            "derivedFrom": "RULE-001"
+          }
+        ]
+      }
+    },
+    "completedAt": "2026-03-04T17:59:11.482Z"
+  },
+  {
     "id": "c5a35d61-e657-42bc-8838-b41af28bd829",
     "runId": "RUN-2026-00171",
     "filename": "customer_payments.xlsx",
