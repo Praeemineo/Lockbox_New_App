@@ -1186,7 +1186,6 @@
                             <core:Item key="EXCEL" text="Excel (.xlsx, .xls)" />
                             <core:Item key="CSV" text="CSV (.csv)" />
                             <core:Item key="BAI2" text="BAI2 (.bai, .bai2)" />
-                            <core:Item key="PAYMENT_ADVICE" text="Payment Advice (.txt, .pdf)" />
                         </Select>
                         
                         <Label text="Template Type" />
