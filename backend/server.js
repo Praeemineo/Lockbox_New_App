@@ -1263,17 +1263,57 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
     console.log('User:', SAP_USER);
     
     try {
+        // STEP 1: Fetch CSRF Token via direct connection
+        console.log('=== FETCHING CSRF TOKEN (Direct Connection) ===');
+        const csrfFetchUrl = `${SAP_URL}${serviceBaseUrl}?sap-client=${SAP_CLIENT}`;
+        console.log('CSRF Fetch URL:', csrfFetchUrl);
+        
+        let csrfToken = null;
+        try {
+            const csrfResponse = await axios({
+                method: 'GET',
+                url: csrfFetchUrl,
+                headers: {
+                    'X-CSRF-Token': 'Fetch',
+                    'Accept': 'application/json'
+                },
+                auth: {
+                    username: SAP_USER,
+                    password: SAP_PASSWORD
+                },
+                httpsAgent: new (require('https').Agent)({
+                    rejectUnauthorized: false
+                })
+            });
+            
+            csrfToken = csrfResponse.headers['x-csrf-token'];
+            console.log('✓ CSRF Token fetched:', csrfToken ? 'SUCCESS' : 'FAILED');
+            console.log('CSRF Token value:', csrfToken);
+        } catch (csrfError) {
+            console.warn('⚠ CSRF token fetch failed:', csrfError.message);
+            console.warn('Proceeding without CSRF token (POST may fail)');
+        }
+        
+        // STEP 2: Make POST request with CSRF token
+        console.log('=== MAKING POST REQUEST (Direct Connection) ===');
         const fullUrl = `${SAP_URL}${url}?sap-client=${SAP_CLIENT}`;
         console.log('Full URL:', fullUrl);
+        
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
+        
+        if (csrfToken) {
+            headers['X-CSRF-Token'] = csrfToken;
+            console.log('✓ Including CSRF token in POST request');
+        }
         
         const response = await axios({
             method: 'POST',
             url: fullUrl,
             data: payload,
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
+            headers: headers,
             auth: {
                 username: SAP_USER,
                 password: SAP_PASSWORD
