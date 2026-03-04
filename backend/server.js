@@ -2164,14 +2164,21 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
             productionResponse = response.data;
             
             // ========================================================
-            // STEP 2: GET /LockboxClearing - Dynamic API from RULE-003
+            // STEP 2: WAIT - Allow SAP to process posting
             // ========================================================
-            console.log('=== STEP 2: GET /LockboxClearing (Dynamic API from RULE-003) ===');
+            console.log('=== STEP 2: WAITING for SAP to process posting ===');
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            console.log('✓ Wait complete');
+            
+            // ========================================================
+            // STEP 3: GET /LockboxClearing - Dynamic API from RULE-003
+            // ========================================================
+            console.log('=== STEP 3: GET /LockboxClearing (Dynamic API from RULE-003) ===');
             console.log('API Endpoint:', getLockboxClearingApi.apiReference);
             console.log('Destination:', getLockboxClearingApi.destination);
             
             const clearingApiEndpoint = getLockboxClearingApi.apiReference || '/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxClearing';
-            const clearingApiDestination = getLockboxClearingApi.destination || 'LOCKBOXDES';
+            const clearingApiDestination = getLockboxClearingApi.destination || 'S4HANA_SYSTEM_DESTINATION';
             
             const clearingQueryParams = {
                 LockboxBatchInternalKey: lockboxBatchInternalKey,
@@ -2186,98 +2193,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
             clearingData = clearingResponse.data?.d?.results || [];
             
             console.log('✓ Retrieved', clearingData.length, 'clearing entries from SAP');
-            console.log('Clearing Data:', JSON.stringify(clearingData, null, 2));
-            
-            // ========================================================
-            // STEP 3: WAIT - Allow SAP to process posting
-            // ========================================================
-            console.log('=== STEP 3: WAITING for SAP to process posting ===');
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            console.log('✓ Wait complete');
-            
-            // ========================================================
-            // STEP 4: GET Accounting Document Details - Dynamic API from RULE-004
-            // ========================================================
-            console.log('=== STEP 4: GET Accounting Document Details (Dynamic API from RULE-004) ===');
-            console.log('API Endpoint:', getAccountingDocApi.apiReference);
-            console.log('Destination:', getAccountingDocApi.destination);
-            
-            // Build dynamic query using RULE-004 configuration
-            const rule004Endpoint = getAccountingDocApi.apiReference || '';
-            const rule004Destination = getAccountingDocApi.destination || 'LOCKBOXDES';
-            const rule004InputField = getAccountingDocApi.inputField || 'Lockbox'; // e.g., "Lockbox"
-            const rule004SourceInput = getAccountingDocApi.sourceInput || 'LockboxID'; // e.g., "LockboxID"
-            
-            // Get LockboxID value from payload or response
-            const lockboxId = payload.Lockbox || lockboxBatch || '1000171';
-            
-            // Replace placeholder in API reference with actual value
-            let accountingDocApiUrl = rule004Endpoint.replace(`{${rule004InputField}}`, lockboxId);
-            
-            console.log('Calling GET API:', accountingDocApiUrl);
-            console.log('Using LockboxID:', lockboxId);
-            
-            let accountingDocDetails = null;
-            try {
-                const accountingDocResponse = await sapClient.executeSapGetRequest(
-                    rule004Destination,
-                    accountingDocApiUrl,
-                    {}
-                );
-                
-                accountingDocDetails = accountingDocResponse.data?.d?.results || accountingDocResponse.data?.d || [];
-                console.log('✓ Retrieved Accounting Document Details:', JSON.stringify(accountingDocDetails, null, 2));
-            } catch (error) {
-                console.log('⚠ RULE-004 API call failed:', error.message);
-                console.log('Continuing with data from STEP 2 (LockboxClearing)');
-            }
-            
-            console.log('=== SAP POST Response Analysis ===');
-            console.log('Full sapData:', JSON.stringify(sapData, null, 2));
-            
-            // Extract document info from SAP POST response
-            const internalKey = sapData.LockboxBatchInternalKey;
-            const batch = sapData.LockboxBatch;
-            fiscalYear = sapData.FiscalYear || fiscalYear;
-            docNumber = sapData.AccountingDocument || internalKey || batch;
-            
-            console.log('Extracted values:');
-            console.log('  internalKey:', internalKey);
-            console.log('  batch:', batch);
-            console.log('  fiscalYear:', fiscalYear);
-            console.log('  docNumber:', docNumber);
-            
-            // ========================================================
-            // STEP 2: WAIT/POLL - Allow SAP time to process the posting
-            // ========================================================
-            console.log('=== STEP 2: WAITING for SAP to process posting ===');
-            console.log('Waiting 3 seconds before fetching LockboxClearing...');
-            await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
-            
-            // ========================================================
-            // STEP 3: GET /LockboxClearing - Retrieve FI Document + Payment Advice
-            // ========================================================
-            const paymentAdviceFromPost = sapData.PaymentAdvice;
-            
-            console.log('=== STEP 3: GET /LockboxClearing ===');
-            console.log('Available identifiers from POST response:');
-            console.log('  internalKey:', internalKey);
-            console.log('  batch:', batch);
-            console.log('  paymentAdvice:', paymentAdviceFromPost);
-            
-            if (internalKey || batch || paymentAdviceFromPost) {
-                try {
-                    // First attempt - use all available parameters
-                    let clearingResponse = await getLockboxClearing({
-                        internalKey: internalKey,
-                        batch: batch,
-                        paymentAdvice: paymentAdviceFromPost,
-                        companyCode: RUNTIME_COMPANY_CODE
-                    });
-                    
-                    console.log('Raw clearing response:', JSON.stringify(clearingResponse.data, null, 2));
-                    
-                    clearingData = clearingResponse.data?.d?.results || 
+            console.log('Clearing Data:', JSON.stringify(clearingData, null, 2)); 
                                    clearingResponse.data?.d || 
                                    clearingResponse.data?.results || 
                                    clearingResponse.data?.value ||
