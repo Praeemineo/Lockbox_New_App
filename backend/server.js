@@ -2045,8 +2045,21 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
         // Use the saved payload from simulation
         const payload = JSON.parse(header.sap_payload);
         
+        // ========================================================
+        // UPDATE DEPOSIT DATE/TIME TO CURRENT TIMESTAMP
+        // Each production run must have a unique DepositDateTime
+        // This ensures SAP accepts the lockbox file as new/unique
+        // ========================================================
+        const currentDateTime = new Date().toISOString().replace(/\.\d{3}Z$/, '');
+        console.log('=== UPDATING DEPOSIT DATE/TIME ===');
+        console.log('Original DepositDateTime:', payload.DepositDateTime);
+        console.log('Updated to current time:', currentDateTime);
+        
+        // Update payload with current timestamp
+        payload.DepositDateTime = currentDateTime;
+        
         console.log('=== PRODUCTION RUN: Committing to SAP ===');
-        console.log('Using saved simulation payload:');
+        console.log('Using saved simulation payload with updated timestamp:');
         console.log(JSON.stringify(payload, null, 2));
         
         // ========================================================
