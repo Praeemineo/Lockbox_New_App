@@ -75,10 +75,9 @@ sap.ui.define([
             oModel.setProperty("/currentView", "fieldMappingRules");
             // Initialize and load rules
             this._initFieldMappingRules();
-            this._loadFieldMappingRules();
         },
         
-        
+
         // Navigation: Back Button Press
         onNavBack: function () {
             var oModel = this.getOwnerComponent().getModel("app");
@@ -7299,6 +7298,66 @@ sap.ui.define([
                 });
         },
         
+        // Retrieve Clearing Documents - RULE-004
+        onRetrieveClearingDocs: function (oEvent) {
+            var that = this;
+            var oButton = oEvent.getSource();
+            var oContext = oButton.getBindingContext("app");
+            var oItem = oContext.getObject();
+            
+            if (!oItem.runId) {
+                MessageBox.warning("No run ID associated with this item");
+                return;
+            }
+            
+            BusyIndicator.show(0);
+            
+            console.log("Retrieving clearing documents for Run ID:", oItem.runId);
+            
+            fetch(API_BASE + "/lockbox/retrieve-clearing/" + oItem.runId, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            })
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    BusyIndicator.hide();
+                    
+                    if (data.success) {
+                        MessageToast.show("Clearing documents retrieved successfully: " + data.count + " documents");
+                        
+                        // Update the dialog if it's open
+                        if (that._oDetailsDialog && that._oDetailsDialog.isOpen()) {
+                            var oDialogModel = that._oDetailsDialog.getModel("dialog");
+                            if (oDialogModel) {
+                                var dialogData = oDialogModel.getData();
+                                
+                                // Update lockbox data with retrieved documents
+                                if (dialogData.lockboxData && data.documents.length > 0) {
+                                    dialogData.lockboxData.forEach(function(item, index) {
+                                        if (data.documents[index]) {
+                                            item.postingDoc = data.documents[index].documentNumber;
+                                            item.paytAdvice = data.documents[index].paymentAdvice;
+                                            item.clearingDoc = data.documents[index].subledgerDocument;
+                                            item.subledgerOnaccountDoc = data.documents[index].subledgerOnaccountDocument;
+                                        }
+                                    });
+                                    oDialogModel.setData(dialogData);
+                                }
+                            }
+                        }
+                        
+                        // Reload the run history to reflect any updates
+                        that._loadRunHistory();
+                    } else {
+                        MessageBox.error("Failed to retrieve clearing documents: " + (data.message || "Unknown error"));
+                    }
+                })
+                .catch(function (err) {
+                    BusyIndicator.hide();
+                    MessageBox.error("Error retrieving clearing documents: " + err.message);
+                });
+        },
+        
         // Reprocess at item level
         onReprocessItem: function (oEvent) {
             var that = this;
@@ -7450,8 +7509,17 @@ sap.ui.define([
                 oFirstRow = aMappedData[0] || {};
             }
             
-            console.log("Field Mapping Preview - Source Data:", oFirstRow);
-            console.log("Available source fields:", Object.keys(oFirstRow));
+            console.log("=== FIELD MAPPING PREVIEW DEBUG ===");
+            console.log("Run ID:", oRun.runId);
+            console.log("Extracted Data Length:", aExtractedData.length);
+            console.log("First Row Data:", JSON.stringify(oFirstRow));
+            console.log("Available Fields:", Object.keys(oFirstRow));
+            console.log("Sample Values:");
+            console.log("  - Customer:", oFirstRow["Customer"] || oFirstRow.Customer);
+            console.log("  - Check Number:", oFirstRow["Check Number"] || oFirstRow.CheckNumber);
+            console.log("  - Check Amount:", oFirstRow["Check Amount"] || oFirstRow.CheckAmount);
+            console.log("  - Invoice Number:", oFirstRow["Invoice Number"] || oFirstRow.InvoiceNumber);
+            console.log("===================================");
             
             // Get SAP payload
             var oSapPayload = oRun.sapPayload || oRun.sap_payload || {};
@@ -7477,8 +7545,8 @@ sap.ui.define([
                 // HEADER LEVEL FIELDS (LockboxBatch entity - top level)
                 // ============================================================
                 { excelKey: null, sapField: "Lockbox", sapParent: "header", mappingType: "CONSTANT", transformation: "Lockbox identifier (max 7 chars)", section: "Header" },
-                { excelKey: "DepositDate", sapField: "DepositDateTime", sapParent: "header", mappingType: "DIRECT", transformation: "Date format: YYYY-MM-DDTHH:mm:ss", section: "Header" },
-                { excelKey: "CheckAmount", sapField: "AmountInTransactionCurrency", sapParent: "header", mappingType: "DIRECT", transformation: "Total batch amount (sum of checks)", section: "Header" },
+                { excelKey: "DepositDate", searchTerms: ["deposit", "date"], sapField: "DepositDateTime", sapParent: "header", mappingType: "DIRECT", transformation: "Date format: YYYY-MM-DDTHH:mm:ss", section: "Header" },
+                { excelKey: "CheckAmount", searchTerms: ["check", "amount"], sapField: "AmountInTransactionCurrency", sapParent: "header", mappingType: "DIRECT", transformation: "Total batch amount (sum of checks)", section: "Header" },
                 { excelKey: null, sapField: "LockboxBatchOrigin", sapParent: "header", mappingType: "CONSTANT", transformation: "Origin identifier (max 10 chars)", section: "Header" },
                 { excelKey: null, sapField: "LockboxBatchDestination", sapParent: "header", mappingType: "CONSTANT", transformation: "Destination identifier (max 10 chars)", section: "Header" },
                 
@@ -7487,26 +7555,26 @@ sap.ui.define([
                 // ============================================================
                 { excelKey: null, sapField: "LockboxBatch", sapParent: "item", mappingType: "CONSTANT", transformation: "Batch sequence number (max 3 chars)", section: "Item" },
                 { excelKey: null, sapField: "LockboxBatchItem", sapParent: "item", mappingType: "SYSTEM", transformation: "Item sequence number (max 5 chars)", section: "Item" },
-                { excelKey: "CheckAmount", sapField: "AmountInTransactionCurrency", sapParent: "item", mappingType: "DIRECT", transformation: "Check amount in transaction currency", section: "Item" },
+                { excelKey: "CheckAmount", searchTerms: ["check", "amount"], sapField: "AmountInTransactionCurrency", sapParent: "item", mappingType: "DIRECT", transformation: "Check amount in transaction currency", section: "Item" },
                 { excelKey: null, sapField: "Currency", sapParent: "item", mappingType: "DEFAULT", transformation: "Currency code (default: USD)", section: "Item" },
-                { excelKey: "CheckNumber", sapField: "Cheque", sapParent: "item", mappingType: "DIRECT", transformation: "Check/Cheque number (max 13 chars)", section: "Item" },
-                { excelKey: "BankCode", sapField: "PartnerBank", sapParent: "item", mappingType: "DEFAULT", transformation: "Partner bank code (max 15 chars)", section: "Item" },
-                { excelKey: "BankAccount", sapField: "PartnerBankAccount", sapParent: "item", mappingType: "DEFAULT", transformation: "Partner bank account (max 18 chars)", section: "Item" },
+                { excelKey: "CheckNumber", searchTerms: ["check", "number", "cheque"], sapField: "Cheque", sapParent: "item", mappingType: "DIRECT", transformation: "Check/Cheque number (max 13 chars)", section: "Item" },
+                { excelKey: "BankCode", searchTerms: ["bank", "code"], sapField: "PartnerBank", sapParent: "item", mappingType: "DEFAULT", transformation: "Partner bank code (max 15 chars)", section: "Item" },
+                { excelKey: "BankAccount", searchTerms: ["bank", "account"], sapField: "PartnerBankAccount", sapParent: "item", mappingType: "DEFAULT", transformation: "Partner bank account (max 18 chars)", section: "Item" },
                 { excelKey: null, sapField: "PartnerBankCountry", sapParent: "item", mappingType: "DEFAULT", transformation: "Partner bank country (default: US)", section: "Item" },
                 
                 // ============================================================
                 // CLEARING LEVEL FIELDS (LockboxClearing entity - to_LockboxClearing.results[])
                 // ============================================================
-                { excelKey: "InvoiceNumber", sapField: "PaymentReference", sapParent: "clearing", mappingType: "DIRECT", transformation: "Invoice/Payment reference (max 30 chars)", section: "Clearing" },
-                { excelKey: "InvoiceAmount", sapField: "NetPaymentAmountInPaytCurrency", sapParent: "clearing", mappingType: "DIRECT", transformation: "Net payment amount for clearing", section: "Clearing" },
-                { excelKey: "DeductionAmount", sapField: "DeductionAmountInPaytCurrency", sapParent: "clearing", mappingType: "DIRECT", transformation: "Deduction/discount amount", section: "Clearing" },
-                { excelKey: "ReasonCode", sapField: "PaymentDifferenceReason", sapParent: "clearing", mappingType: "DIRECT", transformation: "Reason code (max 3 chars)", section: "Clearing" },
+                { excelKey: "InvoiceNumber", searchTerms: ["invoice", "number", "payment", "reference"], sapField: "PaymentReference", sapParent: "clearing", mappingType: "DIRECT", transformation: "Invoice/Payment reference (max 30 chars)", section: "Clearing" },
+                { excelKey: "InvoiceAmount", searchTerms: ["invoice", "amount", "payment", "net"], sapField: "NetPaymentAmountInPaytCurrency", sapParent: "clearing", mappingType: "DIRECT", transformation: "Net payment amount for clearing", section: "Clearing" },
+                { excelKey: "DeductionAmount", searchTerms: ["deduction", "amount", "discount"], sapField: "DeductionAmountInPaytCurrency", sapParent: "clearing", mappingType: "DIRECT", transformation: "Deduction/discount amount", section: "Clearing" },
+                { excelKey: "ReasonCode", searchTerms: ["reason", "code"], sapField: "PaymentDifferenceReason", sapParent: "clearing", mappingType: "DIRECT", transformation: "Reason code (max 3 chars)", section: "Clearing" },
                 { excelKey: null, sapField: "Currency", sapParent: "clearing", mappingType: "DEFAULT", transformation: "Clearing currency (default: USD)", section: "Clearing" },
                 
                 // ============================================================
                 // REFERENCE FIELDS (Used for GET API lookups, NOT in POST payload)
                 // ============================================================
-                { excelKey: "Customer", sapField: "Customer (GET API only)", sapParent: "source", mappingType: "SOURCE", transformation: "Used for PaymentAdviceAccount in GET LockboxClearing - NOT in POST", section: "Reference" }
+                { excelKey: "Customer", searchTerms: ["customer", "account"], sapField: "Customer (GET API only)", sapParent: "source", mappingType: "SOURCE", transformation: "Used for PaymentAdviceAccount in GET LockboxClearing - NOT in POST", section: "Reference" }
             ];
             
             // Build mapping entries with section grouping
@@ -7515,21 +7583,55 @@ sap.ui.define([
                 var sSourceValue = null;
                 var sFinalValue = null;
                 
-                // Get source value from extracted data - try multiple key formats
+                // FUZZY SEARCH: Get source value from extracted data using multiple strategies
                 if (config.excelKey) {
-                    sSourceValue = oFirstRow[config.excelKey];
+                    // Strategy 1: Try exact match with spaces (e.g., "Check Amount")
+                    var keyWithSpaces = config.excelKey.replace(/([A-Z])/g, ' $1').trim();
+                    sSourceValue = oFirstRow[keyWithSpaces];
                     
-                    // Try alternative key formats if not found
+                    // Strategy 2: Try original camelCase (e.g., "CheckAmount")
+                    if (sSourceValue === undefined || sSourceValue === null) {
+                        sSourceValue = oFirstRow[config.excelKey];
+                    }
+                    
+                    // Strategy 3: FUZZY MATCH - Search for field containing key terms
+                    if ((sSourceValue === undefined || sSourceValue === null) && config.searchTerms) {
+                        var availableFields = Object.keys(oFirstRow);
+                        
+                        for (var i = 0; i < availableFields.length; i++) {
+                            var fieldName = availableFields[i].toLowerCase();
+                            var allTermsMatch = true;
+                            
+                            // Check if ALL search terms are present in this field name
+                            for (var j = 0; j < config.searchTerms.length; j++) {
+                                if (fieldName.indexOf(config.searchTerms[j].toLowerCase()) === -1) {
+                                    allTermsMatch = false;
+                                    break;
+                                }
+                            }
+                            
+                            // If all terms match, use this field
+                            if (allTermsMatch) {
+                                sSourceValue = oFirstRow[availableFields[i]];
+                                console.log("✅ FUZZY MATCH: Found '" + availableFields[i] + "' for " + config.excelKey + " = ", sSourceValue);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Strategy 4: Try lowercase
                     if (sSourceValue === undefined || sSourceValue === null) {
                         sSourceValue = oFirstRow[config.excelKey.toLowerCase()];
                     }
+                    
+                    // Strategy 5: Try snake_case
                     if (sSourceValue === undefined || sSourceValue === null) {
                         sSourceValue = oFirstRow[that._toSnakeCase(config.excelKey)];
                     }
-                    if (sSourceValue === undefined || sSourceValue === null) {
-                        // Try with underscores
-                        var snakeKey = config.excelKey.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
-                        sSourceValue = oFirstRow[snakeKey];
+                    
+                    // Final log
+                    if (sSourceValue !== undefined && sSourceValue !== null && sSourceValue !== '') {
+                        console.log("✅ SUCCESS: " + config.sapField + " ← " + config.excelKey + " = ", sSourceValue);
                     }
                 }
                 
@@ -8969,6 +9071,12 @@ sap.ui.define([
             oDialogModel.setProperty("/rule", JSON.parse(JSON.stringify(oRule)));
             
             // Load and open fragment
+            // Force reload fragment to get latest changes
+            if (this._processingRuleDialog) {
+                this._processingRuleDialog.destroy();
+                this._processingRuleDialog = null;
+            }
+            
             if (!this._processingRuleDialog) {
                 sap.ui.core.Fragment.load({
                     id: this.getView().getId(),
@@ -9055,6 +9163,12 @@ sap.ui.define([
                 conditions: [],
                 apiMappings: []
             });
+            
+            // Force reload fragment to get latest changes
+            if (this._processingRuleDialog) {
+                this._processingRuleDialog.destroy();
+                this._processingRuleDialog = null;
+            }
             
             // Load and open fragment
             if (!this._processingRuleDialog) {
@@ -9209,6 +9323,7 @@ sap.ui.define([
             aMappings.push({
                 httpMethod: "GET",
                 apiReference: "",
+                destination: "",
                 inputField: "",
                 sourceInput: "",
                 outputField: "",
