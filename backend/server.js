@@ -1186,10 +1186,10 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
     // Try destination service approach first
     if (destinationResolved) {
         try {
-            console.log('=== MAKING POST REQUEST (Cloud SDK - CSRF auto-handled) ===');
+            console.log('=== MAKING POST REQUEST (Cloud SDK with CSRF handling) ===');
             
-            // SAP Cloud SDK automatically handles CSRF tokens
-            // It will fetch the token and manage session cookies internally
+            // SAP Cloud SDK should handle CSRF tokens automatically
+            // But we need to ensure csrf middleware is enabled
             const response = await executeHttpRequest(
                 { destinationName: destination },
                 {
@@ -1202,7 +1202,9 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
-                    }
+                    },
+                    // Enable CSRF token handling explicitly
+                    csrf: true
                 }
             );
             
