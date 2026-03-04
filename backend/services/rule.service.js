@@ -1,5 +1,5 @@
 // Rule Service - Fetch processing rules from PostgreSQL with JSON fallback
-const pool = require('../db/pool');
+const { getPool } = require('./postgresService');
 
 /**
  * Fetch a processing rule by ID
@@ -12,6 +12,7 @@ async function getRuleById(ruleId) {
     
     // Try PostgreSQL first
     try {
+        const pool = getPool();
         const result = await pool.query(
             'SELECT * FROM lb_processing_rules WHERE rule_id = $1',
             [ruleId]
