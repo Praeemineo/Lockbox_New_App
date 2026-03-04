@@ -46,7 +46,6 @@ sap.ui.define([
             oModel.setProperty("/showLockbox", false);
             oModel.setProperty("/showFieldMappingRules", false);
             oModel.setProperty("/showRuleDetail", false);
-            oModel.setProperty("/showPdfLockbox", false);
             oModel.setProperty("/showNavButton", false);
             oModel.setProperty("/currentView", "home");
         },
@@ -58,7 +57,6 @@ sap.ui.define([
             oModel.setProperty("/showLockbox", true);
             oModel.setProperty("/showFieldMappingRules", false);
             oModel.setProperty("/showRuleDetail", false);
-            oModel.setProperty("/showPdfLockbox", false);
             oModel.setProperty("/showNavButton", true);
             oModel.setProperty("/currentView", "lockbox");
             // Load headers and run history when entering Lockbox Transaction
@@ -73,7 +71,6 @@ sap.ui.define([
             oModel.setProperty("/showLockbox", false);
             oModel.setProperty("/showFieldMappingRules", true);
             oModel.setProperty("/showRuleDetail", false);
-            oModel.setProperty("/showPdfLockbox", false);
             oModel.setProperty("/showNavButton", true);
             oModel.setProperty("/currentView", "fieldMappingRules");
             // Initialize and load rules
@@ -81,17 +78,6 @@ sap.ui.define([
             this._loadFieldMappingRules();
         },
         
-        // Navigation: PDF Lockbox Tile Press
-        onPdfLockboxTilePress: function () {
-            var oModel = this.getOwnerComponent().getModel("app");
-            oModel.setProperty("/showHome", false);
-            oModel.setProperty("/showLockbox", false);
-            oModel.setProperty("/showFieldMappingRules", false);
-            oModel.setProperty("/showPdfLockbox", true);
-            oModel.setProperty("/showRuleDetail", false);
-            oModel.setProperty("/showNavButton", true);
-            oModel.setProperty("/currentView", "pdfLockbox");
-        },
         
         // Navigation: Back Button Press
         onNavBack: function () {
