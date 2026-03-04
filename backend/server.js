@@ -1156,6 +1156,13 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
     console.log('sap-client:', SAP_CLIENT);
     console.log('Payload:', JSON.stringify(payload, null, 2));
     
+    // Extract service base URL for CSRF token fetch
+    // e.g., '/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxBatch' -> '/sap/opu/odata/sap/API_LOCKBOXPOST_IN/'
+    const lastSlash = url.lastIndexOf('/');
+    const serviceBaseUrl = lastSlash > 0 ? url.substring(0, lastSlash + 1) : url + '/';
+    
+    console.log('Service Base URL for CSRF:', serviceBaseUrl);
+    
     // ENHANCED DEBUGGING: Check if destination service is accessible
     console.log('=== DESTINATION SERVICE CHECK ===');
     let destinationResolved = false;
@@ -1179,6 +1186,44 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
     // Try destination service approach first
     if (destinationResolved) {
         try {
+            // STEP 1: Fetch CSRF Token via Cloud SDK
+            console.log('=== FETCHING CSRF TOKEN (Cloud SDK) ===');
+            let csrfToken = null;
+            try {
+                const csrfResponse = await executeHttpRequest(
+                    { destinationName: destination },
+                    {
+                        method: 'GET',
+                        url: serviceBaseUrl,
+                        params: {
+                            'sap-client': SAP_CLIENT
+                        },
+                        headers: {
+                            'X-CSRF-Token': 'Fetch',
+                            'Accept': 'application/json'
+                        }
+                    }
+                );
+                csrfToken = csrfResponse.headers['x-csrf-token'];
+                console.log('✓ CSRF Token fetched:', csrfToken ? 'SUCCESS' : 'FAILED');
+                console.log('CSRF Token value:', csrfToken);
+            } catch (csrfError) {
+                console.warn('⚠ CSRF token fetch failed:', csrfError.message);
+                console.warn('Proceeding without CSRF token (POST may fail)');
+            }
+            
+            // STEP 2: Make POST request with CSRF token
+            console.log('=== MAKING POST REQUEST (Cloud SDK) ===');
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            };
+            
+            if (csrfToken) {
+                headers['X-CSRF-Token'] = csrfToken;
+                console.log('✓ Including CSRF token in POST request');
+            }
+            
             const response = await executeHttpRequest(
                 { destinationName: destination },
                 {
@@ -1188,10 +1233,7 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
                         'sap-client': SAP_CLIENT
                     },
                     data: payload,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
+                    headers: headers
                 }
             );
             
