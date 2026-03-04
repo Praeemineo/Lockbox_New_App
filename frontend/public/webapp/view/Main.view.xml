@@ -25,26 +25,29 @@
         </customHeader>
         <content>
             <!-- ============================================================ -->
-            <!-- HOME SCREEN - Fiori Launchpad Style Tiles -->
+            <!-- HOME SCREEN - RF Framework Style -->
             <!-- ============================================================ -->
-            <VBox id="homeScreen" visible="{app>/showHome}" class="sapUiLargeMargin">
-                <Title text="Lock Box Management" level="H2" class="sapUiMediumMarginBottom" />
-                <Text text="Select an application to get started" class="sapUiTinyMarginBottom" />
+            <VBox id="homeScreen" visible="{app>/showHome}" justifyContent="Center" alignItems="Center" height="90vh" class="lockboxLandingPage">
+                <!-- Main Title -->
+                <Title text="Lockbox Framework" class="landingMainTitle" />
                 
-                <HBox wrap="Wrap" class="sapUiLargeMarginTop">
-                    <!-- Field Mapping Rules Tile -->
-                    <VBox class="sapUiSmallMargin">
+                <!-- Subtitle -->
+                <Text text="Select an application to continue" class="landingSubTitle" />
+                
+                <HBox alignItems="Center" justifyContent="Center" class="sapUiLargeMarginTop">
+                    <!-- Lockbox Admin Tile -->
+                    <VBox class="sapUiLargeMargin">
                         <GenericTile
-                            id="tileFieldMappingRules"
-                            header="Field Mapping Rules"
-                            subheader="Manage Extraction Rules"
+                            id="tileLockboxAdmin"
+                            header="Lockbox Admin"
+                            subheader="Configuration &amp; Management"
                             press="onFieldMappingRulesTilePress"
                             frameType="TwoByOne"
-                            class="sapUiTinyMarginBegin sapUiTinyMarginEnd">
+                            class="rfFrameworkTile">
                             <tileContent>
                                 <TileContent>
                                     <content>
-                                        <ImageContent src="sap-icon://tree" />
+                                        <ImageContent src="sap-icon://org-chart" />
                                     </content>
                                 </TileContent>
                             </tileContent>
@@ -52,24 +55,29 @@
                     </VBox>
                     
                     <!-- Lockbox Transaction Tile -->
-                    <VBox class="sapUiSmallMargin">
+                    <VBox class="sapUiLargeMargin">
                         <GenericTile
-                            id="tileLockbox"
+                            id="tileLockboxTransaction"
                             header="Lockbox Transaction"
-                            subheader="Upload &amp; Process"
+                            subheader="Scanner Operations"
                             press="onLockboxTilePress"
                             frameType="TwoByOne"
-                            class="sapUiTinyMarginBegin sapUiTinyMarginEnd">
+                            class="rfFrameworkTile">
                             <tileContent>
                                 <TileContent>
                                     <content>
-                                        <ImageContent src="sap-icon://money-bills" />
+                                        <ImageContent src="sap-icon://payment-approval" />
                                     </content>
                                 </TileContent>
                             </tileContent>
                         </GenericTile>
                     </VBox>
                 </HBox>
+                
+                <!-- Footer -->
+                <VBox alignItems="Center" class="landingFooter">
+                    <Text text="Lockbox Framework v1.0 | SAP BTP" class="landingFooterText" />
+                </VBox>
             </VBox>
             
             <!-- ============================================================ -->
