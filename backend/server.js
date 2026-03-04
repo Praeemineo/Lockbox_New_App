@@ -2626,14 +2626,14 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
         // ========================================================
         // Extract 6-digit Lockbox ID (without extension)
         const cleanLockboxId = lockboxId.replace(/[^0-9]/g, '').substring(0, 6);
-        console.log('Using LockboxId for query:', cleanLockboxId);
+        console.log('Using LockBoxId for query:', cleanLockboxId);
         
         const apiEndpoint = getAccountingDocApi.apiReference;
         const destination = getAccountingDocApi.destination || 'S4HANA_SYSTEM_DESTINATION';
         
         // Build OData query dynamically
-        // Query: LockboxId eq '1000073'
-        const inputFieldName = getAccountingDocApi.inputField || 'LockboxId';
+        // Query: LockBoxId eq '1000073'
+        const inputFieldName = getAccountingDocApi.inputField || 'LockBoxId';
         const queryParams = {
             $filter: `${inputFieldName} eq '${cleanLockboxId}'`
         };
