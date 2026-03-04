@@ -2417,6 +2417,17 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
             console.log('  postingDocument:', JSON.stringify(postingDocument, null, 2));
             console.log('  paymentAdviceDoc:', JSON.stringify(paymentAdviceDoc, null, 2));
             console.log('  financialDocument:', JSON.stringify(financialDocument, null, 2));
+            
+        } catch (error) {
+            console.error('Production Run Error:', error);
+            console.error('Error stack:', error.stack);
+            
+            return res.status(500).json({
+                success: false,
+                error: error.message,
+                message: 'Production posting to SAP failed. Please check logs.'
+            });
+        }
                             clearingResponse = await getLockboxClearing({
                                 paymentAdvice: paymentAdviceFromPost,
                                 companyCode: RUNTIME_COMPANY_CODE
