@@ -7313,17 +7313,25 @@ sap.ui.define([
             BusyIndicator.show(0);
             
             console.log("Retrieving clearing documents for Run ID:", oItem.runId);
+            console.log("Lockbox ID:", oItem.lockbox);
             
             fetch(API_BASE + "/lockbox/retrieve-clearing/" + oItem.runId, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" }
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    lockboxId: oItem.lockbox // Pass lockbox ID for fallback
+                })
             })
                 .then(function (response) { return response.json(); })
                 .then(function (data) {
                     BusyIndicator.hide();
                     
                     if (data.success) {
-                        MessageToast.show("Clearing documents retrieved successfully: " + data.count + " documents");
+                        var message = data.updated ? 
+                            "Clearing documents retrieved and updated successfully: " + data.count + " documents" :
+                            "Clearing documents retrieved successfully (database unavailable): " + data.count + " documents";
+                        
+                        MessageToast.show(message);
                         
                         // Update the dialog if it's open
                         if (that._oDetailsDialog && that._oDetailsDialog.isOpen()) {
