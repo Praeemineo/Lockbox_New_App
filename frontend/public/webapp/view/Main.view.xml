@@ -35,11 +35,11 @@
                 <Text text="Select an application to continue" class="landingSubTitle" />
                 
                 <HBox alignItems="Center" justifyContent="Center" class="sapUiLargeMarginTop">
-                    <!-- Lockbox Admin Tile -->
+                    <!-- Manage Lockbox Processing Rules Tile -->
                     <VBox class="sapUiLargeMargin">
                         <GenericTile
                             id="tileLockboxAdmin"
-                            header="Lockbox Admin"
+                            header="Manage Lockbox Processing Rules"
                             subheader="Configuration &amp; Management"
                             press="onFieldMappingRulesTilePress"
                             frameType="TwoByOne"
@@ -54,11 +54,11 @@
                         </GenericTile>
                     </VBox>
                     
-                    <!-- Lockbox Transaction Tile -->
+                    <!-- Lockbox Transaction Processing Tile -->
                     <VBox class="sapUiLargeMargin">
                         <GenericTile
                             id="tileLockboxTransaction"
-                            header="Lockbox Transaction"
+                            header="Lockbox Transaction Processing"
                             subheader="Scanner Operations"
                             press="onLockboxTilePress"
                             frameType="TwoByOne"
