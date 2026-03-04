@@ -2045,8 +2045,24 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
         // Use the saved payload from simulation
         const payload = JSON.parse(header.sap_payload);
         
+        // ========================================================
+        // GENERATE UNIQUE LOCKBOX BATCH ID FOR THIS RUN
+        // Format: 1234-XXXXXX (base lockbox ID + timestamp suffix)
+        // SAP rejects duplicate Lockbox IDs, so each production run needs unique ID
+        // ========================================================
+        const originalLockboxId = payload.Lockbox || '1234';
+        const timestamp = Date.now().toString().slice(-6); // Last 6 digits of timestamp
+        const uniqueLockboxId = `${originalLockboxId.substring(0, 4)}-${timestamp}`.substring(0, 7); // SAP limit is 7 chars
+        
+        console.log('=== GENERATING UNIQUE LOCKBOX BATCH ID ===');
+        console.log('Original Lockbox ID:', originalLockboxId);
+        console.log('Unique Lockbox ID for this run:', uniqueLockboxId);
+        
+        // Update payload with unique Lockbox ID
+        payload.Lockbox = uniqueLockboxId;
+        
         console.log('=== PRODUCTION RUN: Committing to SAP ===');
-        console.log('Using saved simulation payload:');
+        console.log('Using saved simulation payload with unique Lockbox ID:');
         console.log(JSON.stringify(payload, null, 2));
         
         // ========================================================
