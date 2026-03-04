@@ -336,6 +336,12 @@
                                                 press="onProductionRunItem"
                                                 enabled="{= ${app>status} === 'SIMULATED' || ${app>status} === 'POST_FAILED'}" />
                                             <Button
+                                                icon="sap-icon://document"
+                                                type="Transparent"
+                                                tooltip="Retrieve Clearing Documents - Fetch document details from SAP"
+                                                press="onRetrieveClearingDocs"
+                                                enabled="{= ${app>status} === 'POSTED'}" />
+                                            <Button
                                                 icon="sap-icon://restart"
                                                 type="Transparent"
                                                 tooltip="Repost - Retry production run after posting failure"
@@ -406,8 +412,6 @@
                                     <core:Item key="EXCEL" text="Excel" />
                                     <core:Item key="CSV" text="CSV" />
                                     <core:Item key="BAI2" text="BAI2" />
-                                    <core:Item key="PDF" text="PDF" />
-                                    <core:Item key="PAYMENT_ADVICE" text="Payment Advice" />
                                 </Select>
                             </VBox>
                             <!-- Category Filter -->
@@ -489,8 +493,6 @@
                                         <core:Item key="CSV" text="CSV" />
                                         <core:Item key="WORD" text="Word/Text" />
                                         <core:Item key="BAI2" text="BAI2" />
-                                        <core:Item key="PDF" text="PDF" />
-                                        <core:Item key="PAYMENT_ADVICE" text="Payment Advice" />
                                     </Select>
                                 </VBox>
                                 <VBox class="sapUiSmallMarginEnd" width="180px">
@@ -502,7 +504,6 @@
                                         <core:Item key="AMOUNT" text="Amount Patterns" />
                                         <core:Item key="MULTI_SHEET" text="Multi Sheet" />
                                         <core:Item key="BANK" text="Bank (BAI2)" />
-                                        <core:Item key="EXTRACTION" text="Field Extraction (PDF)" />
                                     </Select>
                                 </VBox>
                                 <VBox class="sapUiSmallMarginEnd" width="200px">
@@ -516,8 +517,6 @@
                                         <core:Item key="SINGLE_CHECK_MULTI_INVOICE" text="Single Check - Multi Invoice" />
                                         <core:Item key="MULTI_SHEET" text="Multiple Sheets" />
                                         <core:Item key="BAI2_BANK" text="BAI2 Bank Template" />
-                                        <core:Item key="PDF_EXTRACTION" text="PDF Field Extraction" />
-                                        <core:Item key="PAYMENT_ADVICE_SPLIT" text="Payment Advice Split" />
                                     </Select>
                                 </VBox>
                                 <Button text="Go" type="Emphasized" press="onPatternFilterGo" class="sapUiSmallMarginEnd" />
@@ -587,6 +586,7 @@
                             <OverflowToolbar>
                                 <Title text="Processing Rules ({= ${app>/processingRules} ? ${app>/processingRules}.length : 0})" />
                                 <ToolbarSpacer />
+                                <Button text="Add Column" icon="sap-icon://add-column" type="Transparent" press="onAddRuleCustomColumn" />
                                 <Button text="Create" icon="sap-icon://add" type="Emphasized" press="onCreateProcessingRule" />
                                 <Button text="Edit" icon="sap-icon://edit" press="onEditProcessingRule" enabled="{= !!${app>/selectedProcessingRule}}" />
                                 <Button text="Delete" icon="sap-icon://delete" type="Reject" press="onDeleteProcessingRule" enabled="{= !!${app>/selectedProcessingRule}}" />
@@ -912,8 +912,6 @@
                                 <core:Item key="EXCEL" text="Excel" />
                                 <core:Item key="CSV" text="CSV" />
                                 <core:Item key="BAI2" text="BAI2" />
-                                <core:Item key="PDF" text="PDF" />
-                                <core:Item key="PAYMENT_ADVICE" text="Payment Advice" />
                             </Select>
                         </VBox>
                         <!-- Category -->
@@ -1173,6 +1171,7 @@
                 </IconTabBar>
             </VBox>
             
+            <!-- ============================================================ -->
         </content>
         
         <!-- ============================================================ -->
@@ -1192,7 +1191,6 @@
                             <core:Item key="EXCEL" text="Excel (.xlsx, .xls)" />
                             <core:Item key="CSV" text="CSV (.csv)" />
                             <core:Item key="BAI2" text="BAI2 (.bai, .bai2)" />
-                            <core:Item key="PAYMENT_ADVICE" text="Payment Advice (.txt, .pdf)" />
                         </Select>
                         
                         <Label text="Template Type" />
@@ -1208,14 +1206,14 @@
                         <u:FileUploader
                             id="templateFileUploader"
                             name="templateFile"
-                            fileType="xlsx,xls,csv,bai,bai2,txt,pdf"
+                            fileType="xlsx,xls,csv,bai,bai2"
                             placeholder="Choose file..."
                             width="100%"
                             change="onTemplateFileChange"
                             style="Emphasized" />
                         
                         <MessageStrip
-                            text="Supported formats: Excel (.xlsx, .xls), CSV (.csv), BAI2 (.bai, .bai2), Payment Advice (.txt, .pdf)"
+                            text="Supported formats: Excel (.xlsx, .xls), CSV (.csv), BAI2 (.bai, .bai2)"
                             type="Information"
                             showIcon="true"
                             class="sapUiSmallMarginTop" />
@@ -1596,14 +1594,17 @@
                                     <Column width="10%">
                                         <Text text="Amount(USD)" />
                                     </Column>
-                                    <Column width="15%">
-                                        <Text text="AR Posting Doc" />
+                                    <Column width="12%">
+                                        <Text text="Document Number" />
                                     </Column>
-                                    <Column width="15%">
+                                    <Column width="12%">
                                         <Text text="Payment Advice" />
                                     </Column>
+                                    <Column width="12%">
+                                        <Text text="Subledger Document" />
+                                    </Column>
                                     <Column width="15%">
-                                        <Text text="Clearing Doc" />
+                                        <Text text="Subledger Onaccount Document" />
                                     </Column>
                                 </columns>
                                 <items>
@@ -1618,6 +1619,7 @@
                                             <Text text="{app>postingDoc}" />
                                             <Text text="{app>paytAdvice}" />
                                             <Text text="{app>clearingDoc}" />
+                                            <Text text="{app>subledgerOnaccountDoc}" />
                                         </cells>
                                     </ColumnListItem>
                                 </items>
