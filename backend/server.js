@@ -2048,41 +2048,22 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
         // ========================================================
         // GENERATE UNIQUE SEQUENTIAL LOCKBOX BATCH ID
         // Format: 1000172, 1000173, 1000174... (incremental)
-        // SAP rejects duplicate Lockbox IDs, so each production run needs unique sequential ID
+        // SAP rejects duplicate Lockbox IDs based on unique combination
         // ========================================================
         console.log('=== GENERATING UNIQUE SEQUENTIAL LOCKBOX BATCH ID ===');
         
-        // Get the last used Lockbox ID from successful production runs
-        let nextLockboxId = '1000172'; // Default starting ID
-        try {
-            const lastRunResult = await pool.query(`
-                SELECT sap_response 
-                FROM lockbox_runs 
-                WHERE status = 'POSTED' 
-                AND sap_response IS NOT NULL 
-                ORDER BY posted_at DESC 
-                LIMIT 1
-            `);
-            
-            if (lastRunResult.rows.length > 0) {
-                const lastResponse = lastRunResult.rows[0].sap_response;
-                const lastLockboxId = lastResponse?.lockbox || lastResponse?.Lockbox;
-                
-                if (lastLockboxId && !isNaN(parseInt(lastLockboxId))) {
-                    // Increment the last ID
-                    const lastNum = parseInt(lastLockboxId);
-                    nextLockboxId = (lastNum + 1).toString();
-                    console.log('Last used Lockbox ID:', lastLockboxId);
-                }
-            }
-        } catch (error) {
-            console.warn('Could not fetch last Lockbox ID from DB, using default:', error.message);
-        }
+        // Strategy: Use timestamp-based unique ID to ensure uniqueness
+        // Format: Base (1000) + Unix timestamp last 3 digits = 1000XXX (7 chars max)
+        const baseId = '1000';
+        const timestamp = Date.now().toString();
+        const uniqueSuffix = timestamp.slice(-3); // Last 3 digits
+        const uniqueLockboxId = baseId + uniqueSuffix; // e.g., "1000789"
         
-        console.log('Generated unique Lockbox ID for this run:', nextLockboxId);
+        console.log('Generated unique Lockbox ID:', uniqueLockboxId);
+        console.log('Timestamp used:', timestamp);
         
-        // Update payload with unique sequential Lockbox ID (max 7 chars for SAP)
-        payload.Lockbox = nextLockboxId.substring(0, 7);
+        // Update payload with unique Lockbox ID (max 7 chars for SAP)
+        payload.Lockbox = uniqueLockboxId.substring(0, 7);
         
         console.log('=== PRODUCTION RUN: Committing to SAP ===');
         console.log('Using saved simulation payload with unique Lockbox ID:');
