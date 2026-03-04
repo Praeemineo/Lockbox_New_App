@@ -1588,14 +1588,17 @@
                                     <Column width="10%">
                                         <Text text="Amount(USD)" />
                                     </Column>
-                                    <Column width="15%">
-                                        <Text text="AR Posting Doc" />
+                                    <Column width="12%">
+                                        <Text text="Document Number" />
                                     </Column>
-                                    <Column width="15%">
+                                    <Column width="12%">
                                         <Text text="Payment Advice" />
                                     </Column>
+                                    <Column width="12%">
+                                        <Text text="Subledger Document" />
+                                    </Column>
                                     <Column width="15%">
-                                        <Text text="Clearing Doc" />
+                                        <Text text="Subledger Onaccount Document" />
                                     </Column>
                                 </columns>
                                 <items>
@@ -1610,6 +1613,7 @@
                                             <Text text="{app>postingDoc}" />
                                             <Text text="{app>paytAdvice}" />
                                             <Text text="{app>clearingDoc}" />
+                                            <Text text="{app>subledgerOnaccountDoc}" />
                                         </cells>
                                     </ColumnListItem>
                                 </items>
