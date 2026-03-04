@@ -69,25 +69,6 @@
                             </tileContent>
                         </GenericTile>
                     </VBox>
-                    
-                    <!-- PDF Lockbox Transaction Tile (OCR) -->
-                    <VBox class="sapUiSmallMargin">
-                        <GenericTile
-                            id="tilePdfLockbox"
-                            header="PDF Lockbox (OCR)"
-                            subheader="AI-Powered Document Processing"
-                            press="onPdfLockboxTilePress"
-                            frameType="TwoByOne"
-                            class="sapUiTinyMarginBegin sapUiTinyMarginEnd">
-                            <tileContent>
-                                <TileContent>
-                                    <content>
-                                        <ImageContent src="sap-icon://pdf-attachment" />
-                                    </content>
-                                </TileContent>
-                            </tileContent>
-                        </GenericTile>
-                    </VBox>
                 </HBox>
             </VBox>
             
