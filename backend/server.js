@@ -2000,57 +2000,52 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
         
         try {
             // ========================================================
-            // STEP 0: PRE-CLEARING - Enrich PaymentReferences with Belnr (DocumentNumber) and CompanyCode
+            // STEP 0: EXTRACT COMPANY CODE (No API call needed - already enriched by RULE-001)
             // ========================================================
-            console.log('=== STEP 0: PRE-CLEARING - Fetch Belnr and CompanyCode from Invoice Numbers ===');
+            console.log('=== STEP 0: EXTRACT COMPANY CODE ===');
+            console.log('Note: PaymentReferences are already enriched by RULE-001 during Validation & Mapping stage');
             
-            // Extract all clearing entries from payload
-            const allClearingEntries = [];
+            // Extract CompanyCode from the enriched data (RULE-001 already populated this)
+            let derivedCompanyCode = DEFAULT_COMPANY_CODE; // Fallback to default
+            
+            // Check if any clearing entry has CompanyCode from RULE-001
             for (const item of payload.to_Item?.results || []) {
                 if (item.to_LockboxClearing?.results) {
-                    allClearingEntries.push(...item.to_LockboxClearing.results);
+                    for (const clearing of item.to_LockboxClearing.results) {
+                        // CompanyCode might be in the clearing entry or we can get it from mapped data
+                        if (clearing.CompanyCode) {
+                            derivedCompanyCode = clearing.CompanyCode;
+                            console.log('✓ Found CompanyCode from enriched data (RULE-001):', derivedCompanyCode);
+                            break;
+                        }
+                    }
+                }
+                if (derivedCompanyCode !== DEFAULT_COMPANY_CODE) break;
+            }
+            
+            // If not found in clearing, try to get from database (RULE-001 stores it in mappedData)
+            if (derivedCompanyCode === DEFAULT_COMPANY_CODE) {
+                const mappedDataResult = await pool.query(
+                    'SELECT mapped_data FROM lockbox_runs WHERE header_id = $1 ORDER BY id DESC LIMIT 1',
+                    [headerId]
+                );
+                if (mappedDataResult.rows.length > 0 && mappedDataResult.rows[0].mapped_data) {
+                    const mappedData = mappedDataResult.rows[0].mapped_data;
+                    if (Array.isArray(mappedData) && mappedData.length > 0 && mappedData[0].CompanyCode) {
+                        derivedCompanyCode = mappedData[0].CompanyCode;
+                        console.log('✓ Found CompanyCode from mappedData (RULE-001):', derivedCompanyCode);
+                    }
                 }
             }
             
-            console.log('Total clearing entries before enrichment:', allClearingEntries.length);
-            
-            // Variable to store the derived CompanyCode
-            let derivedCompanyCode = DEFAULT_COMPANY_CODE; // Fallback to default
-            
-            if (allClearingEntries.length > 0) {
-                // Call the enrichment function to replace PaymentReference with DocumentNumber (Belnr) and extract CompanyCode
-                const enrichedClearingEntries = await enrichPaymentReferencesWithBelnr(allClearingEntries);
-                
-                // Extract CompanyCode from the first enriched entry (assuming all entries have the same company code)
-                const companyCodeFromAPI = enrichedClearingEntries.find(e => e.CompanyCode)?.CompanyCode;
-                if (companyCodeFromAPI) {
-                    derivedCompanyCode = companyCodeFromAPI;
-                    console.log('✓ Using CompanyCode from API:', derivedCompanyCode);
-                } else {
-                    console.log('⚠ No CompanyCode found in API response, using default:', derivedCompanyCode);
-                }
-                
-                // Update the payload with enriched clearing data
-                let enrichedIndex = 0;
-                for (const item of payload.to_Item?.results || []) {
-                    if (item.to_LockboxClearing?.results) {
-                        const clearingCount = item.to_LockboxClearing.results.length;
-                        // Remove CompanyCode from individual clearing entries as it's not part of the SAP payload structure
-                        const clearingForPayload = enrichedClearingEntries.slice(enrichedIndex, enrichedIndex + clearingCount).map(({ CompanyCode, ...rest }) => rest);
-                        item.to_LockboxClearing.results = clearingForPayload;
-                        enrichedIndex += clearingCount;
-                    }
-                }
-                
-                console.log('Payload enriched with DocumentNumbers (Belnr) and CompanyCode extracted');
-                console.log('Updated payload:', JSON.stringify(payload, null, 2));
-            } else {
-                console.log('No clearing entries found in payload, skipping enrichment');
+            if (derivedCompanyCode === DEFAULT_COMPANY_CODE) {
+                console.log('⚠ No CompanyCode found in enriched data, using default:', derivedCompanyCode);
             }
             
             // Use derivedCompanyCode for all subsequent operations instead of DEFAULT_COMPANY_CODE
             const RUNTIME_COMPANY_CODE = derivedCompanyCode;
             console.log('=== USING COMPANY CODE FOR THIS RUN:', RUNTIME_COMPANY_CODE, '===');
+            console.log('Note: PaymentReferences in payload already contain AccountingDocument from RULE-001');
             
             // ========================================================
             // STEP 1: POST /LockboxBatch - Trigger posting to SAP
