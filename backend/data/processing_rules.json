@@ -145,7 +145,7 @@
       {
         "httpMethod": "GET",
         "apiReference": "/sap/opu/odata4/sap/zsb_acc_bank_stmt/srvd_a2x/sap/zsd_acc_bank_stmt/0001/ZFI_I_ACC_BANK_STMT",
-        "destination": "LockBox",
+        "destination": "S4HANA_SYSTEM_DESTINATION",
         "inputField": "LockBoxID",
         "sourceInput": "InvoiceReference",
         "outputField": "Document number, Subledgeronaccount documentPaymentadvice, Subledgerdocument, ",
