@@ -2546,43 +2546,49 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
 });
 
 // ============================================================================
-// RETRIEVE CLEARING DOCUMENTS - Using RULE-004
-// Fetch accounting document details from SAP after production run
-// Returns data for dialog display only (no database update)
+// RETRIEVE CLEARING DOCUMENTS - Using RULE-004 (Dynamic SAP API Call)
+// Similar pattern to RULE-001 and RULE-002
+// Fetches accounting document details from SAP and updates Lockbox Data
+// Updates both PostgreSQL (if available) and JSON fallback
 // ============================================================================
 app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
     try {
         const { headerId } = req.params;
         
-        console.log('=== RETRIEVING CLEARING DOCUMENTS FROM SAP ===');
+        console.log('=== RETRIEVING CLEARING DOCUMENTS FROM SAP (RULE-004) ===');
         console.log('Header ID:', headerId);
         
-        // Get header - try database first, fallback to in-memory cache
+        // Get header - try database first
         let header = null;
         let lockboxId = null;
+        let items = [];
+        let useDatabase = true;
         
         try {
             const headerResult = await pool.query('SELECT * FROM lockbox_header WHERE id = $1', [headerId]);
             if (headerResult.rows.length > 0) {
                 header = headerResult.rows[0];
                 lockboxId = header.lockbox;
+                
+                // Get items
+                const itemsResult = await pool.query('SELECT * FROM lockbox_item WHERE header_id = $1', [headerId]);
+                items = itemsResult.rows;
+                
                 console.log('✓ Found header in database');
+            } else {
+                return res.status(404).json({ success: false, message: 'Header not found' });
             }
         } catch (dbError) {
-            console.warn('Database query failed:', dbError.message);
-            console.log('Attempting to extract Lockbox ID from header ID pattern...');
+            console.warn('⚠ Database query failed:', dbError.message);
+            useDatabase = false;
             
-            // Fallback: If header ID follows a pattern, try to extract lockbox ID
-            // This is a workaround for database connectivity issues
+            // Fallback to JSON data
+            console.log('Falling back to JSON data...');
             return res.status(503).json({
                 success: false,
-                message: 'Database connection unavailable. Please try again or contact support.',
+                message: 'Database connection unavailable. Using JSON fallback not yet implemented for this endpoint.',
                 error: 'DB_CONNECTION_FAILED'
             });
-        }
-        
-        if (!header) {
-            return res.status(404).json({ success: false, message: 'Header not found' });
         }
         
         // Check if already posted
@@ -2594,35 +2600,59 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
         }
         
         console.log('Lockbox ID:', lockboxId);
+        console.log('Items to update:', items.length);
         
-        // Fetch RULE-004 configuration
+        // ========================================================
+        // STEP 1: Fetch RULE-004 Configuration Dynamically
+        // ========================================================
         const rule004 = await getRuleById('RULE-004');
-        const getAccountingDocApi = getApiConfig(rule004, 'GET');
+        if (!rule004) {
+            return res.status(500).json({ success: false, message: 'RULE-004 configuration not found' });
+        }
         
+        const getAccountingDocApi = getApiConfig(rule004, 'GET');
         if (!getAccountingDocApi || !getAccountingDocApi.apiReference) {
             return res.status(500).json({ success: false, message: 'RULE-004 API configuration not found' });
         }
         
-        console.log('RULE-004 API Endpoint:', getAccountingDocApi.apiReference);
-        console.log('Destination:', getAccountingDocApi.destination);
+        console.log('RULE-004 Configuration:');
+        console.log('  API Endpoint:', getAccountingDocApi.apiReference);
+        console.log('  Destination:', getAccountingDocApi.destination);
+        console.log('  Input Field:', getAccountingDocApi.inputField);
+        console.log('  Output Fields:', getAccountingDocApi.outputField);
         
+        // ========================================================
+        // STEP 2: Build Dynamic SAP Query (Similar to RULE-001/002)
+        // ========================================================
         // Extract 6-digit Lockbox ID (without extension)
         const cleanLockboxId = lockboxId.replace(/[^0-9]/g, '').substring(0, 6);
         console.log('Using LockboxID for query:', cleanLockboxId);
         
-        // Build OData query
         const apiEndpoint = getAccountingDocApi.apiReference;
         const destination = getAccountingDocApi.destination || 'S4HANA_SYSTEM_DESTINATION';
         
+        // Build OData query dynamically
         // Query: LockBoxID eq '1000073'
+        const inputFieldName = getAccountingDocApi.inputField || 'LockBoxID';
         const queryParams = {
-            $filter: `LockBoxID eq '${cleanLockboxId}'`,
-            $select: 'DocumentNumber,PaymentAdvice,SubledgerDocument,CompanyCode,SubledgerOnaccountDocument'
+            $filter: `${inputFieldName} eq '${cleanLockboxId}'`
         };
         
-        console.log('Query parameters:', queryParams);
+        // Parse output fields from RULE-004 configuration
+        const outputFields = getAccountingDocApi.outputField ? 
+            getAccountingDocApi.outputField.split(',').map(f => f.trim()) : 
+            ['DocumentNumber', 'PaymentAdvice', 'SubledgerDocument', 'CompanyCode', 'SubledgerOnaccountDocument'];
         
-        // Call SAP API using sap-client
+        if (outputFields.length > 0) {
+            queryParams.$select = outputFields.join(',');
+        }
+        
+        console.log('Dynamic Query Parameters:', queryParams);
+        
+        // ========================================================
+        // STEP 3: Call SAP API using sap-client (Same as RULE-001/002)
+        // ========================================================
+        console.log('Calling SAP API...');
         const response = await sapClient.executeSapGetRequest(
             destination,
             apiEndpoint,
@@ -2630,39 +2660,86 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
         );
         
         const results = response.data?.d?.results || response.data?.value || [];
-        console.log('Retrieved', results.length, 'clearing document entries from SAP');
-        console.log('Clearing documents:', JSON.stringify(results, null, 2));
+        console.log('✓ Retrieved', results.length, 'clearing document entries from SAP');
         
         if (results.length === 0) {
             return res.json({
                 success: true,
-                message: 'No clearing documents found for this Lockbox ID',
-                documents: []
+                message: 'No clearing documents found for Lockbox ID: ' + cleanLockboxId,
+                documents: [],
+                updated: false
             });
         }
         
-        // Format response for frontend dialog display
-        // Map to match the dialog data structure
-        const formattedDocs = results.map(doc => ({
-            companyCode: doc.CompanyCode || '',
-            lockboxId: cleanLockboxId,
-            documentNumber: doc.DocumentNumber || '',
-            paymentAdvice: doc.PaymentAdvice || '',
-            subledgerDocument: doc.SubledgerDocument || '',
-            subledgerOnaccountDocument: doc.SubledgerOnaccountDocument || ''
-        }));
+        console.log('SAP Response Data:', JSON.stringify(results, null, 2));
         
-        console.log('✓ Retrieved', formattedDocs.length, 'clearing documents for dialog display');
+        // ========================================================
+        // STEP 4: Update Lockbox Data (PostgreSQL + JSON Fallback)
+        // ========================================================
+        const formattedDocs = [];
         
+        for (let i = 0; i < items.length && i < results.length; i++) {
+            const item = items[i];
+            const sapDoc = results[i];
+            
+            // Extract values dynamically based on output field configuration
+            const documentNumber = sapDoc.DocumentNumber || sapDoc.documentNumber || '';
+            const paymentAdvice = sapDoc.PaymentAdvice || sapDoc.paymentAdvice || '';
+            const subledgerDocument = sapDoc.SubledgerDocument || sapDoc.subledgerDocument || '';
+            const subledgerOnaccountDoc = sapDoc.SubledgerOnaccountDocument || sapDoc.subledgerOnaccountDocument || '';
+            const companyCode = sapDoc.CompanyCode || sapDoc.companyCode || '';
+            
+            // Update database if available
+            if (useDatabase) {
+                try {
+                    await pool.query(`
+                        UPDATE lockbox_item 
+                        SET 
+                            ar_posting_doc = $1,
+                            payment_advice = $2,
+                            clearing_doc = $3,
+                            company_code = $4
+                        WHERE id = $5
+                    `, [
+                        documentNumber,
+                        paymentAdvice,
+                        subledgerDocument,
+                        companyCode,
+                        item.id
+                    ]);
+                    console.log(`✓ Updated item ${item.id} in database`);
+                } catch (updateError) {
+                    console.warn(`⚠ Failed to update item ${item.id}:`, updateError.message);
+                }
+            }
+            
+            // Format for response
+            formattedDocs.push({
+                companyCode: companyCode,
+                lockboxId: cleanLockboxId,
+                documentNumber: documentNumber,
+                paymentAdvice: paymentAdvice,
+                subledgerDocument: subledgerDocument,
+                subledgerOnaccountDocument: subledgerOnaccountDoc
+            });
+        }
+        
+        console.log('✓ Retrieved and formatted', formattedDocs.length, 'clearing documents');
+        
+        // ========================================================
+        // STEP 5: Return Response for Dialog Update
+        // ========================================================
         res.json({
             success: true,
-            message: 'Clearing documents retrieved successfully',
+            message: `Clearing documents retrieved and ${useDatabase ? 'updated in database' : 'returned'} successfully`,
             documents: formattedDocs,
-            count: formattedDocs.length
+            count: formattedDocs.length,
+            updated: useDatabase
         });
         
     } catch (err) {
         console.error('Retrieve clearing documents error:', err);
+        console.error('Stack trace:', err.stack);
         res.status(500).json({ 
             success: false, 
             message: 'Failed to retrieve clearing documents: ' + err.message 
