@@ -81,18 +81,7 @@ sap.ui.define([
             this._loadFieldMappingRules();
         },
         
-        // Navigation: PDF Lockbox Tile Press
-        onPdfLockboxTilePress: function () {
-            var oModel = this.getOwnerComponent().getModel("app");
-            oModel.setProperty("/showHome", false);
-            oModel.setProperty("/showLockbox", false);
-            oModel.setProperty("/showFieldMappingRules", false);
-            oModel.setProperty("/showPdfLockbox", true);
-            oModel.setProperty("/showRuleDetail", false);
-            oModel.setProperty("/showNavButton", true);
-            oModel.setProperty("/currentView", "pdfLockbox");
-        },
-        
+
         // Navigation: Back Button Press
         onNavBack: function () {
             var oModel = this.getOwnerComponent().getModel("app");
