@@ -2554,53 +2554,65 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
 app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
     try {
         const { headerId } = req.params;
+        const { lockboxId: providedLockboxId } = req.body; // Optional: lockbox ID from frontend
         
         console.log('=== RETRIEVING CLEARING DOCUMENTS FROM SAP (RULE-004) ===');
         console.log('Header ID:', headerId);
+        console.log('Provided Lockbox ID:', providedLockboxId);
         
         // Get header - try database first
         let header = null;
-        let lockboxId = null;
+        let lockboxId = providedLockboxId; // Use provided ID if available
         let items = [];
         let useDatabase = true;
         
-        try {
-            const headerResult = await pool.query('SELECT * FROM lockbox_header WHERE id = $1', [headerId]);
-            if (headerResult.rows.length > 0) {
-                header = headerResult.rows[0];
-                lockboxId = header.lockbox;
+        if (!lockboxId) {
+            // Try to get from database
+            try {
+                const headerResult = await pool.query('SELECT * FROM lockbox_header WHERE id = $1', [headerId]);
+                if (headerResult.rows.length > 0) {
+                    header = headerResult.rows[0];
+                    lockboxId = header.lockbox;
+                    
+                    // Get items
+                    const itemsResult = await pool.query('SELECT * FROM lockbox_item WHERE header_id = $1', [headerId]);
+                    items = itemsResult.rows;
+                    
+                    console.log('✓ Found header in database');
+                    console.log('  Lockbox ID:', lockboxId);
+                    console.log('  Status:', header.status);
+                } else {
+                    return res.status(404).json({ success: false, message: 'Header not found' });
+                }
+            } catch (dbError) {
+                console.warn('⚠ Database query failed:', dbError.message);
+                useDatabase = false;
                 
-                // Get items
-                const itemsResult = await pool.query('SELECT * FROM lockbox_item WHERE header_id = $1', [headerId]);
-                items = itemsResult.rows;
+                // Check if we have lockbox ID from request body
+                if (!providedLockboxId) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Database unavailable and no lockbox ID provided. Please provide lockboxId in request body.',
+                        error: 'MISSING_LOCKBOX_ID'
+                    });
+                }
                 
-                console.log('✓ Found header in database');
-            } else {
-                return res.status(404).json({ success: false, message: 'Header not found' });
+                console.log('✓ Using provided Lockbox ID from request:', providedLockboxId);
             }
-        } catch (dbError) {
-            console.warn('⚠ Database query failed:', dbError.message);
-            useDatabase = false;
-            
-            // Fallback to JSON data
-            console.log('Falling back to JSON data...');
-            return res.status(503).json({
-                success: false,
-                message: 'Database connection unavailable. Using JSON fallback not yet implemented for this endpoint.',
-                error: 'DB_CONNECTION_FAILED'
-            });
+        } else {
+            console.log('✓ Using provided Lockbox ID from request:', lockboxId);
+            useDatabase = false; // Skip database operations if ID is provided
         }
         
-        // Check if already posted
-        if (header.status !== 'POSTED') {
+        // Check status if we have header from database
+        if (header && header.status !== 'POSTED') {
             return res.status(400).json({ 
                 success: false, 
                 message: 'Lockbox must be posted before retrieving clearing documents. Current status: ' + header.status
             });
         }
         
-        console.log('Lockbox ID:', lockboxId);
-        console.log('Items to update:', items.length);
+        console.log('Processing with Lockbox ID:', lockboxId);
         
         // ========================================================
         // STEP 1: Fetch RULE-004 Configuration Dynamically
@@ -2674,12 +2686,11 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
         console.log('SAP Response Data:', JSON.stringify(results, null, 2));
         
         // ========================================================
-        // STEP 4: Update Lockbox Data (PostgreSQL + JSON Fallback)
+        // STEP 4: Update Lockbox Data (PostgreSQL if available)
         // ========================================================
         const formattedDocs = [];
         
-        for (let i = 0; i < items.length && i < results.length; i++) {
-            const item = items[i];
+        for (let i = 0; i < results.length; i++) {
             const sapDoc = results[i];
             
             // Extract values dynamically based on output field configuration
@@ -2689,8 +2700,9 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
             const subledgerOnaccountDoc = sapDoc.SubledgerOnaccountDocument || sapDoc.subledgerOnaccountDocument || '';
             const companyCode = sapDoc.CompanyCode || sapDoc.companyCode || '';
             
-            // Update database if available
-            if (useDatabase) {
+            // Update database only if available and we have items
+            if (useDatabase && items[i]) {
+                const item = items[i];
                 try {
                     await pool.query(`
                         UPDATE lockbox_item 
@@ -2731,7 +2743,9 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
         // ========================================================
         res.json({
             success: true,
-            message: `Clearing documents retrieved and ${useDatabase ? 'updated in database' : 'returned'} successfully`,
+            message: useDatabase ? 
+                'Clearing documents retrieved and updated in database successfully' : 
+                'Clearing documents retrieved successfully (database unavailable)',
             documents: formattedDocs,
             count: formattedDocs.length,
             updated: useDatabase
