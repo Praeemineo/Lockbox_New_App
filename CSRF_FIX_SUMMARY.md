@@ -4,7 +4,7 @@
 Production Run (`POST /api/lockbox/post/:headerId`) was failing with "CSRF token validation failed" error after switching from hardcoded API endpoints to dynamic API calls from RULE-003 and RULE-004.
 
 ## Root Cause
-The issue was NOT a missing CSRF token implementation (which was already working with hardcoded endpoints). The problem was in the **RULE-003 configuration**:
+The issue was NOT a missing CSRF token implementation (which was already working with hardcoded endpoints). The problems were in the **rule configurations**:
 
 1. **Leading Space in API Path**: The `apiReference` field in RULE-003 POST mapping had a leading space:
    ```json
@@ -12,9 +12,11 @@ The issue was NOT a missing CSRF token implementation (which was already working
    ```
    This extra space would cause URL construction issues.
 
+2. **Inconsistent Destination Names**: RULE-004 was using a different destination (`LockBox`) instead of the same destination as RULE-003 (`S4HANA_SYSTEM_DESTINATION`), causing authentication and routing issues.
+
 ## Changes Made
 
-### 1. Fixed processing_rules.json
+### 1. Fixed RULE-003: Removed Leading Space
 **File**: `/app/backend/data/processing_rules.json`
 
 **Before**:
@@ -37,7 +39,30 @@ The issue was NOT a missing CSRF token implementation (which was already working
 }
 ```
 
-### 2. Reverted server.js
+### 2. Fixed RULE-004: Unified Destination Name
+**File**: `/app/backend/data/processing_rules.json`
+
+**Before**:
+```json
+{
+  "httpMethod": "GET",
+  "apiReference": "/sap/opu/odata4/sap/zsb_acc_bank_stmt/srvd_a2x/sap/zsd_acc_bank_stmt/0001/ZFI_I_ACC_BANK_STMT",
+  "destination": "LockBox",
+  ...
+}
+```
+
+**After**:
+```json
+{
+  "httpMethod": "GET",
+  "apiReference": "/sap/opu/odata4/sap/zsb_acc_bank_stmt/srvd_a2x/sap/zsd_acc_bank_stmt/0001/ZFI_I_ACC_BANK_STMT",
+  "destination": "S4HANA_SYSTEM_DESTINATION",
+  ...
+}
+```
+
+### 3. Reverted server.js
 **File**: `/app/backend/server.js`
 
 - Removed the additional CSRF token fetching logic that was added (since it was already working)
@@ -54,15 +79,27 @@ The issue was NOT a missing CSRF token implementation (which was already working
    ↓
    Extract POST API config (apiReference + destination)
    ↓
-   Call postToSapApi(payload, destination, apiPath)
+   Call postToSapApi(payload, "S4HANA_SYSTEM_DESTINATION", "/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxBatch")
    ↓
-   POST to SAP with correct URL
+   POST to SAP with correct URL and authentication
    ```
 
-2. **The leading space was causing**:
-   - Malformed URLs when concatenated with base URL
-   - Authentication/routing issues in SAP
-   - Possible CSRF token path mismatch
+2. **Why these issues caused the CSRF error**:
+   - **Leading space**: Malformed URLs when concatenated with base URL, causing 403/CSRF errors
+   - **Wrong destination**: Different authentication credentials/configuration, SAP rejecting requests
+   - Both issues made SAP think the request was invalid/unauthorized, triggering CSRF validation failure
+
+## Verification
+
+All rules now use consistent configuration:
+
+```
+✓ RULE-003 (Rule Level): S4HANA_SYSTEM_DESTINATION
+✓ RULE-003 POST API: S4HANA_SYSTEM_DESTINATION
+✓ RULE-003 GET API: S4HANA_SYSTEM_DESTINATION
+✓ RULE-004 (Rule Level): S4HANA_SYSTEM_DESTINATION
+✓ RULE-004 GET API: S4HANA_SYSTEM_DESTINATION
+```
 
 ## Testing Steps
 
@@ -76,6 +113,7 @@ To test the fix:
    const postApi = rule003.apiMappings.find(a => a.httpMethod === 'POST');
    console.log('POST API:', postApi.apiReference);
    console.log('Has leading space:', postApi.apiReference.startsWith(' '));
+   console.log('Destination:', postApi.destination);
    "
    ```
 
@@ -88,11 +126,14 @@ To test the fix:
 
 ## Additional Notes
 
-- The PostgreSQL database also needs to be updated with the corrected RULE-003 configuration
+- The PostgreSQL database also needs to be updated with the corrected RULE-003 and RULE-004 configurations
 - CSRF token handling is managed by the SAP Cloud SDK when using BTP destinations
 - The direct connection fallback (using .env credentials) may not include CSRF token handling, but BTP destinations handle it automatically
+- All rules now consistently use `S4HANA_SYSTEM_DESTINATION` for unified authentication and routing
 
 ## Status
 ✅ **Fixed**: Leading space removed from RULE-003 POST API configuration
+✅ **Fixed**: RULE-004 destination changed from "LockBox" to "S4HANA_SYSTEM_DESTINATION"
 ✅ **Reverted**: Unnecessary CSRF token code removed from server.js
 ⏳ **Pending**: Testing with actual SAP system to verify Production Run works
+⏳ **Pending**: Update PostgreSQL database with corrected rule configurations
