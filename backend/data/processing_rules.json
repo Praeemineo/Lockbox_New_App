@@ -102,7 +102,7 @@
     "apiMappings": [
       {
         "httpMethod": "POST",
-        "apiReference": " /sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxBatch",
+        "apiReference": "/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxBatch",
         "destination": "S4HANA_SYSTEM_DESTINATION",
         "inputField": "SAP Payload",
         "sourceInput": "SAP Payload",
