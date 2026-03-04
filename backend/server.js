@@ -1242,6 +1242,8 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
         console.log('CSRF Fetch URL:', csrfFetchUrl);
         
         let csrfToken = null;
+        let cookies = [];  // Store cookies from CSRF fetch
+        
         try {
             const csrfResponse = await axios({
                 method: 'GET',
@@ -1260,6 +1262,13 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
             });
             
             csrfToken = csrfResponse.headers['x-csrf-token'];
+            // Extract cookies from response to maintain session
+            const setCookieHeader = csrfResponse.headers['set-cookie'];
+            if (setCookieHeader) {
+                cookies = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader];
+                console.log('✓ Session cookies captured:', cookies.length, 'cookies');
+            }
+            
             console.log('✓ CSRF Token fetched:', csrfToken ? 'SUCCESS' : 'FAILED');
             console.log('CSRF Token value:', csrfToken);
         } catch (csrfError) {
@@ -1267,7 +1276,7 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
             console.warn('Proceeding without CSRF token (POST may fail)');
         }
         
-        // STEP 2: Make POST request with CSRF token
+        // STEP 2: Make POST request with CSRF token AND session cookies
         console.log('=== MAKING POST REQUEST (Direct Connection) ===');
         const fullUrl = `${SAP_URL}${url}?sap-client=${SAP_CLIENT}`;
         console.log('Full URL:', fullUrl);
@@ -1280,6 +1289,12 @@ async function postToSapApi(payload, destinationName = SAP_DESTINATION_NAME, api
         if (csrfToken) {
             headers['X-CSRF-Token'] = csrfToken;
             console.log('✓ Including CSRF token in POST request');
+        }
+        
+        // Include session cookies from CSRF fetch to maintain session
+        if (cookies.length > 0) {
+            headers['Cookie'] = cookies.map(c => c.split(';')[0]).join('; ');
+            console.log('✓ Including session cookies in POST request');
         }
         
         const response = await axios({
