@@ -1201,14 +1201,14 @@
                         <u:FileUploader
                             id="templateFileUploader"
                             name="templateFile"
-                            fileType="xlsx,xls,csv,bai,bai2,txt,pdf"
+                            fileType="xlsx,xls,csv,bai,bai2"
                             placeholder="Choose file..."
                             width="100%"
                             change="onTemplateFileChange"
                             style="Emphasized" />
                         
                         <MessageStrip
-                            text="Supported formats: Excel (.xlsx, .xls), CSV (.csv), BAI2 (.bai, .bai2), Payment Advice (.txt, .pdf)"
+                            text="Supported formats: Excel (.xlsx, .xls), CSV (.csv), BAI2 (.bai, .bai2)"
                             type="Information"
                             showIcon="true"
                             class="sapUiSmallMarginTop" />
