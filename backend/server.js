@@ -2292,7 +2292,131 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                     // If still no data, try with just paymentAdvice
                     if (!Array.isArray(clearingData) || clearingData.length === 0) {
                         console.log('No data with batch, trying with just paymentAdvice...');
-                        if (paymentAdviceFromPost) {
+            
+            // ========================================================
+            // BUILD DOCUMENT VIEWS FOR FRONTEND DISPLAY
+            // ========================================================
+            console.log('=== BUILDING DOCUMENT VIEWS ===');
+            
+            // Combine data from STEP 2 (Clearing) and STEP 4 (Accounting Details)
+            const allClearingEntries = [];
+            
+            // Primary source: clearingData from STEP 2
+            if (Array.isArray(clearingData) && clearingData.length > 0) {
+                allClearingEntries.push(...clearingData);
+            }
+            
+            // Enhance with STEP 4 data if available
+            if (accountingDocDetails && Array.isArray(accountingDocDetails) && accountingDocDetails.length > 0) {
+                // Merge or use STEP 4 data
+                accountingDocDetails.forEach(detail => {
+                    const existing = allClearingEntries.find(e => e.PaymentReference === detail.PaymentReference);
+                    if (existing) {
+                        // Enhance existing entry with additional fields from RULE-004
+                        Object.assign(existing, detail);
+                    } else {
+                        // Add new entry
+                        allClearingEntries.push(detail);
+                    }
+                });
+            }
+            
+            console.log('Total clearing entries after merge:', allClearingEntries.length);
+            
+            // Extract unique documents for the 3-document view
+            const documents = {
+                postingDocs: new Map(),      // AR Posting Documents (DocumentNumber)
+                paymentAdviceDocs: new Map(), // Payment Advice Documents (PaymentAdvice)
+                clearingDocs: new Map()       // Clearing Documents (SubledgerDocument or SubledgerOnAccountDocument)
+            };
+            
+            allClearingEntries.forEach((entry, index) => {
+                const itemNum = String(index + 1).padStart(4, '0'); // 0001, 0002, etc.
+                
+                // Extract fields from entry (field names may vary based on RULE-004 configuration)
+                const documentNumber = entry.AccountingDocument || entry.DocumentNumber || docNumber;
+                const paymentAdviceNum = entry.PaymentAdvice || entry.PaymentAdviceNumber || '';
+                const subledgerDoc = entry.SubledgerDocument || '';
+                const subledgerOnAccountDoc = entry.SubledgerOnAccountDocument || '';
+                const paymentReference = entry.PaymentReference || '';
+                const netAmount = entry.NetPaymentAmountInPaytCurrency || entry.NetPaymentAmount || '0.00';
+                const deductionAmount = entry.DeductionAmountInPaytCurrency || entry.DeductionAmount || '0.00';
+                const currencyCode = entry.Currency || currency;
+                
+                // 1. AR Posting Document (DocumentNumber)
+                if (documentNumber) {
+                    if (!documents.postingDocs.has(documentNumber)) {
+                        documents.postingDocs.set(documentNumber, {
+                            DocumentNumber: documentNumber,
+                            CompanyCode: RUNTIME_COMPANY_CODE,
+                            FiscalYear: fiscalYear,
+                            DocumentDate: startedAt.toISOString().split('T')[0],
+                            PostingDate: startedAt.toISOString().split('T')[0],
+                            DocumentType: 'DZ', // Lockbox payment
+                            entries: []
+                        });
+                    }
+                    documents.postingDocs.get(documentNumber).entries.push({
+                        Item: itemNum,
+                        PaymentReference: paymentReference,
+                        Amount: netAmount,
+                        Currency: currencyCode
+                    });
+                }
+                
+                // 2. Payment Advice Document (PaymentAdvice)
+                if (paymentAdviceNum) {
+                    if (!documents.paymentAdviceDocs.has(paymentAdviceNum)) {
+                        documents.paymentAdviceDocs.set(paymentAdviceNum, {
+                            PaymentAdvice: paymentAdviceNum,
+                            CompanyCode: RUNTIME_COMPANY_CODE,
+                            entries: []
+                        });
+                    }
+                    documents.paymentAdviceDocs.get(paymentAdviceNum).entries.push({
+                        Item: itemNum,
+                        PaymentReference: paymentReference,
+                        NetAmount: netAmount,
+                        DeductionAmount: deductionAmount,
+                        Currency: currencyCode
+                    });
+                }
+                
+                // 3. Clearing Document (SubledgerDocument or SubledgerOnAccountDocument)
+                const clearingDocNum = subledgerDoc || subledgerOnAccountDoc;
+                if (clearingDocNum) {
+                    if (!documents.clearingDocs.has(clearingDocNum)) {
+                        documents.clearingDocs.set(clearingDocNum, {
+                            ClearingDocument: clearingDocNum,
+                            DocumentType: subledgerDoc ? 'Subledger' : 'SubledgerOnAccount',
+                            CompanyCode: RUNTIME_COMPANY_CODE,
+                            FiscalYear: fiscalYear,
+                            entries: []
+                        });
+                    }
+                    documents.clearingDocs.get(clearingDocNum).entries.push({
+                        Item: itemNum,
+                        PaymentReference: paymentReference,
+                        Amount: netAmount,
+                        Currency: currencyCode
+                    });
+                }
+            });
+            
+            // Convert Maps to Arrays for frontend
+            postingDocument = Array.from(documents.postingDocs.values());
+            paymentAdviceDoc = Array.from(documents.paymentAdviceDocs.values());
+            financialDocument = Array.from(documents.clearingDocs.values());
+            
+            console.log('✓ Document views built:');
+            console.log('  AR Posting Documents:', postingDocument.length);
+            console.log('  Payment Advice Documents:', paymentAdviceDoc.length);
+            console.log('  Clearing Documents:', financialDocument.length);
+            
+            console.log('Document Details:');
+            console.log('  postingDocument:', JSON.stringify(postingDocument, null, 2));
+            console.log('  paymentAdviceDoc:', JSON.stringify(paymentAdviceDoc, null, 2));
+            console.log('  financialDocument:', JSON.stringify(financialDocument, null, 2));
                             clearingResponse = await getLockboxClearing({
                                 paymentAdvice: paymentAdviceFromPost,
                                 companyCode: RUNTIME_COMPANY_CODE
