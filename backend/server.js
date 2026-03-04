@@ -1978,66 +1978,18 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
         console.log(JSON.stringify(payload, null, 2));
         
         // ========================================================
-        // FETCH RULE-003 and RULE-004 API CONFIGURATIONS
+        // FETCH RULE-003 and RULE-004 API CONFIGURATIONS (Using Service)
         // ========================================================
         console.log('=== FETCHING API CONFIGURATIONS FROM RULES ===');
         
-        // Fetch RULE-003 (POST LockboxBatch + GET LockboxClearing)
-        let rule003 = null;
-        try {
-            const rule003Result = await pool.query(
-                'SELECT * FROM lb_processing_rules WHERE rule_id = $1',
-                ['RULE-003']
-            );
-            if (rule003Result.rows.length > 0) {
-                rule003 = rule003Result.rows[0];
-                console.log('✓ RULE-003 fetched from PostgreSQL');
-            }
-        } catch (dbError) {
-            console.log('⚠ PostgreSQL fetch failed, falling back to JSON file');
-        }
+        // Use rule service for cleaner code with PostgreSQL → JSON fallback
+        const rule003 = await getRuleById('RULE-003');
+        const rule004 = await getRuleById('RULE-004');
         
-        // Fallback to JSON file if not in DB
-        if (!rule003) {
-            const rulesJson = require('./data/processing_rules.json');
-            rule003 = rulesJson.find(r => r.ruleId === 'RULE-003');
-            console.log('✓ RULE-003 fetched from JSON file');
-        }
-        
-        // Fetch RULE-004 (GET Accounting Document)
-        let rule004 = null;
-        try {
-            const rule004Result = await pool.query(
-                'SELECT * FROM lb_processing_rules WHERE rule_id = $1',
-                ['RULE-004']
-            );
-            if (rule004Result.rows.length > 0) {
-                rule004 = rule004Result.rows[0];
-                console.log('✓ RULE-004 fetched from PostgreSQL');
-            }
-        } catch (dbError) {
-            console.log('⚠ PostgreSQL fetch failed, falling back to JSON file');
-        }
-        
-        // Fallback to JSON file if not in DB
-        if (!rule004) {
-            const rulesJson = require('./data/processing_rules.json');
-            rule004 = rulesJson.find(r => r.ruleId === 'RULE-004');
-            console.log('✓ RULE-004 fetched from JSON file');
-        }
-        
-        if (!rule003 || !rule004) {
-            throw new Error('Required rules (RULE-003, RULE-004) not found in database or JSON file');
-        }
-        
-        // Extract API endpoints from RULE-003
-        const rule003ApiMappings = Array.isArray(rule003.api_mappings) ? rule003.api_mappings : JSON.parse(rule003.api_mappings || '[]');
-        const postLockboxBatchApi = rule003ApiMappings.find(api => api.httpMethod === 'POST');
-        const getLockboxClearingApi = rule003ApiMappings.find(api => api.httpMethod === 'GET');
-        
-        // Extract API endpoint from RULE-004
-        const rule004ApiMappings = Array.isArray(rule004.api_mappings) ? rule004.api_mappings : JSON.parse(rule004.api_mappings || '[]');
-        const getAccountingDocApi = rule004ApiMappings[0]; // First API mapping
+        // Extract API configurations using helper function
+        const postLockboxBatchApi = getApiConfig(rule003, 'POST');
+        const getLockboxClearingApi = getApiConfig(rule003, 'GET');
+        const getAccountingDocApi = getApiConfig(rule004, 'GET');
         
         console.log('API Configurations:');
         console.log('  RULE-003 POST API:', postLockboxBatchApi?.apiReference);
