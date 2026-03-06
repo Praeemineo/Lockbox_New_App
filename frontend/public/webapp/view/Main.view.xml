@@ -1671,6 +1671,39 @@
                     </Tree>
                 </content>
             </Dialog>
+            
+            <!-- SAP XML Log Dialog -->
+            <Dialog
+                id="sapLogDialog"
+                title="SAP API Response - XML Log"
+                contentWidth="80%"
+                contentHeight="70%"
+                resizable="true"
+                draggable="true">
+                <customHeader>
+                    <Bar>
+                        <contentLeft>
+                            <Title text="SAP API Response - XML Log" level="H3" />
+                        </contentLeft>
+                        <contentRight>
+                            <Button text="Copy" icon="sap-icon://copy" press="onCopySAPLog" />
+                            <Button text="Close" press="onCloseSAPLog" />
+                        </contentRight>
+                    </Bar>
+                </customHeader>
+                <content>
+                    <VBox width="100%" height="100%">
+                        <TextArea
+                            id="sapLogTextArea"
+                            value="{app>/sapXMLLog}"
+                            rows="25"
+                            width="100%"
+                            editable="false"
+                            valueState="None">
+                        </TextArea>
+                    </VBox>
+                </content>
+            </Dialog>
 
         </dependents>
     </Page>
