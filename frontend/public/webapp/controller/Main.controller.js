@@ -7269,27 +7269,53 @@ sap.ui.define([
                     if (data.success) {
                         that._loadRunHistory();
                         
-                        var sMessage = "Production Run Successful!\n\n" +
-                            "Mode: " + data.production.mode + "\n" +
-                            "Service: " + data.production.service.system + "\n\n" +
-                            "📄 AR Posting Document: " + data.production.sapResponse.accountingDocument + "\n" +
-                            "💳 Payment Advice: " + data.production.sapResponse.paymentAdvice + "\n" +
-                            "📅 Fiscal Year: " + data.production.sapResponse.fiscalYear + "\n" +
-                            "🏢 Company Code: " + data.production.sapResponse.companyCode + "\n\n" +
-                            "✅ Clearing Status: " + data.production.clearing.status + "\n" +
-                            "📊 Items Cleared: " + data.production.clearing.clearedItems;
+                        // Build success message with clearing documents
+                        var sMessage = "Production Run Successful!\n\n";
+                        sMessage += "Company Code: " + (data.lockbox_summary?.companyCode || data.sap_fiscal_year) + "\n";
+                        sMessage += "Lockbox: " + (data.lockbox_summary?.lockbox || "") + "\n";
+                        sMessage += "Amount: " + (data.lockbox_summary?.amount || "") + "\n\n";
                         
-                        if (data.production.clearing.clearingDocument) {
-                            sMessage += "\n🔗 Clearing Document: " + data.production.clearing.clearingDocument;
-                        }
-                        
-                        if (data.production.service.note) {
-                            sMessage += "\n\n⚠️ " + data.production.service.note;
+                        // Add clearing documents if available
+                        if (data.clearingDocuments && data.clearingDocuments.length > 0) {
+                            sMessage += "📄 Clearing Documents Retrieved:\n\n";
+                            data.clearingDocuments.forEach(function(doc) {
+                                sMessage += "Line Item: " + doc.lineItem + "\n";
+                                sMessage += "  Document Number: " + doc.documentNumber + "\n";
+                                sMessage += "  Payment Advice: " + doc.paymentAdvice + "\n";
+                                sMessage += "  Subledger Document: " + doc.subledgerDocument + "\n";
+                                if (doc.subledgerOnaccountDocument) {
+                                    sMessage += "  Subledger Onaccount Document: " + doc.subledgerOnaccountDocument + "\n";
+                                }
+                                if (doc.amount) {
+                                    sMessage += "  Amount: " + doc.amount + "\n";
+                                }
+                                sMessage += "\n";
+                            });
+                        } else {
+                            // Fallback to old format if clearingDocuments not available
+                            if (data.production) {
+                                sMessage += "Mode: " + data.production.mode + "\n";
+                                sMessage += "Service: " + data.production.service.system + "\n\n";
+                                sMessage += "📄 AR Posting Document: " + data.production.sapResponse.accountingDocument + "\n";
+                                sMessage += "💳 Payment Advice: " + data.production.sapResponse.paymentAdvice + "\n";
+                                sMessage += "📅 Fiscal Year: " + data.production.sapResponse.fiscalYear + "\n";
+                                sMessage += "🏢 Company Code: " + data.production.sapResponse.companyCode + "\n\n";
+                                sMessage += "✅ Clearing Status: " + data.production.clearing.status + "\n";
+                                sMessage += "📊 Items Cleared: " + data.production.clearing.clearedItems;
+                                
+                                if (data.production.clearing.clearingDocument) {
+                                    sMessage += "\n🔗 Clearing Document: " + data.production.clearing.clearingDocument;
+                                }
+                                
+                                if (data.production.service.note) {
+                                    sMessage += "\n\n⚠️ " + data.production.service.note;
+                                }
+                            }
                         }
                         
                         MessageBox.success(sMessage, { title: "Posted to SAP" });
                     } else {
-                        MessageBox.error("Production run failed: " + (data.error || "Unknown error"));
+                        MessageBox.error("Production run failed: " + (data.error || data.message || "Unknown error"));
                     }
                 })
                 .catch(function (err) {
