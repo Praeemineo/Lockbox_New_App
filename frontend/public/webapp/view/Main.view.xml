@@ -255,7 +255,7 @@
                             id="lockboxTable"
                             class="lockboxTable"
                             items="{
-                                path: 'app>/processingRuns',
+                                path: 'app>/lockboxList',
                                 sorter: {path: 'deposit_datetime', descending: true}
                             }"
                             mode="SingleSelectLeft"
