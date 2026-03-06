@@ -1453,7 +1453,7 @@
                                 <l:content>
                                     <VBox class="metadataField">
                                         <Label text="Company Code:" class="metadataLabel" />
-                                        <Text text="{= ${app>/selectedTransaction/companyCode} || 'N/A'}" class="metadataValue" />
+                                        <Text text="{app>/selectedTransaction/companyCode}" class="metadataValue" />
                                     </VBox>
                                     <VBox class="metadataField">
                                         <Label text="Source File:" class="metadataLabel" />
@@ -1465,7 +1465,7 @@
                                     </VBox>
                                     <VBox class="metadataField">
                                         <Label text="Created On:" class="metadataLabel" />
-                                        <Text text="{path: 'app>/selectedTransaction/processedDate', formatter: '.formatDateTime'}" class="metadataValue" />
+                                        <Text text="{path: 'app>/selectedTransaction/createdAt', formatter: '.formatDateTime'}" class="metadataValue" />
                                     </VBox>
                                     <VBox class="metadataField">
                                         <Label text="Created By:" class="metadataLabel" />
