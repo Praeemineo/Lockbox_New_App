@@ -1622,6 +1622,44 @@
                     </VBox>
                 </content>
             </Dialog>
+            
+            <!-- View Payload Hierarchy Dialog -->
+            <Dialog
+                id="payloadHierarchyDialog"
+                title="Lockbox Hierarchy - Payload View"
+                contentWidth="70%"
+                contentHeight="80%"
+                resizable="true"
+                draggable="true">
+                <customHeader>
+                    <Bar>
+                        <contentLeft>
+                            <Title text="Lockbox Hierarchy - Payload View" level="H3" />
+                        </contentLeft>
+                        <contentRight>
+                            <Button text="Cancel" press="onCancelPayloadView" />
+                        </contentRight>
+                    </Bar>
+                </customHeader>
+                <content>
+                    <Tree
+                        id="payloadHierarchyTree"
+                        items="{app>/payloadHierarchy}"
+                        mode="None">
+                        <items>
+                            <StandardTreeItem
+                                title="{app>title}"
+                                icon="{app>icon}"
+                                type="Active">
+                                <customData>
+                                    <core:CustomData key="level" value="{app>level}" />
+                                    <core:CustomData key="value" value="{app>value}" />
+                                </customData>
+                            </StandardTreeItem>
+                        </items>
+                    </Tree>
+                </content>
+            </Dialog>
 
         </dependents>
     </Page>
