@@ -8251,31 +8251,55 @@ sap.ui.define([
                         var aLockboxItems = [];
                         if (aChecks && aChecks.length > 0) {
                             aChecks.forEach(function(check, idx) {
-                                aLockboxItems.push({
+                                var itemObj = {
                                     companyCode: oTransaction.companyCode || data.run.company_code || '',
                                     lockboxId: oTransaction.sapPayload.Lockbox || oTransaction.lockbox || '',
                                     lockboxDest: oTransaction.sapPayload.LockboxBatchDestination || oTransaction.lockboxDestination || '',
                                     lockboxOrigin: oTransaction.sapPayload.LockboxBatchOrigin || oTransaction.lockboxOrigin || '',
                                     item: (idx + 1).toString().padStart(4, '0'),
                                     amount: check.AmountInTransactionCurrency || '0',
-                                    paytAdvice: oTransaction.paymentAdvice || data.run.payment_advice_doc || '',
-                                    postingDoc: oTransaction.arPostingDoc || data.run.ar_posting_doc || '',
-                                    clearingDoc: oTransaction.clearingDoc || data.run.clearing_doc || ''
-                                });
+                                    postingDoc: '',
+                                    paytAdvice: '',
+                                    clearingDoc: '',
+                                    subledgerOnaccountDoc: ''
+                                };
+                                
+                                // Populate accounting documents from clearingDocuments (RULE-005 data)
+                                if (data.run.clearingDocuments && data.run.clearingDocuments.length > 0) {
+                                    var clearingDoc = data.run.clearingDocuments[idx] || data.run.clearingDocuments[0];
+                                    itemObj.postingDoc = clearingDoc.AccountingDocument || clearingDoc.DocumentNumber || data.run.ar_posting_doc || '';
+                                    itemObj.paytAdvice = clearingDoc.PaymentAdvice || data.run.payment_advice_doc || '';
+                                    itemObj.clearingDoc = clearingDoc.ClearingDocument || clearingDoc.SubledgerDocument || data.run.clearing_doc || '';
+                                    itemObj.subledgerOnaccountDoc = clearingDoc.SubledgerOnaccountDocument || '';
+                                }
+                                
+                                aLockboxItems.push(itemObj);
                             });
                         } else {
                             // Fallback: create a single item if no checks data
-                            aLockboxItems.push({
+                            var fallbackItem = {
                                 companyCode: oTransaction.companyCode || data.run.company_code || '',
                                 lockboxId: oTransaction.sapPayload.Lockbox || oTransaction.lockbox || '',
                                 lockboxDest: oTransaction.sapPayload.LockboxBatchDestination || oTransaction.lockboxDestination || '',
                                 lockboxOrigin: oTransaction.sapPayload.LockboxBatchOrigin || oTransaction.lockboxOrigin || '',
                                 item: '0001',
                                 amount: oTransaction.amount || '0',
-                                paytAdvice: oTransaction.paymentAdvice || data.run.payment_advice_doc || '',
-                                postingDoc: oTransaction.arPostingDoc || data.run.ar_posting_doc || '',
-                                clearingDoc: oTransaction.clearingDoc || data.run.clearing_doc || ''
-                            });
+                                postingDoc: '',
+                                paytAdvice: '',
+                                clearingDoc: '',
+                                subledgerOnaccountDoc: ''
+                            };
+                            
+                            // Populate accounting documents from clearingDocuments
+                            if (data.run.clearingDocuments && data.run.clearingDocuments.length > 0) {
+                                var clearingDoc = data.run.clearingDocuments[0];
+                                fallbackItem.postingDoc = clearingDoc.AccountingDocument || clearingDoc.DocumentNumber || data.run.ar_posting_doc || '';
+                                fallbackItem.paytAdvice = clearingDoc.PaymentAdvice || data.run.payment_advice_doc || '';
+                                fallbackItem.clearingDoc = clearingDoc.ClearingDocument || clearingDoc.SubledgerDocument || data.run.clearing_doc || '';
+                                fallbackItem.subledgerOnaccountDoc = clearingDoc.SubledgerOnaccountDocument || '';
+                            }
+                            
+                            aLockboxItems.push(fallbackItem);
                         }
                         
                         // Add lockbox items to transaction
