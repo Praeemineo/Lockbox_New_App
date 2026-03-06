@@ -1539,8 +1539,8 @@
                                         <VBox class="statusItem">
                                             <Label text="Pattern Identified" class="statusItemLabel" />
                                             <ObjectStatus 
-                                                text="{app>/selectedTransaction/stages/templateMatch}" 
-                                                state="{path: 'app>/selectedTransaction/stages/templateMatch', formatter: '.formatStatusState'}" 
+                                                text="{app>/selectedTransaction/patternId}" 
+                                                state="Information" 
                                                 class="statusItemValue" />
                                         </VBox>
                                         <!-- Overall Processing Status -->
