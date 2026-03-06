@@ -1440,7 +1440,7 @@
                         </contentLeft>
                         <contentRight>
                             <Button text="View Payload" icon="sap-icon://simulate" press="onViewPayloadHierarchy" class="dialogHeaderButton" />
-                            <Button text="Log" icon="sap-icon://menu2" class="dialogHeaderButton" />
+                            <Button text="Log" icon="sap-icon://menu2" press="onViewSAPLog" class="dialogHeaderButton" />
                             <Button icon="sap-icon://decline" press="onCloseTransactionDetails" tooltip="Close" class="dialogHeaderButton" />
                         </contentRight>
                     </Bar>
