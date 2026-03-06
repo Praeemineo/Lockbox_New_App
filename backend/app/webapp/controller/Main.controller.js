@@ -8166,9 +8166,47 @@ sap.ui.define([
                             errors: data.run.errors || []
                         };
                         
-                        // Parse checks and payments from sapPayload if available
+                        // Parse checks and payments from sapPayload
+                        // Support both 'checks' array (legacy) and SAP OData format (to_Item.results)
                         var aChecks = [];
-                        if (oTransaction.sapPayload && oTransaction.sapPayload.checks) {
+                        
+                        if (oTransaction.sapPayload && oTransaction.sapPayload.to_Item && 
+                            oTransaction.sapPayload.to_Item.results && 
+                            oTransaction.sapPayload.to_Item.results.length > 0) {
+                            // SAP OData format: to_Item.results
+                            aChecks = oTransaction.sapPayload.to_Item.results.map(function(item, checkIndex) {
+                                var oCheck = {
+                                    checkIndex: checkIndex,
+                                    Cheque: item.Cheque || '',
+                                    AmountInTransactionCurrency: item.AmountInTransactionCurrency || '0',
+                                    Currency: item.Currency || 'USD',
+                                    PartnerBank: item.PartnerBank || '',
+                                    PartnerBankAccount: item.PartnerBankAccount || '',
+                                    PartnerBankCountry: item.PartnerBankCountry || '',
+                                    LockboxBatch: item.LockboxBatch || '001',
+                                    LockboxBatchItem: item.LockboxBatchItem || '',
+                                    payments: []
+                                };
+                                
+                                // Parse payments from to_LockboxClearing.results
+                                if (item.to_LockboxClearing && item.to_LockboxClearing.results && 
+                                    Array.isArray(item.to_LockboxClearing.results)) {
+                                    oCheck.payments = item.to_LockboxClearing.results.map(function(clearing, paymentIndex) {
+                                        return {
+                                            paymentIndex: paymentIndex,
+                                            PaymentReference: clearing.PaymentReference || '',
+                                            NetPaymentAmountInPaytCurrency: clearing.NetPaymentAmountInPaytCurrency || '0',
+                                            DeductionAmountInPaytCurrency: clearing.DeductionAmountInPaytCurrency || '0',
+                                            PaymentDifferenceReason: clearing.PaymentDifferenceReason || '',
+                                            Currency: clearing.Currency || oCheck.Currency
+                                        };
+                                    });
+                                }
+                                
+                                return oCheck;
+                            });
+                        } else if (oTransaction.sapPayload && oTransaction.sapPayload.checks) {
+                            // Legacy format: checks array
                             aChecks = oTransaction.sapPayload.checks.map(function(check, checkIndex) {
                                 var oCheck = {
                                     checkIndex: checkIndex,
@@ -8322,9 +8360,6 @@ sap.ui.define([
                            oTransaction.lockboxId || 
                            "N/A";
             
-            // Get batch number from sapPayload
-            var batchNumber = (oTransaction.sapPayload && oTransaction.sapPayload.LockboxBatch) || "001";
-            
             // Level 1: Lockbox ID (root node)
             var headerNode = {
                 title: lockboxId,
@@ -8338,7 +8373,8 @@ sap.ui.define([
                 oTransaction.checks.forEach(function(check, index) {
                     var checkAmount = check.AmountInTransactionCurrency || "0";
                     var checkCurrency = check.Currency || "USD";
-                    var itemNum = (index + 1).toString().padStart(3, '0');
+                    var batchNumber = check.LockboxBatch || "001";
+                    var itemNum = check.LockboxBatchItem || (index + 1).toString().padStart(3, '0');
                     var checkNumber = check.Cheque || "N/A";
                     
                     var checkNode = {
