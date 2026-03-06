@@ -1549,8 +1549,8 @@
                                         <VBox class="statusItem">
                                             <Label text="Production Run" class="statusItemLabel" />
                                             <ObjectStatus 
-                                                text="{= ${app>/selectedTransaction/mode} === 'PRODUCTION' ? 'Posted' : 'Not Posted'}" 
-                                                state="{= ${app>/selectedTransaction/mode} === 'PRODUCTION' ? 'Success' : 'None'}" 
+                                                text="{= ${app>/selectedTransaction/status} === 'POSTED' ? 'Posted' : 'Not Posted'}" 
+                                                state="{= ${app>/selectedTransaction/status} === 'POSTED' ? 'Success' : ${app>/selectedTransaction/status} === 'POST_FAILED' ? 'Error' : 'None'}" 
                                                 class="statusItemValue" />
                                         </VBox>
                                     </l:content>
