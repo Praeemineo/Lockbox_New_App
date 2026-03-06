@@ -250,7 +250,7 @@
                         </OverflowToolbar>
                     </headerToolbar>
                     <content>
-                        <!-- sap.m.Table with selection -->
+                        <!-- sap.m.Table with selection and resizable columns -->
                         <Table
                             id="lockboxTable"
                             class="lockboxTable"
@@ -260,24 +260,27 @@
                             }"
                             mode="SingleSelectLeft"
                             selectionChange="onTableSelectionChange"
-                            growing="true"
-                            growingScrollToLoad="false"
-                            growingThreshold="7">
+                            inset="false">
+                            <headerToolbar>
+                                <OverflowToolbar>
+                                    <Title text="Items ({= ${app>/lockboxList} ? ${app>/lockboxList}.length : 0})" />
+                                </OverflowToolbar>
+                            </headerToolbar>
                             <columns>
-                                <Column width="10em">
-                                    <Text text="Lockbox ID" />
+                                <Column width="10em" minScreenWidth="Tablet" demandPopin="true">
+                                    <Text text="Lockbox ID" class="boldHeader" />
                                 </Column>
-                                <Column width="15em">
-                                    <Text text="Source File" />
+                                <Column width="15em" minScreenWidth="Tablet" demandPopin="true">
+                                    <Text text="Source File" class="boldHeader" />
                                 </Column>
-                                <Column width="20em">
-                                    <Text text="Processing Flow" />
+                                <Column width="22em" minScreenWidth="Desktop" demandPopin="false">
+                                    <Text text="Processing Flow" class="boldHeader" />
                                 </Column>
-                                <Column width="10em">
-                                    <Text text="Status" />
+                                <Column width="10em" minScreenWidth="Tablet" demandPopin="true">
+                                    <Text text="Status" class="boldHeader" />
                                 </Column>
-                                <Column width="12em">
-                                    <Text text="Deposit Date" />
+                                <Column width="12em" minScreenWidth="Tablet" demandPopin="true">
+                                    <Text text="Deposit Date" class="boldHeader" />
                                 </Column>
                             </columns>
                             <items>
@@ -289,33 +292,47 @@
                                         <!-- Source File -->
                                         <Link text="{app>filename}" press="onDownloadSourceFile" />
                                         
-                                        <!-- Processing Flow - 4 Stages with arrows -->
+                                        <!-- Processing Flow - 4 Stages with proper tooltips and colors -->
                                         <HBox alignItems="Center">
+                                            <!-- Stage 1: Upload, Pattern & Extract -->
                                             <core:Icon 
                                                 src="sap-icon://document" 
                                                 size="1rem"
-                                                color="{= ${app>stages/extraction} === 'success' ? '#107e3e' : ${app>stages/extraction} === 'error' ? '#bb0000' : '#5b738b'}" />
+                                                color="{= ${app>stages/extraction} === 'success' ? '#107e3e' : ${app>stages/extraction} === 'error' ? '#bb0000' : ${app>stages/extraction} === 'warning' ? '#e78c07' : '#5b738b'}"
+                                                tooltip="Upload, Pattern &amp; Extract" />
                                             <core:Icon 
                                                 src="sap-icon://navigation-right-arrow" 
-                                                size="0.75rem" />
+                                                size="0.75rem"
+                                                color="#5b738b" />
+                                            
+                                            <!-- Stage 2: Validation & Rule Mapping -->
                                             <core:Icon 
                                                 src="sap-icon://validate" 
                                                 size="1rem"
-                                                color="{= ${app>stages/validation} === 'success' &amp;&amp; ${app>stages/mapping} === 'success' ? '#107e3e' : ${app>stages/validation} === 'error' ? '#bb0000' : '#5b738b'}" />
+                                                color="{= ${app>stages/validation} === 'success' &amp;&amp; ${app>stages/mapping} === 'success' ? '#107e3e' : (${app>stages/validation} === 'error' || ${app>stages/mapping} === 'error') ? '#bb0000' : ${app>stages/validation} === 'warning' ? '#e78c07' : '#5b738b'}"
+                                                tooltip="Validation &amp; Rule Mapping" />
                                             <core:Icon 
                                                 src="sap-icon://navigation-right-arrow" 
-                                                size="0.75rem" />
+                                                size="0.75rem"
+                                                color="#5b738b" />
+                                            
+                                            <!-- Stage 3: Simulated -->
                                             <core:Icon 
                                                 src="sap-icon://sys-enter-2" 
                                                 size="1rem"
-                                                color="{= ${app>stages/simulate} === 'success' ? '#107e3e' : ${app>stages/simulate} === 'error' ? '#bb0000' : '#5b738b'}" />
+                                                color="{= ${app>stages/simulate} === 'success' ? '#107e3e' : ${app>stages/simulate} === 'error' ? '#bb0000' : ${app>stages/simulate} === 'warning' ? '#e78c07' : '#5b738b'}"
+                                                tooltip="Simulated" />
                                             <core:Icon 
                                                 src="sap-icon://navigation-right-arrow" 
-                                                size="0.75rem" />
+                                                size="0.75rem"
+                                                color="#5b738b" />
+                                            
+                                            <!-- Stage 4: Posted -->
                                             <core:Icon 
                                                 src="sap-icon://complete" 
                                                 size="1rem"
-                                                color="{= ${app>stages/posted} === 'success' ? '#107e3e' : ${app>stages/posted} === 'error' ? '#bb0000' : '#5b738b'}" />
+                                                color="{= ${app>stages/posted} === 'success' ? '#107e3e' : ${app>stages/posted} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                tooltip="Posted" />
                                         </HBox>
                                         
                                         <!-- Status -->
@@ -329,6 +346,24 @@
                                 </ColumnListItem>
                             </items>
                         </Table>
+                        
+                        <!-- Custom Pagination -->
+                        <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallMarginTop customPagination">
+                            <Text text="Items ({app>/lockboxListStart} - {app>/lockboxListEnd} of {= ${app>/lockboxList} ? ${app>/lockboxList}.length : 0})" class="sapUiSmallMarginBegin" />
+                            <HBox alignItems="Center">
+                                <Button 
+                                    icon="sap-icon://navigation-left-arrow" 
+                                    type="Transparent"
+                                    press="onPreviousPage"
+                                    enabled="{= ${app>/currentPage} > 1}" />
+                                <Text text="{app>/currentPage} of {app>/totalPages}" class="sapUiSmallMarginBeginEnd" />
+                                <Button 
+                                    icon="sap-icon://navigation-right-arrow" 
+                                    type="Transparent"
+                                    press="onNextPage"
+                                    enabled="{= ${app>/currentPage} &lt; ${app>/totalPages}}" />
+                            </HBox>
+                        </HBox>
                     </content>
                 </Panel>
             </VBox>
