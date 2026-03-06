@@ -6411,12 +6411,38 @@ sap.ui.define([
                 
                 // Extract flat lockbox list for the main table (only top-level lockbox nodes)
                 var aLockboxList = aTreeData.map(function(lockboxNode) {
+                    // Find the corresponding run to get actual deposit date and status
+                    var run = aValidRuns.find(function(r) { return r.runId === lockboxNode.runId; });
+                    
+                    // Get deposit date from extractedData (actual file data)
+                    var depositDate = lockboxNode.deposit_datetime;
+                    if (run && run.extractedData && run.extractedData.length > 0) {
+                        depositDate = run.extractedData[0]['Deposit Date'] || 
+                                     run.extractedData[0]['DepositDate'] || 
+                                     depositDate;
+                    }
+                    
+                    // Get proper status - map overallStatus to display status
+                    var status = 'PENDING';
+                    if (run) {
+                        var overallStatus = run.overallStatus ? run.overallStatus.toLowerCase() : '';
+                        if (overallStatus === 'posted') {
+                            status = 'POSTED';
+                        } else if (overallStatus === 'simulated') {
+                            status = 'SIMULATED';
+                        } else if (overallStatus === 'validated') {
+                            status = 'VALIDATED';
+                        } else if (overallStatus === 'failed' || overallStatus === 'error') {
+                            status = 'ERROR';
+                        }
+                    }
+                    
                     return {
                         runId: lockboxNode.runId,
                         lockbox: lockboxNode.lockbox,
                         filename: lockboxNode.sourceFile,
-                        deposit_datetime: lockboxNode.deposit_datetime,
-                        status: lockboxNode.status,
+                        deposit_datetime: depositDate,
+                        status: status,
                         stages: lockboxNode.stages,
                         amount: lockboxNode.amount,
                         currency: lockboxNode.currency,
