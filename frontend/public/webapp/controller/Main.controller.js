@@ -8264,13 +8264,18 @@ sap.ui.define([
                                     subledgerOnaccountDoc: ''
                                 };
                                 
-                                // Populate accounting documents from clearingDocuments (RULE-005 data)
+                                // Populate accounting documents from clearingDocuments (RULE-004 data)
                                 if (data.run.clearingDocuments && data.run.clearingDocuments.length > 0) {
                                     var clearingDoc = data.run.clearingDocuments[idx] || data.run.clearingDocuments[0];
-                                    itemObj.postingDoc = clearingDoc.AccountingDocument || clearingDoc.DocumentNumber || data.run.ar_posting_doc || '';
-                                    itemObj.paytAdvice = clearingDoc.PaymentAdvice || data.run.payment_advice_doc || '';
-                                    itemObj.clearingDoc = clearingDoc.ClearingDocument || clearingDoc.SubledgerDocument || data.run.clearing_doc || '';
-                                    itemObj.subledgerOnaccountDoc = clearingDoc.SubledgerOnaccountDocument || '';
+                                    // Support both camelCase (backend storage) and PascalCase (SAP response)
+                                    itemObj.postingDoc = clearingDoc.documentNumber || clearingDoc.DocumentNumber || 
+                                                        clearingDoc.AccountingDocument || data.run.ar_posting_doc || '';
+                                    itemObj.paytAdvice = clearingDoc.paymentAdvice || clearingDoc.PaymentAdvice || 
+                                                        data.run.payment_advice_doc || '';
+                                    itemObj.clearingDoc = clearingDoc.subledgerDocument || clearingDoc.SubledgerDocument || 
+                                                         clearingDoc.ClearingDocument || data.run.clearing_doc || '';
+                                    itemObj.subledgerOnaccountDoc = clearingDoc.subledgerOnaccountDocument || 
+                                                                    clearingDoc.SubledgerOnaccountDocument || '';
                                 }
                                 
                                 aLockboxItems.push(itemObj);
