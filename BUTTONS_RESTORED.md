@@ -52,7 +52,7 @@
 - Gray when disabled, clickable when enabled
 
 ## Deployment Status:
-- ✅ **Kubernetes:** Live and working at https://sap-lockbox-hub.preview.emergentagent.com
+- ✅ **Kubernetes:** Live and working at https://lockbox-automation.preview.emergentagent.com
 - ⚠️ **BTP Cloud Foundry:** Requires `cf push` to deploy updated code
 
 ## User Verification:

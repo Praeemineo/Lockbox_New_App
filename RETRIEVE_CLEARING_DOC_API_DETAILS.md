@@ -19,7 +19,7 @@ Content-Type: application/json
 
 **Example:**
 ```
-POST https://your-app.preview.emergentagent.com/api/lockbox/retrieve-clearing/abc-123-def
+POST https://lockbox-automation.preview.emergentagent.com/api/lockbox/retrieve-clearing/abc-123-def
 Content-Type: application/json
 
 {
