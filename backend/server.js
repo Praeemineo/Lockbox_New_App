@@ -2690,6 +2690,8 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
         
         // ========================================================
         // STEP 4: Update Lockbox Data (PostgreSQL if available)
+        // NOTE: Company Code is already set by RULE-001, don't overwrite it
+        // Only update: DocumentNumber, PaymentAdvice, SubledgerDocument, SubledgerOnaccountDocument
         // ========================================================
         const formattedDocs = [];
         
@@ -2701,36 +2703,38 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
             const paymentAdvice = sapDoc.PaymentAdvice || sapDoc.paymentAdvice || '';
             const subledgerDocument = sapDoc.SubledgerDocument || sapDoc.subledgerDocument || '';
             const subledgerOnaccountDoc = sapDoc.SubledgerOnaccountDocument || sapDoc.subledgerOnaccountDocument || '';
-            const companyCode = sapDoc.CompanyCode || sapDoc.companyCode || '';
+            
+            // Get existing company code from lockbox item (set by RULE-001)
+            let existingCompanyCode = '';
             
             // Update database only if available and we have items
             if (useDatabase && items[i]) {
                 const item = items[i];
+                existingCompanyCode = item.company_code || ''; // Use existing from RULE-001
+                
                 try {
                     await pool.query(`
                         UPDATE lockbox_item 
                         SET 
                             ar_posting_doc = $1,
                             payment_advice = $2,
-                            clearing_doc = $3,
-                            company_code = $4
-                        WHERE id = $5
+                            clearing_doc = $3
+                        WHERE id = $4
                     `, [
                         documentNumber,
                         paymentAdvice,
                         subledgerDocument,
-                        companyCode,
                         item.id
                     ]);
-                    console.log(`✓ Updated item ${item.id} in database`);
+                    console.log(`✓ Updated item ${item.id} in database (preserved Company Code from RULE-001: ${existingCompanyCode})`);
                 } catch (updateError) {
                     console.warn(`⚠ Failed to update item ${item.id}:`, updateError.message);
                 }
             }
             
-            // Format for response
+            // Format for response - use existing company code from item, not from SAP
             formattedDocs.push({
-                companyCode: companyCode,
+                companyCode: existingCompanyCode, // From RULE-001, not RULE-004
                 lockboxId: cleanLockboxId,
                 documentNumber: documentNumber,
                 paymentAdvice: paymentAdvice,
@@ -2740,6 +2744,7 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
         }
         
         console.log('✓ Retrieved and formatted', formattedDocs.length, 'clearing documents');
+        console.log('✓ Preserved Company Code from RULE-001 (not overwritten by RULE-004)');
         
         // ========================================================
         // STEP 5: Return Response for Dialog Update
