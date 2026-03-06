@@ -1504,12 +1504,19 @@
                                         <!-- File Pattern/Rule -->
                                         <VBox class="statusItem">
                                             <Label text="File Pattern/Rule" class="statusItemLabel" />
-                                            <Text text="RuleID001: Standard Pattern" class="statusItemValue" />
+                                            <ObjectStatus 
+                                                text="{app>/selectedTransaction/patternName}" 
+                                                state="Information" 
+                                                class="statusItemValue" />
                                         </VBox>
+                                        
                                         <!-- Extract File -->
                                         <VBox class="statusItem">
                                             <Label text="Extract File" class="statusItemLabel" />
-                                            <Text text="Rows Extracted: {app>/selectedTransaction/rowsExtracted}" class="statusItemValue" />
+                                            <ObjectStatus 
+                                                text="{= 'Rows Extracted: ' + (${app>/selectedTransaction/rowsExtracted} || '0')}" 
+                                                state="None" 
+                                                class="statusItemValue" />
                                         </VBox>
                                         <!-- File Pattern/Rule -->
                                         <VBox class="statusItem">
