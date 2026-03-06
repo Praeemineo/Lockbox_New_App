@@ -7217,6 +7217,43 @@ sap.ui.define([
             }
         },
         
+        // Pagination handlers
+        onNextPage: function() {
+            var oModel = this.getView().getModel("app");
+            var currentPage = oModel.getProperty("/currentPage") || 1;
+            var totalPages = oModel.getProperty("/totalPages") || 1;
+            
+            if (currentPage < totalPages) {
+                this._updatePagination(currentPage + 1);
+            }
+        },
+        
+        onPreviousPage: function() {
+            var oModel = this.getView().getModel("app");
+            var currentPage = oModel.getProperty("/currentPage") || 1;
+            
+            if (currentPage > 1) {
+                this._updatePagination(currentPage - 1);
+            }
+        },
+        
+        _updatePagination: function(page) {
+            var oModel = this.getView().getModel("app");
+            var aAllData = oModel.getProperty("/lockboxListFull") || [];
+            var itemsPerPage = 7;
+            var totalPages = Math.ceil(aAllData.length / itemsPerPage);
+            
+            var startIndex = (page - 1) * itemsPerPage;
+            var endIndex = Math.min(startIndex + itemsPerPage, aAllData.length);
+            var aPageData = aAllData.slice(startIndex, endIndex);
+            
+            oModel.setProperty("/lockboxList", aPageData);
+            oModel.setProperty("/currentPage", page);
+            oModel.setProperty("/totalPages", totalPages);
+            oModel.setProperty("/lockboxListStart", startIndex + 1);
+            oModel.setProperty("/lockboxListEnd", endIndex);
+        },
+        
         // Handle row press (opens transaction details)
         onRowPress: function(oEvent) {
             var oItem = oEvent.getSource();
