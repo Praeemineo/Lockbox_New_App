@@ -545,7 +545,7 @@
 
 
 /* ===================================================================
-   New Lockbox Table Styling (SAP Fiori Design)
+   Lockbox Table Styling (sap.ui.table.Table with resizable columns)
    =================================================================== */
 
 /* Bold column headers */
@@ -553,65 +553,59 @@
     font-weight: 700 !important;
 }
 
-/* Lockbox Table - Compact spacing matching screenshot */
-.lockboxTable .sapMListTblRow {
+/* Table styling */
+.lockboxTable {
+    border: 1px solid #e5e5e5 !important;
+}
+
+/* Table rows */
+.lockboxTable .sapUiTableRow {
     border-bottom: 1px solid #e5e5e5 !important;
-    height: 2.75rem !important;
-    min-height: 2.75rem !important;
 }
 
-.lockboxTable .sapMListTblCell {
+/* Table cells */
+.lockboxTable .sapUiTableCell {
+    border-right: 1px solid #e5e5e5 !important;
     padding: 0.5rem !important;
-    vertical-align: middle !important;
-    border-right: 1px solid #e5e5e5 !important;
 }
 
-.lockboxTable .sapMListTblCell:last-child {
+.lockboxTable .sapUiTableCell:last-child {
     border-right: none !important;
 }
 
-/* Table header styling with grid lines */
-.lockboxTable .sapMListTblHeaderCell {
+/* Table header */
+.lockboxTable .sapUiTableColHdrCnt {
     background-color: #f7f7f7 !important;
-    font-weight: 700 !important;
-    padding: 0.75rem 0.5rem !important;
     border-bottom: 2px solid #d9d9d9 !important;
+}
+
+.lockboxTable .sapUiTableCol {
     border-right: 1px solid #e5e5e5 !important;
 }
 
-.lockboxTable .sapMListTblHeaderCell:last-child {
+.lockboxTable .sapUiTableCol:last-child {
     border-right: none !important;
 }
 
-/* Remove extra spacing from cells */
-.lockboxTable .sapMText {
-    margin: 0 !important;
-    padding: 0 !important;
+/* Column resize handle - make it more visible */
+.lockboxTable .sapUiTableColRsz {
+    background-color: #d9d9d9 !important;
+    width: 2px !important;
 }
 
-.lockboxTable .sapMLink {
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.lockboxTable .sapMObjStatus {
-    margin: 0 !important;
-    padding: 0 !important;
+.lockboxTable .sapUiTableColRsz:hover {
+    background-color: #0854a0 !important;
+    cursor: col-resize !important;
 }
 
 /* Hover effect on rows */
-.lockboxTable .sapMListTblRow:hover {
+.lockboxTable .sapUiTableRowHvr {
     background-color: #f5f5f5 !important;
 }
 
-/* Selected row styling */
-.lockboxTable .sapMLIBSelected {
+/* Selected row */
+.lockboxTable .sapUiTableRowSel {
     background-color: #e8f4ff !important;
-}
-
-/* Remove any extra padding from table */
-.lockboxTable {
-    border: 1px solid #e5e5e5 !important;
 }
 
 /* Custom Pagination */
