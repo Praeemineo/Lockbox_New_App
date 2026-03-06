@@ -1518,23 +1518,6 @@
                                                 state="None" 
                                                 class="statusItemValue" />
                                         </VBox>
-                                        <!-- File Pattern/Rule -->
-                                        <VBox class="statusItem">
-                                            <Label text="File Pattern/Rule" class="statusItemLabel" />
-                                            <ObjectStatus 
-                                                text="{app>/selectedTransaction/patternName}" 
-                                                state="Information" 
-                                                class="statusItemValue" />
-                                        </VBox>
-                                        
-                                        <!-- Extract File -->
-                                        <VBox class="statusItem">
-                                            <Label text="Extract File" class="statusItemLabel" />
-                                            <ObjectStatus 
-                                                text="{= 'Rows Extracted: ' + (${app>/selectedTransaction/rowsExtracted} || '0')}" 
-                                                state="None" 
-                                                class="statusItemValue" />
-                                        </VBox>
                                         
                                         <!-- Validation & Mapping -->
                                         <VBox class="statusItem">
