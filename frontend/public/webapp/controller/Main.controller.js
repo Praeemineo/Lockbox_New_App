@@ -6449,7 +6449,10 @@ sap.ui.define([
                         type: lockboxNode.type
                     };
                 });
-                oModel.setProperty("/lockboxList", aLockboxList);
+                
+                // Store full list and initialize pagination
+                oModel.setProperty("/lockboxListFull", aLockboxList);
+                that._updatePagination(1); // Show first page
                 
                 // If we have data, auto-select the first item
                 if (aTreeData.length > 0) {
