@@ -8047,7 +8047,7 @@ sap.ui.define([
         },
         
         /**
-         * View Payload Hierarchy - Shows lockbox data in tree structure
+         * View Payload Hierarchy - Shows lockbox data in detailed structure
          */
         onViewPayloadHierarchy: function () {
             var oModel = this.getView().getModel("app");
@@ -8061,86 +8061,165 @@ sap.ui.define([
             // Build hierarchy from lockbox items
             var aHierarchy = [];
             
-            // Root node - Header
-            aHierarchy.push({
+            // Root node - Header with all details
+            var headerNode = {
                 title: "Lockbox Batch: " + (oTransaction.lockbox || "N/A"),
                 icon: "sap-icon://product",
                 level: 0,
-                value: oTransaction.lockbox,
                 nodes: []
+            };
+            
+            // Add header details
+            headerNode.nodes.push({
+                title: "Source File: " + (oTransaction.sourceFile || oTransaction.file_name || "N/A"),
+                icon: "sap-icon://document",
+                level: 1
             });
             
-            // Add items
+            headerNode.nodes.push({
+                title: "Deposit Date: " + (oTransaction.depositDate || oTransaction.deposit_datetime || "N/A"),
+                icon: "sap-icon://calendar",
+                level: 1
+            });
+            
+            headerNode.nodes.push({
+                title: "Total Amount: " + (oTransaction.totalAmount || oTransaction.total_amount || "N/A"),
+                icon: "sap-icon://money-bills",
+                level: 1
+            });
+            
+            headerNode.nodes.push({
+                title: "City: " + (oTransaction.city || "N/A"),
+                icon: "sap-icon://map",
+                level: 1
+            });
+            
+            headerNode.nodes.push({
+                title: "Status: " + (oTransaction.status || "N/A"),
+                icon: "sap-icon://status-positive",
+                level: 1
+            });
+            
+            headerNode.nodes.push({
+                title: "File Pattern: " + (oTransaction.patternName || "N/A"),
+                icon: "sap-icon://puzzle",
+                level: 1
+            });
+            
+            headerNode.nodes.push({
+                title: "Pattern ID: " + (oTransaction.patternId || "N/A"),
+                icon: "sap-icon://product",
+                level: 1
+            });
+            
+            headerNode.nodes.push({
+                title: "Number of Checks: " + (oTransaction.numberOfChecks || (oTransaction.lockboxItems ? oTransaction.lockboxItems.length : 0)),
+                icon: "sap-icon://payment-approval",
+                level: 1
+            });
+            
+            headerNode.nodes.push({
+                title: "Company Code: " + (oTransaction.companyCode || "N/A"),
+                icon: "sap-icon://building",
+                level: 1
+            });
+            
+            // Add items under "Line Items" node
             if (oTransaction.lockboxItems && oTransaction.lockboxItems.length > 0) {
+                var lineItemsNode = {
+                    title: "Line Items (" + oTransaction.lockboxItems.length + ")",
+                    icon: "sap-icon://list",
+                    level: 1,
+                    nodes: []
+                };
+                
                 oTransaction.lockboxItems.forEach(function(item, index) {
                     var itemNode = {
                         title: "Line Item " + (index + 1),
                         icon: "sap-icon://document",
-                        level: 1,
+                        level: 2,
                         nodes: []
                     };
                     
-                    // Add item details as sub-nodes
+                    // Add item details
                     if (item.companyCode) {
                         itemNode.nodes.push({
                             title: "Company Code: " + item.companyCode,
                             icon: "sap-icon://building",
-                            level: 2
+                            level: 3
                         });
                     }
                     if (item.lockboxId) {
                         itemNode.nodes.push({
                             title: "Lockbox ID: " + item.lockboxId,
                             icon: "sap-icon://product",
-                            level: 2
+                            level: 3
+                        });
+                    }
+                    if (item.lockboxDest) {
+                        itemNode.nodes.push({
+                            title: "Destination: " + item.lockboxDest,
+                            icon: "sap-icon://target-group",
+                            level: 3
+                        });
+                    }
+                    if (item.lockboxOrigin) {
+                        itemNode.nodes.push({
+                            title: "Origin: " + item.lockboxOrigin,
+                            icon: "sap-icon://supplier",
+                            level: 3
                         });
                     }
                     if (item.item) {
                         itemNode.nodes.push({
                             title: "Item: " + item.item,
                             icon: "sap-icon://numbered-text",
-                            level: 2
+                            level: 3
                         });
                     }
                     if (item.amount) {
                         itemNode.nodes.push({
                             title: "Amount: " + item.amount,
                             icon: "sap-icon://money-bills",
-                            level: 2
+                            level: 3
                         });
                     }
                     if (item.postingDoc) {
                         itemNode.nodes.push({
                             title: "Document Number: " + item.postingDoc,
-                            icon: "sap-icon://doc",
-                            level: 2
+                            icon: "sap-icon://document-text",
+                            level: 3
                         });
                     }
                     if (item.paytAdvice) {
                         itemNode.nodes.push({
                             title: "Payment Advice: " + item.paytAdvice,
                             icon: "sap-icon://payment-approval",
-                            level: 2
+                            level: 3
                         });
                     }
                     if (item.clearingDoc) {
                         itemNode.nodes.push({
                             title: "Subledger Document: " + item.clearingDoc,
                             icon: "sap-icon://document-text",
-                            level: 2
+                            level: 3
                         });
                     }
                     if (item.subledgerOnaccountDoc) {
                         itemNode.nodes.push({
                             title: "Subledger Onaccount Document: " + item.subledgerOnaccountDoc,
                             icon: "sap-icon://document-text",
-                            level: 2
+                            level: 3
                         });
                     }
                     
-                    aHierarchy[0].nodes.push(itemNode);
+                    lineItemsNode.nodes.push(itemNode);
                 });
+                
+                headerNode.nodes.push(lineItemsNode);
             }
+            
+            aHierarchy.push(headerNode);
             
             // Set hierarchy to model
             oModel.setProperty("/payloadHierarchy", aHierarchy);
