@@ -6446,8 +6446,16 @@ sap.ui.define([
                         stages: lockboxNode.stages,
                         amount: lockboxNode.amount,
                         currency: lockboxNode.currency,
-                        type: lockboxNode.type
+                        type: lockboxNode.type,
+                        uploadedAt: run ? run.uploadedAt || run.startedAt : null
                     };
+                });
+                
+                // Sort by upload time (newest first)
+                aLockboxList.sort(function(a, b) {
+                    var dateA = new Date(a.uploadedAt || 0);
+                    var dateB = new Date(b.uploadedAt || 0);
+                    return dateB - dateA; // Descending order (newest first)
                 });
                 
                 // Store full list and initialize pagination
