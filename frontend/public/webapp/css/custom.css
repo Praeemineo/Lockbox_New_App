@@ -548,23 +548,50 @@
    New Lockbox Table Styling (SAP Fiori Design)
    =================================================================== */
 
-/* Lockbox Table - Add spacing between rows */
+/* Lockbox Table - Compact spacing matching screenshot */
 .lockboxTable .sapMListTblRow {
     border-bottom: 1px solid #e5e5e5 !important;
-    height: 3.5rem !important;
+    height: 2.75rem !important;
+    min-height: 2.75rem !important;
 }
 
 .lockboxTable .sapMListTblCell {
-    padding: 0.75rem 0.5rem !important;
+    padding: 0.5rem !important;
     vertical-align: middle !important;
+    border-right: 1px solid #e5e5e5 !important;
 }
 
-/* Table header styling */
+.lockboxTable .sapMListTblCell:last-child {
+    border-right: none !important;
+}
+
+/* Table header styling with grid lines */
 .lockboxTable .sapMListTblHeaderCell {
     background-color: #f7f7f7 !important;
     font-weight: 600 !important;
     padding: 0.75rem 0.5rem !important;
     border-bottom: 2px solid #d9d9d9 !important;
+    border-right: 1px solid #e5e5e5 !important;
+}
+
+.lockboxTable .sapMListTblHeaderCell:last-child {
+    border-right: none !important;
+}
+
+/* Remove extra spacing from cells */
+.lockboxTable .sapMText {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.lockboxTable .sapMLink {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.lockboxTable .sapMObjStatus {
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* Hover effect on rows */
@@ -575,6 +602,11 @@
 /* Selected row styling */
 .lockboxTable .sapMLIBSelected {
     background-color: #e8f4ff !important;
+}
+
+/* Remove any extra padding from table */
+.lockboxTable {
+    border: 1px solid #e5e5e5 !important;
 }
 
 /* Filter panel spacing */
@@ -592,9 +624,10 @@
     font-weight: 600 !important;
 }
 
-/* Processing flow icons spacing */
+/* Processing flow icons - compact spacing */
 .lockboxTable .sapUiIcon {
     cursor: default !important;
+    margin: 0 0.125rem !important;
 }
 
 /* Pagination styling */
