@@ -2636,21 +2636,18 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
         // ========================================================
         // STEP 2: Build Dynamic SAP Query (Similar to RULE-001/002)
         // ========================================================
-        // Extract Lockbox ID before hyphen (if present)
+        // Use the complete Lockbox ID as-is (no extraction or modification)
         // Examples:
-        //   "1710" -> "1710"
-        //   "1710-001" -> "1710"
-        //   "1000172" -> "1000172"
-        //   "1000172-123" -> "1000172"
-        const cleanLockboxId = lockboxId.split('-')[0];
-        console.log('Original Lockbox ID:', lockboxId);
-        console.log('Extracted LockBoxId for query:', cleanLockboxId);
+        //   "1710" -> Query: LockBoxId eq '1710'
+        //   "1000172" -> Query: LockBoxId eq '1000172'
+        //   "1000172-001" -> Query: LockBoxId eq '1000172-001'
+        const cleanLockboxId = lockboxId; // Use as-is
+        console.log('Using LockBoxId for query:', cleanLockboxId);
         
         const apiEndpoint = getAccountingDocApi.apiReference;
         const destination = getAccountingDocApi.destination || 'S4HANA_SYSTEM_DESTINATION';
         
-        // Build OData query dynamically
-        // Query: LockBoxId eq '1710' or LockBoxId eq '1000172'
+        // Build OData query dynamically with exact LockboxId
         const inputFieldName = getAccountingDocApi.inputField || 'LockBoxId';
         const queryParams = {
             $filter: `${inputFieldName} eq '${cleanLockboxId}'`
