@@ -2533,6 +2533,11 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
         // Automatically fetch document details after successful posting
         // ========================================================
         let clearingDocuments = [];
+        console.log('=== CHECKING IF RULE-004 SHOULD BE CALLED ===');
+        console.log('productionResponse.status:', productionResponse.status);
+        console.log('header.lockbox:', header.lockbox);
+        console.log('Should call RULE-004:', productionResponse.status === 'SUCCESS' && header.lockbox);
+        
         if (productionResponse.status === 'SUCCESS' && header.lockbox) {
             try {
                 console.log('=== RETRIEVING CLEARING DOCUMENTS (RULE-004) ===');
@@ -2540,8 +2545,12 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                 
                 // Fetch RULE-004 configuration
                 const rule004 = await getRuleById('RULE-004');
+                console.log('RULE-004 found:', !!rule004);
+                
                 if (rule004) {
                     const getAccountingDocApi = getApiConfig(rule004, 'GET');
+                    console.log('API Config found:', !!getAccountingDocApi);
+                    console.log('API Reference:', getAccountingDocApi?.apiReference);
                     
                     if (getAccountingDocApi && getAccountingDocApi.apiReference) {
                         const apiEndpoint = getAccountingDocApi.apiReference;
@@ -2561,6 +2570,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                         }
                         
                         console.log('Calling RULE-004 API:', apiEndpoint);
+                        console.log('Destination:', destination);
                         console.log('Query:', queryParams);
                         
                         // Call SAP API
@@ -2572,6 +2582,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                         
                         const results = rule004Response.data?.d?.results || rule004Response.data?.value || [];
                         console.log('✓ Retrieved', results.length, 'clearing documents from SAP');
+                        console.log('SAP Response:', JSON.stringify(results, null, 2));
                         
                         // Format documents
                         for (let i = 0; i < results.length; i++) {
@@ -2588,12 +2599,19 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                         }
                         
                         console.log('✓ Formatted', clearingDocuments.length, 'clearing documents for response');
+                    } else {
+                        console.warn('⚠ RULE-004 API configuration not found or invalid');
                     }
+                } else {
+                    console.warn('⚠ RULE-004 not found in rules configuration');
                 }
             } catch (rule004Error) {
-                console.warn('⚠ RULE-004 retrieval failed (non-fatal):', rule004Error.message);
+                console.error('❌ RULE-004 retrieval failed (non-fatal):', rule004Error.message);
+                console.error('Stack:', rule004Error.stack);
                 // Continue - RULE-004 failure should not break production run
             }
+        } else {
+            console.log('✗ RULE-004 not called - conditions not met');
         }
         
         console.log('=== FINAL RESPONSE TO FRONTEND ===');
