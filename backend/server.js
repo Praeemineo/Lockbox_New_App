@@ -2528,13 +2528,87 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
             };
         }
         
+        // ========================================================
+        // STEP 4: RETRIEVE CLEARING DOCUMENTS (RULE-004)
+        // Automatically fetch document details after successful posting
+        // ========================================================
+        let clearingDocuments = [];
+        if (productionResponse.status === 'SUCCESS' && header.lockbox) {
+            try {
+                console.log('=== RETRIEVING CLEARING DOCUMENTS (RULE-004) ===');
+                console.log('Lockbox ID:', header.lockbox);
+                
+                // Fetch RULE-004 configuration
+                const rule004 = await getRuleById('RULE-004');
+                if (rule004) {
+                    const getAccountingDocApi = getApiConfig(rule004, 'GET');
+                    
+                    if (getAccountingDocApi && getAccountingDocApi.apiReference) {
+                        const apiEndpoint = getAccountingDocApi.apiReference;
+                        const destination = getAccountingDocApi.destination || 'S4HANA_SYSTEM_DESTINATION';
+                        const inputFieldName = getAccountingDocApi.inputField || 'LockBoxId';
+                        
+                        const queryParams = {
+                            $filter: `${inputFieldName} eq '${header.lockbox}'`
+                        };
+                        
+                        const outputFields = getAccountingDocApi.outputField ? 
+                            getAccountingDocApi.outputField.split(',').map(f => f.trim()) : 
+                            ['DocumentNumber', 'PaymentAdvice', 'SubledgerDocument', 'CompanyCode', 'SubledgerOnaccountDocument'];
+                        
+                        if (outputFields.length > 0) {
+                            queryParams.$select = outputFields.join(',');
+                        }
+                        
+                        console.log('Calling RULE-004 API:', apiEndpoint);
+                        console.log('Query:', queryParams);
+                        
+                        // Call SAP API
+                        const rule004Response = await sapClient.executeSapGetRequest(
+                            destination,
+                            apiEndpoint,
+                            queryParams
+                        );
+                        
+                        const results = rule004Response.data?.d?.results || rule004Response.data?.value || [];
+                        console.log('✓ Retrieved', results.length, 'clearing documents from SAP');
+                        
+                        // Format documents
+                        for (let i = 0; i < results.length; i++) {
+                            const sapDoc = results[i];
+                            clearingDocuments.push({
+                                lineItem: sapDoc.LineItem || (i + 1).toString().padStart(4, '0'),
+                                documentNumber: sapDoc.DocumentNumber || sapDoc.documentNumber || '',
+                                paymentAdvice: sapDoc.PaymentAdvice || sapDoc.paymentAdvice || '',
+                                subledgerDocument: sapDoc.SubledgerDocument || sapDoc.subledgerDocument || '',
+                                subledgerOnaccountDocument: sapDoc.SubledgerOnaccountDocument || sapDoc.subledgerOnaccountDocument || '',
+                                amount: sapDoc.Amount || sapDoc.amount || '',
+                                companyCode: RUNTIME_COMPANY_CODE // From RULE-001
+                            });
+                        }
+                        
+                        console.log('✓ Formatted', clearingDocuments.length, 'clearing documents for response');
+                    }
+                }
+            } catch (rule004Error) {
+                console.warn('⚠ RULE-004 retrieval failed (non-fatal):', rule004Error.message);
+                // Continue - RULE-004 failure should not break production run
+            }
+        }
+        
         console.log('=== FINAL RESPONSE TO FRONTEND ===');
         console.log('run_id:', finalResponse.run_id);
         console.log('Success:', finalResponse.success);
+        console.log('Clearing Documents:', clearingDocuments.length);
         if (!finalResponse.success) {
             console.log('Error Message:', finalResponse.message);
             console.log('SAP Error Message:', finalResponse.error?.sapErrorMessage);
             console.log('Error Details:', JSON.stringify(finalResponse.error, null, 2));
+        }
+        
+        // Add clearing documents to final response
+        if (clearingDocuments.length > 0) {
+            finalResponse.clearingDocuments = clearingDocuments;
         }
         
         res.json(finalResponse);
