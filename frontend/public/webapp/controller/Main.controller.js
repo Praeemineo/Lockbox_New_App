@@ -8157,6 +8157,113 @@ sap.ui.define([
         },
         
         /**
+         * View SAP XML Log - Shows XML response from SAP API
+         */
+        onViewSAPLog: function () {
+            var oModel = this.getView().getModel("app");
+            var oTransaction = oModel.getProperty("/selectedTransaction");
+            
+            if (!oTransaction) {
+                MessageBox.warning("No transaction data available");
+                return;
+            }
+            
+            // Get SAP XML log from transaction
+            var sXMLLog = "";
+            
+            if (oTransaction.sapXMLResponse) {
+                // If XML response is stored
+                sXMLLog = oTransaction.sapXMLResponse;
+            } else if (oTransaction.sapResponse) {
+                // Convert JSON response to formatted XML-like text
+                sXMLLog = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+                sXMLLog += "<SAP_Response>\n";
+                sXMLLog += "  <Status>" + (oTransaction.status || "N/A") + "</Status>\n";
+                sXMLLog += "  <Lockbox>" + (oTransaction.lockbox || "N/A") + "</Lockbox>\n";
+                sXMLLog += "  <CompanyCode>" + (oTransaction.companyCode || "N/A") + "</CompanyCode>\n";
+                
+                if (oTransaction.sapResponse.accountingDocument) {
+                    sXMLLog += "  <AccountingDocument>" + oTransaction.sapResponse.accountingDocument + "</AccountingDocument>\n";
+                }
+                if (oTransaction.sapResponse.paymentAdvice) {
+                    sXMLLog += "  <PaymentAdvice>" + oTransaction.sapResponse.paymentAdvice + "</PaymentAdvice>\n";
+                }
+                if (oTransaction.sapResponse.fiscalYear) {
+                    sXMLLog += "  <FiscalYear>" + oTransaction.sapResponse.fiscalYear + "</FiscalYear>\n";
+                }
+                
+                // Add clearing documents if available
+                if (oTransaction.lockboxItems && oTransaction.lockboxItems.length > 0) {
+                    sXMLLog += "  <ClearingDocuments>\n";
+                    oTransaction.lockboxItems.forEach(function(item) {
+                        sXMLLog += "    <Item>\n";
+                        if (item.postingDoc) {
+                            sXMLLog += "      <DocumentNumber>" + item.postingDoc + "</DocumentNumber>\n";
+                        }
+                        if (item.paytAdvice) {
+                            sXMLLog += "      <PaymentAdvice>" + item.paytAdvice + "</PaymentAdvice>\n";
+                        }
+                        if (item.clearingDoc) {
+                            sXMLLog += "      <SubledgerDocument>" + item.clearingDoc + "</SubledgerDocument>\n";
+                        }
+                        if (item.subledgerOnaccountDoc) {
+                            sXMLLog += "      <SubledgerOnaccountDocument>" + item.subledgerOnaccountDoc + "</SubledgerOnaccountDocument>\n";
+                        }
+                        sXMLLog += "    </Item>\n";
+                    });
+                    sXMLLog += "  </ClearingDocuments>\n";
+                }
+                
+                sXMLLog += "</SAP_Response>";
+            } else {
+                sXMLLog = "No SAP API response available for this transaction.";
+            }
+            
+            // Set to model
+            oModel.setProperty("/sapXMLLog", sXMLLog);
+            
+            // Open dialog
+            this.byId("sapLogDialog").open();
+        },
+        
+        /**
+         * Copy SAP Log to clipboard
+         */
+        onCopySAPLog: function () {
+            var oModel = this.getView().getModel("app");
+            var sXMLLog = oModel.getProperty("/sapXMLLog");
+            
+            // Copy to clipboard
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(sXMLLog).then(function() {
+                    MessageToast.show("SAP Log copied to clipboard");
+                }).catch(function() {
+                    MessageToast.show("Failed to copy to clipboard");
+                });
+            } else {
+                // Fallback for older browsers
+                var textArea = document.createElement("textarea");
+                textArea.value = sXMLLog;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    MessageToast.show("SAP Log copied to clipboard");
+                } catch (err) {
+                    MessageToast.show("Failed to copy to clipboard");
+                }
+                document.body.removeChild(textArea);
+            }
+        },
+        
+        /**
+         * Close SAP Log dialog
+         */
+        onCloseSAPLog: function () {
+            this.byId("sapLogDialog").close();
+        },
+        
+        /**
          * Handle tab selection in transaction details dialog
          */
         onTransactionTabSelect: function (oEvent) {
