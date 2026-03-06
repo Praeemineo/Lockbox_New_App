@@ -8058,83 +8058,50 @@ sap.ui.define([
                 return;
             }
             
-            // Build 3-level hierarchy: Lockbox Header -> Check Data -> Payment Reference
+            // Build simplified 3-level hierarchy: Lockbox Header -> Check Data -> Payment Reference
+            // Only showing Amount and Currency as per user requirement
             var aHierarchy = [];
             
-            // Level 1: Lockbox Header Data
+            // Get currency from transaction
+            var currency = oTransaction.currency || "USD";
+            
+            // Level 1: Lockbox Header (root node)
             var headerNode = {
-                title: "Lockbox Header Data",
+                title: "Lockbox Header",
                 icon: "sap-icon://product",
                 level: 0,
                 nodes: []
             };
             
-            // Add Lockbox ID
-            headerNode.nodes.push({
-                title: "Lockbox: " + (oTransaction.lockbox || "N/A"),
-                icon: "sap-icon://product",
-                level: 1
-            });
-            
-            // Add Deposit Date
-            headerNode.nodes.push({
-                title: "Deposit Date: " + (oTransaction.depositDate || oTransaction.deposit_datetime || "N/A"),
-                icon: "sap-icon://calendar",
-                level: 1
-            });
-            
-            // Add Company Code
-            headerNode.nodes.push({
-                title: "Company Code: " + (oTransaction.companyCode || "N/A"),
-                icon: "sap-icon://building",
-                level: 1
-            });
-            
-            // Add Total Amount with Currency
-            var totalAmount = oTransaction.totalAmount || oTransaction.total_amount || "0";
-            var currency = oTransaction.currency || "USD";
-            headerNode.nodes.push({
-                title: "Total Amount: " + totalAmount + " " + currency,
-                icon: "sap-icon://money-bills",
-                level: 1
-            });
-            
             // Level 2: Check Data (Items/Checks)
             if (oTransaction.lockboxItems && oTransaction.lockboxItems.length > 0) {
                 oTransaction.lockboxItems.forEach(function(item, index) {
+                    var checkAmount = item.amount || "0";
+                    var checkCurrency = item.currency || currency;
+                    
                     var checkNode = {
-                        title: "Check Data: Batch: " + (item.batch || "001") + ", Item: " + (item.item || (index + 1)) + ", Cheque: " + (item.chequeNumber || "N/A"),
+                        title: "Check Data - Amount: " + checkAmount + " " + checkCurrency,
                         icon: "sap-icon://payment-approval",
                         level: 1,
                         nodes: []
                     };
                     
-                    // Add Check Amount with Currency
-                    var checkAmount = item.amount || "0";
-                    var checkCurrency = item.currency || currency || "USD";
-                    checkNode.nodes.push({
-                        title: "Amount: " + checkAmount + " " + checkCurrency,
-                        icon: "sap-icon://money-bills",
-                        level: 2
-                    });
-                    
                     // Level 3: Payment Reference (sub-items under each check)
                     if (item.paymentReferences && item.paymentReferences.length > 0) {
-                        item.paymentReferences.forEach(function(payRef, refIndex) {
+                        item.paymentReferences.forEach(function(payRef) {
                             var paymentRefAmount = payRef.amount || "0";
                             var paymentRefCurrency = payRef.currency || checkCurrency;
                             checkNode.nodes.push({
-                                title: "Payment Ref: " + (payRef.reference || payRef.invoiceNumber || "REF-" + (refIndex + 1)) + ", Amount: " + paymentRefAmount + " " + paymentRefCurrency,
-                                icon: "sap-icon://payment-approval",
+                                title: "Payment Reference - Amount: " + paymentRefAmount + " " + paymentRefCurrency,
+                                icon: "sap-icon://document-text",
                                 level: 2
                             });
                         });
                     } else {
-                        // If no payment references array, show the item itself as payment reference
-                        var invoiceRef = item.invoiceReference || item.invoiceNumber || item.item || "N/A";
+                        // If no payment references array, show single payment reference with check amount
                         checkNode.nodes.push({
-                            title: "Payment Ref: " + invoiceRef + ", Amount: " + checkAmount + " " + checkCurrency,
-                            icon: "sap-icon://payment-approval",
+                            title: "Payment Reference - Amount: " + checkAmount + " " + checkCurrency,
+                            icon: "sap-icon://document-text",
                             level: 2
                         });
                     }
