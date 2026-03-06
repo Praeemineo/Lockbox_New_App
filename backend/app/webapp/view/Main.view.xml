@@ -211,7 +211,7 @@
                 <Panel expandable="false" class="dataPanel">
                     <headerToolbar>
                         <OverflowToolbar class="panelHeader">
-                            <Title text="Lockbox Data ({= ${app>/processingRuns} ? ${app>/processingRuns}.length : 0})" />
+                            <Title text="Lockbox Data ({= ${app>/lockboxList} ? ${app>/lockboxList}.length : 0})" />
                             <ToolbarSpacer />
                             <Button
                                 text="Upload File"
@@ -255,7 +255,7 @@
                             id="lockboxTable"
                             class="lockboxTable"
                             items="{
-                                path: 'app>/processingRuns',
+                                path: 'app>/lockboxList',
                                 sorter: {path: 'deposit_datetime', descending: true}
                             }"
                             mode="SingleSelectLeft"

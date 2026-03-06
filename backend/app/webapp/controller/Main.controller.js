@@ -6409,6 +6409,22 @@ sap.ui.define([
                 
                 oModel.setProperty("/treeData", aTreeData);
                 
+                // Extract flat lockbox list for the main table (only top-level lockbox nodes)
+                var aLockboxList = aTreeData.map(function(lockboxNode) {
+                    return {
+                        runId: lockboxNode.runId,
+                        lockbox: lockboxNode.lockbox,
+                        filename: lockboxNode.sourceFile,
+                        deposit_datetime: lockboxNode.deposit_datetime,
+                        status: lockboxNode.status,
+                        stages: lockboxNode.stages,
+                        amount: lockboxNode.amount,
+                        currency: lockboxNode.currency,
+                        type: lockboxNode.type
+                    };
+                });
+                oModel.setProperty("/lockboxList", aLockboxList);
+                
                 // If we have data, auto-select the first item
                 if (aTreeData.length > 0) {
                     var firstRun = aValidRuns[0];
