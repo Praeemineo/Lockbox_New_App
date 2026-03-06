@@ -8047,7 +8047,7 @@ sap.ui.define([
         },
         
         /**
-         * View Payload Hierarchy - Shows lockbox data in detailed structure
+         * View Payload Hierarchy - Shows lockbox data in simplified 3-level structure
          */
         onViewPayloadHierarchy: function () {
             var oModel = this.getView().getModel("app");
@@ -8058,165 +8058,56 @@ sap.ui.define([
                 return;
             }
             
-            // Build hierarchy from lockbox items
+            // Build simplified 3-level hierarchy: Lockbox Header -> Check Data -> Payment Reference
+            // Only showing Amount and Currency as per user requirement
             var aHierarchy = [];
             
-            // Root node - Header with all details
+            // Get currency from transaction
+            var currency = oTransaction.currency || "USD";
+            
+            // Level 1: Lockbox Header (root node)
             var headerNode = {
-                title: "Lockbox Batch: " + (oTransaction.lockbox || "N/A"),
+                title: "Lockbox Header",
                 icon: "sap-icon://product",
                 level: 0,
                 nodes: []
             };
             
-            // Add header details
-            headerNode.nodes.push({
-                title: "Source File: " + (oTransaction.sourceFile || oTransaction.file_name || "N/A"),
-                icon: "sap-icon://document",
-                level: 1
-            });
-            
-            headerNode.nodes.push({
-                title: "Deposit Date: " + (oTransaction.depositDate || oTransaction.deposit_datetime || "N/A"),
-                icon: "sap-icon://calendar",
-                level: 1
-            });
-            
-            headerNode.nodes.push({
-                title: "Total Amount: " + (oTransaction.totalAmount || oTransaction.total_amount || "N/A"),
-                icon: "sap-icon://money-bills",
-                level: 1
-            });
-            
-            headerNode.nodes.push({
-                title: "City: " + (oTransaction.city || "N/A"),
-                icon: "sap-icon://map",
-                level: 1
-            });
-            
-            headerNode.nodes.push({
-                title: "Status: " + (oTransaction.status || "N/A"),
-                icon: "sap-icon://status-positive",
-                level: 1
-            });
-            
-            headerNode.nodes.push({
-                title: "File Pattern: " + (oTransaction.patternName || "N/A"),
-                icon: "sap-icon://puzzle",
-                level: 1
-            });
-            
-            headerNode.nodes.push({
-                title: "Pattern ID: " + (oTransaction.patternId || "N/A"),
-                icon: "sap-icon://product",
-                level: 1
-            });
-            
-            headerNode.nodes.push({
-                title: "Number of Checks: " + (oTransaction.numberOfChecks || (oTransaction.lockboxItems ? oTransaction.lockboxItems.length : 0)),
-                icon: "sap-icon://payment-approval",
-                level: 1
-            });
-            
-            headerNode.nodes.push({
-                title: "Company Code: " + (oTransaction.companyCode || "N/A"),
-                icon: "sap-icon://building",
-                level: 1
-            });
-            
-            // Add items under "Line Items" node
+            // Level 2: Check Data (Items/Checks)
             if (oTransaction.lockboxItems && oTransaction.lockboxItems.length > 0) {
-                var lineItemsNode = {
-                    title: "Line Items (" + oTransaction.lockboxItems.length + ")",
-                    icon: "sap-icon://list",
-                    level: 1,
-                    nodes: []
-                };
-                
                 oTransaction.lockboxItems.forEach(function(item, index) {
-                    var itemNode = {
-                        title: "Line Item " + (index + 1),
-                        icon: "sap-icon://document",
-                        level: 2,
+                    var checkAmount = item.amount || "0";
+                    var checkCurrency = item.currency || currency;
+                    
+                    var checkNode = {
+                        title: "Check Data - Amount: " + checkAmount + " " + checkCurrency,
+                        icon: "sap-icon://payment-approval",
+                        level: 1,
                         nodes: []
                     };
                     
-                    // Add item details
-                    if (item.companyCode) {
-                        itemNode.nodes.push({
-                            title: "Company Code: " + item.companyCode,
-                            icon: "sap-icon://building",
-                            level: 3
+                    // Level 3: Payment Reference (sub-items under each check)
+                    if (item.paymentReferences && item.paymentReferences.length > 0) {
+                        item.paymentReferences.forEach(function(payRef) {
+                            var paymentRefAmount = payRef.amount || "0";
+                            var paymentRefCurrency = payRef.currency || checkCurrency;
+                            checkNode.nodes.push({
+                                title: "Payment Reference - Amount: " + paymentRefAmount + " " + paymentRefCurrency,
+                                icon: "sap-icon://document-text",
+                                level: 2
+                            });
                         });
-                    }
-                    if (item.lockboxId) {
-                        itemNode.nodes.push({
-                            title: "Lockbox ID: " + item.lockboxId,
-                            icon: "sap-icon://product",
-                            level: 3
-                        });
-                    }
-                    if (item.lockboxDest) {
-                        itemNode.nodes.push({
-                            title: "Destination: " + item.lockboxDest,
-                            icon: "sap-icon://target-group",
-                            level: 3
-                        });
-                    }
-                    if (item.lockboxOrigin) {
-                        itemNode.nodes.push({
-                            title: "Origin: " + item.lockboxOrigin,
-                            icon: "sap-icon://supplier",
-                            level: 3
-                        });
-                    }
-                    if (item.item) {
-                        itemNode.nodes.push({
-                            title: "Item: " + item.item,
-                            icon: "sap-icon://numbered-text",
-                            level: 3
-                        });
-                    }
-                    if (item.amount) {
-                        itemNode.nodes.push({
-                            title: "Amount: " + item.amount,
-                            icon: "sap-icon://money-bills",
-                            level: 3
-                        });
-                    }
-                    if (item.postingDoc) {
-                        itemNode.nodes.push({
-                            title: "Document Number: " + item.postingDoc,
+                    } else {
+                        // If no payment references array, show single payment reference with check amount
+                        checkNode.nodes.push({
+                            title: "Payment Reference - Amount: " + checkAmount + " " + checkCurrency,
                             icon: "sap-icon://document-text",
-                            level: 3
-                        });
-                    }
-                    if (item.paytAdvice) {
-                        itemNode.nodes.push({
-                            title: "Payment Advice: " + item.paytAdvice,
-                            icon: "sap-icon://payment-approval",
-                            level: 3
-                        });
-                    }
-                    if (item.clearingDoc) {
-                        itemNode.nodes.push({
-                            title: "Subledger Document: " + item.clearingDoc,
-                            icon: "sap-icon://document-text",
-                            level: 3
-                        });
-                    }
-                    if (item.subledgerOnaccountDoc) {
-                        itemNode.nodes.push({
-                            title: "Subledger Onaccount Document: " + item.subledgerOnaccountDoc,
-                            icon: "sap-icon://document-text",
-                            level: 3
+                            level: 2
                         });
                     }
                     
-                    lineItemsNode.nodes.push(itemNode);
+                    headerNode.nodes.push(checkNode);
                 });
-                
-                headerNode.nodes.push(lineItemsNode);
             }
             
             aHierarchy.push(headerNode);
