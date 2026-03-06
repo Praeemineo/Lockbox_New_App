@@ -8053,7 +8053,7 @@ sap.ui.define([
             var oModel = this.getView().getModel("app");
             var oTransaction = oModel.getProperty("/selectedTransaction");
             
-            if (!oTransaction || !oTransaction.lockboxItems) {
+            if (!oTransaction) {
                 MessageBox.warning("No payload data available");
                 return;
             }
@@ -8064,39 +8064,44 @@ sap.ui.define([
             // Level 3: Payment Ref: 9400000940 - 1365 USD
             var aHierarchy = [];
             
-            // Get currency from transaction
-            var currency = oTransaction.currency || "USD";
+            // Get lockbox ID from sapPayload or transaction
+            var lockboxId = (oTransaction.sapPayload && oTransaction.sapPayload.Lockbox) || 
+                           oTransaction.lockbox || 
+                           oTransaction.lockboxId || 
+                           "N/A";
+            
+            // Get batch number from sapPayload
+            var batchNumber = (oTransaction.sapPayload && oTransaction.sapPayload.LockboxBatch) || "001";
             
             // Level 1: Lockbox ID (root node)
             var headerNode = {
-                title: oTransaction.lockbox || oTransaction.lockboxId || "N/A",
+                title: lockboxId,
                 icon: "sap-icon://product",
                 level: 0,
                 nodes: []
             };
             
-            // Level 2: Check Data (Items/Checks)
-            if (oTransaction.lockboxItems && oTransaction.lockboxItems.length > 0) {
-                oTransaction.lockboxItems.forEach(function(item, index) {
-                    var checkAmount = item.amount || "0";
-                    var checkCurrency = item.currency || currency;
-                    var batch = item.batch || "001";
-                    var itemNum = item.item || (index + 1).toString().padStart(3, '0');
-                    var checkNumber = item.chequeNumber || item.checkNumber || "N/A";
+            // Level 2: Check Data - Use oTransaction.checks array which has proper structure
+            if (oTransaction.checks && oTransaction.checks.length > 0) {
+                oTransaction.checks.forEach(function(check, index) {
+                    var checkAmount = check.AmountInTransactionCurrency || "0";
+                    var checkCurrency = check.Currency || "USD";
+                    var itemNum = (index + 1).toString().padStart(3, '0');
+                    var checkNumber = check.Cheque || "N/A";
                     
                     var checkNode = {
-                        title: "Batch: " + batch + ", Item: " + itemNum + ", Check number: " + checkNumber + " - " + checkAmount + " " + checkCurrency,
+                        title: "Batch: " + batchNumber + ", Item: " + itemNum + ", Check number: " + checkNumber + " - " + checkAmount + " " + checkCurrency,
                         icon: "sap-icon://payment-approval",
                         level: 1,
                         nodes: []
                     };
                     
-                    // Level 3: Payment Reference (sub-items under each check)
-                    if (item.paymentReferences && item.paymentReferences.length > 0) {
-                        item.paymentReferences.forEach(function(payRef) {
-                            var paymentRefAmount = payRef.amount || "0";
-                            var paymentRefCurrency = payRef.currency || checkCurrency;
-                            var refNumber = payRef.reference || payRef.invoiceNumber || payRef.paymentReference || "N/A";
+                    // Level 3: Payment References
+                    if (check.payments && check.payments.length > 0) {
+                        check.payments.forEach(function(payment) {
+                            var paymentRefAmount = payment.NetPaymentAmountInPaytCurrency || "0";
+                            var paymentRefCurrency = payment.Currency || checkCurrency;
+                            var refNumber = payment.PaymentReference || "N/A";
                             checkNode.nodes.push({
                                 title: "Payment Ref: " + refNumber + " - " + paymentRefAmount + " " + paymentRefCurrency,
                                 icon: "sap-icon://document-text",
@@ -8104,10 +8109,9 @@ sap.ui.define([
                             });
                         });
                     } else {
-                        // If no payment references array, show single payment reference with check amount
-                        var refNumber = item.invoiceReference || item.invoiceNumber || item.paymentReference || "N/A";
+                        // If no payment references, show one with check amount
                         checkNode.nodes.push({
-                            title: "Payment Ref: " + refNumber + " - " + checkAmount + " " + checkCurrency,
+                            title: "Payment Ref: N/A - " + checkAmount + " " + checkCurrency,
                             icon: "sap-icon://document-text",
                             level: 2
                         });
@@ -8115,6 +8119,10 @@ sap.ui.define([
                     
                     headerNode.nodes.push(checkNode);
                 });
+            } else {
+                // Fallback: if no checks array, show a warning
+                MessageBox.warning("No check data available in payload");
+                return;
             }
             
             aHierarchy.push(headerNode);
