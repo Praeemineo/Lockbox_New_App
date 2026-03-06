@@ -1439,7 +1439,7 @@
                             <Title text="Lockbox-{app>/selectedTransaction/runId}" level="H3" class="dialogHeaderTitle" />
                         </contentLeft>
                         <contentRight>
-                            <Button text="View File" icon="sap-icon://document" press="onViewTransactionFile" class="dialogHeaderButton" />
+                            <Button text="View Payload" icon="sap-icon://simulate" press="onViewPayloadHierarchy" class="dialogHeaderButton" />
                             <Button text="Log" icon="sap-icon://menu2" class="dialogHeaderButton" />
                             <Button icon="sap-icon://decline" press="onCloseTransactionDetails" tooltip="Close" class="dialogHeaderButton" />
                         </contentRight>
@@ -1453,7 +1453,7 @@
                                 <l:content>
                                     <VBox class="metadataField">
                                         <Label text="Company Code:" class="metadataLabel" />
-                                        <Text text="{= ${app>/selectedTransaction/companyCode} || 'N/A'}" class="metadataValue" />
+                                        <Text text="{app>/selectedTransaction/companyCode}" class="metadataValue" />
                                     </VBox>
                                     <VBox class="metadataField">
                                         <Label text="Source File:" class="metadataLabel" />
@@ -1465,7 +1465,7 @@
                                     </VBox>
                                     <VBox class="metadataField">
                                         <Label text="Created On:" class="metadataLabel" />
-                                        <Text text="{path: 'app>/selectedTransaction/processedDate', formatter: '.formatDateTime'}" class="metadataValue" />
+                                        <Text text="{path: 'app>/selectedTransaction/createdAt', formatter: '.formatDateTime'}" class="metadataValue" />
                                     </VBox>
                                     <VBox class="metadataField">
                                         <Label text="Created By:" class="metadataLabel" />
@@ -1520,8 +1520,8 @@
                                         <VBox class="statusItem">
                                             <Label text="Simulation Run" class="statusItemLabel" />
                                             <ObjectStatus 
-                                                text="{app>/selectedTransaction/stages/simulate}" 
-                                                state="{path: 'app>/selectedTransaction/stages/simulate', formatter: '.formatStatusState'}" 
+                                                text="{= ${app>/selectedTransaction/status} === 'SIMULATED' || ${app>/selectedTransaction/status} === 'POSTED' || ${app>/selectedTransaction/status} === 'POST_FAILED' ? 'Success' : ${app>/selectedTransaction/status} || 'Not Run'}" 
+                                                state="{= ${app>/selectedTransaction/status} === 'SIMULATED' || ${app>/selectedTransaction/status} === 'POSTED' || ${app>/selectedTransaction/status} === 'POST_FAILED' ? 'Success' : 'None'}" 
                                                 class="statusItemValue" />
                                         </VBox>
                                         <!-- Pattern Identified -->
@@ -1549,8 +1549,8 @@
                                         <VBox class="statusItem">
                                             <Label text="Production Run" class="statusItemLabel" />
                                             <ObjectStatus 
-                                                text="{= ${app>/selectedTransaction/mode} === 'PRODUCTION' ? 'Posted' : 'Not Posted'}" 
-                                                state="{= ${app>/selectedTransaction/mode} === 'PRODUCTION' ? 'Success' : 'None'}" 
+                                                text="{= ${app>/selectedTransaction/status} === 'POSTED' ? 'Posted' : 'Not Posted'}" 
+                                                state="{= ${app>/selectedTransaction/status} === 'POSTED' ? 'Success' : ${app>/selectedTransaction/status} === 'POST_FAILED' ? 'Error' : 'None'}" 
                                                 class="statusItemValue" />
                                         </VBox>
                                     </l:content>
@@ -1620,6 +1620,44 @@
                             </Table>
                         </VBox>
                     </VBox>
+                </content>
+            </Dialog>
+            
+            <!-- View Payload Hierarchy Dialog -->
+            <Dialog
+                id="payloadHierarchyDialog"
+                title="Lockbox Hierarchy - Payload View"
+                contentWidth="70%"
+                contentHeight="80%"
+                resizable="true"
+                draggable="true">
+                <customHeader>
+                    <Bar>
+                        <contentLeft>
+                            <Title text="Lockbox Hierarchy - Payload View" level="H3" />
+                        </contentLeft>
+                        <contentRight>
+                            <Button text="Cancel" press="onCancelPayloadView" />
+                        </contentRight>
+                    </Bar>
+                </customHeader>
+                <content>
+                    <Tree
+                        id="payloadHierarchyTree"
+                        items="{app>/payloadHierarchy}"
+                        mode="None">
+                        <items>
+                            <StandardTreeItem
+                                title="{app>title}"
+                                icon="{app>icon}"
+                                type="Active">
+                                <customData>
+                                    <core:CustomData key="level" value="{app>level}" />
+                                    <core:CustomData key="value" value="{app>value}" />
+                                </customData>
+                            </StandardTreeItem>
+                        </items>
+                    </Tree>
                 </content>
             </Dialog>
 
