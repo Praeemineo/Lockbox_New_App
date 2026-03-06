@@ -251,7 +251,7 @@
                     </headerToolbar>
                     <content>
                         <!-- sap.m.Table with selection -->
-                        <m:Table
+                        <Table
                             id="lockboxTable"
                             class="lockboxTable sapUiResponsiveContentPadding"
                             items="{
@@ -263,37 +263,37 @@
                             growing="true"
                             growingScrollToLoad="false"
                             growingThreshold="7">
-                            <m:columns>
-                                <m:Column width="3em">
-                                    <m:Text text="Select" />
-                                </m:Column>
-                                <m:Column width="8em" sortProperty="lockbox">
-                                    <m:Text text="Lockbox ID" />
-                                </m:Column>
-                                <m:Column width="12em">
-                                    <m:Text text="Source File" />
-                                </m:Column>
-                                <m:Column width="15em">
-                                    <m:Text text="Processing Flow" />
-                                </m:Column>
-                                <m:Column width="8em">
-                                    <m:Text text="Status" />
-                                </m:Column>
-                                <m:Column width="10em" sortProperty="deposit_datetime">
-                                    <m:Text text="Deposit Date" />
-                                </m:Column>
-                            </m:columns>
-                            <m:items>
-                                <m:ColumnListItem type="Active" press="onRowPress">
-                                    <m:cells>
+                            <columns>
+                                <Column width="3em">
+                                    <Text text="Select" />
+                                </Column>
+                                <Column width="8em" sortProperty="lockbox">
+                                    <Text text="Lockbox ID" />
+                                </Column>
+                                <Column width="12em">
+                                    <Text text="Source File" />
+                                </Column>
+                                <Column width="15em">
+                                    <Text text="Processing Flow" />
+                                </Column>
+                                <Column width="8em">
+                                    <Text text="Status" />
+                                </Column>
+                                <Column width="10em" sortProperty="deposit_datetime">
+                                    <Text text="Deposit Date" />
+                                </Column>
+                            </columns>
+                            <items>
+                                <ColumnListItem type="Active" press="onRowPress">
+                                    <cells>
                                         <!-- Select Column - handled by mode="SingleSelectMaster" -->
-                                        <m:Text text="" />
+                                        <Text text="" />
                                         
                                         <!-- Lockbox ID -->
-                                        <m:Text text="{app>lockbox}" class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
+                                        <Text text="{app>lockbox}" class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
                                         
                                         <!-- Source File -->
-                                        <m:Link 
+                                        <Link 
                                             text="{app>filename}" 
                                             press="onDownloadSourceFile"
                                             class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
@@ -331,13 +331,13 @@
                                             class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
                                         
                                         <!-- Deposit Date -->
-                                        <m:Text 
+                                        <Text 
                                             text="{path: 'app>deposit_datetime', formatter: '.formatDepositDate'}"
                                             class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
-                                    </m:cells>
-                                </m:ColumnListItem>
-                            </m:items>
-                        </m:Table>
+                                    </cells>
+                                </ColumnListItem>
+                            </items>
+                        </Table>
                     </content>
                 </Panel>
             </VBox>
