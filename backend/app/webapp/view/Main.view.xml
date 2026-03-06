@@ -250,49 +250,37 @@
                         </OverflowToolbar>
                     </headerToolbar>
                     <content>
-                        <!-- sap.m.Table with selection and resizable columns -->
-                        <Table
+                        <!-- sap.ui.table.Table with resizable columns -->
+                        <table:Table
                             id="lockboxTable"
                             class="lockboxTable"
-                            items="{
-                                path: 'app>/lockboxList',
-                                sorter: {path: 'deposit_datetime', descending: true}
+                            rows="{
+                                path: 'app>/lockboxList'
                             }"
-                            mode="SingleSelectLeft"
-                            selectionChange="onTableSelectionChange"
-                            inset="false">
-                            <headerToolbar>
-                                <OverflowToolbar>
-                                    <Title text="Items ({= ${app>/lockboxList} ? ${app>/lockboxList}.length : 0})" />
-                                </OverflowToolbar>
-                            </headerToolbar>
-                            <columns>
-                                <Column width="10em" minScreenWidth="Tablet" demandPopin="true">
-                                    <Text text="Lockbox ID" class="boldHeader" />
-                                </Column>
-                                <Column width="15em" minScreenWidth="Tablet" demandPopin="true">
-                                    <Text text="Source File" class="boldHeader" />
-                                </Column>
-                                <Column width="22em" minScreenWidth="Desktop" demandPopin="false">
-                                    <Text text="Processing Flow" class="boldHeader" />
-                                </Column>
-                                <Column width="10em" minScreenWidth="Tablet" demandPopin="true">
-                                    <Text text="Status" class="boldHeader" />
-                                </Column>
-                                <Column width="12em" minScreenWidth="Tablet" demandPopin="true">
-                                    <Text text="Deposit Date" class="boldHeader" />
-                                </Column>
-                            </columns>
-                            <items>
-                                <ColumnListItem type="Navigation" press="onShowTransactionDetails">
-                                    <cells>
-                                        <!-- Lockbox ID -->
+                            selectionMode="Single"
+                            selectionBehavior="Row"
+                            rowSelectionChange="onTableSelectionChange"
+                            visibleRowCount="7"
+                            enableColumnReordering="false"
+                            columnHeaderVisible="true">
+                            <table:columns>
+                                <table:Column width="10em" resizable="true">
+                                    <Label text="Lockbox ID" class="boldHeader" />
+                                    <table:template>
                                         <Text text="{app>lockbox}" />
-                                        
-                                        <!-- Source File -->
+                                    </table:template>
+                                </table:Column>
+                                
+                                <table:Column width="15em" resizable="true">
+                                    <Label text="Source File" class="boldHeader" />
+                                    <table:template>
                                         <Link text="{app>filename}" press="onDownloadSourceFile" />
-                                        
-                                        <!-- Processing Flow - 4 Stages with proper tooltips and colors -->
+                                    </table:template>
+                                </table:Column>
+                                
+                                <table:Column width="22em" resizable="true">
+                                    <Label text="Processing Flow" class="boldHeader" />
+                                    <table:template>
                                         <HBox alignItems="Center">
                                             <!-- Stage 1: Upload, Pattern & Extract -->
                                             <core:Icon 
@@ -334,18 +322,36 @@
                                                 color="{= ${app>stages/posted} === 'success' ? '#107e3e' : ${app>stages/posted} === 'error' ? '#bb0000' : '#5b738b'}"
                                                 tooltip="Posted" />
                                         </HBox>
-                                        
-                                        <!-- Status -->
+                                    </table:template>
+                                </table:Column>
+                                
+                                <table:Column width="10em" resizable="true">
+                                    <Label text="Status" class="boldHeader" />
+                                    <table:template>
                                         <ObjectStatus 
                                             text="{app>status}" 
                                             state="{path: 'app>status', formatter: '.formatStatusState'}" />
-                                        
-                                        <!-- Deposit Date -->
+                                    </table:template>
+                                </table:Column>
+                                
+                                <table:Column width="12em" resizable="true">
+                                    <Label text="Deposit Date" class="boldHeader" />
+                                    <table:template>
                                         <Text text="{path: 'app>deposit_datetime', formatter: '.formatDepositDate'}" />
-                                    </cells>
-                                </ColumnListItem>
-                            </items>
-                        </Table>
+                                    </table:template>
+                                </table:Column>
+                                
+                                <table:Column width="4em" resizable="false" hAlign="Center">
+                                    <Label text="" />
+                                    <table:template>
+                                        <Button 
+                                            icon="sap-icon://navigation-right-arrow" 
+                                            type="Transparent"
+                                            press="onShowTransactionDetails" />
+                                    </table:template>
+                                </table:Column>
+                            </table:columns>
+                        </table:Table>
                         
                         <!-- Custom Pagination -->
                         <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallMarginTop customPagination">

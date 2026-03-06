@@ -7213,17 +7213,24 @@ sap.ui.define([
         // SELECTION-BASED ACTION HANDLERS (for top toolbar buttons with table selection)
         // ============================================================================
         
-        // Handle table selection change
+        // Handle table selection change (for sap.ui.table.Table)
         onTableSelectionChange: function(oEvent) {
             var oTable = oEvent.getSource();
-            var aSelectedItems = oTable.getSelectedItems();
+            var iSelectedIndex = oTable.getSelectedIndex();
             var oModel = this.getView().getModel("app");
-            oModel.setProperty("/hasSelection", aSelectedItems.length > 0);
             
-            if (aSelectedItems.length > 0) {
-                var oSelectedItem = aSelectedItems[0].getBindingContext("app").getObject();
-                oModel.setProperty("/selectedItem", oSelectedItem);
+            if (iSelectedIndex >= 0) {
+                var oContext = oTable.getContextByIndex(iSelectedIndex);
+                if (oContext) {
+                    var oSelectedItem = oContext.getObject();
+                    oModel.setProperty("/hasSelection", true);
+                    oModel.setProperty("/selectedItem", oSelectedItem);
+                } else {
+                    oModel.setProperty("/hasSelection", false);
+                    oModel.setProperty("/selectedItem", null);
+                }
             } else {
+                oModel.setProperty("/hasSelection", false);
                 oModel.setProperty("/selectedItem", null);
             }
         },
