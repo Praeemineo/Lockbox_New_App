@@ -7207,6 +7207,83 @@ sap.ui.define([
                 }
             });
         },
+
+        // Open table column settings (show/hide columns)
+        onOpenTableColumnSettings: function() {
+            var oTable = this.byId("lockboxTable");
+            
+            if (!this._columnSettingsDialog) {
+                this._columnSettingsDialog = new sap.m.Dialog({
+                    title: "Table Settings - Show/Hide Columns",
+                    contentWidth: "400px",
+                    content: [
+                        new sap.m.List({
+                            id: "columnSettingsList",
+                            mode: "MultiSelect",
+                            includeItemInSelection: true,
+                            items: []
+                        })
+                    ],
+                    beginButton: new sap.m.Button({
+                        text: "Apply",
+                        type: "Emphasized",
+                        press: function() {
+                            this._applyColumnSettings();
+                            this._columnSettingsDialog.close();
+                        }.bind(this)
+                    }),
+                    endButton: new sap.m.Button({
+                        text: "Cancel",
+                        press: function() {
+                            this._columnSettingsDialog.close();
+                        }.bind(this)
+                    })
+                });
+            }
+            
+            // Populate column list
+            var oList = sap.ui.getCore().byId("columnSettingsList");
+            oList.removeAllItems();
+            
+            var aColumns = oTable.getColumns();
+            aColumns.forEach(function(oColumn, index) {
+                var sLabel = oColumn.getLabel().getText();
+                if (sLabel && index < aColumns.length - 1) { // Exclude last column (arrow)
+                    var oItem = new sap.m.StandardListItem({
+                        title: sLabel,
+                        selected: oColumn.getVisible()
+                    });
+                    oItem.data("columnIndex", index);
+                    oList.addItem(oItem);
+                }
+            });
+            
+            this._columnSettingsDialog.open();
+        },
+        
+        // Apply column visibility settings
+        _applyColumnSettings: function() {
+            var oTable = this.byId("lockboxTable");
+            var oList = sap.ui.getCore().byId("columnSettingsList");
+            var aSelectedItems = oList.getSelectedItems();
+            var aColumns = oTable.getColumns();
+            
+            // Hide all columns first (except last one - arrow)
+            for (var i = 0; i < aColumns.length - 1; i++) {
+                aColumns[i].setVisible(false);
+            }
+            
+            // Show selected columns
+            aSelectedItems.forEach(function(oItem) {
+                var iIndex = oItem.data("columnIndex");
+                if (iIndex !== undefined && aColumns[iIndex]) {
+                    aColumns[iIndex].setVisible(true);
+                }
+            });
+            
+            sap.m.MessageToast.show("Column settings applied");
+        },
+
         
 
         // ============================================================================
@@ -8264,13 +8341,18 @@ sap.ui.define([
                                     subledgerOnaccountDoc: ''
                                 };
                                 
-                                // Populate accounting documents from clearingDocuments (RULE-005 data)
+                                // Populate accounting documents from clearingDocuments (RULE-004 data)
                                 if (data.run.clearingDocuments && data.run.clearingDocuments.length > 0) {
                                     var clearingDoc = data.run.clearingDocuments[idx] || data.run.clearingDocuments[0];
-                                    itemObj.postingDoc = clearingDoc.AccountingDocument || clearingDoc.DocumentNumber || data.run.ar_posting_doc || '';
-                                    itemObj.paytAdvice = clearingDoc.PaymentAdvice || data.run.payment_advice_doc || '';
-                                    itemObj.clearingDoc = clearingDoc.ClearingDocument || clearingDoc.SubledgerDocument || data.run.clearing_doc || '';
-                                    itemObj.subledgerOnaccountDoc = clearingDoc.SubledgerOnaccountDocument || '';
+                                    // Support both camelCase (backend storage) and PascalCase (SAP response)
+                                    itemObj.postingDoc = clearingDoc.documentNumber || clearingDoc.DocumentNumber || 
+                                                        clearingDoc.AccountingDocument || data.run.ar_posting_doc || '';
+                                    itemObj.paytAdvice = clearingDoc.paymentAdvice || clearingDoc.PaymentAdvice || 
+                                                        data.run.payment_advice_doc || '';
+                                    itemObj.clearingDoc = clearingDoc.subledgerDocument || clearingDoc.SubledgerDocument || 
+                                                         clearingDoc.ClearingDocument || data.run.clearing_doc || '';
+                                    itemObj.subledgerOnaccountDoc = clearingDoc.subledgerOnaccountDocument || 
+                                                                    clearingDoc.SubledgerOnaccountDocument || '';
                                 }
                                 
                                 aLockboxItems.push(itemObj);
@@ -8293,10 +8375,15 @@ sap.ui.define([
                             // Populate accounting documents from clearingDocuments
                             if (data.run.clearingDocuments && data.run.clearingDocuments.length > 0) {
                                 var clearingDoc = data.run.clearingDocuments[0];
-                                fallbackItem.postingDoc = clearingDoc.AccountingDocument || clearingDoc.DocumentNumber || data.run.ar_posting_doc || '';
-                                fallbackItem.paytAdvice = clearingDoc.PaymentAdvice || data.run.payment_advice_doc || '';
-                                fallbackItem.clearingDoc = clearingDoc.ClearingDocument || clearingDoc.SubledgerDocument || data.run.clearing_doc || '';
-                                fallbackItem.subledgerOnaccountDoc = clearingDoc.SubledgerOnaccountDocument || '';
+                                // Support both camelCase (backend storage) and PascalCase (SAP response)
+                                fallbackItem.postingDoc = clearingDoc.documentNumber || clearingDoc.DocumentNumber || 
+                                                        clearingDoc.AccountingDocument || data.run.ar_posting_doc || '';
+                                fallbackItem.paytAdvice = clearingDoc.paymentAdvice || clearingDoc.PaymentAdvice || 
+                                                        data.run.payment_advice_doc || '';
+                                fallbackItem.clearingDoc = clearingDoc.subledgerDocument || clearingDoc.SubledgerDocument || 
+                                                         clearingDoc.ClearingDocument || data.run.clearing_doc || '';
+                                fallbackItem.subledgerOnaccountDoc = clearingDoc.subledgerOnaccountDocument || 
+                                                                    clearingDoc.SubledgerOnaccountDocument || '';
                             }
                             
                             aLockboxItems.push(fallbackItem);
