@@ -261,8 +261,19 @@
                             selectionBehavior="Row"
                             rowSelectionChange="onTableSelectionChange"
                             visibleRowCount="7"
-                            enableColumnReordering="false"
+                            enableColumnReordering="true"
                             columnHeaderVisible="true">
+                            <table:extension>
+                                <OverflowToolbar>
+                                    <Title text="Items ({= ${app>/lockboxList} ? ${app>/lockboxList}.length : 0})" />
+                                    <ToolbarSpacer />
+                                    <Button
+                                        icon="sap-icon://action-settings"
+                                        type="Transparent"
+                                        tooltip="Table Settings - Show/Hide Columns"
+                                        press="onOpenTableColumnSettings" />
+                                </OverflowToolbar>
+                            </table:extension>
                             <table:columns>
                                 <table:Column width="10em" resizable="true">
                                     <Label text="Lockbox ID" class="boldHeader" />
