@@ -8166,9 +8166,47 @@ sap.ui.define([
                             errors: data.run.errors || []
                         };
                         
-                        // Parse checks and payments from sapPayload if available
+                        // Parse checks and payments from sapPayload
+                        // Support both 'checks' array (legacy) and SAP OData format (to_Item.results)
                         var aChecks = [];
-                        if (oTransaction.sapPayload && oTransaction.sapPayload.checks) {
+                        
+                        if (oTransaction.sapPayload && oTransaction.sapPayload.to_Item && 
+                            oTransaction.sapPayload.to_Item.results && 
+                            oTransaction.sapPayload.to_Item.results.length > 0) {
+                            // SAP OData format: to_Item.results
+                            aChecks = oTransaction.sapPayload.to_Item.results.map(function(item, checkIndex) {
+                                var oCheck = {
+                                    checkIndex: checkIndex,
+                                    Cheque: item.Cheque || '',
+                                    AmountInTransactionCurrency: item.AmountInTransactionCurrency || '0',
+                                    Currency: item.Currency || 'USD',
+                                    PartnerBank: item.PartnerBank || '',
+                                    PartnerBankAccount: item.PartnerBankAccount || '',
+                                    PartnerBankCountry: item.PartnerBankCountry || '',
+                                    LockboxBatch: item.LockboxBatch || '001',
+                                    LockboxBatchItem: item.LockboxBatchItem || '',
+                                    payments: []
+                                };
+                                
+                                // Parse payments from to_LockboxClearing.results
+                                if (item.to_LockboxClearing && item.to_LockboxClearing.results && 
+                                    Array.isArray(item.to_LockboxClearing.results)) {
+                                    oCheck.payments = item.to_LockboxClearing.results.map(function(clearing, paymentIndex) {
+                                        return {
+                                            paymentIndex: paymentIndex,
+                                            PaymentReference: clearing.PaymentReference || '',
+                                            NetPaymentAmountInPaytCurrency: clearing.NetPaymentAmountInPaytCurrency || '0',
+                                            DeductionAmountInPaytCurrency: clearing.DeductionAmountInPaytCurrency || '0',
+                                            PaymentDifferenceReason: clearing.PaymentDifferenceReason || '',
+                                            Currency: clearing.Currency || oCheck.Currency
+                                        };
+                                    });
+                                }
+                                
+                                return oCheck;
+                            });
+                        } else if (oTransaction.sapPayload && oTransaction.sapPayload.checks) {
+                            // Legacy format: checks array
                             aChecks = oTransaction.sapPayload.checks.map(function(check, checkIndex) {
                                 var oCheck = {
                                     checkIndex: checkIndex,
