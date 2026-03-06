@@ -8047,6 +8047,116 @@ sap.ui.define([
         },
         
         /**
+         * View Payload Hierarchy - Shows lockbox data in tree structure
+         */
+        onViewPayloadHierarchy: function () {
+            var oModel = this.getView().getModel("app");
+            var oTransaction = oModel.getProperty("/selectedTransaction");
+            
+            if (!oTransaction || !oTransaction.lockboxItems) {
+                MessageBox.warning("No payload data available");
+                return;
+            }
+            
+            // Build hierarchy from lockbox items
+            var aHierarchy = [];
+            
+            // Root node - Header
+            aHierarchy.push({
+                title: "Lockbox Batch: " + (oTransaction.lockbox || "N/A"),
+                icon: "sap-icon://product",
+                level: 0,
+                value: oTransaction.lockbox,
+                nodes: []
+            });
+            
+            // Add items
+            if (oTransaction.lockboxItems && oTransaction.lockboxItems.length > 0) {
+                oTransaction.lockboxItems.forEach(function(item, index) {
+                    var itemNode = {
+                        title: "Line Item " + (index + 1),
+                        icon: "sap-icon://document",
+                        level: 1,
+                        nodes: []
+                    };
+                    
+                    // Add item details as sub-nodes
+                    if (item.companyCode) {
+                        itemNode.nodes.push({
+                            title: "Company Code: " + item.companyCode,
+                            icon: "sap-icon://building",
+                            level: 2
+                        });
+                    }
+                    if (item.lockboxId) {
+                        itemNode.nodes.push({
+                            title: "Lockbox ID: " + item.lockboxId,
+                            icon: "sap-icon://product",
+                            level: 2
+                        });
+                    }
+                    if (item.item) {
+                        itemNode.nodes.push({
+                            title: "Item: " + item.item,
+                            icon: "sap-icon://numbered-text",
+                            level: 2
+                        });
+                    }
+                    if (item.amount) {
+                        itemNode.nodes.push({
+                            title: "Amount: " + item.amount,
+                            icon: "sap-icon://money-bills",
+                            level: 2
+                        });
+                    }
+                    if (item.postingDoc) {
+                        itemNode.nodes.push({
+                            title: "Document Number: " + item.postingDoc,
+                            icon: "sap-icon://doc",
+                            level: 2
+                        });
+                    }
+                    if (item.paytAdvice) {
+                        itemNode.nodes.push({
+                            title: "Payment Advice: " + item.paytAdvice,
+                            icon: "sap-icon://payment-approval",
+                            level: 2
+                        });
+                    }
+                    if (item.clearingDoc) {
+                        itemNode.nodes.push({
+                            title: "Subledger Document: " + item.clearingDoc,
+                            icon: "sap-icon://document-text",
+                            level: 2
+                        });
+                    }
+                    if (item.subledgerOnaccountDoc) {
+                        itemNode.nodes.push({
+                            title: "Subledger Onaccount Document: " + item.subledgerOnaccountDoc,
+                            icon: "sap-icon://document-text",
+                            level: 2
+                        });
+                    }
+                    
+                    aHierarchy[0].nodes.push(itemNode);
+                });
+            }
+            
+            // Set hierarchy to model
+            oModel.setProperty("/payloadHierarchy", aHierarchy);
+            
+            // Open payload dialog
+            this.byId("payloadHierarchyDialog").open();
+        },
+        
+        /**
+         * Cancel payload view - return to transaction details
+         */
+        onCancelPayloadView: function () {
+            this.byId("payloadHierarchyDialog").close();
+        },
+        
+        /**
          * Handle tab selection in transaction details dialog
          */
         onTransactionTabSelect: function (oEvent) {
