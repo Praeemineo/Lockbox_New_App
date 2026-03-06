@@ -7155,6 +7155,168 @@ sap.ui.define([
             });
         },
         
+
+        // ============================================================================
+        // SELECTION-BASED ACTION HANDLERS (for top toolbar buttons with table selection)
+        // ============================================================================
+        
+        // Handle table selection change
+        onTableSelectionChange: function(oEvent) {
+            var oTable = oEvent.getSource();
+            var aSelectedItems = oTable.getSelectedItems();
+            var oModel = this.getView().getModel("app");
+            oModel.setProperty("/hasSelection", aSelectedItems.length > 0);
+            
+            if (aSelectedItems.length > 0) {
+                var oSelectedItem = aSelectedItems[0].getBindingContext("app").getObject();
+                oModel.setProperty("/selectedItem", oSelectedItem);
+            } else {
+                oModel.setProperty("/selectedItem", null);
+            }
+        },
+        
+        // Handle row press (opens transaction details)
+        onRowPress: function(oEvent) {
+            var oItem = oEvent.getSource();
+            var oContext = oItem.getBindingContext("app");
+            if (oContext) {
+                var oData = oContext.getObject();
+                // Simulate button press event with context for existing function
+                this.onShowTransactionDetails({
+                    getSource: function() {
+                        return {
+                            getBindingContext: function() { return oContext; }
+                        };
+                    }
+                });
+            }
+        },
+        
+        // Simulate selected item
+        onSimulateSelected: function() {
+            var oModel = this.getView().getModel("app");
+            var oSelectedItem = oModel.getProperty("/selectedItem");
+            
+            if (!oSelectedItem) {
+                MessageBox.warning("Please select an item first");
+                return;
+            }
+            
+            // Call existing simulate function with simulated event
+            this.onSimulateItem({
+                getSource: function() {
+                    return {
+                        getBindingContext: function() {
+                            return {
+                                getObject: function() { return oSelectedItem; }
+                            };
+                        }
+                    };
+                }
+            });
+        },
+        
+        // Production run for selected item
+        onProductionRunSelected: function() {
+            var oModel = this.getView().getModel("app");
+            var oSelectedItem = oModel.getProperty("/selectedItem");
+            
+            if (!oSelectedItem) {
+                MessageBox.warning("Please select an item first");
+                return;
+            }
+            
+            // Call existing production run function with simulated event
+            this.onProductionRunItem({
+                getSource: function() {
+                    return {
+                        getBindingContext: function() {
+                            return {
+                                getObject: function() { return oSelectedItem; }
+                            };
+                        }
+                    };
+                }
+            });
+        },
+        
+        // Repost selected item
+        onRepostSelected: function() {
+            var oModel = this.getView().getModel("app");
+            var oSelectedItem = oModel.getProperty("/selectedItem");
+            
+            if (!oSelectedItem) {
+                MessageBox.warning("Please select an item first");
+                return;
+            }
+            
+            // Call existing repost function with simulated event
+            this.onRepostItem({
+                getSource: function() {
+                    return {
+                        getBindingContext: function() {
+                            return {
+                                getObject: function() { return oSelectedItem; }
+                            };
+                        }
+                    };
+                }
+            });
+        },
+        
+        // Preview field mapping for selected item
+        onPreviewFieldMappingSelected: function() {
+            var oModel = this.getView().getModel("app");
+            var oSelectedItem = oModel.getProperty("/selectedItem");
+            
+            if (!oSelectedItem) {
+                MessageBox.warning("Please select an item first");
+                return;
+            }
+            
+            // Call existing preview field mapping function with simulated event
+            this.onPreviewFieldMapping({
+                getSource: function() {
+                    return {
+                        getBindingContext: function() {
+                            return {
+                                getObject: function() { return oSelectedItem; }
+                            };
+                        }
+                    };
+                }
+            });
+        },
+        
+        // Helper functions for new filters
+        onCopySourceFile: function() {
+            var sValue = this.byId("filterSourceFile").getValue();
+            if (sValue) {
+                navigator.clipboard.writeText(sValue);
+                MessageToast.show("Source file copied to clipboard");
+            }
+        },
+        
+        onCopyCreatedBy: function() {
+            var sValue = this.byId("filterCreatedBy").getValue();
+            if (sValue) {
+                navigator.clipboard.writeText(sValue);
+                MessageToast.show("Created by copied to clipboard");
+            }
+        },
+        
+        // Format deposit date to match image (e.g., "Apr 03, 2026")
+        formatDepositDate: function(sDate) {
+            if (!sDate) return "";
+            try {
+                var oDate = new Date(sDate);
+                var options = { year: 'numeric', month: 'short', day: '2-digit' };
+                return oDate.toLocaleDateString('en-US', options);
+            } catch (e) {
+                return sDate;
+            }
+        },
+
         // ============================================================================
         // ITEM-LEVEL ACTION HANDLERS (for TreeTable row buttons)
         // ============================================================================
