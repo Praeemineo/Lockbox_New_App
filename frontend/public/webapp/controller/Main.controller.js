@@ -8360,9 +8360,6 @@ sap.ui.define([
                            oTransaction.lockboxId || 
                            "N/A";
             
-            // Get batch number from sapPayload
-            var batchNumber = (oTransaction.sapPayload && oTransaction.sapPayload.LockboxBatch) || "001";
-            
             // Level 1: Lockbox ID (root node)
             var headerNode = {
                 title: lockboxId,
@@ -8376,7 +8373,8 @@ sap.ui.define([
                 oTransaction.checks.forEach(function(check, index) {
                     var checkAmount = check.AmountInTransactionCurrency || "0";
                     var checkCurrency = check.Currency || "USD";
-                    var itemNum = (index + 1).toString().padStart(3, '0');
+                    var batchNumber = check.LockboxBatch || "001";
+                    var itemNum = check.LockboxBatchItem || (index + 1).toString().padStart(3, '0');
                     var checkNumber = check.Cheque || "N/A";
                     
                     var checkNode = {
