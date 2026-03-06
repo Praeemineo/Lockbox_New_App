@@ -1440,7 +1440,7 @@
                         </contentLeft>
                         <contentRight>
                             <Button text="View Payload" icon="sap-icon://simulate" press="onViewPayloadHierarchy" class="dialogHeaderButton" />
-                            <Button text="Log" icon="sap-icon://menu2" class="dialogHeaderButton" />
+                            <Button text="Log" icon="sap-icon://menu2" press="onViewSAPLog" class="dialogHeaderButton" />
                             <Button icon="sap-icon://decline" press="onCloseTransactionDetails" tooltip="Close" class="dialogHeaderButton" />
                         </contentRight>
                     </Bar>
@@ -1504,17 +1504,28 @@
                                         <!-- File Pattern/Rule -->
                                         <VBox class="statusItem">
                                             <Label text="File Pattern/Rule" class="statusItemLabel" />
-                                            <Text text="RuleID001: Standard Pattern" class="statusItemValue" />
+                                            <ObjectStatus 
+                                                text="{app>/selectedTransaction/patternName}" 
+                                                state="Information" 
+                                                class="statusItemValue" />
                                         </VBox>
+                                        
                                         <!-- Extract File -->
                                         <VBox class="statusItem">
                                             <Label text="Extract File" class="statusItemLabel" />
-                                            <Text text="Rows Extracted: {app>/selectedTransaction/rowsExtracted}" class="statusItemValue" />
+                                            <ObjectStatus 
+                                                text="{= 'Rows Extracted: ' + (${app>/selectedTransaction/rowsExtracted} || '0')}" 
+                                                state="None" 
+                                                class="statusItemValue" />
                                         </VBox>
+                                        
                                         <!-- Validation & Mapping -->
                                         <VBox class="statusItem">
                                             <Label text="Validation &amp; Mapping" class="statusItemLabel" />
-                                            <ObjectStatus text="API Field Mapping Success" state="Success" class="statusItemValue" />
+                                            <ObjectStatus 
+                                                text="{= ${app>/selectedTransaction/status} === 'SIMULATED' || ${app>/selectedTransaction/status} === 'POSTED' || ${app>/selectedTransaction/status} === 'POST_FAILED' ? 'API Field Mapping Success' : 'Not Run'}" 
+                                                state="{= ${app>/selectedTransaction/status} === 'SIMULATED' || ${app>/selectedTransaction/status} === 'POSTED' || ${app>/selectedTransaction/status} === 'POST_FAILED' ? 'Success' : 'None'}" 
+                                                class="statusItemValue" />
                                         </VBox>
                                         <!-- Simulation Run -->
                                         <VBox class="statusItem">
@@ -1528,8 +1539,8 @@
                                         <VBox class="statusItem">
                                             <Label text="Pattern Identified" class="statusItemLabel" />
                                             <ObjectStatus 
-                                                text="{app>/selectedTransaction/stages/templateMatch}" 
-                                                state="{path: 'app>/selectedTransaction/stages/templateMatch', formatter: '.formatStatusState'}" 
+                                                text="{app>/selectedTransaction/patternId}" 
+                                                state="Information" 
                                                 class="statusItemValue" />
                                         </VBox>
                                         <!-- Overall Processing Status -->
@@ -1658,6 +1669,39 @@
                             </StandardTreeItem>
                         </items>
                     </Tree>
+                </content>
+            </Dialog>
+            
+            <!-- SAP XML Log Dialog -->
+            <Dialog
+                id="sapLogDialog"
+                title="SAP API Response - XML Log"
+                contentWidth="80%"
+                contentHeight="70%"
+                resizable="true"
+                draggable="true">
+                <customHeader>
+                    <Bar>
+                        <contentLeft>
+                            <Title text="SAP API Response - XML Log" level="H3" />
+                        </contentLeft>
+                        <contentRight>
+                            <Button text="Copy" icon="sap-icon://copy" press="onCopySAPLog" />
+                            <Button text="Close" press="onCloseSAPLog" />
+                        </contentRight>
+                    </Bar>
+                </customHeader>
+                <content>
+                    <VBox width="100%" height="100%">
+                        <TextArea
+                            id="sapLogTextArea"
+                            value="{app>/sapXMLLog}"
+                            rows="25"
+                            width="100%"
+                            editable="false"
+                            valueState="None">
+                        </TextArea>
+                    </VBox>
                 </content>
             </Dialog>
 
