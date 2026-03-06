@@ -91,90 +91,123 @@
                     </HBox>
                 </VBox>
                 
-                <!-- Filter Bar Section -->
+                <!-- Filter Bar Section - New SAP UI Design -->
                 <Panel expandable="false" class="sapUiNoContentPadding filterPanel">
-                    <headerToolbar>
-                        <Toolbar class="panelHeader">
-                            <Title text="Standard" level="H4" />
-                            <ToolbarSpacer />
-                        </Toolbar>
-                    </headerToolbar>
                     <content>
-                        <VBox class="sapUiSmallMargin">
+                        <VBox class="sapUiMediumMargin">
                             <!-- Filter Row 1 -->
                             <HBox alignItems="End" class="sapUiSmallMarginBottom">
-                                <VBox class="sapUiSmallMarginEnd" width="200px">
-                                    <Label text="Lockbox ID" />
-                                    <ComboBox
-                                        id="filterLockboxId"
-                                        selectedKey="{app>/filters/lockboxId}"
-                                        items="{app>/lockboxIdList}"
-                                        placeholder="All">
-                                        <core:Item key="{app>key}" text="{app>text}" />
-                                    </ComboBox>
+                                <VBox class="sapUiSmallMarginEnd" width="180px">
+                                    <Label text="Search" />
+                                    <SearchField
+                                        id="filterSearch"
+                                        placeholder="Search"
+                                        width="100%"
+                                        search="onFilterGo" />
                                 </VBox>
-                                <VBox class="sapUiSmallMarginEnd" width="150px">
-                                    <Label text="Company Code" />
+                                <VBox class="sapUiSmallMarginEnd" width="180px">
+                                    <Label text="Status:" />
                                     <ComboBox
-                                        id="filterCompanyCode"
-                                        selectedKey="{app>/filters/companyCode}"
-                                        placeholder="All">
-                                        <core:Item key="" text="All" />
-                                        <core:Item key="1710" text="1710" />
-                                    </ComboBox>
-                                </VBox>
-                                <VBox class="sapUiSmallMarginEnd" width="120px">
-                                    <Label text="Currency" />
-                                    <ComboBox
-                                        id="filterCurrency"
-                                        selectedKey="{app>/filters/currency}"
-                                        placeholder="All">
-                                        <core:Item key="" text="All" />
-                                        <core:Item key="USD" text="USD" />
-                                        <core:Item key="EUR" text="EUR" />
-                                    </ComboBox>
-                                </VBox>
-                                <VBox class="sapUiSmallMarginEnd" width="150px">
-                                    <Label text="Processing Status" />
-                                    <ComboBox
-                                        id="filterStatusLockbox"
+                                        id="filterStatusNew"
                                         selectedKey="{app>/filters/status}"
                                         placeholder="All">
                                         <core:Item key="" text="All" />
-                                        <core:Item key="UPLOADED" text="Uploaded" />
+                                        <core:Item key="VALIDATED" text="Validated" />
+                                        <core:Item key="SIMULATED" text="Simulated" />
                                         <core:Item key="POSTED" text="Posted" />
-                                        <core:Item key="POST_ERROR" text="Error" />
+                                        <core:Item key="ERROR" text="Error" />
+                                    </ComboBox>
+                                </VBox>
+                                <VBox class="sapUiSmallMarginEnd" width="180px">
+                                    <Label text="Lockbox ID:" />
+                                    <Input
+                                        id="filterLockboxIdNew"
+                                        value="{app>/filters/lockboxId}"
+                                        placeholder="" />
+                                </VBox>
+                                <VBox class="sapUiSmallMarginEnd" width="200px">
+                                    <Label text="Source File:" />
+                                    <HBox>
+                                        <Input
+                                            id="filterSourceFile"
+                                            value="{app>/filters/sourceFile}"
+                                            placeholder=""
+                                            width="170px" />
+                                        <Button
+                                            icon="sap-icon://copy"
+                                            type="Transparent"
+                                            press="onCopySourceFile" />
+                                    </HBox>
+                                </VBox>
+                                <VBox class="sapUiSmallMarginEnd" width="200px">
+                                    <Label text="Created By:" />
+                                    <HBox>
+                                        <Input
+                                            id="filterCreatedBy"
+                                            value="{app>/filters/createdBy}"
+                                            placeholder=""
+                                            width="170px" />
+                                        <Button
+                                            icon="sap-icon://copy"
+                                            type="Transparent"
+                                            press="onCopyCreatedBy" />
+                                    </HBox>
+                                </VBox>
+                            </HBox>
+                            
+                            <!-- Filter Row 2 -->
+                            <HBox alignItems="End" class="sapUiSmallMarginBottom">
+                                <VBox class="sapUiSmallMarginEnd" width="180px">
+                                    <Label text="Deposit Date:" />
+                                    <DatePicker
+                                        id="filterDepositDateFrom"
+                                        placeholder="From"
+                                        value="{app>/filters/depositDateFrom}" />
+                                </VBox>
+                                <VBox class="sapUiSmallMarginEnd" width="180px">
+                                    <Label text="Amount:" />
+                                    <DatePicker
+                                        id="filterAmountFrom"
+                                        placeholder="From"
+                                        value="{app>/filters/amountFrom}" />
+                                </VBox>
+                                <VBox class="sapUiSmallMarginEnd" width="30px">
+                                    <Label text=" " />
+                                    <Text text="-" class="sapUiMediumMarginTop" />
+                                </VBox>
+                                <VBox class="sapUiSmallMarginEnd" width="180px">
+                                    <Label text=" " />
+                                    <DatePicker
+                                        id="filterAmountTo"
+                                        placeholder="To"
+                                        value="{app>/filters/amountTo}" />
+                                </VBox>
+                                <VBox class="sapUiSmallMarginEnd" width="180px">
+                                    <Label text="Currency:" />
+                                    <ComboBox
+                                        id="filterCurrencyNew"
+                                        selectedKey="{app>/filters/currency}"
+                                        placeholder="">
+                                        <core:Item key="" text="" />
+                                        <core:Item key="USD" text="USD" />
+                                        <core:Item key="EUR" text="EUR" />
                                     </ComboBox>
                                 </VBox>
                                 <Button
                                     text="Go"
                                     type="Emphasized"
                                     press="onFilterGo"
-                                    class="sapUiSmallMarginEnd goButton" />
+                                    class="sapUiSmallMarginEnd" />
                                 <Button
-                                    text="Adapt Filters"
-                                    press="onAdaptFilters"
-                                    class="adaptFiltersButton" />
+                                    text="Adapt Filters (1)"
+                                    type="Transparent"
+                                    press="onAdaptFilters" />
                             </HBox>
                         </VBox>
                     </content>
                 </Panel>
                 
-                <!-- Status Filter Tabs -->
-                <IconTabBar
-                    id="statusTabBarLockbox"
-                    select="onStatusFilterChange"
-                    class="sapUiSmallMarginTop sapUiSmallMarginBottom statusTabBar"
-                    headerMode="Inline"
-                    expandable="false">
-                    <items>
-                        <IconTabFilter key="all" text="All" count="{app>/statusCounts/all}" />
-                        <IconTabFilter key="uploaded" text="Uploaded" count="{app>/statusCounts/uploaded}" />
-                        <IconTabFilter key="posted" text="Posted" count="{app>/statusCounts/posted}" />
-                    </items>
-                </IconTabBar>
-                
-                <!-- Data Panel with TreeTable -->
+                <!-- Data Panel with Action Buttons and Table -->
                 <Panel expandable="false" class="dataPanel">
                     <headerToolbar>
                         <OverflowToolbar class="panelHeader">
@@ -185,201 +218,126 @@
                                 icon="sap-icon://upload"
                                 type="Emphasized"
                                 press="onOpenUploadDialog"
-                                class="uploadButton"
-                                tooltip="Upload customer file - Auto processes: Template Match → Extract → Validate → Map" />
+                                tooltip="Upload customer file" />
                             <Button
-                                text="Run History"
-                                icon="sap-icon://history"
-                                type="Ghost"
-                                press="onRunHistory"
-                                class="historyButton"
-                                tooltip="View processing runs with stage status (🔴/🟢)" />
+                                text="Simulation Run"
+                                icon="sap-icon://simulate"
+                                type="Default"
+                                press="onSimulateSelected"
+                                enabled="{app>/hasSelection}"
+                                tooltip="Run simulation for selected item" />
                             <Button
-                                icon="sap-icon://action-settings"
-                                press="onOpenTableSettings"
-                                class="iconButton"
-                                tooltip="Table Settings - Show/Hide Columns" />
+                                text="Production Run"
+                                icon="sap-icon://media-play"
+                                type="Default"
+                                press="onProductionRunSelected"
+                                enabled="{app>/hasSelection}"
+                                tooltip="Run production posting for selected item" />
                             <Button
+                                text="Repost"
                                 icon="sap-icon://refresh"
-                                press="onRefreshHeaders"
-                                class="iconButton"
-                                tooltip="Refresh" />
+                                type="Default"
+                                press="onRepostSelected"
+                                enabled="{app>/hasSelection}"
+                                tooltip="Repost selected item" />
+                            <Button
+                                text="Preview Field Mapping"
+                                icon="sap-icon://table-view"
+                                type="Default"
+                                press="onPreviewFieldMappingSelected"
+                                enabled="{app>/hasSelection}"
+                                tooltip="Preview field mapping for selected item" />
                         </OverflowToolbar>
                     </headerToolbar>
                     <content>
-                        <!-- sap.ui.table.TreeTable for hierarchical display -->
-                        <table:TreeTable
-                            id="lockboxTreeTable"
-                            class="lockboxTreeTable"
-                            rows="{path: 'app>/treeData', parameters: {arrayNames: ['children']}}"
-                            selectionMode="Single"
-                            enableSelectAll="false"
-                            rowSelectionChange="onTreeRowSelect"
-                            visibleRowCount="15"
-                            selectionBehavior="RowOnly"
-                            toggleOpenState="onTreeToggle">
-                            <table:columns>
-                                <table:Column width="18%">
-                                    <Label text="Lockbox / Item" />
-                                    <table:template>
-                                        <HBox alignItems="Center">
-                                            <core:Icon src="{path: 'app>type', formatter: '.formatTypeIcon'}" class="sapUiSmallMarginEnd" />
-                                            <Text text="{path: 'app>', formatter: '.formatLockboxItemDisplay'}" />
+                        <!-- sap.m.Table with selection -->
+                        <m:Table
+                            id="lockboxTable"
+                            class="lockboxTable sapUiResponsiveContentPadding"
+                            items="{
+                                path: 'app>/processingRuns',
+                                sorter: {path: 'deposit_datetime', descending: true}
+                            }"
+                            mode="SingleSelectMaster"
+                            selectionChange="onTableSelectionChange"
+                            growing="true"
+                            growingScrollToLoad="false"
+                            growingThreshold="7">
+                            <m:columns>
+                                <m:Column width="3em">
+                                    <m:Text text="Select" />
+                                </m:Column>
+                                <m:Column width="8em" sortProperty="lockbox">
+                                    <m:Text text="Lockbox ID" />
+                                </m:Column>
+                                <m:Column width="12em">
+                                    <m:Text text="Source File" />
+                                </m:Column>
+                                <m:Column width="15em">
+                                    <m:Text text="Processing Flow" />
+                                </m:Column>
+                                <m:Column width="8em">
+                                    <m:Text text="Status" />
+                                </m:Column>
+                                <m:Column width="10em" sortProperty="deposit_datetime">
+                                    <m:Text text="Deposit Date" />
+                                </m:Column>
+                            </m:columns>
+                            <m:items>
+                                <m:ColumnListItem type="Active" press="onRowPress">
+                                    <m:cells>
+                                        <!-- Select Column - handled by mode="SingleSelectMaster" -->
+                                        <m:Text text="" />
+                                        
+                                        <!-- Lockbox ID -->
+                                        <m:Text text="{app>lockbox}" class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
+                                        
+                                        <!-- Source File -->
+                                        <m:Link 
+                                            text="{app>filename}" 
+                                            press="onDownloadSourceFile"
+                                            class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
+                                        
+                                        <!-- Processing Flow -->
+                                        <HBox alignItems="Center" class="sapUiSmallMarginTop sapUiSmallMarginBottom">
+                                            <!-- Upload Icon -->
+                                            <core:Icon 
+                                                src="sap-icon://document" 
+                                                size="1.2rem"
+                                                color="{= ${app>stages/extraction} === 'success' ? '#107e3e' : ${app>stages/extraction} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                class="sapUiTinyMarginEnd" />
+                                            <Text text=" → " />
+                                            
+                                            <!-- Validation Icon -->
+                                            <core:Icon 
+                                                src="sap-icon://validate" 
+                                                size="1.2rem"
+                                                color="{= ${app>stages/validation} === 'success' &amp;&amp; ${app>stages/mapping} === 'success' ? '#107e3e' : ${app>stages/validation} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                class="sapUiTinyMarginBeginEnd" />
+                                            <Text text=" → " />
+                                            
+                                            <!-- Success/Posted Icon -->
+                                            <core:Icon 
+                                                src="sap-icon://sys-enter-2" 
+                                                size="1.2rem"
+                                                color="{= ${app>stages/posted} === 'success' ? '#107e3e' : ${app>stages/simulate} === 'success' ? '#e78c07' : ${app>stages/posted} === 'error' ? '#bb0000' : '#5b738b'}"
+                                                class="sapUiTinyMarginBegin" />
                                         </HBox>
-                                    </table:template>
-                                </table:Column>
-                                <table:Column width="12%">
-                                    <Label text="Source File" />
-                                    <table:template>
-                                        <Link text="{= ${app>sourceFile} || ''}" 
-                                              press="onDownloadSourceFile"
-                                              visible="{= !!${app>sourceFile} &amp;&amp; ${app>type} === 'LOCKBOX'}" />
-                                    </table:template>
-                                </table:Column>
-                                <table:Column width="10%">
-                                    <Label text="Deposit Date" />
-                                    <table:template>
-                                        <Text text="{path: 'app>deposit_datetime', formatter: '.formatDateTime'}" />
-                                    </table:template>
-                                </table:Column>
-                                <table:Column width="8%">
-                                    <Label text="Amount" />
-                                    <table:template>
-                                        <Text text="{app>amount}" />
-                                    </table:template>
-                                </table:Column>
-                                <table:Column width="5%">
-                                    <Label text="Ccy" />
-                                    <table:template>
-                                        <Text text="{= ${app>currency} || 'USD'}" />
-                                    </table:template>
-                                </table:Column>
-                                <table:Column width="6%">
-                                    <Label text="Status" />
-                                    <table:template>
+                                        
+                                        <!-- Status -->
                                         <ObjectStatus 
                                             text="{app>status}" 
-                                            state="{path: 'app>status', formatter: '.formatStatusState'}" />
-                                    </table:template>
-                                </table:Column>
-                                <table:Column width="15%">
-                                    <Label text="Processing Flow" />
-                                    <table:template>
-                                        <HBox alignItems="Center" visible="{= ${app>type} === 'HEADER' || ${app>type} === 'LOCKBOX'}">
-                                            <!-- Stage 1: Upload & Parse -->
-                                            <core:Icon src="sap-icon://document-text" size="1rem" 
-                                                color="{= ${app>stages/extraction} === 'success' ? '#107e3e' : ${app>stages/extraction} === 'error' || ${app>stages/upload} === 'error' || ${app>stages/templateMatch} === 'error' ? '#bb0000' : '#5b738b'}"
-                                                tooltip="Upload &amp; Parse: File upload, template matching, and data extraction"
-                                                press=".onShowStageDetails"
-                                                class="sapUiTinyMarginEnd">
-                                                <core:customData>
-                                                    <core:CustomData key="stage" value="upload" />
-                                                    <core:CustomData key="runId" value="{app>runId}" />
-                                                </core:customData>
-                                            </core:Icon>
-                                            <Text text=" → " class="sapUiTinyMarginBeginEnd"/>
-                                            
-                                            <!-- Stage 2: Validate & Map -->
-                                            <core:Icon src="sap-icon://document-text" size="1rem" 
-                                                color="{= ${app>stages/validation} === 'success' &amp;&amp; ${app>stages/mapping} === 'success' ? '#107e3e' : ${app>stages/validation} === 'warning' ? '#e78c07' : ${app>stages/validation} === 'error' || ${app>stages/mapping} === 'error' ? '#bb0000' : '#5b738b'}"
-                                                tooltip="Validate &amp; Map: Data validation and API field mapping"
-                                                press=".onShowStageDetails"
-                                                class="sapUiTinyMarginEnd">
-                                                <core:customData>
-                                                    <core:CustomData key="stage" value="validate" />
-                                                    <core:CustomData key="runId" value="{app>runId}" />
-                                                </core:customData>
-                                            </core:Icon>
-                                            <Text text=" → " class="sapUiTinyMarginBeginEnd"/>
-                                            
-                                            <!-- Stage 3: Simulation -->
-                                            <core:Icon src="sap-icon://document-text" size="1rem" 
-                                                color="{= ${app>stages/simulate} === 'success' ? '#107e3e' : ${app>stages/simulate} === 'error' ? '#bb0000' : '#5b738b'}"
-                                                tooltip="Ready: Prepared for posting"
-                                                press=".onShowStageDetails"
-                                                class="sapUiTinyMarginEnd">
-                                                <core:customData>
-                                                    <core:CustomData key="stage" value="simulate" />
-                                                    <core:CustomData key="runId" value="{app>runId}" />
-                                                </core:customData>
-                                            </core:Icon>
-                                            <Text text=" → " class="sapUiTinyMarginBeginEnd"/>
-                                            
-                                            <!-- Stage 4: Posted -->
-                                            <core:Icon src="sap-icon://document-text" size="1rem" 
-                                                color="{= ${app>stages/posted} === 'success' ? '#107e3e' : ${app>stages/posted} === 'error' ? '#bb0000' : '#5b738b'}"
-                                                tooltip="Posted: Document posted to SAP S/4HANA"
-                                                press=".onShowStageDetails"
-                                                class="sapUiTinyMarginEnd">
-                                                <core:customData>
-                                                    <core:CustomData key="stage" value="post" />
-                                                    <core:CustomData key="runId" value="{app>runId}" />
-                                                </core:customData>
-                                            </core:Icon>
-                                        </HBox>
-                                    </table:template>
-                                </table:Column>
-                                <table:Column width="20%">
-                                    <Label text="Actions" />
-                                    <table:template>
-                                        <HBox alignItems="Center" visible="{= ${app>type} === 'HEADER' || ${app>type} === 'LOCKBOX'}">
-                                            <Button
-                                                icon="sap-icon://simulate"
-                                                type="Transparent"
-                                                tooltip="Simulate - Preview posting without sending to SAP"
-                                                press="onSimulateItem"
-                                                enabled="{= ${app>status} === 'VALIDATED' || ${app>status} === 'FAILED' || ${app>status} === 'POST_FAILED'}" />
-                                            <Button
-                                                icon="sap-icon://accept"
-                                                type="Transparent"
-                                                tooltip="Production Run - Post to SAP S/4HANA"
-                                                press="onProductionRunItem"
-                                                enabled="{= ${app>status} === 'SIMULATED' || ${app>status} === 'POST_FAILED'}" />
-                                            <Button
-                                                icon="sap-icon://restart"
-                                                type="Transparent"
-                                                tooltip="Repost - Retry production run after posting failure"
-                                                press="onRepostItem"
-                                                enabled="{= ${app>status} === 'POST_FAILED'}" />
-                                            <Button
-                                                icon="sap-icon://refresh"
-                                                type="Transparent"
-                                                tooltip="Reprocess - Re-run extraction and validation"
-                                                press="onReprocessItem"
-                                                enabled="{= ${app>status} === 'FAILED'}" />
-                                            <Button
-                                                icon="sap-icon://table-view"
-                                                type="Transparent"
-                                                tooltip="Preview Field Mapping - View extraction, validation, constants and defaults"
-                                                press=".onPreviewFieldMapping" />
-                                            <Button
-                                                icon="sap-icon://detail-view"
-                                                type="Transparent"
-                                                tooltip="View Details - See full processing information"
-                                                press="onViewItemDetails" />
-                                            <Button
-                                                icon="sap-icon://delete"
-                                                type="Transparent"
-                                                tooltip="Delete - Remove unprocessed file"
-                                                press="onDeleteItem"
-                                                enabled="{= ${app>status} !== 'POSTED' &amp;&amp; ${app>status} !== 'SIMULATED' }" />
-                                        </HBox>
-                                    </table:template>
-                                </table:Column>
-                                <table:Column width="5%" hAlign="Center">
-                                    <Label text="" />
-                                    <table:template>
-                                        <Button 
-                                            icon="sap-icon://navigation-right-arrow" 
-                                            type="Transparent"
-                                            press="onShowTransactionDetails"
-                                            class="actionButton"
-                                            visible="{= ${app>type} === 'HEADER' || ${app>type} === 'LOCKBOX'}"
-                                            tooltip="View Transaction Details" />
-                                    </table:template>
-                                </table:Column>
-                            </table:columns>
-                        </table:TreeTable>
+                                            state="{path: 'app>status', formatter: '.formatStatusState'}"
+                                            class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
+                                        
+                                        <!-- Deposit Date -->
+                                        <m:Text 
+                                            text="{path: 'app>deposit_datetime', formatter: '.formatDepositDate'}"
+                                            class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
+                                    </m:cells>
+                                </m:ColumnListItem>
+                            </m:items>
+                        </m:Table>
                     </content>
                 </Panel>
             </VBox>
