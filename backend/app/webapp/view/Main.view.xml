@@ -97,12 +97,13 @@
                         <VBox class="sapUiMediumMargin">
                             <!-- Filter Row 1 -->
                             <HBox alignItems="End" class="sapUiSmallMarginBottom">
-                                <VBox class="sapUiSmallMarginEnd" width="180px">
+                                <VBox class="sapUiSmallMarginEnd" width="200px">
                                     <Label text="Search" />
                                     <SearchField
                                         id="filterSearch"
                                         placeholder="Search"
                                         width="100%"
+                                        value="{app>/filters/search}"
                                         search="onFilterGo" />
                                 </VBox>
                                 <VBox class="sapUiSmallMarginEnd" width="180px">
@@ -110,7 +111,8 @@
                                     <ComboBox
                                         id="filterStatusNew"
                                         selectedKey="{app>/filters/status}"
-                                        placeholder="All">
+                                        placeholder="All"
+                                        change="onFilterGo">
                                         <core:Item key="" text="All" />
                                         <core:Item key="VALIDATED" text="Validated" />
                                         <core:Item key="SIMULATED" text="Simulated" />
@@ -123,21 +125,19 @@
                                     <Input
                                         id="filterLockboxIdNew"
                                         value="{app>/filters/lockboxId}"
-                                        placeholder="" />
+                                        placeholder=""
+                                        change="onFilterGo" />
                                 </VBox>
-                                <VBox class="sapUiSmallMarginEnd" width="200px">
-                                    <Label text="Source File:" />
-                                    <HBox>
-                                        <Input
-                                            id="filterSourceFile"
-                                            value="{app>/filters/sourceFile}"
-                                            placeholder=""
-                                            width="170px" />
-                                        <Button
-                                            icon="sap-icon://copy"
-                                            type="Transparent"
-                                            press="onCopySourceFile" />
-                                    </HBox>
+                                <VBox class="sapUiSmallMarginEnd" width="180px">
+                                    <Label text="Company Code:" />
+                                    <ComboBox
+                                        id="filterCompanyCode"
+                                        selectedKey="{app>/filters/companyCode}"
+                                        placeholder="All"
+                                        change="onFilterGo">
+                                        <core:Item key="" text="All" />
+                                        <core:Item key="1710" text="1710" />
+                                    </ComboBox>
                                 </VBox>
                                 <VBox class="sapUiSmallMarginEnd" width="200px">
                                     <Label text="Created By:" />
@@ -146,7 +146,8 @@
                                             id="filterCreatedBy"
                                             value="{app>/filters/createdBy}"
                                             placeholder=""
-                                            width="170px" />
+                                            width="170px"
+                                            change="onFilterGo" />
                                         <Button
                                             icon="sap-icon://copy"
                                             type="Transparent"
@@ -157,38 +158,22 @@
                             
                             <!-- Filter Row 2 -->
                             <HBox alignItems="End" class="sapUiSmallMarginBottom">
-                                <VBox class="sapUiSmallMarginEnd" width="180px">
+                                <VBox class="sapUiSmallMarginEnd" width="200px">
                                     <Label text="Deposit Date:" />
                                     <DatePicker
                                         id="filterDepositDateFrom"
                                         placeholder="From"
-                                        value="{app>/filters/depositDateFrom}" />
-                                </VBox>
-                                <VBox class="sapUiSmallMarginEnd" width="180px">
-                                    <Label text="Amount:" />
-                                    <DatePicker
-                                        id="filterAmountFrom"
-                                        placeholder="From"
-                                        value="{app>/filters/amountFrom}" />
-                                </VBox>
-                                <VBox class="sapUiSmallMarginEnd" width="30px">
-                                    <Label text=" " />
-                                    <Text text="-" class="sapUiMediumMarginTop" />
-                                </VBox>
-                                <VBox class="sapUiSmallMarginEnd" width="180px">
-                                    <Label text=" " />
-                                    <DatePicker
-                                        id="filterAmountTo"
-                                        placeholder="To"
-                                        value="{app>/filters/amountTo}" />
+                                        value="{app>/filters/depositDateFrom}"
+                                        change="onFilterGo" />
                                 </VBox>
                                 <VBox class="sapUiSmallMarginEnd" width="180px">
                                     <Label text="Currency:" />
                                     <ComboBox
                                         id="filterCurrencyNew"
                                         selectedKey="{app>/filters/currency}"
-                                        placeholder="">
-                                        <core:Item key="" text="" />
+                                        placeholder="All"
+                                        change="onFilterGo">
+                                        <core:Item key="" text="All" />
                                         <core:Item key="USD" text="USD" />
                                         <core:Item key="EUR" text="EUR" />
                                     </ComboBox>
@@ -197,6 +182,11 @@
                                     text="Go"
                                     type="Emphasized"
                                     press="onFilterGo"
+                                    class="sapUiSmallMarginEnd" />
+                                <Button
+                                    text="Clear Filters"
+                                    type="Default"
+                                    press="onClearFilters"
                                     class="sapUiSmallMarginEnd" />
                                 <Button
                                     text="Adapt Filters (1)"

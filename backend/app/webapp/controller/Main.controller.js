@@ -4789,10 +4789,13 @@ sap.ui.define([
         _initFilters: function () {
             var oModel = this.getOwnerComponent().getModel("app");
             oModel.setProperty("/filters", {
+                search: "",
                 lockboxId: "",
                 companyCode: "",
                 currency: "",
-                status: ""
+                status: "",
+                createdBy: "",
+                depositDateFrom: ""
             });
             oModel.setProperty("/lockboxIdList", [
                 { key: "", text: "All" }
@@ -5250,7 +5253,95 @@ sap.ui.define([
         
         // Filter handlers for Lockbox Transaction tab
         onFilterGo: function () {
-            this._loadHeaders();
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oFilters = oModel.getProperty("/filters") || {};
+            
+            // Get all lockbox data
+            var aAllData = oModel.getProperty("/lockboxListAll") || [];
+            var aFilteredData = aAllData.slice(); // Copy array
+            
+            // Apply filters
+            if (oFilters.search && oFilters.search.trim()) {
+                var sSearch = oFilters.search.toLowerCase();
+                aFilteredData = aFilteredData.filter(function(item) {
+                    return (item.lockbox && item.lockbox.toLowerCase().includes(sSearch)) ||
+                           (item.filename && item.filename.toLowerCase().includes(sSearch)) ||
+                           (item.created_by && item.created_by.toLowerCase().includes(sSearch));
+                });
+            }
+            
+            if (oFilters.status && oFilters.status !== "") {
+                aFilteredData = aFilteredData.filter(function(item) {
+                    return item.status === oFilters.status;
+                });
+            }
+            
+            if (oFilters.lockboxId && oFilters.lockboxId.trim()) {
+                aFilteredData = aFilteredData.filter(function(item) {
+                    return item.lockbox && item.lockbox.includes(oFilters.lockboxId);
+                });
+            }
+            
+            if (oFilters.companyCode && oFilters.companyCode !== "") {
+                aFilteredData = aFilteredData.filter(function(item) {
+                    return item.company_code === oFilters.companyCode;
+                });
+            }
+            
+            if (oFilters.createdBy && oFilters.createdBy.trim()) {
+                aFilteredData = aFilteredData.filter(function(item) {
+                    return item.created_by && item.created_by.includes(oFilters.createdBy);
+                });
+            }
+            
+            if (oFilters.currency && oFilters.currency !== "") {
+                aFilteredData = aFilteredData.filter(function(item) {
+                    return item.currency === oFilters.currency;
+                });
+            }
+            
+            if (oFilters.depositDateFrom) {
+                var oFromDate = new Date(oFilters.depositDateFrom);
+                aFilteredData = aFilteredData.filter(function(item) {
+                    if (!item.deposit_datetime) return false;
+                    var oItemDate = new Date(item.deposit_datetime);
+                    return oItemDate >= oFromDate;
+                });
+            }
+            
+            // Update filtered data
+            oModel.setProperty("/lockboxList", aFilteredData);
+            
+            // Reset pagination
+            oModel.setProperty("/currentPage", 1);
+            this._updatePagination();
+            
+            MessageToast.show("Filters applied - " + aFilteredData.length + " items found");
+        },
+
+        onClearFilters: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            
+            // Clear all filter values
+            oModel.setProperty("/filters", {
+                search: "",
+                lockboxId: "",
+                companyCode: "",
+                currency: "",
+                status: "",
+                createdBy: "",
+                depositDateFrom: ""
+            });
+            
+            // Reset to show all data
+            var aAllData = oModel.getProperty("/lockboxListAll") || [];
+            oModel.setProperty("/lockboxList", aAllData.slice());
+            
+            // Reset pagination
+            oModel.setProperty("/currentPage", 1);
+            this._updatePagination();
+            
+            MessageToast.show("All filters cleared");
         },
         
         onAdaptFilters: function () {
@@ -6445,9 +6536,11 @@ sap.ui.define([
                         status: status,
                         stages: lockboxNode.stages,
                         amount: lockboxNode.amount,
-                        currency: lockboxNode.currency,
+                        currency: lockboxNode.currency || 'USD',
                         type: lockboxNode.type,
-                        uploadedAt: run ? run.uploadedAt || run.startedAt : null
+                        uploadedAt: run ? run.uploadedAt || run.startedAt : null,
+                        companyCode: run ? run.company_code : '1710',
+                        createdBy: run ? run.created_by || run.uploadedBy : ''
                     };
                 });
                 
@@ -6460,6 +6553,10 @@ sap.ui.define([
                 
                 // Store full list and initialize pagination
                 oModel.setProperty("/lockboxListFull", aLockboxList);
+                // Store original data for filtering
+                oModel.setProperty("/lockboxListAll", aLockboxList.slice());
+                // Set current list (will be filtered)
+                oModel.setProperty("/lockboxList", aLockboxList.slice());
                 that._updatePagination(1); // Show first page
                 
                 // If we have data, auto-select the first item
@@ -7462,20 +7559,109 @@ sap.ui.define([
             });
         },
         
-        // Helper functions for new filters
-        onCopySourceFile: function() {
-            var sValue = this.byId("filterSourceFile").getValue();
-            if (sValue) {
-                navigator.clipboard.writeText(sValue);
-                MessageToast.show("Source file copied to clipboard");
-            }
+        // Filter logic - Apply all filters
+        onFilterGo: function() {
+            var oModel = this.getView().getModel("app");
+            var aAllData = oModel.getProperty("/lockboxListFull") || [];
+            
+            // Get filter values
+            var sSearch = this.byId("filterSearch").getValue().toLowerCase();
+            var sStatus = this.byId("filterStatusNew").getSelectedKey();
+            var sLockboxId = this.byId("filterLockboxIdNew").getValue().toLowerCase();
+            var sCompanyCode = this.byId("filterCompanyCode").getSelectedKey();
+            var sCreatedBy = this.byId("filterCreatedBy").getValue().toLowerCase();
+            var sDepositDateFrom = this.byId("filterDepositDateFrom").getValue();
+            var sCurrency = this.byId("filterCurrencyNew").getSelectedKey();
+            
+            // Apply filters
+            var aFilteredData = aAllData.filter(function(item) {
+                // Search filter (searches across multiple fields)
+                if (sSearch) {
+                    var searchText = (
+                        (item.lockbox || '') + ' ' +
+                        (item.filename || '') + ' ' +
+                        (item.status || '')
+                    ).toLowerCase();
+                    
+                    if (searchText.indexOf(sSearch) === -1) {
+                        return false;
+                    }
+                }
+                
+                // Status filter
+                if (sStatus && item.status !== sStatus) {
+                    return false;
+                }
+                
+                // Lockbox ID filter
+                if (sLockboxId && (item.lockbox || '').toLowerCase().indexOf(sLockboxId) === -1) {
+                    return false;
+                }
+                
+                // Company Code filter
+                if (sCompanyCode && item.companyCode !== sCompanyCode) {
+                    return false;
+                }
+                
+                // Created By filter
+                if (sCreatedBy && (item.createdBy || '').toLowerCase().indexOf(sCreatedBy) === -1) {
+                    return false;
+                }
+                
+                // Deposit Date filter (From date)
+                if (sDepositDateFrom) {
+                    try {
+                        var oFilterDate = new Date(sDepositDateFrom);
+                        var oItemDate = new Date(item.deposit_datetime);
+                        if (oItemDate < oFilterDate) {
+                            return false;
+                        }
+                    } catch (e) {
+                        // Invalid date format, skip filter
+                    }
+                }
+                
+                // Currency filter
+                if (sCurrency && item.currency !== sCurrency) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            console.log('Filter applied: ' + aFilteredData.length + ' of ' + aAllData.length + ' items match');
+            
+            // Update full list with filtered data and refresh pagination
+            oModel.setProperty("/lockboxListFull", aFilteredData);
+            this._updatePagination(1); // Reset to first page
+            
+            sap.m.MessageToast.show("Filters applied: " + aFilteredData.length + " items found");
         },
         
+        // Clear all filters
+        onClearFilters: function() {
+            // Reset all filter controls
+            this.byId("filterSearch").setValue("");
+            this.byId("filterStatusNew").setSelectedKey("");
+            this.byId("filterLockboxIdNew").setValue("");
+            this.byId("filterCompanyCode").setSelectedKey("");
+            this.byId("filterCreatedBy").setValue("");
+            this.byId("filterDepositDateFrom").setValue("");
+            this.byId("filterCurrencyNew").setSelectedKey("");
+            
+            // Reload original data
+            this._loadRunHistory();
+            
+            sap.m.MessageToast.show("All filters cleared");
+        },
+
+        
+        // Helper function - Copy Created By to clipboard
         onCopyCreatedBy: function() {
             var sValue = this.byId("filterCreatedBy").getValue();
             if (sValue) {
                 navigator.clipboard.writeText(sValue);
-                MessageToast.show("Created by copied to clipboard");
+                sap.m.MessageToast.show("Created by copied to clipboard");
             }
         },
         
