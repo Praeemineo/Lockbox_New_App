@@ -6538,7 +6538,12 @@ sap.ui.define([
                         amount: lockboxNode.amount,
                         currency: lockboxNode.currency,
                         type: lockboxNode.type,
-                        uploadedAt: run ? run.uploadedAt || run.startedAt : null
+                        uploadedAt: run ? run.uploadedAt || run.startedAt : null,
+                        created_by: run ? run.createdBy || 'System' : 'System',
+                        company_code: run && run.extractedData && run.extractedData.length > 0 ? 
+                                     run.extractedData[0]['Company Code'] || 
+                                     run.extractedData[0]['CompanyCode'] || 
+                                     '1710' : '1710'
                     };
                 });
                 
