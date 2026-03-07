@@ -5253,7 +5253,95 @@ sap.ui.define([
         
         // Filter handlers for Lockbox Transaction tab
         onFilterGo: function () {
-            this._loadHeaders();
+            var oModel = this.getOwnerComponent().getModel("app");
+            var oFilters = oModel.getProperty("/filters") || {};
+            
+            // Get all lockbox data
+            var aAllData = oModel.getProperty("/lockboxListAll") || [];
+            var aFilteredData = aAllData.slice(); // Copy array
+            
+            // Apply filters
+            if (oFilters.search && oFilters.search.trim()) {
+                var sSearch = oFilters.search.toLowerCase();
+                aFilteredData = aFilteredData.filter(function(item) {
+                    return (item.lockbox && item.lockbox.toLowerCase().includes(sSearch)) ||
+                           (item.filename && item.filename.toLowerCase().includes(sSearch)) ||
+                           (item.created_by && item.created_by.toLowerCase().includes(sSearch));
+                });
+            }
+            
+            if (oFilters.status && oFilters.status !== "") {
+                aFilteredData = aFilteredData.filter(function(item) {
+                    return item.status === oFilters.status;
+                });
+            }
+            
+            if (oFilters.lockboxId && oFilters.lockboxId.trim()) {
+                aFilteredData = aFilteredData.filter(function(item) {
+                    return item.lockbox && item.lockbox.includes(oFilters.lockboxId);
+                });
+            }
+            
+            if (oFilters.companyCode && oFilters.companyCode !== "") {
+                aFilteredData = aFilteredData.filter(function(item) {
+                    return item.company_code === oFilters.companyCode;
+                });
+            }
+            
+            if (oFilters.createdBy && oFilters.createdBy.trim()) {
+                aFilteredData = aFilteredData.filter(function(item) {
+                    return item.created_by && item.created_by.includes(oFilters.createdBy);
+                });
+            }
+            
+            if (oFilters.currency && oFilters.currency !== "") {
+                aFilteredData = aFilteredData.filter(function(item) {
+                    return item.currency === oFilters.currency;
+                });
+            }
+            
+            if (oFilters.depositDateFrom) {
+                var oFromDate = new Date(oFilters.depositDateFrom);
+                aFilteredData = aFilteredData.filter(function(item) {
+                    if (!item.deposit_datetime) return false;
+                    var oItemDate = new Date(item.deposit_datetime);
+                    return oItemDate >= oFromDate;
+                });
+            }
+            
+            // Update filtered data
+            oModel.setProperty("/lockboxList", aFilteredData);
+            
+            // Reset pagination
+            oModel.setProperty("/currentPage", 1);
+            this._updatePagination();
+            
+            MessageToast.show("Filters applied - " + aFilteredData.length + " items found");
+        },
+
+        onClearFilters: function () {
+            var oModel = this.getOwnerComponent().getModel("app");
+            
+            // Clear all filter values
+            oModel.setProperty("/filters", {
+                search: "",
+                lockboxId: "",
+                companyCode: "",
+                currency: "",
+                status: "",
+                createdBy: "",
+                depositDateFrom: ""
+            });
+            
+            // Reset to show all data
+            var aAllData = oModel.getProperty("/lockboxListAll") || [];
+            oModel.setProperty("/lockboxList", aAllData.slice());
+            
+            // Reset pagination
+            oModel.setProperty("/currentPage", 1);
+            this._updatePagination();
+            
+            MessageToast.show("All filters cleared");
         },
         
         onAdaptFilters: function () {
