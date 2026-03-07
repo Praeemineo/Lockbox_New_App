@@ -6551,6 +6551,10 @@ sap.ui.define([
                 
                 // Store full list and initialize pagination
                 oModel.setProperty("/lockboxListFull", aLockboxList);
+                // Store original data for filtering
+                oModel.setProperty("/lockboxListAll", aLockboxList.slice());
+                // Set current list (will be filtered)
+                oModel.setProperty("/lockboxList", aLockboxList.slice());
                 that._updatePagination(1); // Show first page
                 
                 // If we have data, auto-select the first item
