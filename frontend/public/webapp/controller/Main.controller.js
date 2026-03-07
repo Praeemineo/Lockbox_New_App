@@ -6536,14 +6536,11 @@ sap.ui.define([
                         status: status,
                         stages: lockboxNode.stages,
                         amount: lockboxNode.amount,
-                        currency: lockboxNode.currency,
+                        currency: lockboxNode.currency || 'USD',
                         type: lockboxNode.type,
                         uploadedAt: run ? run.uploadedAt || run.startedAt : null,
-                        created_by: run ? run.createdBy || 'System' : 'System',
-                        company_code: run && run.extractedData && run.extractedData.length > 0 ? 
-                                     run.extractedData[0]['Company Code'] || 
-                                     run.extractedData[0]['CompanyCode'] || 
-                                     '1710' : '1710'
+                        companyCode: run ? run.company_code : '1710',
+                        createdBy: run ? run.created_by || run.uploadedBy : ''
                     };
                 });
                 
