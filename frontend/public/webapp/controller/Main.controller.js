@@ -4789,10 +4789,13 @@ sap.ui.define([
         _initFilters: function () {
             var oModel = this.getOwnerComponent().getModel("app");
             oModel.setProperty("/filters", {
+                search: "",
                 lockboxId: "",
                 companyCode: "",
                 currency: "",
-                status: ""
+                status: "",
+                createdBy: "",
+                depositDateFrom: ""
             });
             oModel.setProperty("/lockboxIdList", [
                 { key: "", text: "All" }
