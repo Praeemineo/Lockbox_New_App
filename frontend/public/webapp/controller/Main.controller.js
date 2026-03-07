@@ -6551,7 +6551,8 @@ sap.ui.define([
                     return dateB - dateA; // Descending order (newest first)
                 });
                 
-                // Store full list and initialize pagination
+                // Store ORIGINAL data (never modified) and working copy for filtering
+                oModel.setProperty("/lockboxListOriginal", aLockboxList);
                 oModel.setProperty("/lockboxListFull", aLockboxList);
                 // Store original data for filtering
                 oModel.setProperty("/lockboxListAll", aLockboxList.slice());
