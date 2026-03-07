@@ -7562,7 +7562,15 @@ sap.ui.define([
         // Filter logic - Apply all filters
         onFilterGo: function() {
             var oModel = this.getView().getModel("app");
-            var aAllData = oModel.getProperty("/lockboxListFull") || [];
+            
+            // CRITICAL: Always filter from the ORIGINAL full dataset, not previously filtered data
+            var aOriginalData = oModel.getProperty("/lockboxListOriginal") || [];
+            
+            // If no original data, nothing to filter
+            if (!aOriginalData || aOriginalData.length === 0) {
+                console.warn("No original data to filter");
+                return;
+            }
             
             // Get filter values
             var sSearch = this.byId("filterSearch").getValue().toLowerCase();
@@ -7571,10 +7579,15 @@ sap.ui.define([
             var sCompanyCode = this.byId("filterCompanyCode").getSelectedKey();
             var sCreatedBy = this.byId("filterCreatedBy").getValue().toLowerCase();
             var sDepositDateFrom = this.byId("filterDepositDateFrom").getValue();
+            var sDepositDateTo = this.byId("filterDepositDateTo").getValue();
             var sCurrency = this.byId("filterCurrencyNew").getSelectedKey();
             
+            console.log("=== Applying Filters ===");
+            console.log("Original data count:", aOriginalData.length);
+            console.log("Filters:", { sSearch, sStatus, sLockboxId, sCompanyCode, sCreatedBy, sDepositDateFrom, sDepositDateTo, sCurrency });
+            
             // Apply filters
-            var aFilteredData = aAllData.filter(function(item) {
+            var aFilteredData = aOriginalData.filter(function(item) {
                 // Search filter (searches across multiple fields)
                 if (sSearch) {
                     var searchText = (
@@ -7598,9 +7611,12 @@ sap.ui.define([
                     return false;
                 }
                 
-                // Company Code filter
-                if (sCompanyCode && item.companyCode !== sCompanyCode) {
-                    return false;
+                // Company Code filter - filters lockboxes that belong to this company code
+                if (sCompanyCode) {
+                    // Check if item has matching company code
+                    if (item.companyCode !== sCompanyCode) {
+                        return false;
+                    }
                 }
                 
                 // Created By filter
@@ -7608,16 +7624,30 @@ sap.ui.define([
                     return false;
                 }
                 
-                // Deposit Date filter (From date)
-                if (sDepositDateFrom) {
+                // Deposit Date filter (From-To range)
+                if (sDepositDateFrom || sDepositDateTo) {
                     try {
-                        var oFilterDate = new Date(sDepositDateFrom);
                         var oItemDate = new Date(item.deposit_datetime);
-                        if (oItemDate < oFilterDate) {
-                            return false;
+                        
+                        // Check From date
+                        if (sDepositDateFrom) {
+                            var oFilterDateFrom = new Date(sDepositDateFrom);
+                            if (oItemDate < oFilterDateFrom) {
+                                return false;
+                            }
+                        }
+                        
+                        // Check To date
+                        if (sDepositDateTo) {
+                            var oFilterDateTo = new Date(sDepositDateTo);
+                            // Set time to end of day for "To" date
+                            oFilterDateTo.setHours(23, 59, 59, 999);
+                            if (oItemDate > oFilterDateTo) {
+                                return false;
+                            }
                         }
                     } catch (e) {
-                        // Invalid date format, skip filter
+                        console.error("Date filter error:", e);
                     }
                 }
                 
@@ -7629,9 +7659,9 @@ sap.ui.define([
                 return true;
             });
             
-            console.log('Filter applied: ' + aFilteredData.length + ' of ' + aAllData.length + ' items match');
+            console.log('Filter result: ' + aFilteredData.length + ' of ' + aOriginalData.length + ' items match');
             
-            // Update full list with filtered data and refresh pagination
+            // Update the working list with filtered data
             oModel.setProperty("/lockboxListFull", aFilteredData);
             this._updatePagination(1); // Reset to first page
             
@@ -7647,12 +7677,17 @@ sap.ui.define([
             this.byId("filterCompanyCode").setSelectedKey("");
             this.byId("filterCreatedBy").setValue("");
             this.byId("filterDepositDateFrom").setValue("");
+            this.byId("filterDepositDateTo").setValue("");
             this.byId("filterCurrencyNew").setSelectedKey("");
             
-            // Reload original data
-            this._loadRunHistory();
+            var oModel = this.getView().getModel("app");
             
-            sap.m.MessageToast.show("All filters cleared");
+            // Restore original data
+            var aOriginalData = oModel.getProperty("/lockboxListOriginal") || [];
+            oModel.setProperty("/lockboxListFull", aOriginalData);
+            this._updatePagination(1);
+            
+            sap.m.MessageToast.show("All filters cleared - showing all " + aOriginalData.length + " items");
         },
 
         
