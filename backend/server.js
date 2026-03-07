@@ -2627,6 +2627,27 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
         // Add clearing documents to final response
         if (clearingDocuments.length > 0) {
             finalResponse.clearingDocuments = clearingDocuments;
+            
+            // ========================================================
+            // SAVE CLEARING DOCUMENTS TO PROCESSING RUN
+            // So they're available when Transaction Dialog opens
+            // ========================================================
+            try {
+                console.log('=== SAVING CLEARING DOCUMENTS TO RUN ===');
+                // Find the run in lockboxProcessingRuns
+                const runIndex = lockboxProcessingRuns.findIndex(r => r.runId === runId);
+                if (runIndex >= 0) {
+                    lockboxProcessingRuns[runIndex].clearingDocuments = clearingDocuments;
+                    // Save to JSON file
+                    saveRunsToFile();
+                    console.log('✓ Clearing documents saved to run:', runId);
+                } else {
+                    console.warn('⚠ Run not found in lockboxProcessingRuns:', runId);
+                }
+            } catch (saveError) {
+                console.error('❌ Failed to save clearing documents:', saveError.message);
+                // Non-fatal - response still sent
+            }
         }
         
         res.json(finalResponse);
