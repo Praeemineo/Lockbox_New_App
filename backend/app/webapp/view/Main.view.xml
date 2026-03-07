@@ -159,11 +159,19 @@
                             <!-- Filter Row 2 -->
                             <HBox alignItems="End" class="sapUiSmallMarginBottom">
                                 <VBox class="sapUiSmallMarginEnd" width="200px">
-                                    <Label text="Deposit Date:" />
+                                    <Label text="Deposit Date (From):" />
                                     <DatePicker
                                         id="filterDepositDateFrom"
                                         placeholder="From"
                                         value="{app>/filters/depositDateFrom}"
+                                        change="onFilterGo" />
+                                </VBox>
+                                <VBox class="sapUiSmallMarginEnd" width="200px">
+                                    <Label text="Deposit Date (To):" />
+                                    <DatePicker
+                                        id="filterDepositDateTo"
+                                        placeholder="To"
+                                        value="{app>/filters/depositDateTo}"
                                         change="onFilterGo" />
                                 </VBox>
                                 <VBox class="sapUiSmallMarginEnd" width="180px">
