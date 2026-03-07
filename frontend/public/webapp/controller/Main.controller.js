@@ -7656,6 +7656,15 @@ sap.ui.define([
         },
 
         
+        // Helper function - Copy Created By to clipboard
+        onCopyCreatedBy: function() {
+            var sValue = this.byId("filterCreatedBy").getValue();
+            if (sValue) {
+                navigator.clipboard.writeText(sValue);
+                sap.m.MessageToast.show("Created by copied to clipboard");
+            }
+        },
+        
         // Format deposit date to match image (e.g., "Apr 03, 2026")
         formatDepositDate: function(sDate) {
             if (!sDate) return "";
