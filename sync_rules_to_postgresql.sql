@@ -261,7 +261,7 @@ INSERT INTO lb_processing_rules (
     true,
     10,
     'S4HANA_SYSTEM_DESTINATION',
-    '[
+    $$[
         {
             "documentFormat": "Customer Number",
             "condition": "Payment Terms Lookup"
@@ -270,8 +270,8 @@ INSERT INTO lb_processing_rules (
             "documentFormat": "Due Date",
             "condition": "Calculate Due Date"
         }
-    ]'::jsonb,
-    '[
+    ]$$::jsonb,
+    $$[
         {
             "httpMethod": "GET",
             "apiReference": "/sap/opu/odata/sap/API_PAYMENTTERMS/PaymentTerms",
@@ -281,7 +281,7 @@ INSERT INTO lb_processing_rules (
             "outputField": "TermsOfPayment",
             "lockboxApiField": "PaymentTerm"
         }
-    ]'::jsonb,
+    ]$$::jsonb,
     '2026-02-16T12:00:00Z'::timestamp,
     '2026-02-16T12:00:00Z'::timestamp
 )
