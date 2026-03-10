@@ -51,7 +51,7 @@ After deployment, verify the application at:
 ```
 Frontend Service (port 3000) → /app/frontend/public/
 Backend Service (port 8001) → APIs only
-URL: https://lockbox-automation.preview.emergentagent.com
+URL: https://config-workflow.preview.emergentagent.com
 Status: ✅ WORKING
 ```
 
