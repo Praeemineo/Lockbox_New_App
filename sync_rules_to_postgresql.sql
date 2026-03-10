@@ -150,13 +150,13 @@ INSERT INTO lb_processing_rules (
     true,
     10,
     'S4HANA_SYSTEM_DESTINATION',
-    '[
+    $$[
         {
             "documentFormat": "Status",
             "condition": "Simulated"
         }
-    ]'::jsonb,
-    '[
+    ]$$::jsonb,
+    $$[
         {
             "httpMethod": "POST",
             "apiReference": "/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxBatch",
@@ -175,7 +175,7 @@ INSERT INTO lb_processing_rules (
             "outputField": "Accounting document",
             "lockboxApiField": "Subledgerdocument"
         }
-    ]'::jsonb,
+    ]$$::jsonb,
     '2026-02-16T12:00:00Z'::timestamp,
     '2026-03-04T12:03:55.090Z'::timestamp
 )
