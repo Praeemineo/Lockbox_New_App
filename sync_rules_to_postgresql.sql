@@ -208,7 +208,7 @@ INSERT INTO lb_processing_rules (
     true,
     10,
     'S4HANA_SYSTEM_DESTINATION',
-    '[
+    $$[
         {
             "documentFormat": "Invoice Number",
             "condition": "Open Item Check"
@@ -217,8 +217,8 @@ INSERT INTO lb_processing_rules (
             "documentFormat": "Document Amount",
             "condition": "Amount Verification"
         }
-    ]'::jsonb,
-    '[
+    ]$$::jsonb,
+    $$[
         {
             "httpMethod": "GET",
             "apiReference": "/sap/opu/odata4/sap/zsb_acc_bank_stmt/srvd_a2x/sap/zsd_acc_bank_stmt/0001/ZFI_I_ACC_BANK_STMT",
@@ -228,7 +228,7 @@ INSERT INTO lb_processing_rules (
             "outputField": "DocumentNumber,PaymentAdvice,SubledgerDocument,CompanyCode,SubledgerOnaccountDocument",
             "lockboxApiField": "Accounting Document"
         }
-    ]'::jsonb,
+    ]$$::jsonb,
     '2026-02-16T12:00:00Z'::timestamp,
     '2026-03-04T12:05:50.079Z'::timestamp
 )
