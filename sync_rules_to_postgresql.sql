@@ -83,16 +83,16 @@ INSERT INTO lb_processing_rules (
     true,
     10,
     'S4HANA_SYSTEM_DESTINATION',
-    '[
+    $$[
         {
             "documentFormat": "Customer Number",
             "condition": "Exist"
         }
-    ]'::jsonb,
-    '[
+    ]$$::jsonb,
+    $$[
         {
             "httpMethod": "GET",
-            "apiReference": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='''')?$expand=to_BusinessPartnerBank&$format=json",
+            "apiReference": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
             "destination": "S4HANA_SYSTEM_DESTINATION",
             "inputField": "BusinessPartner",
             "sourceInput": "CustomerNumber",
@@ -101,7 +101,7 @@ INSERT INTO lb_processing_rules (
         },
         {
             "httpMethod": "GET",
-            "apiReference": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='''')?$expand=to_BusinessPartnerBank&$format=json",
+            "apiReference": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
             "destination": "S4HANA_SYSTEM_DESTINATION",
             "inputField": "BusinessPartner",
             "sourceInput": "CustomerNumber",
@@ -110,14 +110,14 @@ INSERT INTO lb_processing_rules (
         },
         {
             "httpMethod": "GET",
-            "apiReference": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='''')?$expand=to_BusinessPartnerBank&$format=json",
+            "apiReference": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
             "destination": "S4HANA_SYSTEM_DESTINATION",
             "inputField": "BusinessPartner",
             "sourceInput": "CustomerNumber",
             "outputField": "to_BusinessPartnerBank/results/0/BankCountryKey",
             "lockboxApiField": "PartnerBankCountry"
         }
-    ]'::jsonb,
+    ]$$::jsonb,
     '2026-02-16T12:00:00Z'::timestamp,
     '2026-02-28T13:45:00Z'::timestamp
 )
