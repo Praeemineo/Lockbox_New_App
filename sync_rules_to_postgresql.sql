@@ -25,16 +25,16 @@ INSERT INTO lb_processing_rules (
     true,
     10,
     'S4HANA_SYSTEM_DESTINATION',
-    '[
+    $$[
         {
             "documentFormat": "Invoice number",
             "condition": "Exist"
         }
-    ]'::jsonb,
-    '[
+    ]$$::jsonb,
+    $$[
         {
             "httpMethod": "GET",
-            "apiReference": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT(P_DocumentNumber='''')/Set",
+            "apiReference": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT(P_DocumentNumber='')/Set",
             "destination": "S4HANA_SYSTEM_DESTINATION",
             "inputField": "P_DocumentNumber",
             "sourceInput": "InvoiceNumber",
@@ -43,14 +43,14 @@ INSERT INTO lb_processing_rules (
         },
         {
             "httpMethod": "GET",
-            "apiReference": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT(P_DocumentNumber='''')/Set",
+            "apiReference": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT(P_DocumentNumber='')/Set",
             "destination": "S4HANA_SYSTEM_DESTINATION",
             "inputField": "P_DocumentNumber",
             "sourceInput": "InvoiceNumber",
             "outputField": "CompanyCode",
             "lockboxApiField": "CompanyCode"
         }
-    ]'::jsonb,
+    ]$$::jsonb,
     '2026-02-16T12:00:00Z'::timestamp,
     '2026-02-28T13:30:00Z'::timestamp
 )
