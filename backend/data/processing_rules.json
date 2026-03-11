@@ -49,37 +49,34 @@
     "active": true,
     "conditions": [
       {
-        "documentFormat": "Customer Number",
-        "condition": "Exist"
+        "attribute": "Customer Number",
+        "operator": "contains",
+        "value": "Source Value"
       }
     ],
     "apiMappings": [
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
+        "sourceType": "OData V2",
         "destination": "S4HANA_SYSTEM_DESTINATION",
-        "inputField": "BusinessPartner",
-        "sourceInput": "CustomerNumber",
-        "outputField": "to_BusinessPartnerBank/results/0/BankNumber",
-        "lockboxApiField": "PartnerBank"
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json"
+      }
+    ],
+    "fieldMappings": [
+      {
+        "sourceField": "Customer Number",
+        "targetField": "BankNumber",
+        "apiField": "PartnerBank"
       },
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
-        "destination": "S4HANA_SYSTEM_DESTINATION",
-        "inputField": "BusinessPartner",
-        "sourceInput": "CustomerNumber",
-        "outputField": "to_BusinessPartnerBank/results/0/BankAccount",
-        "lockboxApiField": "PartnerBankAccount"
+        "sourceField": "Customer Number",
+        "targetField": "BankAccount",
+        "apiField": "PartnerBankAccount"
       },
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json",
-        "destination": "S4HANA_SYSTEM_DESTINATION",
-        "inputField": "BusinessPartner",
-        "sourceInput": "CustomerNumber",
-        "outputField": "to_BusinessPartnerBank/results/0/BankCountryKey",
-        "lockboxApiField": "PartnerBankCountry"
+        "sourceField": "Customer Number",
+        "targetField": "BankCountryKey",
+        "apiField": "PartnerBankCountry"
       }
     ],
     "createdAt": "2026-02-16T12:00:00Z",
