@@ -10154,15 +10154,19 @@ sap.ui.define([
             var aConditions = oDialogModel.getProperty("/rule/conditions") || [];
             
             aConditions.push({
-                httpMethod: "GET",
-                apiReference: "",
-                inputField: "",
-                sourceInput: "",
-                outputField: "",
-                lockboxApiField: ""
+                attribute: "",
+                operator: "contains",
+                value: ""
             });
             
             oDialogModel.setProperty("/rule/conditions", aConditions);
+        },
+        
+        // Edit rule condition
+        onEditRuleCondition: function (oEvent) {
+            // For inline editing, no additional action needed
+            // The data binding will handle the updates
+            MessageToast.show("Edit the condition inline");
         },
         
         // Delete rule condition
@@ -10185,16 +10189,19 @@ sap.ui.define([
             var aMappings = oDialogModel.getProperty("/rule/apiMappings") || [];
             
             aMappings.push({
+                sourceType: "OData V4",
+                destination: "S4HANA_SYSTEM_DESTINATION",
                 httpMethod: "GET",
-                apiReference: "",
-                destination: "",
-                inputField: "",
-                sourceInput: "",
-                outputField: "",
-                lockboxApiField: ""
+                apiReference: ""
             });
             
             oDialogModel.setProperty("/rule/apiMappings", aMappings);
+        },
+        
+        // Edit API mapping
+        onEditApiMapping: function (oEvent) {
+            // For inline editing, no additional action needed
+            MessageToast.show("Edit the API mapping inline");
         },
         
         // Delete API mapping
@@ -10209,6 +10216,40 @@ sap.ui.define([
             
             aMappings.splice(iIndex, 1);
             oDialogModel.setProperty("/rule/apiMappings", aMappings);
+        },
+        
+        // Add field mapping
+        onAddFieldMapping: function () {
+            var oDialogModel = this.getView().getModel("processingRuleDialog");
+            var aFieldMappings = oDialogModel.getProperty("/rule/fieldMappings") || [];
+            
+            aFieldMappings.push({
+                sourceField: "",
+                targetField: "",
+                apiField: ""
+            });
+            
+            oDialogModel.setProperty("/rule/fieldMappings", aFieldMappings);
+        },
+        
+        // Edit field mapping
+        onEditFieldMapping: function (oEvent) {
+            // For inline editing, no additional action needed
+            MessageToast.show("Edit the field mapping inline");
+        },
+        
+        // Delete field mapping
+        onDeleteFieldMapping: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("processingRuleDialog");
+            var sPath = oContext.getPath();
+            var iIndex = parseInt(sPath.split("/").pop());
+            
+            var oDialogModel = this.getView().getModel("processingRuleDialog");
+            var aFieldMappings = oDialogModel.getProperty("/rule/fieldMappings");
+            
+            aFieldMappings.splice(iIndex, 1);
+            oDialogModel.setProperty("/rule/fieldMappings", aFieldMappings);
         },
         
         // Processing rule tab select

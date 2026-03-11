@@ -67,7 +67,7 @@
                     <IconTabFilter key="conditions" text="Conditions" count="{= ${processingRuleDialog>/rule/conditions} ? ${processingRuleDialog>/rule/conditions}.length : 0}" icon="sap-icon://filter">
                         <VBox class="sapUiSmallMargin">
                             <Toolbar>
-                                <Title text="Pattern Conditions" level="H4" />
+                                <Title text="Conditions" level="H4" />
                                 <ToolbarSpacer />
                                 <Button text="Add Condition" icon="sap-icon://add" type="Emphasized" press="onAddRuleCondition" />
                             </Toolbar>
@@ -77,24 +77,29 @@
                                 items="{processingRuleDialog>/rule/conditions}"
                                 class="sapUiSizeCompact"
                                 mode="None">
-                                <headerToolbar>
-                                    <Toolbar style="Clear">
-                                        <Text text="Document/Date format" class="sapUiSmallMarginBegin" />
-                                        <ToolbarSpacer />
-                                        <Text text="Condition" class="sapUiSmallMarginEnd" />
-                                        <ToolbarSpacer />
-                                    </Toolbar>
-                                </headerToolbar>
                                 <columns>
-                                    <Column width="45%"><Text text="" /></Column>
-                                    <Column width="50%"><Text text="" /></Column>
+                                    <Column width="30%"><Text text="Attribute" /></Column>
+                                    <Column width="25%"><Text text="Operator" /></Column>
+                                    <Column width="35%"><Text text="Value" /></Column>
+                                    <Column width="5%" hAlign="Center"><Text text="" /></Column>
                                     <Column width="5%" hAlign="Center"><Text text="" /></Column>
                                 </columns>
                                 <items>
                                     <ColumnListItem>
                                         <cells>
-                                            <Input value="{processingRuleDialog>documentFormat}" placeholder="e.g., Check, Check Amount" />
-                                            <Input value="{processingRuleDialog>condition}" placeholder="e.g., Single Check, Amount per Check" />
+                                            <Input value="{processingRuleDialog>attribute}" placeholder="e.g., Invoice Number" />
+                                            <Select selectedKey="{processingRuleDialog>operator}">
+                                                <core:Item key="contains" text="Contains" />
+                                                <core:Item key="startsWith" text="Starts with" />
+                                                <core:Item key="endsWith" text="Ends with" />
+                                                <core:Item key="greaterThan" text="Greater than" />
+                                                <core:Item key="lessThan" text="Less than" />
+                                                <core:Item key="matches" text="Matches" />
+                                                <core:Item key="isEmpty" text="Is Empty" />
+                                                <core:Item key="equals" text="Equals" />
+                                            </Select>
+                                            <Input value="{processingRuleDialog>value}" placeholder="e.g., Source Value" />
+                                            <Button icon="sap-icon://edit" type="Transparent" press="onEditRuleCondition" tooltip="Edit" />
                                             <Button icon="sap-icon://delete" type="Reject" press="onDeleteRuleCondition" tooltip="Delete" />
                                         </cells>
                                     </ColumnListItem>
@@ -106,9 +111,9 @@
                     <IconTabFilter key="apiMappings" text="API Mappings" count="{= ${processingRuleDialog>/rule/apiMappings} ? ${processingRuleDialog>/rule/apiMappings}.length : 0}" icon="sap-icon://source-code">
                         <VBox class="sapUiSmallMargin">
                             <Toolbar>
-                                <Title text="API Field Mappings" level="H5" />
+                                <Title text="API Mappings" level="H5" />
                                 <ToolbarSpacer />
-                                <Button text="Add Mapping" icon="sap-icon://add" press="onAddApiMapping" />
+                                <Button text="Add Mapping" icon="sap-icon://add" type="Emphasized" press="onAddApiMapping" />
                             </Toolbar>
                             
                             <Table
@@ -116,29 +121,66 @@
                                 items="{processingRuleDialog>/rule/apiMappings}"
                                 class="sapUiSizeCompact">
                                 <columns>
-                                    <Column width="15%"><Text text="HTTP Method" /></Column>
-                                    <Column width="20%"><Text text="API Reference" /></Column>
-                                    <Column width="20%"><Text text="Input Field" /></Column>
-                                    <Column width="15%"><Text text="Source/Input" /></Column>
-                                    <Column width="15%"><Text text="Output Field" /></Column>
-                                    <Column width="10%"><Text text="Lockbox API Field" /></Column>
+                                    <Column width="15%"><Text text="Source Type" /></Column>
+                                    <Column width="25%"><Text text="Destination" /></Column>
+                                    <Column width="10%"><Text text="Method" /></Column>
+                                    <Column width="40%"><Text text="Service URL" /></Column>
+                                    <Column width="5%" hAlign="Center"><Text text="" /></Column>
                                     <Column width="5%" hAlign="Center"><Text text="" /></Column>
                                 </columns>
                                 <items>
                                     <ColumnListItem>
                                         <cells>
+                                            <Select selectedKey="{processingRuleDialog>sourceType}">
+                                                <core:Item key="OData V2" text="OData V2" />
+                                                <core:Item key="OData V4" text="OData V4" />
+                                                <core:Item key="REST" text="REST API" />
+                                                <core:Item key="SOAP" text="SOAP" />
+                                            </Select>
+                                            <Input value="{processingRuleDialog>destination}" placeholder="e.g., S4HANA_SYSTEM_DESTINATION" />
                                             <Select selectedKey="{processingRuleDialog>httpMethod}">
                                                 <core:Item key="GET" text="GET" />
                                                 <core:Item key="POST" text="POST" />
                                                 <core:Item key="PUT" text="PUT" />
                                                 <core:Item key="DELETE" text="DELETE" />
                                             </Select>
-                                            <Input value="{processingRuleDialog>apiReference}" />
-                                            <Input value="{processingRuleDialog>inputField}" />
-                                            <Input value="{processingRuleDialog>sourceInput}" />
-                                            <Input value="{processingRuleDialog>outputField}" />
-                                            <Input value="{processingRuleDialog>lockboxApiField}" />
+                                            <Input value="{processingRuleDialog>apiReference}" placeholder="Service URL" />
+                                            <Button icon="sap-icon://edit" type="Transparent" press="onEditApiMapping" tooltip="Edit" />
                                             <Button icon="sap-icon://delete" type="Reject" press="onDeleteApiMapping" tooltip="Delete" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </IconTabFilter>
+                    
+                    <IconTabFilter key="fieldMappings" text="Field Mapping" count="{= ${processingRuleDialog>/rule/fieldMappings} ? ${processingRuleDialog>/rule/fieldMappings}.length : 0}" icon="sap-icon://map">
+                        <VBox class="sapUiSmallMargin">
+                            <Toolbar>
+                                <Title text="Field Mappings" level="H5" />
+                                <ToolbarSpacer />
+                                <Button text="Add Mapping" icon="sap-icon://add" type="Emphasized" press="onAddFieldMapping" />
+                            </Toolbar>
+                            
+                            <Table
+                                id="fieldMappingsTable"
+                                items="{processingRuleDialog>/rule/fieldMappings}"
+                                class="sapUiSizeCompact">
+                                <columns>
+                                    <Column width="30%"><Text text="Source Field" /></Column>
+                                    <Column width="30%"><Text text="Target Field (Output)" /></Column>
+                                    <Column width="30%"><Text text="API Field" /></Column>
+                                    <Column width="5%" hAlign="Center"><Text text="" /></Column>
+                                    <Column width="5%" hAlign="Center"><Text text="" /></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Input value="{processingRuleDialog>sourceField}" placeholder="e.g., Invoice Number" />
+                                            <Input value="{processingRuleDialog>targetField}" placeholder="e.g., AccountingDocument" />
+                                            <Input value="{processingRuleDialog>apiField}" placeholder="e.g., PaymentReference" />
+                                            <Button icon="sap-icon://edit" type="Transparent" press="onEditFieldMapping" tooltip="Edit" />
+                                            <Button icon="sap-icon://delete" type="Reject" press="onDeleteFieldMapping" tooltip="Delete" />
                                         </cells>
                                     </ColumnListItem>
                                 </items>
