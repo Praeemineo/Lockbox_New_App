@@ -10,28 +10,29 @@
     "active": true,
     "conditions": [
       {
-        "documentFormat": "Invoice number",
-        "condition": "Exist"
+        "attribute": "Invoice Number",
+        "operator": "contains",
+        "value": "Source Value"
       }
     ],
     "apiMappings": [
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT(P_DocumentNumber='')/Set",
+        "sourceType": "OData V4",
         "destination": "S4HANA_SYSTEM_DESTINATION",
-        "inputField": "P_DocumentNumber",
-        "sourceInput": "InvoiceNumber",
-        "outputField": "AccountingDocument",
-        "lockboxApiField": "Paymentreference"
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT(P_DocumentNumber='')/Set"
+      }
+    ],
+    "fieldMappings": [
+      {
+        "sourceField": "Invoice Number",
+        "targetField": "AccountingDocument",
+        "apiField": "PaymentReference"
       },
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT(P_DocumentNumber='')/Set",
-        "destination": "S4HANA_SYSTEM_DESTINATION",
-        "inputField": "P_DocumentNumber",
-        "sourceInput": "InvoiceNumber",
-        "outputField": "CompanyCode",
-        "lockboxApiField": "CompanyCode"
+        "sourceField": "Invoice Number",
+        "targetField": "CompanyCode",
+        "apiField": "CompanyCode"
       }
     ],
     "createdAt": "2026-02-16T12:00:00Z",
