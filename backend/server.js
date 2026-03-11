@@ -3424,6 +3424,7 @@ async function loadProcessingRulesFromDb() {
                 destination: row.destination,
                 conditions: row.conditions || [],
                 apiMappings: row.api_mappings || [],
+                fieldMappings: row.field_mappings || [],
                 createdAt: row.created_at,
                 updatedAt: row.updated_at
             }));
