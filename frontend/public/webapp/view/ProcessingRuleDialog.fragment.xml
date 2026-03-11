@@ -69,7 +69,6 @@
                             <Toolbar>
                                 <Title text="Conditions" level="H4" />
                                 <ToolbarSpacer />
-                                <Button text="Add Column" icon="sap-icon://add-column" type="Transparent" press="onAddConditionsColumn" />
                                 <Button text="Add Condition" icon="sap-icon://add" type="Emphasized" press="onAddRuleCondition" />
                             </Toolbar>
                             
@@ -78,24 +77,29 @@
                                 items="{processingRuleDialog>/rule/conditions}"
                                 class="sapUiSizeCompact"
                                 mode="None">
-                                <headerToolbar>
-                                    <Toolbar style="Clear">
-                                        <Text text="Document/Date format" class="sapUiSmallMarginBegin" />
-                                        <ToolbarSpacer />
-                                        <Text text="Condition" class="sapUiSmallMarginEnd" />
-                                        <ToolbarSpacer />
-                                    </Toolbar>
-                                </headerToolbar>
                                 <columns>
-                                    <Column width="45%"><Text text="" /></Column>
-                                    <Column width="50%"><Text text="" /></Column>
+                                    <Column width="30%"><Text text="Attribute" /></Column>
+                                    <Column width="25%"><Text text="Operator" /></Column>
+                                    <Column width="35%"><Text text="Value" /></Column>
+                                    <Column width="5%" hAlign="Center"><Text text="" /></Column>
                                     <Column width="5%" hAlign="Center"><Text text="" /></Column>
                                 </columns>
                                 <items>
                                     <ColumnListItem>
                                         <cells>
-                                            <Input value="{processingRuleDialog>documentFormat}" placeholder="e.g., Check, Check Amount" />
-                                            <Input value="{processingRuleDialog>condition}" placeholder="e.g., Single Check, Amount per Check" />
+                                            <Input value="{processingRuleDialog>attribute}" placeholder="e.g., Invoice Number" />
+                                            <Select selectedKey="{processingRuleDialog>operator}">
+                                                <core:Item key="contains" text="Contains" />
+                                                <core:Item key="startsWith" text="Starts with" />
+                                                <core:Item key="endsWith" text="Ends with" />
+                                                <core:Item key="greaterThan" text="Greater than" />
+                                                <core:Item key="lessThan" text="Less than" />
+                                                <core:Item key="matches" text="Matches" />
+                                                <core:Item key="isEmpty" text="Is Empty" />
+                                                <core:Item key="equals" text="Equals" />
+                                            </Select>
+                                            <Input value="{processingRuleDialog>value}" placeholder="e.g., Source Value" />
+                                            <Button icon="sap-icon://edit" type="Transparent" press="onEditRuleCondition" tooltip="Edit" />
                                             <Button icon="sap-icon://delete" type="Reject" press="onDeleteRuleCondition" tooltip="Delete" />
                                         </cells>
                                     </ColumnListItem>
