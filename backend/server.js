@@ -3356,8 +3356,8 @@ async function saveProcessingRuleToDb(rule) {
         const query = `
             INSERT INTO lb_processing_rules 
             (id, rule_id, rule_name, description, file_type, rule_type, active, priority, 
-             destination, conditions, api_mappings, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP)
+             destination, conditions, api_mappings, field_mappings, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, CURRENT_TIMESTAMP)
             ON CONFLICT (rule_id) DO UPDATE SET
                 rule_name = EXCLUDED.rule_name,
                 description = EXCLUDED.description,
@@ -3368,6 +3368,7 @@ async function saveProcessingRuleToDb(rule) {
                 destination = EXCLUDED.destination,
                 conditions = EXCLUDED.conditions,
                 api_mappings = EXCLUDED.api_mappings,
+                field_mappings = EXCLUDED.field_mappings,
                 updated_at = CURRENT_TIMESTAMP
         `;
         
@@ -3382,7 +3383,8 @@ async function saveProcessingRuleToDb(rule) {
             rule.priority || 10,
             rule.destination || '',
             JSON.stringify(rule.conditions || []),
-            JSON.stringify(rule.apiMappings || rule.api_mappings || [])
+            JSON.stringify(rule.apiMappings || rule.api_mappings || []),
+            JSON.stringify(rule.fieldMappings || rule.field_mappings || [])
         ]);
         
         console.log('✅ Processing rule saved to LB_Processing_Rules table:', rule.ruleId);
