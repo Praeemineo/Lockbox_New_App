@@ -1,0 +1,30 @@
+DROP TABLE IF EXISTS lb_processing_rules CASCADE;
+
+CREATE TABLE lb_processing_rules (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    rule_id VARCHAR(30) NOT NULL UNIQUE,
+    rule_name VARCHAR(200) NOT NULL,
+    description TEXT,
+    file_type VARCHAR(50) NOT NULL,
+    rule_type VARCHAR(50) NOT NULL,
+    active BOOLEAN DEFAULT true,
+    priority INTEGER DEFAULT 10,
+    destination VARCHAR(100),
+    conditions JSONB,
+    api_mappings JSONB,
+    field_mappings JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO lb_processing_rules (id, rule_id, rule_name, description, file_type, rule_type, active, priority, destination, conditions, api_mappings, field_mappings, created_at, updated_at) VALUES (gen_random_uuid(), 'RULE-001', 'Accounting Document Lookup', 'Fetch accounting document details from SAP using invoice number', 'EXCEL', 'API_LOOKUP', true, 10, 'S4HANA_SYSTEM_DESTINATION', $$[{"attribute": "Invoice Number","operator": "contains","value": "Source Value"}]$$::jsonb, $$[{"sourceType": "OData V4","destination": "S4HANA_SYSTEM_DESTINATION","httpMethod": "GET","apiReference": "/sap/opu/odata4/sap/zsb_acc_document/srvd_a2x/sap/zsd_acc_document/0001/ZFI_I_ACC_DOCUMENT(P_DocumentNumber='')/Set"}]$$::jsonb, $$[{"sourceField": "Invoice Number","targetField": "AccountingDocument","apiField": "PaymentReference"},{"sourceField": "Invoice Number","targetField": "CompanyCode","apiField": "CompanyCode"}]$$::jsonb, '2026-02-16T12:00:00Z'::timestamp, '2026-02-28T13:30:00Z'::timestamp);
+
+INSERT INTO lb_processing_rules (id, rule_id, rule_name, description, file_type, rule_type, active, priority, destination, conditions, api_mappings, field_mappings, created_at, updated_at) VALUES (gen_random_uuid(), 'RULE-002', 'Partner Bank Details', 'Retrieve bank account details for partner validation', 'EXCEL', 'BANK_VALIDATION', true, 10, 'S4HANA_SYSTEM_DESTINATION', $$[{"attribute": "Customer Number","operator": "contains","value": "Source Value"}]$$::jsonb, $$[{"sourceType": "OData V2","destination": "S4HANA_SYSTEM_DESTINATION","httpMethod": "GET","apiReference": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank&$format=json"}]$$::jsonb, $$[{"sourceField": "Customer Number","targetField": "BankNumber","apiField": "PartnerBank"},{"sourceField": "Customer Number","targetField": "BankAccount","apiField": "PartnerBankAccount"},{"sourceField": "Customer Number","targetField": "BankCountryKey","apiField": "PartnerBankCountry"}]$$::jsonb, '2026-02-16T12:00:00Z'::timestamp, '2026-02-28T13:45:00Z'::timestamp);
+
+INSERT INTO lb_processing_rules (id, rule_id, rule_name, description, file_type, rule_type, active, priority, destination, conditions, api_mappings, field_mappings, created_at, updated_at) VALUES (gen_random_uuid(), 'RULE-003', 'SAP Production Run', 'Fetch Payload do production run and post accounting document', 'EXCEL', 'Production_Run', true, 10, 'S4HANA_SYSTEM_DESTINATION', $$[{"attribute": "Status","operator": "equals","value": "Simulated"}]$$::jsonb, $$[{"sourceType": "OData V2","destination": "S4HANA_SYSTEM_DESTINATION","httpMethod": "POST","apiReference": "/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxBatch"},{"sourceType": "OData V2","destination": "S4HANA_SYSTEM_DESTINATION","httpMethod": "GET","apiReference": "/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxClearing"}]$$::jsonb, $$[{"sourceField": "Payment Advice","targetField": "Accounting Document","apiField": "SubledgerDocument"}]$$::jsonb, '2026-02-16T12:00:00Z'::timestamp, '2026-03-04T12:03:55.090Z'::timestamp);
+
+INSERT INTO lb_processing_rules (id, rule_id, rule_name, description, file_type, rule_type, active, priority, destination, conditions, api_mappings, field_mappings, created_at, updated_at) VALUES (gen_random_uuid(), 'RULE-004', 'Get Accounting Document', 'Retrieve Accounting document', 'EXCEL', 'Accounting_Document', true, 10, 'S4HANA_SYSTEM_DESTINATION', $$[{"attribute": "Invoice Number","operator": "contains","value": "Open Item Check"},{"attribute": "Document Amount","operator": "greaterThan","value": "0"}]$$::jsonb, $$[{"sourceType": "OData V4","destination": "S4HANA_SYSTEM_DESTINATION","httpMethod": "GET","apiReference": "/sap/opu/odata4/sap/zsb_acc_bank_stmt/srvd_a2x/sap/zsd_acc_bank_stmt/0001/ZFI_I_ACC_BANK_STMT"}]$$::jsonb, $$[{"sourceField": "LockBox ID","targetField": "DocumentNumber","apiField": "AccountingDocument"},{"sourceField": "LockBox ID","targetField": "PaymentAdvice","apiField": "PaymentAdvice"},{"sourceField": "LockBox ID","targetField": "SubledgerDocument","apiField": "SubledgerDocument"}]$$::jsonb, '2026-02-16T12:00:00Z'::timestamp, '2026-03-04T12:05:50.079Z'::timestamp);
+
+INSERT INTO lb_processing_rules (id, rule_id, rule_name, description, file_type, rule_type, active, priority, destination, conditions, api_mappings, field_mappings, created_at, updated_at) VALUES (gen_random_uuid(), 'RULE-005', 'Payment Terms Lookup', 'Retrieve payment terms for invoice processing', 'EXCEL', 'ENRICHMENT', true, 10, 'S4HANA_SYSTEM_DESTINATION', $$[{"attribute": "Customer Number","operator": "contains","value": "Payment Terms Lookup"},{"attribute": "Due Date","operator": "isEmpty","value": ""}]$$::jsonb, $$[{"sourceType": "OData V2","destination": "S4HANA_SYSTEM_DESTINATION","httpMethod": "GET","apiReference": "/sap/opu/odata/sap/API_PAYMENTTERMS/PaymentTerms"}]$$::jsonb, $$[{"sourceField": "Customer ID","targetField": "TermsOfPayment","apiField": "PaymentTerm"}]$$::jsonb, '2026-02-16T12:00:00Z'::timestamp, '2026-02-16T12:00:00Z'::timestamp);
+
+SELECT rule_id, rule_name, rule_type, active, jsonb_array_length(api_mappings) as api_mapping_count, jsonb_array_length(conditions) as condition_count, jsonb_array_length(field_mappings) as field_mapping_count, updated_at FROM lb_processing_rules ORDER BY rule_id;
