@@ -93,28 +93,30 @@
     "active": true,
     "conditions": [
       {
-        "documentFormat": "Status",
-        "condition": "Simulated"
+        "attribute": "Status",
+        "operator": "equals",
+        "value": "Simulated"
       }
     ],
     "apiMappings": [
       {
-        "httpMethod": "POST",
-        "apiReference": "/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxBatch",
+        "sourceType": "OData V2",
         "destination": "S4HANA_SYSTEM_DESTINATION",
-        "inputField": "SAP Payload",
-        "sourceInput": "SAP Payload",
-        "outputField": "",
-        "lockboxApiField": ""
+        "httpMethod": "POST",
+        "apiReference": "/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxBatch"
       },
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxClearing",
+        "sourceType": "OData V2",
         "destination": "S4HANA_SYSTEM_DESTINATION",
-        "inputField": "Lockbox Batch",
-        "sourceInput": "Payment Advice",
-        "outputField": "Accounting document",
-        "lockboxApiField": "Subledgerdocument"
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxClearing"
+      }
+    ],
+    "fieldMappings": [
+      {
+        "sourceField": "Payment Advice",
+        "targetField": "Accounting Document",
+        "apiField": "SubledgerDocument"
       }
     ],
     "createdAt": "2026-02-16T12:00:00Z",
@@ -131,23 +133,39 @@
     "active": true,
     "conditions": [
       {
-        "documentFormat": "Invoice Number",
-        "condition": "Open Item Check"
+        "attribute": "Invoice Number",
+        "operator": "contains",
+        "value": "Open Item Check"
       },
       {
-        "documentFormat": "Document Amount",
-        "condition": "Amount Verification"
+        "attribute": "Document Amount",
+        "operator": "greaterThan",
+        "value": "0"
       }
     ],
     "apiMappings": [
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata4/sap/zsb_acc_bank_stmt/srvd_a2x/sap/zsd_acc_bank_stmt/0001/ZFI_I_ACC_BANK_STMT",
+        "sourceType": "OData V4",
         "destination": "S4HANA_SYSTEM_DESTINATION",
-        "inputField": "LockBoxId",
-        "sourceInput": "InvoiceReference",
-        "outputField": "DocumentNumber,PaymentAdvice,SubledgerDocument,CompanyCode,SubledgerOnaccountDocument",
-        "lockboxApiField": "Accounting Document"
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata4/sap/zsb_acc_bank_stmt/srvd_a2x/sap/zsd_acc_bank_stmt/0001/ZFI_I_ACC_BANK_STMT"
+      }
+    ],
+    "fieldMappings": [
+      {
+        "sourceField": "LockBox ID",
+        "targetField": "DocumentNumber",
+        "apiField": "AccountingDocument"
+      },
+      {
+        "sourceField": "LockBox ID",
+        "targetField": "PaymentAdvice",
+        "apiField": "PaymentAdvice"
+      },
+      {
+        "sourceField": "LockBox ID",
+        "targetField": "SubledgerDocument",
+        "apiField": "SubledgerDocument"
       }
     ],
     "createdAt": "2026-02-16T12:00:00Z",
@@ -164,23 +182,29 @@
     "active": true,
     "conditions": [
       {
-        "documentFormat": "Customer Number",
-        "condition": "Payment Terms Lookup"
+        "attribute": "Customer Number",
+        "operator": "contains",
+        "value": "Payment Terms Lookup"
       },
       {
-        "documentFormat": "Due Date",
-        "condition": "Calculate Due Date"
+        "attribute": "Due Date",
+        "operator": "isEmpty",
+        "value": ""
       }
     ],
     "apiMappings": [
       {
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_PAYMENTTERMS/PaymentTerms",
+        "sourceType": "OData V2",
         "destination": "S4HANA_SYSTEM_DESTINATION",
-        "inputField": "Customer",
-        "sourceInput": "CustomerID",
-        "outputField": "TermsOfPayment",
-        "lockboxApiField": "PaymentTerm"
+        "httpMethod": "GET",
+        "apiReference": "/sap/opu/odata/sap/API_PAYMENTTERMS/PaymentTerms"
+      }
+    ],
+    "fieldMappings": [
+      {
+        "sourceField": "Customer ID",
+        "targetField": "TermsOfPayment",
+        "apiField": "PaymentTerm"
       }
     ],
     "createdAt": "2026-02-16T12:00:00Z",
