@@ -390,6 +390,7 @@ async function initTables() {
                 destination VARCHAR(100),
                 conditions JSONB,
                 api_mappings JSONB,
+                field_mappings JSONB,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
