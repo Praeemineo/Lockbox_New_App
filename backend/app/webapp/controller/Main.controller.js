@@ -9790,20 +9790,6 @@ sap.ui.define([
         },
         
         // Load OData Services from backend
-        _loadOdataServices: function () {
-            var that = this;
-            var oModel = this.getOwnerComponent().getModel("app");
-            
-            fetch(API_BASE + "/field-mapping/odata-services")
-                .then(function (response) { return response.json(); })
-                .then(function (data) {
-                    oModel.setProperty("/odataServices", data);
-                    oModel.setProperty("/ruleCounts/apiOdataServices", data.length);
-                })
-                .catch(function (error) {
-                    console.error("Error loading OData services:", error);
-                });
-        },
         
         // Load Field Mapping Rules from backend
         _loadFieldMappingRules: function () {
