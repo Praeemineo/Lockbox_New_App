@@ -32,7 +32,6 @@ modules:
       - name: lockbox-destination
       - name: lockbox-xsuaa
       - name: lockbox-connectivity
-      - name: lockbox-postgres-db
     provides:
       - name: lockbox-srv-api
         properties:
@@ -100,9 +99,3 @@ resources:
             description: Lockbox User
             role-template-references:
               - $XSAPPNAME.User
-
-  # PostgreSQL Database Service (Existing Service)
-  - name: lockbox-postgres-db
-    type: org.cloudfoundry.existing-service
-    parameters:
-      service-name: Postgresql
