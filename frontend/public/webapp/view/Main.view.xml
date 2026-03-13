@@ -463,7 +463,6 @@
                         <IconTabFilter key="filePatterns" text="File Patterns" count="{app>/ruleCounts/filePatterns}" icon="sap-icon://document-text" />
                         <IconTabFilter key="rules" text="Rules" count="{app>/ruleCounts/rules}" icon="sap-icon://decision" />
                         <IconTabFilter key="apiFieldLogic" text="API Field &amp; Logic" count="{app>/ruleCounts/apiFieldLogic}" icon="sap-icon://action-settings" />
-                        <IconTabFilter key="apiOdataServices" text="API/OData/Services" count="{app>/ruleCounts/apiOdataServices}" icon="sap-icon://cloud" />
                     </items>
                 </IconTabBar>
                 
