@@ -100,9 +100,3 @@ resources:
             description: Lockbox User
             role-template-references:
               - $XSAPPNAME.User
-
-  # PostgreSQL Database Service (Using Existing Instance)
-  - name: lockbox-postgres-db
-    type: org.cloudfoundry.existing-service
-    parameters:
-      service-name: <YOUR_EXISTING_SERVICE_NAME>
