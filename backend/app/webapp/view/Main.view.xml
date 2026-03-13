@@ -463,7 +463,6 @@
                         <IconTabFilter key="filePatterns" text="File Patterns" count="{app>/ruleCounts/filePatterns}" icon="sap-icon://document-text" />
                         <IconTabFilter key="rules" text="Rules" count="{app>/ruleCounts/rules}" icon="sap-icon://decision" />
                         <IconTabFilter key="apiFieldLogic" text="API Field &amp; Logic" count="{app>/ruleCounts/apiFieldLogic}" icon="sap-icon://action-settings" />
-                        <IconTabFilter key="apiOdataServices" text="API/OData/Services" count="{app>/ruleCounts/apiOdataServices}" icon="sap-icon://cloud" />
                     </items>
                 </IconTabBar>
                 
@@ -745,128 +744,6 @@
                         </beginButton>
                         <endButton>
                             <Button text="Cancel" press="onCloseApiFieldDialog" />
-                        </endButton>
-                    </Dialog>
-                </VBox>
-                
-                <!-- API/OData/Services Tab Content - With Edit & PostgreSQL Persistence -->
-                <VBox visible="{= ${app>/selectedRuleTab} === 'apiOdataServices'}" class="sapUiSmallMarginBottom">
-                    <Panel expandable="false">
-                        <headerToolbar>
-                            <OverflowToolbar>
-                                <Title text="S4HANA / ECC / ERP Cloud Services ({= ${app>/odataServices}.length})" />
-                                <ToolbarSpacer />
-                                <SearchField placeholder="Search services..." liveChange="onServiceSearch" width="250px" />
-                                <Button text="Add Service" icon="sap-icon://add" type="Emphasized" press="onOpenAddOdataServiceDialog" />
-                                <Button text="Edit" icon="sap-icon://edit" press="onEditOdataService" enabled="{= !!${app>/selectedOdataService}}" />
-                                <Button text="Delete" icon="sap-icon://delete" type="Reject" press="onDeleteOdataService" enabled="{= !!${app>/selectedOdataService}}" />
-                                <Button icon="sap-icon://refresh" press="onRefreshServices" tooltip="Refresh" />
-                            </OverflowToolbar>
-                        </headerToolbar>
-                        <content>
-                            <ScrollContainer horizontal="true" vertical="false" height="auto" width="100%">
-                                <Table
-                                    id="odataServicesTable"
-                                    items="{app>/odataServices}"
-                                    mode="SingleSelectMaster"
-                                    selectionChange="onOdataServiceSelectionChange"
-                                    fixedLayout="false">
-                                    <columns>
-                                        <Column width="120px"><Text text="System" /></Column>
-                                        <Column width="80px"><Text text="Version" /></Column>
-                                        <Column width="180px"><Text text="Technical Service Name" /></Column>
-                                        <Column width="130px"><Text text="Description" /></Column>
-                                        <Column width="160px"><Text text="Service Operations" /></Column>
-                                        <Column width="350px"><Text text="HTTPS API / OData URL" /></Column>
-                                        <Column width="120px"><Text text="Auth Type" /></Column>
-                                        <Column width="160px"><Text text="Destination" /></Column>
-                                        <Column width="80px" hAlign="Center"><Text text="Active" /></Column>
-                                        <Column width="60px" hAlign="Center"><Text text="" /></Column>
-                                    </columns>
-                                    <items>
-                                        <ColumnListItem type="Active" press="onEditOdataService">
-                                            <cells>
-                                                <Text text="{app>system}" />
-                                                <ObjectStatus text="{app>productVersion}" state="{path: 'app>productVersion', formatter: '.formatVersionState'}" />
-                                                <Text text="{app>technicalServiceName}" wrapping="false" />
-                                                <Text text="{app>serviceDescription}" wrapping="true" />
-                                                <Text text="{app>serviceOperations}" wrapping="false" />
-                                                <Link text="{app>httpsApiOdata}" href="{app>httpsApiOdata}" target="_blank" wrapping="false" />
-                                                <ObjectStatus text="{app>authType}" state="{path: 'app>authType', formatter: '.formatAuthTypeState'}" />
-                                                <Text text="{app>destination}" wrapping="false" />
-                                                <Switch state="{app>active}" change="onServiceActiveToggle" customTextOn="Yes" customTextOff="No" />
-                                                <core:Icon src="sap-icon://edit" color="#0854a0" press="onEditOdataService" />
-                                            </cells>
-                                        </ColumnListItem>
-                                    </items>
-                                </Table>
-                            </ScrollContainer>
-                        </content>
-                    </Panel>
-                    
-                    <!-- Add/Edit Service Dialog -->
-                    <Dialog id="odataServiceDialog" title="{= ${app>/editingOdataService/serviceId} ? 'Edit Service' : 'Add New Service'}" contentWidth="700px">
-                        <content>
-                            <VBox class="sapUiSmallMargin">
-                                <l:Grid defaultSpan="XL6 L6 M6 S12">
-                                    <VBox class="sapUiSmallMarginBottom">
-                                        <Label text="System" required="true" />
-                                        <Select selectedKey="{app>/editingOdataService/system}" width="100%">
-                                            <core:Item key="S4HANA On Premise" text="S4HANA On Premise" />
-                                            <core:Item key="S4HANA Cloud" text="S4HANA Cloud" />
-                                            <core:Item key="ERP Cloud Private" text="ERP Cloud Private" />
-                                            <core:Item key="ERP Cloud" text="ERP Cloud" />
-                                            <core:Item key="ECC On Premise" text="ECC On Premise" />
-                                        </Select>
-                                    </VBox>
-                                    <VBox class="sapUiSmallMarginBottom">
-                                        <Label text="Version" required="true" />
-                                        <Select selectedKey="{app>/editingOdataService/productVersion}" width="100%">
-                                            <core:Item key="V2" text="V2" />
-                                            <core:Item key="V4" text="V4" />
-                                        </Select>
-                                    </VBox>
-                                    <VBox class="sapUiSmallMarginBottom">
-                                        <Label text="Technical Service Name" required="true" />
-                                        <Input value="{app>/editingOdataService/technicalServiceName}" placeholder="e.g., ZAPI_Lockboxpost_IN" width="100%" />
-                                    </VBox>
-                                    <VBox class="sapUiSmallMarginBottom">
-                                        <Label text="Description" />
-                                        <Input value="{app>/editingOdataService/serviceDescription}" placeholder="e.g., Post Lockbox" width="100%" />
-                                    </VBox>
-                                    <VBox class="sapUiSmallMarginBottom">
-                                        <Label text="Service Operations" />
-                                        <Input value="{app>/editingOdataService/serviceOperations}" placeholder="e.g., GET, POST, QUERY" width="100%" />
-                                    </VBox>
-                                    <VBox class="sapUiSmallMarginBottom">
-                                        <Label text="Authentication Type" required="true" />
-                                        <Select selectedKey="{app>/editingOdataService/authType}" width="100%">
-                                            <core:Item key="BASIC" text="Basic Authentication" />
-                                            <core:Item key="OAUTH2" text="OAuth 2.0" />
-                                            <core:Item key="SAML" text="SAML" />
-                                            <core:Item key="DESTINATION" text="BTP Destination" />
-                                            <core:Item key="NONE" text="None" />
-                                        </Select>
-                                    </VBox>
-                                </l:Grid>
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="HTTPS API / OData URL" required="true" />
-                                    <Input value="{app>/editingOdataService/httpsApiOdata}" placeholder="e.g., /sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxBatch" width="100%" />
-                                </VBox>
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Destination Name (for BTP)" />
-                                    <Input value="{app>/editingOdataService/destination}" placeholder="e.g., S4HANA_SYSTEM_DESTINATION" width="100%" />
-                                </VBox>
-                                <HBox alignItems="Center">
-                                    <CheckBox text="Active" selected="{app>/editingOdataService/active}" />
-                                </HBox>
-                            </VBox>
-                        </content>
-                        <beginButton>
-                            <Button text="Save" type="Emphasized" press="onSaveOdataService" />
-                        </beginButton>
-                        <endButton>
-                            <Button text="Cancel" press="onCloseOdataServiceDialog" />
                         </endButton>
                     </Dialog>
                 </VBox>
