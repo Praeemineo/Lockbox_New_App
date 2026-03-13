@@ -11142,24 +11142,6 @@ sap.ui.define([
         },
         
         // Service search
-        onServiceSearch: function (oEvent) {
-            var sQuery = oEvent.getParameter("newValue");
-            var oTable = this.byId("odataServicesTable");
-            if (oTable) {
-                var oBinding = oTable.getBinding("items");
-                var aFilters = [];
-                if (sQuery) {
-                    aFilters.push(new sap.ui.model.Filter("technicalServiceName", sap.ui.model.FilterOperator.Contains, sQuery));
-                }
-                oBinding.filter(aFilters);
-            }
-        },
-        
-        // Refresh services
-        onRefreshServices: function () {
-            this._loadOdataServices();
-            MessageToast.show("Services refreshed");
-        },
         
         // ============================================================================
         // EXCEL FILE PATTERNS DIALOG FUNCTIONS
