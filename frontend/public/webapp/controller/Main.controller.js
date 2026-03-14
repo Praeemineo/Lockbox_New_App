@@ -9695,6 +9695,7 @@ sap.ui.define([
                 customerTemplate: 0,
                 filePatterns: 0,
                 rules: 0,
+                rules: 0,
                 my: 0,
                 apiFieldLogic: 0,
                 apiOdataServices: 0
@@ -9716,6 +9717,7 @@ sap.ui.define([
             oModel.setProperty("/apiFields", []);
             oModel.setProperty("/odataServices", []);
             oModel.setProperty("/referenceDocRules", []);
+            oModel.setProperty("/processingRules", []);  // Add processing rules
             oModel.setProperty("/selectedReferenceDocRule", "RULE-002");
             oModel.setProperty("/selectedRefDocRule", {});
             oModel.setProperty("/editingRefDocRule", {});
@@ -9790,20 +9792,6 @@ sap.ui.define([
         },
         
         // Load OData Services from backend
-        _loadOdataServices: function () {
-            var that = this;
-            var oModel = this.getOwnerComponent().getModel("app");
-            
-            fetch(API_BASE + "/field-mapping/odata-services")
-                .then(function (response) { return response.json(); })
-                .then(function (data) {
-                    oModel.setProperty("/odataServices", data);
-                    oModel.setProperty("/ruleCounts/apiOdataServices", data.length);
-                })
-                .catch(function (error) {
-                    console.error("Error loading OData services:", error);
-                });
-        },
         
         // Load Field Mapping Rules from backend
         _loadFieldMappingRules: function () {
@@ -11142,24 +11130,6 @@ sap.ui.define([
         },
         
         // Service search
-        onServiceSearch: function (oEvent) {
-            var sQuery = oEvent.getParameter("newValue");
-            var oTable = this.byId("odataServicesTable");
-            if (oTable) {
-                var oBinding = oTable.getBinding("items");
-                var aFilters = [];
-                if (sQuery) {
-                    aFilters.push(new sap.ui.model.Filter("technicalServiceName", sap.ui.model.FilterOperator.Contains, sQuery));
-                }
-                oBinding.filter(aFilters);
-            }
-        },
-        
-        // Refresh services
-        onRefreshServices: function () {
-            this._loadOdataServices();
-            MessageToast.show("Services refreshed");
-        },
         
         // ============================================================================
         // EXCEL FILE PATTERNS DIALOG FUNCTIONS
@@ -12077,173 +12047,6 @@ sap.ui.define([
         // ============================================================================
         
         // Open Add OData Service Dialog
-        onOpenAddOdataServiceDialog: function () {
-            var oModel = this.getOwnerComponent().getModel("app");
-            
-            // Initialize new OData service object
-            oModel.setProperty("/editingOdataService", {
-                serviceId: null,
-                system: "S4HANA On Premise",
-                productVersion: "V2",
-                technicalServiceName: "",
-                externalServiceName: "",
-                serviceDescription: "",
-                serviceOperations: "GET, POST",
-                httpsApiOdata: "",
-                authType: "BASIC",
-                destination: "",
-                active: true
-            });
-            
-            var oDialog = this.byId("odataServiceDialog");
-            oDialog.open();
-        },
-        
-        // Edit OData Service
-        onEditOdataService: function (oEvent) {
-            var oModel = this.getOwnerComponent().getModel("app");
-            var oService = null;
-            
-            // Get service from event or selection
-            if (oEvent && oEvent.getSource()) {
-                var oContext = oEvent.getSource().getBindingContext("app");
-                if (oContext) {
-                    oService = oContext.getObject();
-                }
-            }
-            
-            if (!oService) {
-                oService = oModel.getProperty("/selectedOdataService");
-            }
-            
-            if (!oService) {
-                MessageToast.show("Please select a service to edit");
-                return;
-            }
-            
-            // Set editing service
-            oModel.setProperty("/editingOdataService", JSON.parse(JSON.stringify(oService)));
-            
-            var oDialog = this.byId("odataServiceDialog");
-            oDialog.open();
-        },
-        
-        // Save OData Service (Create or Update)
-        onSaveOdataService: function () {
-            var that = this;
-            var oModel = this.getOwnerComponent().getModel("app");
-            var oService = oModel.getProperty("/editingOdataService");
-            
-            // Validate
-            if (!oService.system || oService.system.trim() === "") {
-                MessageBox.error("System is required");
-                return;
-            }
-            
-            if (!oService.httpsApiOdata || oService.httpsApiOdata.trim() === "") {
-                MessageBox.error("HTTPS API / OData URL is required");
-                return;
-            }
-            
-            BusyIndicator.show(0);
-            
-            var isEdit = !!oService.serviceId;
-            var url = isEdit 
-                ? API_BASE + "/field-mapping/odata-services/" + oService.serviceId
-                : API_BASE + "/field-mapping/odata-services";
-            var method = isEdit ? "PUT" : "POST";
-            
-            // Save to backend
-            fetch(url, {
-                method: method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    system: oService.system,
-                    productVersion: oService.productVersion,
-                    technicalServiceName: oService.technicalServiceName,
-                    externalServiceName: oService.externalServiceName || oService.technicalServiceName,
-                    serviceDescription: oService.serviceDescription,
-                    serviceOperations: oService.serviceOperations,
-                    httpsApiOdata: oService.httpsApiOdata,
-                    authType: oService.authType,
-                    destination: oService.destination,
-                    active: oService.active
-                })
-            })
-                .then(function (response) { return response.json(); })
-                .then(function (data) {
-                    BusyIndicator.hide();
-                    
-                    if (data.success) {
-                        // Reload OData services
-                        that._loadOdataServices();
-                        
-                        // Close dialog
-                        that.byId("odataServiceDialog").close();
-                        
-                        MessageToast.show(isEdit ? "Service updated successfully" : "Service added successfully");
-                    } else {
-                        MessageBox.error("Failed to save service: " + (data.error || "Unknown error"));
-                    }
-                })
-                .catch(function (error) {
-                    BusyIndicator.hide();
-                    console.error("Error saving OData service:", error);
-                    MessageBox.error("Error saving service: " + error.message);
-                });
-        },
-        
-        // Close OData Service Dialog
-        onCloseOdataServiceDialog: function () {
-            this.byId("odataServiceDialog").close();
-        },
-        
-        // Cancel OData Service Dialog (deprecated - use onCloseOdataServiceDialog)
-        onCancelOdataServiceDialog: function () {
-            this.byId("odataServiceDialog").close();
-        },
-        
-        // OData Service selection change
-        onOdataServiceSelectionChange: function (oEvent) {
-            var oModel = this.getOwnerComponent().getModel("app");
-            var oSelectedItem = oEvent.getParameter("listItem");
-            
-            if (oSelectedItem) {
-                var oContext = oSelectedItem.getBindingContext("app");
-                var sServiceId = oContext.getProperty("id") || oContext.getProperty("technicalServiceName");
-                oModel.setProperty("/selectedOdataService", sServiceId);
-            } else {
-                oModel.setProperty("/selectedOdataService", null);
-            }
-        },
-        
-        // Delete OData Service
-        onDeleteOdataService: function () {
-            var that = this;
-            var oModel = this.getOwnerComponent().getModel("app");
-            var sSelectedService = oModel.getProperty("/selectedOdataService");
-            
-            if (!sSelectedService) {
-                MessageBox.warning("Please select a service to delete");
-                return;
-            }
-            
-            MessageBox.confirm("Are you sure you want to delete this service?", {
-                title: "Confirm Delete",
-                onClose: function (sAction) {
-                    if (sAction === MessageBox.Action.OK) {
-                        var aServices = oModel.getProperty("/odataServices") || [];
-                        var aFiltered = aServices.filter(function(s) {
-                            return (s.id || s.technicalServiceName) !== sSelectedService;
-                        });
-                        oModel.setProperty("/odataServices", aFiltered);
-                        oModel.setProperty("/selectedOdataService", null);
-                        oModel.setProperty("/ruleCounts/apiOdataServices", aFiltered.length);
-                        MessageToast.show("Service deleted successfully");
-                    }
-                }
-            });
-        },
         
         // ============================================================================
         // REFERENCE DOCUMENT RULES FUNCTIONS
