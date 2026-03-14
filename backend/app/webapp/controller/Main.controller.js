@@ -9717,6 +9717,7 @@ sap.ui.define([
             oModel.setProperty("/apiFields", []);
             oModel.setProperty("/odataServices", []);
             oModel.setProperty("/referenceDocRules", []);
+            oModel.setProperty("/processingRules", []);  // Add processing rules
             oModel.setProperty("/selectedReferenceDocRule", "RULE-002");
             oModel.setProperty("/selectedRefDocRule", {});
             oModel.setProperty("/editingRefDocRule", {});
