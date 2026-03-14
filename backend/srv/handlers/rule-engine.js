@@ -218,9 +218,15 @@ async function executeDynamicRule(rule, data) {
     };
     
     const mappings = rule.apiMappings || [];
+    const fieldMappings = rule.fieldMappings || [];
     
     if (mappings.length === 0) {
         result.warnings.push(`${rule.ruleId}: No API mappings configured`);
+        return result;
+    }
+    
+    if (fieldMappings.length === 0) {
+        result.warnings.push(`${rule.ruleId}: No field mappings configured`);
         return result;
     }
     
@@ -229,9 +235,9 @@ async function executeDynamicRule(rule, data) {
         const row = data[i];
         
         try {
-            // Step 1: Check if required source fields exist
-            const firstMapping = mappings[0];
-            const sourceField = firstMapping.sourceInput || firstMapping.sourceField;
+            // Step 1: Get source field from fieldMappings (NEW STRUCTURE)
+            const firstFieldMapping = fieldMappings[0];
+            const sourceField = firstFieldMapping.sourceField;
             
             console.log(`   🔍 Looking for source field: "${sourceField}"`);
             
