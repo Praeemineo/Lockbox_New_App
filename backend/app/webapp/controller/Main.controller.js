@@ -9695,6 +9695,7 @@ sap.ui.define([
                 customerTemplate: 0,
                 filePatterns: 0,
                 rules: 0,
+                rules: 0,
                 my: 0,
                 apiFieldLogic: 0,
                 apiOdataServices: 0
