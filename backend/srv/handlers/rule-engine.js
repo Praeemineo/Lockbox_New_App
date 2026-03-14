@@ -322,54 +322,20 @@ async function executeDynamicRule(rule, data) {
 
 /**
  * Build Dynamic API URL with Query Parameters
- * Supports:
- * - OData V2/V4 $filter queries: /EntitySet?$filter=Field='Value'
- * - OData V4 function imports: /Function(Parameter='Value')/Set
- * - OData entity keys with $expand: /Entity(Key='Value')?$expand=Navigation&$format=json
- * - Multi-input mapping (e.g., CustomerNumber + BankIdentification)
- * @param {object} mapping - API mapping configuration
+ * Updated to work with NEW structure (fieldMappings)
+ * @param {object} mapping - API mapping configuration (has apiReference, httpMethod)
  * @param {object} row - Data row
+ * @param {string} sourceFieldName - Source field name from fieldMappings
+ * @param {string} sourceValue - The actual value to use in API call
  * @returns {string} - Complete API URL with query parameters
  */
-function buildDynamicAPIURL(mapping, row) {
+function buildDynamicAPIURL(mapping, row, sourceFieldName, sourceValue) {
     const apiReference = mapping.apiReference;
-    const inputField = mapping.inputField;
-    const sourceField = mapping.sourceInput || mapping.sourceField;
     
-    console.log(`      Building API URL: sourceField="${sourceField}"`);
-    
-    // Smart field matching: Look for Customer, CustomerNumber, Customer Number, Invoice Number, etc.
-    let sourceValue = null;
-    let foundKey = null;
-    
-    // Normalize the source field name for comparison
-    const normalizedSource = (sourceField || '').replace(/\s+/g, '').toLowerCase();
-    
-    // Search for matching field in row
-    for (const rowKey of Object.keys(row)) {
-        const normalizedRowKey = rowKey.replace(/\s+/g, '').toLowerCase();
-        
-        // Match if:
-        // 1. Exact match (customernumber === customernumber)
-        // 2. Row key starts with source (customer === customernumber)
-        // 3. Source contains row key (customernumber contains customer)
-        if (normalizedRowKey === normalizedSource ||
-            normalizedSource.startsWith(normalizedRowKey) ||
-            (normalizedRowKey.length >= 5 && normalizedSource.includes(normalizedRowKey))) {
-            sourceValue = row[rowKey];
-            foundKey = rowKey;
-            console.log(`      ✅ Matched "${rowKey}" for source "${sourceField}": ${sourceValue}`);
-            break;
-        }
-    }
-    
-    if (!sourceValue) {
-        console.log(`      ⚠️  Source field "${sourceField}" not found in row`);
-        throw new Error(`Source field "${sourceField}" not found in data`);
-    }
+    console.log(`      Building API URL with value: ${sourceValue}`);
     
     // TRANSFORMATION: For Invoice Numbers (P_DocumentNumber), pad with leading zeros to 10 digits
-    if (inputField === 'P_DocumentNumber' || sourceField.toLowerCase().includes('invoice')) {
+    if (sourceFieldName && sourceFieldName.toLowerCase().includes('invoice')) {
         const originalValue = sourceValue;
         // Convert to string and pad with leading zeros to 10 digits
         sourceValue = String(sourceValue).padStart(10, '0');
@@ -377,39 +343,23 @@ function buildDynamicAPIURL(mapping, row) {
     }
     
     // PATTERN 1: OData V4 Function Import - /Function(Parameter='')/Set
-    // Check for the pattern with empty quotes in parentheses followed by /Set
     if (apiReference.includes("='')/Set") || apiReference.includes("='')")) {
         const finalURL = apiReference.replace("=''", `='${sourceValue}'`);
-        console.log(`      📋 Final URL (OData V4 Function): ${finalURL}`);
+        console.log(`      📋 Final URL: ${finalURL}`);
         return finalURL;
     }
     
     // PATTERN 2: OData Entity Key with $expand - /Entity(Key='')?$expand=...
-    // Example: /A_BusinessPartner(BusinessPartner='')?$expand=to_BusinessPartnerBank
-    console.log(`      🔍 Checking Pattern 2: apiReference includes "='')?$expand="? ${apiReference.includes("='')?$expand=")}`);
-    console.log(`      🔍 Checking Pattern 2: apiReference includes "='')?$"? ${apiReference.includes("='')?$")}`);
-    
     if (apiReference.includes("='')?$expand=") || apiReference.includes("='')?$")) {
         const finalURL = apiReference.replace("=''", `='${sourceValue}'`);
-        console.log(`      📋 Final URL (OData Entity Key with $expand): ${finalURL}`);
+        console.log(`      📋 Final URL: ${finalURL}`);
         return finalURL;
     }
     
-    // PATTERN 3: Standard OData $filter query
-    // Build base query
-    let params = [`${inputField}='${sourceValue}'`];
-    
-    // Add filter conditions if present (for legacy rules)
-    if (mapping.filterConditions) {
-        for (const [filterKey, filterValue] of Object.entries(mapping.filterConditions)) {
-            params.push(`${filterKey}='${filterValue}'`);
-            console.log(`      ➕ Added filter: ${filterKey}='${filterValue}'`);
-        }
-    }
-    
-    const finalURL = `${apiReference}?$filter=${params.join(' and ')}`;
-    console.log(`      📋 Final URL (OData Query): ${finalURL}`);
-    
+    // PATTERN 3: If no empty quotes found, append as query parameter
+    const separator = apiReference.includes('?') ? '&' : '?';
+    const finalURL = `${apiReference}${separator}$filter=Field eq '${sourceValue}'`;
+    console.log(`      📋 Final URL: ${finalURL}`);
     return finalURL;
 }
 
