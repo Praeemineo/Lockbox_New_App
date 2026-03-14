@@ -241,27 +241,40 @@ async function executeDynamicRule(rule, data) {
             
             console.log(`   🔍 Looking for source field: "${sourceField}"`);
             
-            // Smart field matching: Look for Customer, CustomerNumber, Invoice Number, etc.
+            // Smart flexible field matching
+            // Handles: "Invoice Number", "InvoiceNumber", "Invoice"
+            // Handles: "Customer Number", "CustomerNumber", "Customer"
             let sourceValue = null;
             let actualSourceField = null;
             
+            // Normalize the source field name for comparison (remove spaces, lowercase)
             const normalizedSource = (sourceField || '').replace(/\s+/g, '').toLowerCase();
             
+            // Search for matching field in row with flexible matching
             for (const rowKey of Object.keys(row)) {
                 const normalizedRowKey = rowKey.replace(/\s+/g, '').toLowerCase();
                 
-                // Match if normalized keys match or contain each other
+                // Match strategies:
+                // 1. Exact match: "invoicenumber" === "invoicenumber"
+                // 2. Row key contains source: "invoicenumber" contains "invoice"
+                // 3. Source contains row key: "invoicenumber" is in "invoice"
+                // 4. Partial match for common fields (minimum 5 chars to avoid false matches)
                 if (normalizedRowKey === normalizedSource ||
-                    normalizedSource.startsWith(normalizedRowKey) ||
-                    (normalizedRowKey.length >= 5 && normalizedSource.includes(normalizedRowKey))) {
+                    normalizedRowKey.includes(normalizedSource) ||
+                    normalizedSource.includes(normalizedRowKey) ||
+                    (normalizedRowKey.length >= 5 && normalizedSource.length >= 5 && 
+                     (normalizedRowKey.startsWith(normalizedSource.substring(0, 5)) ||
+                      normalizedSource.startsWith(normalizedRowKey.substring(0, 5))))) {
                     sourceValue = row[rowKey];
                     actualSourceField = rowKey;
+                    console.log(`   ✅ Matched Excel field "${rowKey}" with rule field "${sourceField}"`);
                     break;
                 }
             }
             
             if (!sourceValue) {
-                console.log(`   ⏭️  Row ${i + 1}: Source field "${sourceField}" not found - skipping`);
+                console.log(`   ⏭️  Row ${i + 1}: Source field "${sourceField}" not found in Excel - skipping`);
+                console.log(`   Available fields: ${Object.keys(row).join(', ')}`);
                 continue; // Skip row if source field is missing
             }
             
