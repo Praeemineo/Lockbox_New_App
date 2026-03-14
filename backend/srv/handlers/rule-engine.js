@@ -267,8 +267,9 @@ async function executeDynamicRule(rule, data) {
             
             console.log(`   📝 Row ${i + 1}: Found ${actualSourceField}=${sourceValue}`);
             
-            // Step 2: Build dynamic API URL
-            const apiURL = buildDynamicAPIURL(firstMapping, row);
+            // Step 2: Build dynamic API URL using first API mapping
+            const firstMapping = mappings[0];
+            const apiURL = buildDynamicAPIURL(firstMapping, row, sourceField, sourceValue);
             
             console.log(`   📞 API Call for row ${i + 1}`);
             
@@ -280,13 +281,13 @@ async function executeDynamicRule(rule, data) {
                 continue;
             }
             
-            // Step 4: Extract and map output fields dynamically
+            // Step 4: Extract and map output fields using fieldMappings (NEW STRUCTURE)
             let fieldsEnriched = 0;
-            for (const mapping of mappings) {
-                const apiValue = extractDynamicField(response.data, mapping.outputField);
+            for (const fieldMapping of fieldMappings) {
+                const apiValue = extractDynamicField(response.data, fieldMapping.targetField);
                 
                 if (apiValue !== null && apiValue !== undefined) {
-                    const lockboxField = mapping.lockboxApiField || mapping.lockboxField;
+                    const lockboxField = fieldMapping.apiField;
                     row[lockboxField] = apiValue;
                     fieldsEnriched++;
                     console.log(`   ✅ ${lockboxField}: ${apiValue}`);
