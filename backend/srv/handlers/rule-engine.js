@@ -298,10 +298,10 @@ async function executeDynamicRule(rule, data) {
                     
                     row._apiDerivedFields.push(lockboxField);
                     row._apiFieldMappings[lockboxField] = {
-                        apiEndpoint: mapping.apiReference,
-                        sourceField: mapping.outputField,
+                        apiEndpoint: firstMapping.apiReference,
+                        sourceField: fieldMapping.targetField,
                         derivedFrom: rule.ruleId,
-                        inputField: mapping.inputField,
+                        inputField: fieldMapping.sourceField,
                         inputValue: sourceValue
                     };
                 }
