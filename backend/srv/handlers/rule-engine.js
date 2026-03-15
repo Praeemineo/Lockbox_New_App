@@ -293,6 +293,7 @@ async function executeDynamicRule(rule, data) {
                 const lockboxFieldName = fieldMapping.apiField;      // Field to store in lockbox
                 
                 console.log(`      🔍 Extracting "${targetFieldName}" from response...`);
+                console.log(`      📋 Full fieldMapping:`, JSON.stringify(fieldMapping));
                 
                 // Extract value using dynamic field path
                 const apiValue = extractDynamicField(response.data, targetFieldName);
