@@ -3,20 +3,28 @@
  * 
  * Fully database-driven rule execution for RULE-001 and RULE-002
  * 
+ * DATA STRUCTURE:
+ * - sourceField: Excel column name (INPUT to API) - e.g., "Invoice Number", "Customer Number"
+ * - targetField: SAP API response field path (OUTPUT from API) - e.g., "AccountingDocument", "to_BusinessPartnerBank/results/0/BankNumber"
+ * - apiField: Lockbox field name (WHERE to store enriched data) - e.g., "PaymentReference", "PartnerBank"
+ * 
+ * EXECUTION FLOW:
  * Step-1: Read uploaded file payload as JSON input
- * Step-2: Identify applicable rules from lb_processing_rules where condition_type = 'EXIST' and destination = 'S4HANA_SYSTEM_DESTINATION'
- * Step-3: For each rule - validate condition dynamically (if source fields contain value → proceed)
- * Step-4: Construct S4 OData API dynamically: api_reference + '?' + api_input_fields=value pairs
- * Step-5: Call S4 using BTP Destination: S4HANA_SYSTEM_DESTINATION
- * Step-6: Extract api_output_field dynamically from response
- * Step-7: Map extracted values to lockbox_field dynamically
+ * Step-2: Identify applicable rules from processing_rules where active=true and fileType matches
+ * Step-3: For each rule - validate condition dynamically (fuzzy match source fields)
+ * Step-4: Construct SAP OData API dynamically: apiReference with sourceField value
+ * Step-5: Call SAP using BTP Destination: S4HANA_SYSTEM_DESTINATION
+ * Step-6: Extract targetField dynamically from API response (supports nested paths)
+ * Step-7: Map extracted values to apiField (lockbox field) dynamically
  * Step-8: Return enriched Lockbox payload
  * 
- * Rules Supported:
- * - RULE-001: InvoiceNumber → BELNR → PaymentReference
- * - RULE-002: CustomerNumber + BankIdentification → BankCountryKey, BankNumber, BankAccount → Partner fields
+ * RULES SUPPORTED:
+ * - RULE-001: Invoice Number → Accounting Document API → PaymentReference, CompanyCode
+ * - RULE-002: Customer Number → Business Partner API → PartnerBank, PartnerBankAccount, PartnerBankCountry
  * 
  * ⚠️ All rule logic is DATABASE-DRIVEN. No hardcoded field names.
+ * ⚠️ Supports fuzzy matching for Excel column names (case-insensitive, space-insensitive)
+ * ⚠️ Supports nested field paths for OData navigation properties
  */
 
 const sapClient = require('../integrations/sap-client');
