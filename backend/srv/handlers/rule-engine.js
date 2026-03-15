@@ -289,11 +289,30 @@ async function executeDynamicRule(rule, data) {
             let fieldsEnriched = 0;
             
             for (const fieldMapping of fieldMappings) {
-                const targetFieldName = fieldMapping.targetField;   // Field path in SAP response
+                let targetFieldName = fieldMapping.targetField;   // Field path in SAP response
                 const lockboxFieldName = fieldMapping.apiField;      // Field to store in lockbox
                 
                 console.log(`      🔍 Extracting "${targetFieldName}" from response...`);
                 console.log(`      📋 Full fieldMapping:`, JSON.stringify(fieldMapping));
+                
+                // AUTO-FIX: Convert simple field names to nested paths if needed
+                // For RULE-002 (Business Partner Bank API)
+                if (rule.ruleId === 'RULE-002' && !targetFieldName.includes('/')) {
+                    console.log(`      🔧 Auto-converting simple field name to nested path...`);
+                    
+                    // Map simple field names to their nested OData V2 navigation paths
+                    const fieldPathMap = {
+                        'BankNumber': 'to_BusinessPartnerBank/results/0/BankNumber',
+                        'BankAccount': 'to_BusinessPartnerBank/results/0/BankAccount',
+                        'BankCountryKey': 'to_BusinessPartnerBank/results/0/BankCountryKey'
+                    };
+                    
+                    if (fieldPathMap[targetFieldName]) {
+                        const originalField = targetFieldName;
+                        targetFieldName = fieldPathMap[targetFieldName];
+                        console.log(`      ✅ Converted: "${originalField}" → "${targetFieldName}"`);
+                    }
+                }
                 
                 // Extract value using dynamic field path
                 const apiValue = extractDynamicField(response.data, targetFieldName);
