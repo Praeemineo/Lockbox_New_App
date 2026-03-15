@@ -65,17 +65,17 @@
     "fieldMappings": [
       {
         "sourceField": "Customer Number",
-        "targetField": "BankNumber",
+        "targetField": "to_BusinessPartnerBank/results/0/BankNumber",
         "apiField": "PartnerBank"
       },
       {
         "sourceField": "Customer Number",
-        "targetField": "BankAccount",
+        "targetField": "to_BusinessPartnerBank/results/0/BankAccount",
         "apiField": "PartnerBankAccount"
       },
       {
         "sourceField": "Customer Number",
-        "targetField": "BankCountryKey",
+        "targetField": "to_BusinessPartnerBank/results/0/BankCountryKey",
         "apiField": "PartnerBankCountry"
       }
     ],
