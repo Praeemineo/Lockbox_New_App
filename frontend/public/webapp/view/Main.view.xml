@@ -1377,7 +1377,7 @@
                             </VBox>
                             
                             <!-- Header Fields Grid -->
-                            <layout:Grid
+                            <l:Grid
                                 defaultSpan="XL4 L4 M6 S12"
                                 class="sapUiMediumMarginBottom">
                                 
@@ -1528,7 +1528,7 @@
                     <VBox class="sapUiSmallMargin">
                         
                         <!-- Header Information Grid -->
-                        <layout:Grid
+                        <l:Grid
                             defaultSpan="XL4 L4 M6 S12"
                             class="sapUiSmallMarginBottom">
                             
@@ -1570,7 +1570,7 @@
                             </VBox>
                             
                             <VBox></VBox>
-                        </layout:Grid>
+                        </l:Grid>
                         
                         <!-- Lockbox Data Section -->
                         <OverflowToolbar class="sapUiTinyMarginTop">
