@@ -318,16 +318,25 @@ async function executeDynamicRule(rule, data) {
                 const apiValue = extractDynamicField(response.data, targetFieldName);
                 
                 if (apiValue !== null && apiValue !== undefined) {
-                    row[lockboxFieldName] = apiValue;
+                    // IMPORTANT: Overwrite existing field value (case-insensitive match)
+                    // Check if field already exists with different casing
+                    const existingKey = Object.keys(row).find(k => k.toLowerCase() === lockboxFieldName.toLowerCase());
+                    const fieldToUpdate = existingKey || lockboxFieldName;
+                    
+                    if (existingKey && existingKey !== lockboxFieldName) {
+                        console.log(`      ⚠️  Field exists with different casing: "${existingKey}" (will overwrite)`);
+                    }
+                    
+                    row[fieldToUpdate] = apiValue;
                     fieldsEnriched++;
-                    console.log(`      ✅ ${lockboxFieldName} = "${apiValue}"`);
+                    console.log(`      ✅ ${fieldToUpdate} = "${apiValue}" (was: "${row[fieldToUpdate] !== apiValue ? 'changed' : 'set'})")`);
                     
                     // Add metadata for Field Mapping Preview
                     if (!row._apiDerivedFields) row._apiDerivedFields = [];
                     if (!row._apiFieldMappings) row._apiFieldMappings = {};
                     
-                    row._apiDerivedFields.push(lockboxFieldName);
-                    row._apiFieldMappings[lockboxFieldName] = {
+                    row._apiDerivedFields.push(fieldToUpdate);
+                    row._apiFieldMappings[fieldToUpdate] = {
                         apiEndpoint: firstMapping.apiReference,
                         sourceField: targetFieldName,
                         derivedFrom: rule.ruleId,
