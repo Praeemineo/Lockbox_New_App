@@ -280,24 +280,13 @@ async function executeDynamicRule(rule, data) {
             let fieldsEnriched = 0;
             
             for (const fieldMapping of fieldMappings) {
-                const targetFieldName = fieldMapping.targetField;   // Field in SAP response
+                const targetFieldName = fieldMapping.targetField;   // Field path in SAP response
                 const lockboxFieldName = fieldMapping.apiField;      // Field to store in lockbox
                 
                 console.log(`      🔍 Extracting "${targetFieldName}" from response...`);
                 
-                // Handle special case for RULE-002 Bank fields (nested navigation)
-                let apiValue = null;
-                
-                if (rule.ruleId === 'RULE-002' && targetFieldName === 'BankNumber') {
-                    apiValue = extractDynamicField(response.data, 'to_BusinessPartnerBank/results/0/BankNumber');
-                } else if (rule.ruleId === 'RULE-002' && targetFieldName === 'BankAccount') {
-                    apiValue = extractDynamicField(response.data, 'to_BusinessPartnerBank/results/0/BankAccount');
-                } else if (rule.ruleId === 'RULE-002' && targetFieldName === 'BankCountryKey') {
-                    apiValue = extractDynamicField(response.data, 'to_BusinessPartnerBank/results/0/BankCountryKey');
-                } else {
-                    // Standard extraction for other fields
-                    apiValue = extractDynamicField(response.data, targetFieldName);
-                }
+                // Extract value using dynamic field path
+                const apiValue = extractDynamicField(response.data, targetFieldName);
                 
                 if (apiValue !== null && apiValue !== undefined) {
                     row[lockboxFieldName] = apiValue;
