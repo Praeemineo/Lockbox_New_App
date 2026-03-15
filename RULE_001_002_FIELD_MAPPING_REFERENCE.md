@@ -257,9 +257,10 @@ tail -n 100 /var/log/supervisor/backend.out.log | grep "Extracting"
 ## 🚀 Summary
 
 **RULE-001:**
-- Uses **BELNR** (not AccountingDocument) from SAP response
+- Uses **AccountingDocument** (semantic name, BELNR in database) from SAP response
 - Stores as **PaymentReference** in lockbox
 - OData V4 format with direct field access
+- Note: OData V4 services use semantic field names from CDS views, not technical database field names
 
 **RULE-002:**
 - Uses **nested navigation path** for bank fields
