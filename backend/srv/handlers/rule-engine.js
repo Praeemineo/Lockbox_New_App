@@ -530,95 +530,112 @@ async function callSAPAPI(apiURL, httpMethod, destination) {
  * @param {string} fieldPath - Path to extract (e.g., "BELNR", "to_BusinessPartnerBank/results/0/BankNumber")
  * @returns {any} - Extracted value or null
  */
-function extractDynamicField(responseData, fieldPath) {
-    try {
-        console.log(`      🔍 Extracting field: "${fieldPath}" from response`);
-        
-        // Handle direct field access (e.g., "BELNR", "CompanyCode")
-        if (responseData[fieldPath]) {
-            console.log(`      ✅ Found direct field: ${responseData[fieldPath]}`);
-            return responseData[fieldPath];
-        }
-        
-        // Handle OData v2 wrapped response: { d: { ... } }
-        let data = responseData.d || responseData;
-        
-        // Handle navigation property paths with slashes (e.g., "to_BusinessPartnerBank/results/0/BankNumber")
-        if (fieldPath.includes('/')) {
-            const parts = fieldPath.split('/');
-            console.log(`      🔗 Navigating path: ${parts.join(' → ')}`);
-            
-            let current = data;
-            for (let i = 0; i < parts.length; i++) {
-                const part = parts[i];
-                
-                // Handle array index (e.g., "0", "1")
-                if (/^\d+$/.test(part)) {
-                    const index = parseInt(part);
-                    if (Array.isArray(current) && current.length > index) {
-                        current = current[index];
-                        console.log(`      📍 Array[${index}]: Found`);
-                    } else {
-                        console.log(`      ⚠️  Array[${index}]: Not found or empty`);
-                        return null;
-                    }
-                }
-                // Handle object property (e.g., "to_BusinessPartnerBank", "results", "BankNumber")
-                else if (current && current[part] !== undefined) {
-                    current = current[part];
-                    console.log(`      📍 ${part}: ${Array.isArray(current) ? `Array[${current.length}]` : typeof current === 'object' ? 'Object' : current}`);
-                } else {
-                    console.log(`      ⚠️  Property "${part}" not found in response`);
-                    return null;
-                }
-            }
-            
-            console.log(`      ✅ Final value: ${current}`);
-            return current;
-        }
-        
-        // Handle OData v4 format: { value: [...] }
-        if (data.value && Array.isArray(data.value) && data.value.length > 0) {
-            const val = data.value[0][fieldPath];
-            if (val !== undefined) {
-                console.log(`      ✅ Found in value[0]: ${val}`);
-                return val;
-            }
-        }
-        
-        // Handle OData v2 format: { d: { results: [...] } }
-        if (data.results && Array.isArray(data.results) && data.results.length > 0) {
-            const val = data.results[0][fieldPath];
-            if (val !== undefined) {
-                console.log(`      ✅ Found in results[0]: ${val}`);
-                return val;
-            }
-        }
-        
-        // Handle nested path extraction with dots (legacy support)
-        if (fieldPath.includes('.')) {
-            const value = fieldPath.split('.').reduce((obj, key) => {
-                if (key.includes('[')) {
-                    const arrKey = key.substring(0, key.indexOf('['));
-                    const index = parseInt(key.match(/\[(\d+)\]/)[1]);
-                    return obj[arrKey][index];
-                }
-                return obj[key];
-            }, data);
-            
-            if (value !== undefined) {
-                console.log(`      ✅ Found via nested path: ${value}`);
-                return value;
-            }
-        }
-        
-        console.log(`      ❌ Field not found in any format`);
-        return null;
-        
-    } catch (e) {
-        console.log(`   ⚠️  Could not extract field "${fieldPath}":`, e.message);
+/**
+ * Extract field value from nested API response
+ * Supports multiple OData formats and automatic path detection
+ * @param {object} data - API response data
+ * @param {string} fieldPath - Field path (supports slash-separated paths)
+ * @returns {any} - Extracted field value
+ */
+function extractDynamicField(data, fieldPath) {
+    console.log(`      🔍 Extracting field: "${fieldPath}" from response`);
+    
+    if (!data) {
+        console.log(`      ❌ No data provided`);
         return null;
     }
+    
+    // Strategy 1: Direct extraction if fieldPath doesn't contain '/'
+    if (!fieldPath.includes('/')) {
+        // Try multiple locations in common OData formats
+        
+        // Format 1: OData V4 - value array
+        if (data.value && Array.isArray(data.value) && data.value.length > 0) {
+            if (data.value[0][fieldPath] !== undefined) {
+                console.log(`      ✅ Found in value[0].${fieldPath}`);
+                return data.value[0][fieldPath];
+            }
+        }
+        
+        // Format 2: OData V2 - d wrapper
+        if (data.d) {
+            // Try d.results array
+            if (data.d.results && Array.isArray(data.d.results) && data.d.results.length > 0) {
+                if (data.d.results[0][fieldPath] !== undefined) {
+                    console.log(`      ✅ Found in d.results[0].${fieldPath}`);
+                    return data.d.results[0][fieldPath];
+                }
+            }
+            
+            // Try direct d.fieldPath
+            if (data.d[fieldPath] !== undefined) {
+                console.log(`      ✅ Found in d.${fieldPath}`);
+                return data.d[fieldPath];
+            }
+            
+            // Try nested navigation properties - auto-detect
+            // Look for any navigation properties (starts with "to_")
+            for (const key in data.d) {
+                if (key.startsWith('to_') && data.d[key]) {
+                    const navProp = data.d[key];
+                    
+                    // Check if navigation has results array
+                    if (navProp.results && Array.isArray(navProp.results) && navProp.results.length > 0) {
+                        if (navProp.results[0][fieldPath] !== undefined) {
+                            console.log(`      ✅ Found in d.${key}.results[0].${fieldPath}`);
+                            return navProp.results[0][fieldPath];
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Format 3: Direct at root level
+        if (data[fieldPath] !== undefined) {
+            console.log(`      ✅ Found at root.${fieldPath}`);
+            return data[fieldPath];
+        }
+    }
+    
+    // Strategy 2: Path-based extraction (slash-separated)
+    const parts = fieldPath.split('/');
+    let current = data;
+    
+    // Start from d wrapper if present (OData V2)
+    if (current.d && !parts[0].startsWith('d')) {
+        current = current.d;
+    }
+    
+    // Navigate through path
+    for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        
+        // Skip empty parts
+        if (!part) continue;
+        
+        // Handle array indices [0] or just 0
+        if (/^\d+$/.test(part)) {
+            const index = parseInt(part);
+            if (Array.isArray(current) && current[index] !== undefined) {
+                current = current[index];
+                continue;
+            }
+        }
+        
+        // Navigate to property
+        if (current[part] !== undefined) {
+            current = current[part];
+        } else {
+            console.log(`      ❌ Path segment "${part}" not found`);
+            return null;
+        }
+    }
+    
+    console.log(`      ✅ Extracted value via path navigation`);
+    return current;
+    
+    console.log(`      ❌ Field not found in any format`);
+    return null;
 }
 
 // Export main functions
