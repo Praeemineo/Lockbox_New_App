@@ -8440,6 +8440,8 @@ sap.ui.define([
                             clearingDoc: oItem.clearing_doc || data.run.clearing_doc,
                             fiscalYear: data.run.fiscal_year || oItem.fiscal_year,
                             companyCode: data.run.company_code || oItem.company_code,
+                            sendingBank: data.run.sendingBank || data.run.sending_bank || "Bank of America",
+                            lockboxId: data.run.lockboxId || data.run.lockbox_id || oItem.lockbox,
                             clearingStatus: data.run.clearing_status || "UNAPPLIED",
                             itemsCleared: data.run.items_cleared || 0,
                             lockboxOrigin: data.run.lockbox_origin || oItem.lockbox_origin,
