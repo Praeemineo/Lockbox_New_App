@@ -5251,6 +5251,106 @@ app.patch('/api/field-mapping/odata-services/:serviceId/toggle', async (req, res
 });
 
 // ============================================================================
+// API ENDPOINTS - RULE-004: Fetch Accounting Document Details
+// ============================================================================
+
+/**
+ * GET /api/lockbox/:runId/accounting-document
+ * Fetch accounting document details using RULE-004 for a specific lockbox run
+ */
+app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
+    const { runId } = req.params;
+    
+    console.log(`📋 RULE-004: Fetching accounting document for run ${runId}`);
+    
+    try {
+        // Get the run data
+        const run = runs.find(r => r.runId === runId);
+        
+        if (!run) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Run not found' 
+            });
+        }
+        
+        // Get lockbox ID from run
+        const lockboxId = run.lockboxId || run.runId;
+        
+        console.log(`   Using LockboxId: ${lockboxId}`);
+        
+        // Get RULE-004 configuration
+        const rule004 = processingRules.find(r => r.ruleId === 'RULE-004');
+        
+        if (!rule004 || !rule004.active) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'RULE-004 not found or not active' 
+            });
+        }
+        
+        // Build API URL dynamically
+        const apiMapping = rule004.apiMappings[0];
+        const apiEndpoint = apiMapping.apiReference;
+        
+        // Build query filter with lockbox ID
+        const queryParams = {
+            '$filter': `LockboxBatchOrigin eq '${lockboxId}'`,
+            '$select': 'DocumentNumber,PaymentAdvice,SubledgerDocument,AccountingDocument,CompanyCode,FiscalYear',
+            '$top': '100'
+        };
+        
+        console.log(`   API Endpoint: ${apiEndpoint}`);
+        console.log(`   Query Params:`, queryParams);
+        
+        // Call SAP API using the same connection logic as RULE-001/002
+        const response = await sapClient.executeSapGetRequest(
+            rule004.destination,
+            apiEndpoint,
+            queryParams
+        );
+        
+        if (!response || !response.data) {
+            return res.status(500).json({ 
+                success: false, 
+                error: 'No response from SAP API' 
+            });
+        }
+        
+        console.log(`   ✅ SAP Response received`);
+        
+        // Extract data from response
+        const documents = response.data.value || [];
+        
+        console.log(`   📊 Found ${documents.length} document(s)`);
+        
+        // Map to frontend structure
+        const mappedData = documents.map(doc => ({
+            DocumentNumber: doc.DocumentNumber || '',
+            PaymentAdvice: doc.PaymentAdvice || '',
+            SubledgerDocument: doc.SubledgerDocument || '',
+            AccountingDocument: doc.AccountingDocument || '',
+            CompanyCode: doc.CompanyCode || '',
+            FiscalYear: doc.FiscalYear || ''
+        }));
+        
+        res.json({
+            success: true,
+            lockboxId: lockboxId,
+            documents: mappedData,
+            count: mappedData.length
+        });
+        
+    } catch (error) {
+        console.error('❌ RULE-004 Error:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// ============================================================================
 // PROCESSING RULES API ENDPOINTS
 // For managing lockbox processing rules with conditions and G/L account actions
 // ============================================================================
