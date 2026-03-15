@@ -8394,13 +8394,17 @@ sap.ui.define([
             
             BusyIndicator.show(0);
             
-            // Fetch full run details
-            fetch(API_BASE + "/lockbox/runs/" + oItem.runId)
-                .then(function (response) { return response.json(); })
-                .then(function (data) {
-                    BusyIndicator.hide();
+            // Fetch both run details AND RULE-004 data
+            Promise.all([
+                fetch(API_BASE + "/lockbox/runs/" + oItem.runId).then(function(res) { return res.json(); }),
+                fetch(API_BASE + "/lockbox/" + oItem.runId + "/accounting-document").then(function(res) { return res.json(); }).catch(function() { return { success: false, documents: [] }; })
+            ]).then(function (results) {
+                var data = results[0];
+                var rule004Data = results[1];
+                
+                BusyIndicator.hide();
                     
-                    if (data.run) {
+                if (data.run) {
                         // Build comprehensive transaction details object
                         var oTransaction = {
                             runId: data.run.runId || oItem.runId,
@@ -8436,6 +8440,8 @@ sap.ui.define([
                             clearingDoc: oItem.clearing_doc || data.run.clearing_doc,
                             fiscalYear: data.run.fiscal_year || oItem.fiscal_year,
                             companyCode: data.run.company_code || oItem.company_code,
+                            sendingBank: data.run.sendingBank || data.run.sending_bank || "Bank of America",
+                            lockboxId: data.run.lockboxId || data.run.lockbox_id || oItem.lockbox,
                             clearingStatus: data.run.clearing_status || "UNAPPLIED",
                             itemsCleared: data.run.items_cleared || 0,
                             lockboxOrigin: data.run.lockbox_origin || oItem.lockbox_origin,
@@ -8548,7 +8554,25 @@ sap.ui.define([
                         
                         // Build lockbox items for the data table from checks
                         var aLockboxItems = [];
-                        if (aChecks && aChecks.length > 0) {
+                        
+                        // Prefer RULE-004 data if available
+                        if (rule004Data.success && rule004Data.documents && rule004Data.documents.length > 0) {
+                            // Use RULE-004 accounting document data
+                            aLockboxItems = rule004Data.documents.map(function(doc, idx) {
+                                return {
+                                    companyCode: doc.CompanyCode || oTransaction.companyCode || '',
+                                    lockboxId: oTransaction.sapPayload.Lockbox || oTransaction.lockbox || '',
+                                    lockboxDest: oTransaction.sapPayload.LockboxBatchDestination || oTransaction.lockboxDestination || '',
+                                    lockboxOrigin: oTransaction.sapPayload.LockboxBatchOrigin || oTransaction.lockboxOrigin || '',
+                                    item: (idx + 1).toString().padStart(4, '0'),
+                                    amount: '0.00',
+                                    postingDoc: doc.DocumentNumber || doc.AccountingDocument || '',
+                                    paytAdvice: doc.PaymentAdvice || '',
+                                    clearingDoc: doc.SubledgerDocument || '',
+                                    subledgerOnaccountDoc: '-'
+                                };
+                            });
+                        } else if (aChecks && aChecks.length > 0) {
                             aChecks.forEach(function(check, idx) {
                                 var itemObj = {
                                     companyCode: oTransaction.companyCode || data.run.company_code || '',
@@ -8677,96 +8701,179 @@ sap.ui.define([
         },
         
         /**
-         * View Payload Hierarchy - Shows lockbox data in simplified 3-level structure
+         * View Transaction Dialog - Shows lockbox processing details with RULE-004 data
          */
         onViewPayloadHierarchy: function () {
+            var that = this;
             var oModel = this.getView().getModel("app");
             var oTransaction = oModel.getProperty("/selectedTransaction");
             
-            if (!oTransaction) {
-                MessageBox.warning("No payload data available");
+            if (!oTransaction || !oTransaction.runId) {
+                MessageBox.warning("No transaction data available");
                 return;
             }
             
-            // Build 3-level hierarchy as per user requirement:
-            // Level 1: Lockbox ID (e.g., 1000172)
-            // Level 2: Batch: 001, Item: 001, Check number: 3456694 - 1365 USD
-            // Level 3: Payment Ref: 9400000940 - 1365 USD
-            var aHierarchy = [];
+            var sRunId = oTransaction.runId;
             
-            // Get lockbox ID from sapPayload or transaction
-            var lockboxId = (oTransaction.sapPayload && oTransaction.sapPayload.Lockbox) || 
-                           oTransaction.lockbox || 
-                           oTransaction.lockboxId || 
-                           "N/A";
+            BusyIndicator.show(0);
             
-            // Level 1: Lockbox ID (root node)
-            var headerNode = {
-                title: lockboxId,
-                icon: "sap-icon://product",
-                level: 0,
-                nodes: []
-            };
-            
-            // Level 2: Check Data - Use oTransaction.checks array which has proper structure
-            if (oTransaction.checks && oTransaction.checks.length > 0) {
-                oTransaction.checks.forEach(function(check, index) {
-                    var checkAmount = check.AmountInTransactionCurrency || "0";
-                    var checkCurrency = check.Currency || "USD";
-                    var batchNumber = check.LockboxBatch || "001";
-                    var itemNum = check.LockboxBatchItem || (index + 1).toString().padStart(3, '0');
-                    var checkNumber = check.Cheque || "N/A";
-                    
-                    var checkNode = {
-                        title: "Batch: " + batchNumber + ", Item: " + itemNum + ", Check number: " + checkNumber + " - " + checkAmount + " " + checkCurrency,
-                        icon: "sap-icon://payment-approval",
-                        level: 1,
-                        nodes: []
-                    };
-                    
-                    // Level 3: Payment References
-                    if (check.payments && check.payments.length > 0) {
-                        check.payments.forEach(function(payment) {
-                            var paymentRefAmount = payment.NetPaymentAmountInPaytCurrency || "0";
-                            var paymentRefCurrency = payment.Currency || checkCurrency;
-                            var refNumber = payment.PaymentReference || "N/A";
-                            checkNode.nodes.push({
-                                title: "Payment Ref: " + refNumber + " - " + paymentRefAmount + " " + paymentRefCurrency,
-                                icon: "sap-icon://document-text",
-                                level: 2
-                            });
-                        });
-                    } else {
-                        // If no payment references, show one with check amount
-                        checkNode.nodes.push({
-                            title: "Payment Ref: N/A - " + checkAmount + " " + checkCurrency,
-                            icon: "sap-icon://document-text",
-                            level: 2
-                        });
-                    }
-                    
-                    headerNode.nodes.push(checkNode);
-                });
-            } else {
-                // Fallback: if no checks array, show a warning
-                MessageBox.warning("No check data available in payload");
-                return;
-            }
-            
-            aHierarchy.push(headerNode);
-            
-            // Set hierarchy to model
-            oModel.setProperty("/payloadHierarchy", aHierarchy);
-            
-            // Open payload dialog
-            this.byId("payloadHierarchyDialog").open();
+            // Fetch run details and RULE-004 data
+            Promise.all([
+                fetch(API_BASE + "/runs/" + sRunId).then(function(res) { return res.json(); }),
+                fetch(API_BASE + "/lockbox/" + sRunId + "/accounting-document").then(function(res) { return res.json(); })
+            ]).then(function (results) {
+                var runData = results[0];
+                var rule004Data = results[1];
+                
+                BusyIndicator.hide();
+                
+                if (!runData.success) {
+                    MessageBox.error("Failed to load run details: " + (runData.error || "Unknown error"));
+                    return;
+                }
+                
+                that._showTransactionDialogWithData(runData.run, rule004Data);
+                
+            }).catch(function (error) {
+                BusyIndicator.hide();
+                MessageBox.error("Failed to load transaction data: " + error.message);
+                console.error("Transaction dialog error:", error);
+            });
         },
         
         /**
-         * Cancel payload view - return to transaction details
+         * Display Transaction Dialog with loaded data
+         */
+        _showTransactionDialogWithData: function (oRun, oRule004Data) {
+            // Prepare header data
+            var lockboxId = oRun.lockboxId || oRun.runId || "LBX000012";
+            var processingStatus = oRun.overallStatus === "posted" ? "Completed" : oRun.overallStatus || "Processing";
+            var companyCode = oRun.companyCode || "1000";
+            var sendingBank = oRun.sendingBank || "Bank of America";
+            var headerStatus = (oRun.stages && oRun.stages.mapping && oRun.stages.mapping.status === "success") ? "Processed" : "Pending";
+            
+            // Set header fields
+            this.byId("txnLockboxId").setText(lockboxId);
+            this.byId("txnProcessingStatus").setText(processingStatus);
+            this.byId("txnProcessingStatus").setState(processingStatus === "Completed" ? "Success" : "None");
+            this.byId("txnCompanyCode").setText(companyCode);
+            this.byId("txnCompanyCodeAlt").setText(companyCode);
+            this.byId("txnSendingBank").setText(sendingBank);
+            this.byId("txnHeaderStatus").setText(headerStatus);
+            this.byId("txnHeaderStatus").setState(headerStatus === "Processed" ? "Success" : "None");
+            
+            // Prepare item data from RULE-004 response
+            var itemData = [];
+            
+            if (oRule004Data.success && oRule004Data.documents && oRule004Data.documents.length > 0) {
+                // Use RULE-004 data
+                itemData = oRule004Data.documents.map(function (doc, index) {
+                    return {
+                        item: index + 1,
+                        bankStatementItem: index + 1,
+                        documentNumber: doc.DocumentNumber || doc.AccountingDocument || "",
+                        paymentAdvice: doc.PaymentAdvice || "",
+                        subledgerDocument: doc.SubledgerDocument || "",
+                        subledgerOnAccount: "-",
+                        amount: "0.00",
+                        documentStatus: doc.DocumentNumber ? "Cleared" : "Pending"
+                    };
+                });
+            } else if (oRun.mappedData && oRun.mappedData.length > 0) {
+                // Fallback to run data if RULE-004 failed or no documents
+                itemData = oRun.mappedData.map(function (item, index) {
+                    return {
+                        item: index + 1,
+                        bankStatementItem: index + 1,
+                        documentNumber: item.Paymentreference || item.PaymentReference || "",
+                        paymentAdvice: item.Paymentreference || "",
+                        subledgerDocument: item.SubledgerDocument || "",
+                        subledgerOnAccount: item.SubledgerOnaccount || "-",
+                        amount: item.Amount || "0.00",
+                        documentStatus: item.ClearingStatus || "Pending"
+                    };
+                });
+            }
+            
+            // Clear and populate table
+            var oTable = this.byId("itemDataTable");
+            oTable.removeAllItems();
+            
+            itemData.forEach(function(item) {
+                var oColumnListItem = new sap.m.ColumnListItem({
+                    cells: [
+                        new sap.m.Text({ text: item.item.toString() }),
+                        new sap.m.Text({ text: item.bankStatementItem.toString() }),
+                        new sap.m.Text({ text: item.documentNumber }),
+                        new sap.m.Text({ text: item.paymentAdvice }),
+                        new sap.m.Text({ text: item.subledgerDocument }),
+                        new sap.m.Text({ text: item.subledgerOnAccount }),
+                        new sap.m.Text({ text: item.amount }),
+                        new sap.m.ObjectStatus({ 
+                            text: item.documentStatus,
+                            state: item.documentStatus === "Cleared" ? "Success" : "None"
+                        })
+                    ]
+                });
+                oTable.addItem(oColumnListItem);
+            });
+            
+            // Open dialog
+            this.byId("transactionDialog").open();
+        },
+        
+        /**
+         * Cancel/Close transaction dialog
          */
         onCancelPayloadView: function () {
-            this.byId("payloadHierarchyDialog").close();
+            this.byId("transactionDialog").close();
+        },
+        
+        /**
+         * Close transaction dialog
+         */
+        onCloseTransactionDialog: function () {
+            this.byId("transactionDialog").close();
+        },
+        
+        /**
+         * Refresh transaction data (re-fetch RULE-004)
+         */
+        onRefreshTransactionData: function () {
+            var that = this;
+            var oModel = this.getView().getModel("app");
+            var oTransaction = oModel.getProperty("/selectedTransaction");
+            
+            if (!oTransaction || !oTransaction.runId) {
+                MessageToast.show("No transaction selected");
+                return;
+            }
+            
+            var sRunId = oTransaction.runId;
+            
+            BusyIndicator.show(0);
+            
+            // Re-fetch data
+            Promise.all([
+                fetch(API_BASE + "/runs/" + sRunId).then(function(res) { return res.json(); }),
+                fetch(API_BASE + "/lockbox/" + sRunId + "/accounting-document").then(function(res) { return res.json(); })
+            ]).then(function (results) {
+                var runData = results[0];
+                var rule004Data = results[1];
+                
+                BusyIndicator.hide();
+                
+                if (runData.success) {
+                    that._showTransactionDialogWithData(runData.run, rule004Data);
+                    MessageToast.show("Transaction data refreshed");
+                } else {
+                    MessageBox.error("Failed to refresh data: " + (runData.error || "Unknown error"));
+                }
+                
+            }).catch(function (error) {
+                BusyIndicator.hide();
+                MessageBox.error("Failed to refresh data: " + error.message);
+            });
         },
         
         /**
@@ -13228,6 +13335,208 @@ sap.ui.define([
             
             this.getView().addDependent(oDialog);
             oDialog.open();
+        },
+
+        // ========================================================================
+        // TRANSACTION DIALOG - Show Lockbox Processing with RULE-004 Data
+        // ========================================================================
+        
+        /**
+         * Open Transaction Dialog with Lockbox Header and Item Data
+         * Fetches accounting document details using RULE-004
+         */
+        onShowTransactionDialog: function (oEvent) {
+            var that = this;
+            var sRunId = "";
+            
+            // Get runId from event source
+            if (oEvent.getSource) {
+                var oSource = oEvent.getSource();
+                var oBindingContext = oSource.getBindingContext();
+                if (oBindingContext) {
+                    sRunId = oBindingContext.getProperty("runId");
+                }
+            }
+            
+            // If no runId from binding, try to get it from the selected item
+            if (!sRunId && oEvent.getParameter) {
+                var oItem = oEvent.getParameter("listItem") || oEvent.getParameter("item");
+                if (oItem) {
+                    var oContext = oItem.getBindingContext();
+                    sRunId = oContext ? oContext.getProperty("runId") : "";
+                }
+            }
+            
+            if (!sRunId) {
+                MessageToast.show("Cannot determine Run ID");
+                return;
+            }
+            
+            BusyIndicator.show(0);
+            
+            // Fetch run details and RULE-004 data
+            Promise.all([
+                fetch(API_BASE + "/runs/" + sRunId).then(function(res) { return res.json(); }),
+                fetch(API_BASE + "/lockbox/" + sRunId + "/accounting-document").then(function(res) { return res.json(); })
+            ]).then(function (results) {
+                var runData = results[0];
+                var rule004Data = results[1];
+                
+                BusyIndicator.hide();
+                
+                if (!runData.success) {
+                    MessageBox.error("Failed to load run details: " + (runData.error || "Unknown error"));
+                    return;
+                }
+                
+                that._showTransactionDialogWithData(runData.run, rule004Data);
+                
+            }).catch(function (error) {
+                BusyIndicator.hide();
+                MessageBox.error("Failed to load transaction data: " + error.message);
+                console.error("Transaction dialog error:", error);
+            });
+        },
+        
+        /**
+         * Display Transaction Dialog with loaded data
+         */
+        _showTransactionDialogWithData: function (oRun, oRule004Data) {
+            var that = this;
+            
+            // Prepare header data
+            var headerData = {
+                lockboxId: oRun.lockboxId || oRun.runId || "LBX000012",
+                processingStatus: oRun.overallStatus === "posted" ? "Completed" : oRun.overallStatus || "Processing",
+                companyCode: oRun.companyCode || "1000",
+                companyCodeAlt: oRun.companyCode || "1000",
+                sendingBank: oRun.sendingBank || "Bank of America",
+                headerStatus: oRun.stages && oRun.stages.mapping && oRun.stages.mapping.status === "success" ? "Processed" : "Pending"
+            };
+            
+            // Prepare item data from RULE-004 response
+            var itemData = [];
+            
+            if (oRule004Data.success && oRule004Data.documents && oRule004Data.documents.length > 0) {
+                // Use RULE-004 data
+                itemData = oRule004Data.documents.map(function (doc, index) {
+                    return {
+                        item: index + 1,
+                        bankStatementItem: index + 1,
+                        documentNumber: doc.DocumentNumber || doc.AccountingDocument || "",
+                        paymentAdvice: doc.PaymentAdvice || "",
+                        subledgerDocument: doc.SubledgerDocument || "",
+                        subledgerOnAccount: "-",
+                        amount: "0.00",
+                        documentStatus: doc.DocumentNumber ? "Cleared" : "Pending"
+                    };
+                });
+            } else {
+                // Fallback to run data if RULE-004 failed or no documents
+                if (oRun.mappedData && oRun.mappedData.length > 0) {
+                    itemData = oRun.mappedData.map(function (item, index) {
+                        return {
+                            item: index + 1,
+                            bankStatementItem: index + 1,
+                            documentNumber: item.Paymentreference || item.PaymentReference || "",
+                            paymentAdvice: item.Paymentreference || "",
+                            subledgerDocument: item.SubledgerDocument || "",
+                            subledgerOnAccount: item.SubledgerOnaccount || "-",
+                            amount: item.Amount || "0.00",
+                            documentStatus: item.ClearingStatus || "Pending"
+                        };
+                    });
+                }
+            }
+            
+            // Create model data
+            var dialogData = headerData;
+            dialogData.itemData = itemData;
+            
+            // Load fragment if not already loaded
+            if (!that._transactionDialog) {
+                sap.ui.core.Fragment.load({
+                    name: "lockbox.view.TransactionDialog",
+                    controller: that
+                }).then(function (oDialog) {
+                    that._transactionDialog = oDialog;
+                    that.getView().addDependent(oDialog);
+                    
+                    // Create and set model
+                    var oModel = new JSONModel(dialogData);
+                    oDialog.setModel(oModel, "transactionDialog");
+                    
+                    oDialog.open();
+                }).catch(function (error) {
+                    MessageBox.error("Failed to load dialog: " + error.message);
+                });
+            } else {
+                // Update existing dialog
+                var oModel = that._transactionDialog.getModel("transactionDialog");
+                oModel.setData(dialogData);
+                that._transactionDialog.open();
+            }
+        },
+        
+        /**
+         * Refresh transaction data (re-fetch RULE-004)
+         */
+        onRefreshTransactionData: function () {
+            var that = this;
+            var oDialog = that._transactionDialog;
+            
+            if (!oDialog) {
+                return;
+            }
+            
+            var oModel = oDialog.getModel("transactionDialog");
+            var sLockboxId = oModel.getProperty("/lockboxId");
+            
+            BusyIndicator.show(0);
+            
+            // Find run by lockbox ID
+            var oRun = null;
+            fetch(API_BASE + "/runs").then(function (res) {
+                return res.json();
+            }).then(function (data) {
+                if (data.success && data.runs) {
+                    oRun = data.runs.find(function (r) {
+                        return r.lockboxId === sLockboxId || r.runId === sLockboxId;
+                    });
+                    
+                    if (oRun) {
+                        return fetch(API_BASE + "/lockbox/" + oRun.runId + "/accounting-document");
+                    }
+                }
+                throw new Error("Run not found");
+            }).then(function (res) {
+                return res.json();
+            }).then(function (rule004Data) {
+                BusyIndicator.hide();
+                that._showTransactionDialogWithData(oRun, rule004Data);
+                MessageToast.show("Transaction data refreshed");
+            }).catch(function (error) {
+                BusyIndicator.hide();
+                MessageBox.error("Failed to refresh data: " + error.message);
+            });
+        },
+        
+        /**
+         * Close transaction dialog
+         */
+        onCloseTransactionDialog: function () {
+            if (this._transactionDialog) {
+                this._transactionDialog.close();
+            }
+        },
+        
+        /**
+         * Handle tab selection in transaction dialog
+         */
+        onTransactionTabSelect: function (oEvent) {
+            // Future: Handle different tabs if needed
+            var sKey = oEvent.getParameter("key");
+            console.log("Transaction tab selected:", sKey);
         }
 
     });
