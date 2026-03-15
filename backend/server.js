@@ -5251,6 +5251,66 @@ app.patch('/api/field-mapping/odata-services/:serviceId/toggle', async (req, res
 });
 
 // ============================================================================
+// API ENDPOINT - Sync Processing Rules from JSON to PostgreSQL
+// ============================================================================
+
+/**
+ * POST /api/processing-rules/sync-to-db
+ * Syncs all processing rules from JSON file to PostgreSQL database
+ */
+app.post('/api/processing-rules/sync-to-db', async (req, res) => {
+    console.log('🔄 Syncing processing rules from JSON to PostgreSQL...');
+    
+    if (!dbAvailable) {
+        return res.status(503).json({
+            success: false,
+            error: 'Database not available'
+        });
+    }
+    
+    try {
+        // Load rules from JSON file
+        const jsonRules = JSON.parse(fs.readFileSync(PROCESSING_RULES_FILE, 'utf8'));
+        
+        console.log(`   Found ${jsonRules.length} rules in JSON file`);
+        
+        let synced = 0;
+        let errors = [];
+        
+        for (const rule of jsonRules) {
+            try {
+                const result = await saveProcessingRuleToDb(rule);
+                if (result.success !== false) {
+                    synced++;
+                    console.log(`   ✅ Synced ${rule.ruleId}`);
+                } else {
+                    errors.push(`${rule.ruleId}: ${result.reason}`);
+                }
+            } catch (err) {
+                errors.push(`${rule.ruleId}: ${err.message}`);
+            }
+        }
+        
+        // Reload rules from database
+        await loadProcessingRulesFromDb();
+        
+        res.json({
+            success: true,
+            synced: synced,
+            total: jsonRules.length,
+            errors: errors
+        });
+        
+    } catch (error) {
+        console.error('❌ Error syncing rules:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// ============================================================================
 // API ENDPOINTS - RULE-004: Fetch Accounting Document Details
 // ============================================================================
 
