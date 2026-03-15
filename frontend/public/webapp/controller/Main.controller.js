@@ -8552,7 +8552,25 @@ sap.ui.define([
                         
                         // Build lockbox items for the data table from checks
                         var aLockboxItems = [];
-                        if (aChecks && aChecks.length > 0) {
+                        
+                        // Prefer RULE-004 data if available
+                        if (rule004Data.success && rule004Data.documents && rule004Data.documents.length > 0) {
+                            // Use RULE-004 accounting document data
+                            aLockboxItems = rule004Data.documents.map(function(doc, idx) {
+                                return {
+                                    companyCode: doc.CompanyCode || oTransaction.companyCode || '',
+                                    lockboxId: oTransaction.sapPayload.Lockbox || oTransaction.lockbox || '',
+                                    lockboxDest: oTransaction.sapPayload.LockboxBatchDestination || oTransaction.lockboxDestination || '',
+                                    lockboxOrigin: oTransaction.sapPayload.LockboxBatchOrigin || oTransaction.lockboxOrigin || '',
+                                    item: (idx + 1).toString().padStart(4, '0'),
+                                    amount: '0.00',
+                                    postingDoc: doc.DocumentNumber || doc.AccountingDocument || '',
+                                    paytAdvice: doc.PaymentAdvice || '',
+                                    clearingDoc: doc.SubledgerDocument || '',
+                                    subledgerOnaccountDoc: '-'
+                                };
+                            });
+                        } else if (aChecks && aChecks.length > 0) {
                             aChecks.forEach(function(check, idx) {
                                 var itemObj = {
                                     companyCode: oTransaction.companyCode || data.run.company_code || '',
