@@ -175,7 +175,7 @@ The `extractDynamicField()` function automatically detects and handles both form
 ```javascript
 // Response has "value" array
 if (data.value && Array.isArray(data.value)) {
-  return data.value[0][fieldPath];  // fieldPath = "BELNR"
+  return data.value[0][fieldPath];  // fieldPath = "AccountingDocument" (semantic name for BELNR)
 }
 ```
 
