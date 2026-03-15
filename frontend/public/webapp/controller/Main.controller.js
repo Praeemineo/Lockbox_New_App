@@ -8394,13 +8394,17 @@ sap.ui.define([
             
             BusyIndicator.show(0);
             
-            // Fetch full run details
-            fetch(API_BASE + "/lockbox/runs/" + oItem.runId)
-                .then(function (response) { return response.json(); })
-                .then(function (data) {
-                    BusyIndicator.hide();
+            // Fetch both run details AND RULE-004 data
+            Promise.all([
+                fetch(API_BASE + "/lockbox/runs/" + oItem.runId).then(function(res) { return res.json(); }),
+                fetch(API_BASE + "/lockbox/" + oItem.runId + "/accounting-document").then(function(res) { return res.json(); }).catch(function() { return { success: false, documents: [] }; })
+            ]).then(function (results) {
+                var data = results[0];
+                var rule004Data = results[1];
+                
+                BusyIndicator.hide();
                     
-                    if (data.run) {
+                if (data.run) {
                         // Build comprehensive transaction details object
                         var oTransaction = {
                             runId: data.run.runId || oItem.runId,
