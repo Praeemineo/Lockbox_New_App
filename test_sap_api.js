@@ -4,6 +4,22 @@
  * Test actual SAP API calls with real credentials
  */
 
+// Load environment variables from backend/.env
+const fs = require('fs');
+const envFile = fs.readFileSync('/app/backend/.env', 'utf8');
+envFile.split('\n').forEach(line => {
+    const [key, ...valueParts] = line.split('=');
+    if (key && valueParts.length > 0 && !key.startsWith('#')) {
+        process.env[key.trim()] = valueParts.join('=').trim();
+    }
+});
+
+console.log('Environment loaded:');
+console.log('  SAP_URL:', process.env.SAP_URL);
+console.log('  SAP_USER:', process.env.SAP_USER);
+console.log('  SAP_PASSWORD:', process.env.SAP_PASSWORD ? '***SET***' : 'NOT SET');
+console.log('  SAP_CLIENT:', process.env.SAP_CLIENT);
+
 const sapClient = require('/app/backend/srv/integrations/sap-client.js');
 
 console.log('='.repeat(80));
