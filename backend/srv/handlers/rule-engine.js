@@ -283,6 +283,7 @@ async function executeDynamicRule(rule, data) {
             }
             
             console.log(`   ✅ API Response received for row ${i + 1}`);
+            console.log(`   📦 Response structure:`, JSON.stringify(response.data).substring(0, 500));
             
             // Step 5: Extract and map ALL output fields from API response
             let fieldsEnriched = 0;
