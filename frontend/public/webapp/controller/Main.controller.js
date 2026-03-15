@@ -8677,89 +8677,125 @@ sap.ui.define([
         },
         
         /**
-         * View Payload Hierarchy - Shows lockbox data in simplified 3-level structure
+         * View Transaction Dialog - Shows lockbox processing details with RULE-004 data
          */
         onViewPayloadHierarchy: function () {
+            var that = this;
             var oModel = this.getView().getModel("app");
             var oTransaction = oModel.getProperty("/selectedTransaction");
             
-            if (!oTransaction) {
-                MessageBox.warning("No payload data available");
+            if (!oTransaction || !oTransaction.runId) {
+                MessageBox.warning("No transaction data available");
                 return;
             }
             
-            // Build 3-level hierarchy as per user requirement:
-            // Level 1: Lockbox ID (e.g., 1000172)
-            // Level 2: Batch: 001, Item: 001, Check number: 3456694 - 1365 USD
-            // Level 3: Payment Ref: 9400000940 - 1365 USD
-            var aHierarchy = [];
+            var sRunId = oTransaction.runId;
             
-            // Get lockbox ID from sapPayload or transaction
-            var lockboxId = (oTransaction.sapPayload && oTransaction.sapPayload.Lockbox) || 
-                           oTransaction.lockbox || 
-                           oTransaction.lockboxId || 
-                           "N/A";
+            BusyIndicator.show(0);
             
-            // Level 1: Lockbox ID (root node)
-            var headerNode = {
-                title: lockboxId,
-                icon: "sap-icon://product",
-                level: 0,
-                nodes: []
-            };
+            // Fetch run details and RULE-004 data
+            Promise.all([
+                fetch(API_BASE + "/runs/" + sRunId).then(function(res) { return res.json(); }),
+                fetch(API_BASE + "/lockbox/" + sRunId + "/accounting-document").then(function(res) { return res.json(); })
+            ]).then(function (results) {
+                var runData = results[0];
+                var rule004Data = results[1];
+                
+                BusyIndicator.hide();
+                
+                if (!runData.success) {
+                    MessageBox.error("Failed to load run details: " + (runData.error || "Unknown error"));
+                    return;
+                }
+                
+                that._showTransactionDialogWithData(runData.run, rule004Data);
+                
+            }).catch(function (error) {
+                BusyIndicator.hide();
+                MessageBox.error("Failed to load transaction data: " + error.message);
+                console.error("Transaction dialog error:", error);
+            });
+        },
+        
+        /**
+         * Display Transaction Dialog with loaded data
+         */
+        _showTransactionDialogWithData: function (oRun, oRule004Data) {
+            // Prepare header data
+            var lockboxId = oRun.lockboxId || oRun.runId || "LBX000012";
+            var processingStatus = oRun.overallStatus === "posted" ? "Completed" : oRun.overallStatus || "Processing";
+            var companyCode = oRun.companyCode || "1000";
+            var sendingBank = oRun.sendingBank || "Bank of America";
+            var headerStatus = (oRun.stages && oRun.stages.mapping && oRun.stages.mapping.status === "success") ? "Processed" : "Pending";
             
-            // Level 2: Check Data - Use oTransaction.checks array which has proper structure
-            if (oTransaction.checks && oTransaction.checks.length > 0) {
-                oTransaction.checks.forEach(function(check, index) {
-                    var checkAmount = check.AmountInTransactionCurrency || "0";
-                    var checkCurrency = check.Currency || "USD";
-                    var batchNumber = check.LockboxBatch || "001";
-                    var itemNum = check.LockboxBatchItem || (index + 1).toString().padStart(3, '0');
-                    var checkNumber = check.Cheque || "N/A";
-                    
-                    var checkNode = {
-                        title: "Batch: " + batchNumber + ", Item: " + itemNum + ", Check number: " + checkNumber + " - " + checkAmount + " " + checkCurrency,
-                        icon: "sap-icon://payment-approval",
-                        level: 1,
-                        nodes: []
+            // Set header fields
+            this.byId("txnLockboxId").setText(lockboxId);
+            this.byId("txnProcessingStatus").setText(processingStatus);
+            this.byId("txnProcessingStatus").setState(processingStatus === "Completed" ? "Success" : "None");
+            this.byId("txnCompanyCode").setText(companyCode);
+            this.byId("txnCompanyCodeAlt").setText(companyCode);
+            this.byId("txnSendingBank").setText(sendingBank);
+            this.byId("txnHeaderStatus").setText(headerStatus);
+            this.byId("txnHeaderStatus").setState(headerStatus === "Processed" ? "Success" : "None");
+            
+            // Prepare item data from RULE-004 response
+            var itemData = [];
+            
+            if (oRule004Data.success && oRule004Data.documents && oRule004Data.documents.length > 0) {
+                // Use RULE-004 data
+                itemData = oRule004Data.documents.map(function (doc, index) {
+                    return {
+                        item: index + 1,
+                        bankStatementItem: index + 1,
+                        documentNumber: doc.DocumentNumber || doc.AccountingDocument || "",
+                        paymentAdvice: doc.PaymentAdvice || "",
+                        subledgerDocument: doc.SubledgerDocument || "",
+                        subledgerOnAccount: "-",
+                        amount: "0.00",
+                        documentStatus: doc.DocumentNumber ? "Cleared" : "Pending"
                     };
-                    
-                    // Level 3: Payment References
-                    if (check.payments && check.payments.length > 0) {
-                        check.payments.forEach(function(payment) {
-                            var paymentRefAmount = payment.NetPaymentAmountInPaytCurrency || "0";
-                            var paymentRefCurrency = payment.Currency || checkCurrency;
-                            var refNumber = payment.PaymentReference || "N/A";
-                            checkNode.nodes.push({
-                                title: "Payment Ref: " + refNumber + " - " + paymentRefAmount + " " + paymentRefCurrency,
-                                icon: "sap-icon://document-text",
-                                level: 2
-                            });
-                        });
-                    } else {
-                        // If no payment references, show one with check amount
-                        checkNode.nodes.push({
-                            title: "Payment Ref: N/A - " + checkAmount + " " + checkCurrency,
-                            icon: "sap-icon://document-text",
-                            level: 2
-                        });
-                    }
-                    
-                    headerNode.nodes.push(checkNode);
                 });
-            } else {
-                // Fallback: if no checks array, show a warning
-                MessageBox.warning("No check data available in payload");
-                return;
+            } else if (oRun.mappedData && oRun.mappedData.length > 0) {
+                // Fallback to run data if RULE-004 failed or no documents
+                itemData = oRun.mappedData.map(function (item, index) {
+                    return {
+                        item: index + 1,
+                        bankStatementItem: index + 1,
+                        documentNumber: item.Paymentreference || item.PaymentReference || "",
+                        paymentAdvice: item.Paymentreference || "",
+                        subledgerDocument: item.SubledgerDocument || "",
+                        subledgerOnAccount: item.SubledgerOnaccount || "-",
+                        amount: item.Amount || "0.00",
+                        documentStatus: item.ClearingStatus || "Pending"
+                    };
+                });
             }
             
-            aHierarchy.push(headerNode);
+            // Clear and populate table
+            var oTable = this.byId("itemDataTable");
+            oTable.removeAllItems();
             
-            // Set hierarchy to model
-            oModel.setProperty("/payloadHierarchy", aHierarchy);
+            itemData.forEach(function(item) {
+                var oColumnListItem = new sap.m.ColumnListItem({
+                    cells: [
+                        new sap.m.Text({ text: item.item.toString() }),
+                        new sap.m.Text({ text: item.bankStatementItem.toString() }),
+                        new sap.m.Text({ text: item.documentNumber }),
+                        new sap.m.Text({ text: item.paymentAdvice }),
+                        new sap.m.Text({ text: item.subledgerDocument }),
+                        new sap.m.Text({ text: item.subledgerOnAccount }),
+                        new sap.m.Text({ text: item.amount }),
+                        new sap.m.ObjectStatus({ 
+                            text: item.documentStatus,
+                            state: item.documentStatus === "Cleared" ? "Success" : "None"
+                        })
+                    ]
+                });
+                oTable.addItem(oColumnListItem);
+            });
             
-            // Open payload dialog
-            this.byId("payloadHierarchyDialog").open();
+            // Open dialog
+            this.byId("transactionDialog").open();
         },
         
         /**
