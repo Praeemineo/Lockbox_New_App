@@ -241,40 +241,74 @@ async function executeDynamicRule(rule, data) {
             
             console.log(`   🔍 Looking for source field: "${sourceField}"`);
             
-            // Smart flexible field matching
-            // Handles: "Invoice Number", "InvoiceNumber", "Invoice"
-            // Handles: "Customer Number", "CustomerNumber", "Customer"
+            // ENHANCED FUZZY FIELD MATCHING
+            // Handles all variations: "Invoice Number", "InvoiceNumber", "invoicenumber", "Invoice", "INVOICE", etc.
+            // Works for: Customer, CustomerNumber, Customer Number, CUSTOMER NUMBER, etc.
             let sourceValue = null;
             let actualSourceField = null;
             
-            // Normalize the source field name for comparison (remove spaces, lowercase)
-            const normalizedSource = (sourceField || '').replace(/\s+/g, '').toLowerCase();
+            // Step 1: Normalize the source field (remove spaces, lowercase, remove special chars)
+            const normalizedSource = (sourceField || '')
+                .replace(/\s+/g, '')           // Remove all spaces
+                .replace(/[_-]/g, '')          // Remove underscores and dashes
+                .toLowerCase();                // Convert to lowercase
             
-            // Search for matching field in row with flexible matching
+            console.log(`   🔍 Normalized source: "${sourceField}" → "${normalizedSource}"`);
+            
+            // Step 2: Search for matching field in Excel row with FUZZY matching
             for (const rowKey of Object.keys(row)) {
-                const normalizedRowKey = rowKey.replace(/\s+/g, '').toLowerCase();
+                const normalizedRowKey = rowKey
+                    .replace(/\s+/g, '')       // Remove all spaces
+                    .replace(/[_-]/g, '')      // Remove underscores and dashes
+                    .toLowerCase();            // Convert to lowercase
                 
-                // Match strategies:
-                // 1. Exact match: "invoicenumber" === "invoicenumber"
-                // 2. Row key contains source: "invoicenumber" contains "invoice"
-                // 3. Source contains row key: "invoicenumber" is in "invoice"
-                // 4. Partial match for common fields (minimum 5 chars to avoid false matches)
-                if (normalizedRowKey === normalizedSource ||
-                    normalizedRowKey.includes(normalizedSource) ||
-                    normalizedSource.includes(normalizedRowKey) ||
-                    (normalizedRowKey.length >= 5 && normalizedSource.length >= 5 && 
-                     (normalizedRowKey.startsWith(normalizedSource.substring(0, 5)) ||
-                      normalizedSource.startsWith(normalizedRowKey.substring(0, 5))))) {
+                // MATCHING STRATEGIES (in order of preference):
+                
+                // Strategy 1: Exact match after normalization
+                // "invoicenumber" === "invoicenumber"
+                if (normalizedRowKey === normalizedSource) {
                     sourceValue = row[rowKey];
                     actualSourceField = rowKey;
-                    console.log(`   ✅ Matched Excel field "${rowKey}" with rule field "${sourceField}"`);
+                    console.log(`   ✅ Strategy 1 (Exact): Matched "${rowKey}" = "${sourceField}"`);
                     break;
+                }
+                
+                // Strategy 2: Row key fully contains source
+                // "invoicenumber" contains "invoice"
+                if (normalizedRowKey.includes(normalizedSource)) {
+                    sourceValue = row[rowKey];
+                    actualSourceField = rowKey;
+                    console.log(`   ✅ Strategy 2 (Contains): Matched "${rowKey}" contains "${sourceField}"`);
+                    break;
+                }
+                
+                // Strategy 3: Source fully contains row key
+                // "invoicenumber" is contained in "invoice"
+                if (normalizedSource.includes(normalizedRowKey) && normalizedRowKey.length >= 5) {
+                    sourceValue = row[rowKey];
+                    actualSourceField = rowKey;
+                    console.log(`   ✅ Strategy 3 (Reverse): Matched "${sourceField}" contains "${rowKey}"`);
+                    break;
+                }
+                
+                // Strategy 4: Starts with match (minimum 5 characters)
+                // "invoicenumber" starts with "invoice" or "customer" starts with "custo"
+                if (normalizedSource.length >= 5 && normalizedRowKey.length >= 5) {
+                    const sourcePrefix = normalizedSource.substring(0, 5);
+                    const rowPrefix = normalizedRowKey.substring(0, 5);
+                    
+                    if (sourcePrefix === rowPrefix) {
+                        sourceValue = row[rowKey];
+                        actualSourceField = rowKey;
+                        console.log(`   ✅ Strategy 4 (Prefix): Matched "${rowKey}" prefix matches "${sourceField}"`);
+                        break;
+                    }
                 }
             }
             
             if (!sourceValue) {
-                console.log(`   ⏭️  Row ${i + 1}: Source field "${sourceField}" not found in Excel - skipping`);
-                console.log(`   Available fields: ${Object.keys(row).join(', ')}`);
+                console.log(`   ⏭️  Row ${i + 1}: Source field "${sourceField}" not found in Excel`);
+                console.log(`   📋 Available Excel columns: ${Object.keys(row).join(', ')}`);
                 continue; // Skip row if source field is missing
             }
             
