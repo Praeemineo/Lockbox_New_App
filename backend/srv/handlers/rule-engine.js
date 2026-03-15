@@ -404,14 +404,14 @@ function findFieldValue(row, fieldName) {
 
 /**
  * Build Dynamic API URL with Query Parameters
- * Replaces placeholder ('') with actual value from Excel
+ * Automatically adds missing function parameters for OData V4 functions
  * @param {object} mapping - API mapping configuration (has apiReference, httpMethod)
  * @param {string} sourceFieldName - Source field name from fieldMappings
  * @param {string} sourceValue - The actual value to use in API call
  * @returns {string} - Complete API URL with query parameters
  */
 function buildDynamicAPIURL(mapping, sourceFieldName, sourceValue) {
-    const apiReference = mapping.apiReference;
+    let apiReference = mapping.apiReference;
     
     console.log(`      📝 Building URL with ${sourceFieldName} = "${sourceValue}"`);
     
@@ -428,6 +428,19 @@ function buildDynamicAPIURL(mapping, sourceFieldName, sourceValue) {
     if (sourceFieldName && sourceFieldName.toLowerCase().includes('customer')) {
         transformedValue = String(sourceValue).padStart(10, '0');
         console.log(`      🔢 Customer Number padded: ${sourceValue} → ${transformedValue}`);
+    }
+    
+    // AUTO-FIX: Add missing OData V4 function parameter if needed
+    // Detects if API reference is an OData V4 function without parameter
+    if (apiReference.includes('/ZFI_I_ACC_DOCUMENT') && !apiReference.includes('(P_DocumentNumber=')) {
+        console.log(`      🔧 Auto-fixing: Adding missing function parameter to API reference`);
+        apiReference = apiReference + "(P_DocumentNumber='')";
+        
+        // Add /Set endpoint if missing
+        if (!apiReference.includes('/Set')) {
+            apiReference = apiReference + '/Set';
+        }
+        console.log(`      ✅ Fixed API reference: ${apiReference}`);
     }
     
     // Replace placeholder ('') with actual value
