@@ -126,21 +126,16 @@
     "id": "4",
     "ruleId": "RULE-004",
     "ruleName": "Get Accounting Document",
-    "description": "Retrieve Accounting document",
+    "description": "Retrieve Accounting document details for a lockbox run",
     "destination": "S4HANA_SYSTEM_DESTINATION",
     "fileType": "EXCEL",
     "ruleType": "Accounting_Document",
     "active": true,
     "conditions": [
       {
-        "attribute": "Invoice Number",
-        "operator": "contains",
-        "value": "Open Item Check"
-      },
-      {
-        "attribute": "Document Amount",
-        "operator": "greaterThan",
-        "value": "0"
+        "attribute": "Status",
+        "operator": "equals",
+        "value": "Posted"
       }
     ],
     "apiMappings": [
@@ -155,7 +150,7 @@
       {
         "sourceField": "LockBox ID",
         "targetField": "DocumentNumber",
-        "apiField": "AccountingDocument"
+        "apiField": "DocumentNumber"
       },
       {
         "sourceField": "LockBox ID",
@@ -166,10 +161,25 @@
         "sourceField": "LockBox ID",
         "targetField": "SubledgerDocument",
         "apiField": "SubledgerDocument"
+      },
+      {
+        "sourceField": "LockBox ID",
+        "targetField": "AccountingDocument",
+        "apiField": "AccountingDocument"
+      },
+      {
+        "sourceField": "LockBox ID",
+        "targetField": "CompanyCode",
+        "apiField": "CompanyCode"
+      },
+      {
+        "sourceField": "LockBox ID",
+        "targetField": "FiscalYear",
+        "apiField": "FiscalYear"
       }
     ],
     "createdAt": "2026-02-16T12:00:00Z",
-    "updatedAt": "2026-03-04T12:05:50.079Z"
+    "updatedAt": "2026-03-15T16:50:00.000Z"
   },
   {
     "id": "5",
