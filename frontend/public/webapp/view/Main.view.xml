@@ -1512,7 +1512,7 @@
             
             <!-- Transaction Dialog - Lockbox Processing with RULE-004 Data -->
             <Dialog
-                id="payloadHierarchyDialog"
+                id="transactionDialog"
                 title="Lockbox Processing"
                 contentWidth="95%"
                 contentHeight="85%"
@@ -1521,12 +1521,12 @@
                 <content>
                     <VBox class="sapUiSmallMargin">
                         
-                        <!-- Header Information -->
+                        <!-- Header Information Grid -->
                         <layout:Grid
                             defaultSpan="XL4 L4 M6 S12"
                             class="sapUiSmallMarginBottom">
                             
-                            <!-- First Row -->
+                            <!-- Row 1 -->
                             <VBox class="sapUiSmallMarginBottom">
                                 <Label text="Lockbox ID:" design="Bold"/>
                                 <Text id="txnLockboxId" text=""/>
@@ -1539,7 +1539,7 @@
                             
                             <VBox></VBox>
                             
-                            <!-- Second Row -->
+                            <!-- Row 2 -->
                             <VBox class="sapUiSmallMarginBottom">
                                 <Label text="Company Code:" design="Bold"/>
                                 <Text id="txnCompanyCode" text=""/>
@@ -1552,7 +1552,7 @@
                             
                             <VBox></VBox>
                             
-                            <!-- Third Row -->
+                            <!-- Row 3 -->
                             <VBox class="sapUiSmallMarginBottom">
                                 <Label text="Sending Bank:" design="Bold"/>
                                 <Text id="txnSendingBank" text=""/>
@@ -1566,18 +1566,17 @@
                             <VBox></VBox>
                         </layout:Grid>
                         
+                        <!-- Lockbox Data Section -->
                         <OverflowToolbar class="sapUiTinyMarginTop">
                             <Title text="Lockbox Data" level="H4"/>
                             <ToolbarSpacer/>
                         </OverflowToolbar>
                         
-                        <!-- Tabs for Lockbox Data and Item Data -->
+                        <!-- Item Data Tab -->
                         <IconTabBar
                             id="transactionTabs"
                             expandable="false"
                             class="sapUiResponsiveContentPadding">
-                            
-                            <!-- Item Data Tab -->
                             <items>
                                 <IconTabFilter
                                     text="Item Data"
@@ -1631,7 +1630,7 @@
                 <endButton>
                     <Button
                         text="Close"
-                        press="onCancelPayloadView"/>
+                        press="onCloseTransactionDialog"/>
                 </endButton>
             </Dialog>
             
