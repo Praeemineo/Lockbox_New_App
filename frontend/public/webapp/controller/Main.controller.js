@@ -13228,6 +13228,208 @@ sap.ui.define([
             
             this.getView().addDependent(oDialog);
             oDialog.open();
+        },
+
+        // ========================================================================
+        // TRANSACTION DIALOG - Show Lockbox Processing with RULE-004 Data
+        // ========================================================================
+        
+        /**
+         * Open Transaction Dialog with Lockbox Header and Item Data
+         * Fetches accounting document details using RULE-004
+         */
+        onShowTransactionDialog: function (oEvent) {
+            var that = this;
+            var sRunId = "";
+            
+            // Get runId from event source
+            if (oEvent.getSource) {
+                var oSource = oEvent.getSource();
+                var oBindingContext = oSource.getBindingContext();
+                if (oBindingContext) {
+                    sRunId = oBindingContext.getProperty("runId");
+                }
+            }
+            
+            // If no runId from binding, try to get it from the selected item
+            if (!sRunId && oEvent.getParameter) {
+                var oItem = oEvent.getParameter("listItem") || oEvent.getParameter("item");
+                if (oItem) {
+                    var oContext = oItem.getBindingContext();
+                    sRunId = oContext ? oContext.getProperty("runId") : "";
+                }
+            }
+            
+            if (!sRunId) {
+                MessageToast.show("Cannot determine Run ID");
+                return;
+            }
+            
+            BusyIndicator.show(0);
+            
+            // Fetch run details and RULE-004 data
+            Promise.all([
+                fetch(API_BASE + "/runs/" + sRunId).then(function(res) { return res.json(); }),
+                fetch(API_BASE + "/lockbox/" + sRunId + "/accounting-document").then(function(res) { return res.json(); })
+            ]).then(function (results) {
+                var runData = results[0];
+                var rule004Data = results[1];
+                
+                BusyIndicator.hide();
+                
+                if (!runData.success) {
+                    MessageBox.error("Failed to load run details: " + (runData.error || "Unknown error"));
+                    return;
+                }
+                
+                that._showTransactionDialogWithData(runData.run, rule004Data);
+                
+            }).catch(function (error) {
+                BusyIndicator.hide();
+                MessageBox.error("Failed to load transaction data: " + error.message);
+                console.error("Transaction dialog error:", error);
+            });
+        },
+        
+        /**
+         * Display Transaction Dialog with loaded data
+         */
+        _showTransactionDialogWithData: function (oRun, oRule004Data) {
+            var that = this;
+            
+            // Prepare header data
+            var headerData = {
+                lockboxId: oRun.lockboxId || oRun.runId || "LBX000012",
+                processingStatus: oRun.overallStatus === "posted" ? "Completed" : oRun.overallStatus || "Processing",
+                companyCode: oRun.companyCode || "1000",
+                companyCodeAlt: oRun.companyCode || "1000",
+                sendingBank: oRun.sendingBank || "Bank of America",
+                headerStatus: oRun.stages && oRun.stages.mapping && oRun.stages.mapping.status === "success" ? "Processed" : "Pending"
+            };
+            
+            // Prepare item data from RULE-004 response
+            var itemData = [];
+            
+            if (oRule004Data.success && oRule004Data.documents && oRule004Data.documents.length > 0) {
+                // Use RULE-004 data
+                itemData = oRule004Data.documents.map(function (doc, index) {
+                    return {
+                        item: index + 1,
+                        bankStatementItem: index + 1,
+                        documentNumber: doc.DocumentNumber || doc.AccountingDocument || "",
+                        paymentAdvice: doc.PaymentAdvice || "",
+                        subledgerDocument: doc.SubledgerDocument || "",
+                        subledgerOnAccount: "-",
+                        amount: "0.00",
+                        documentStatus: doc.DocumentNumber ? "Cleared" : "Pending"
+                    };
+                });
+            } else {
+                // Fallback to run data if RULE-004 failed or no documents
+                if (oRun.mappedData && oRun.mappedData.length > 0) {
+                    itemData = oRun.mappedData.map(function (item, index) {
+                        return {
+                            item: index + 1,
+                            bankStatementItem: index + 1,
+                            documentNumber: item.Paymentreference || item.PaymentReference || "",
+                            paymentAdvice: item.Paymentreference || "",
+                            subledgerDocument: item.SubledgerDocument || "",
+                            subledgerOnAccount: item.SubledgerOnaccount || "-",
+                            amount: item.Amount || "0.00",
+                            documentStatus: item.ClearingStatus || "Pending"
+                        };
+                    });
+                }
+            }
+            
+            // Create model data
+            var dialogData = headerData;
+            dialogData.itemData = itemData;
+            
+            // Load fragment if not already loaded
+            if (!that._transactionDialog) {
+                sap.ui.core.Fragment.load({
+                    name: "lockbox.view.TransactionDialog",
+                    controller: that
+                }).then(function (oDialog) {
+                    that._transactionDialog = oDialog;
+                    that.getView().addDependent(oDialog);
+                    
+                    // Create and set model
+                    var oModel = new JSONModel(dialogData);
+                    oDialog.setModel(oModel, "transactionDialog");
+                    
+                    oDialog.open();
+                }).catch(function (error) {
+                    MessageBox.error("Failed to load dialog: " + error.message);
+                });
+            } else {
+                // Update existing dialog
+                var oModel = that._transactionDialog.getModel("transactionDialog");
+                oModel.setData(dialogData);
+                that._transactionDialog.open();
+            }
+        },
+        
+        /**
+         * Refresh transaction data (re-fetch RULE-004)
+         */
+        onRefreshTransactionData: function () {
+            var that = this;
+            var oDialog = that._transactionDialog;
+            
+            if (!oDialog) {
+                return;
+            }
+            
+            var oModel = oDialog.getModel("transactionDialog");
+            var sLockboxId = oModel.getProperty("/lockboxId");
+            
+            BusyIndicator.show(0);
+            
+            // Find run by lockbox ID
+            var oRun = null;
+            fetch(API_BASE + "/runs").then(function (res) {
+                return res.json();
+            }).then(function (data) {
+                if (data.success && data.runs) {
+                    oRun = data.runs.find(function (r) {
+                        return r.lockboxId === sLockboxId || r.runId === sLockboxId;
+                    });
+                    
+                    if (oRun) {
+                        return fetch(API_BASE + "/lockbox/" + oRun.runId + "/accounting-document");
+                    }
+                }
+                throw new Error("Run not found");
+            }).then(function (res) {
+                return res.json();
+            }).then(function (rule004Data) {
+                BusyIndicator.hide();
+                that._showTransactionDialogWithData(oRun, rule004Data);
+                MessageToast.show("Transaction data refreshed");
+            }).catch(function (error) {
+                BusyIndicator.hide();
+                MessageBox.error("Failed to refresh data: " + error.message);
+            });
+        },
+        
+        /**
+         * Close transaction dialog
+         */
+        onCloseTransactionDialog: function () {
+            if (this._transactionDialog) {
+                this._transactionDialog.close();
+            }
+        },
+        
+        /**
+         * Handle tab selection in transaction dialog
+         */
+        onTransactionTabSelect: function (oEvent) {
+            // Future: Handle different tabs if needed
+            var sKey = oEvent.getParameter("key");
+            console.log("Transaction tab selected:", sKey);
         }
 
     });
