@@ -8799,10 +8799,57 @@ sap.ui.define([
         },
         
         /**
-         * Cancel payload view - return to transaction details
+         * Cancel/Close transaction dialog
          */
         onCancelPayloadView: function () {
-            this.byId("payloadHierarchyDialog").close();
+            this.byId("transactionDialog").close();
+        },
+        
+        /**
+         * Close transaction dialog
+         */
+        onCloseTransactionDialog: function () {
+            this.byId("transactionDialog").close();
+        },
+        
+        /**
+         * Refresh transaction data (re-fetch RULE-004)
+         */
+        onRefreshTransactionData: function () {
+            var that = this;
+            var oModel = this.getView().getModel("app");
+            var oTransaction = oModel.getProperty("/selectedTransaction");
+            
+            if (!oTransaction || !oTransaction.runId) {
+                MessageToast.show("No transaction selected");
+                return;
+            }
+            
+            var sRunId = oTransaction.runId;
+            
+            BusyIndicator.show(0);
+            
+            // Re-fetch data
+            Promise.all([
+                fetch(API_BASE + "/runs/" + sRunId).then(function(res) { return res.json(); }),
+                fetch(API_BASE + "/lockbox/" + sRunId + "/accounting-document").then(function(res) { return res.json(); })
+            ]).then(function (results) {
+                var runData = results[0];
+                var rule004Data = results[1];
+                
+                BusyIndicator.hide();
+                
+                if (runData.success) {
+                    that._showTransactionDialogWithData(runData.run, rule004Data);
+                    MessageToast.show("Transaction data refreshed");
+                } else {
+                    MessageBox.error("Failed to refresh data: " + (runData.error || "Unknown error"));
+                }
+                
+            }).catch(function (error) {
+                BusyIndicator.hide();
+                MessageBox.error("Failed to refresh data: " + error.message);
+            });
         },
         
         /**
