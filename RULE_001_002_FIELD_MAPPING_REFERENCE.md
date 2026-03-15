@@ -161,8 +161,8 @@ targetField "to_BusinessPartnerBank/results/0/BankCountryKey"
 | **OData Version** | V4 | V2 |
 | **Response Format** | `{ value: [...] }` | `{ d: { ... } }` |
 | **Field Location** | Direct in value array | Nested in navigation property |
-| **Target Field Format** | Simple field name | Slash-separated path |
-| **Example targetField** | `BELNR` | `to_BusinessPartnerBank/results/0/BankNumber` |
+| **Target Field Format** | Semantic name (e.g., `AccountingDocument`) | Slash-separated path |
+| **Example targetField** | `AccountingDocument` (BELNR in database) | `to_BusinessPartnerBank/results/0/BankNumber` |
 | **Navigation Required** | No | Yes (to_BusinessPartnerBank) |
 
 ---
