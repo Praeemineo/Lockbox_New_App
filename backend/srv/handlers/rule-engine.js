@@ -405,44 +405,39 @@ function findFieldValue(row, fieldName) {
 
 /**
  * Build Dynamic API URL with Query Parameters
- * Updated to work with NEW structure (fieldMappings)
+ * Replaces placeholder ('') with actual value from Excel
  * @param {object} mapping - API mapping configuration (has apiReference, httpMethod)
- * @param {object} row - Data row
  * @param {string} sourceFieldName - Source field name from fieldMappings
  * @param {string} sourceValue - The actual value to use in API call
  * @returns {string} - Complete API URL with query parameters
  */
-function buildDynamicAPIURL(mapping, row, sourceFieldName, sourceValue) {
+function buildDynamicAPIURL(mapping, sourceFieldName, sourceValue) {
     const apiReference = mapping.apiReference;
     
-    console.log(`      Building API URL with value: ${sourceValue}`);
+    console.log(`      📝 Building URL with ${sourceFieldName} = "${sourceValue}"`);
     
-    // TRANSFORMATION: For Invoice Numbers (P_DocumentNumber), pad with leading zeros to 10 digits
+    // Apply transformations based on field type
+    let transformedValue = sourceValue;
+    
+    // TRANSFORMATION 1: Invoice Numbers - pad with leading zeros to 10 digits
     if (sourceFieldName && sourceFieldName.toLowerCase().includes('invoice')) {
-        const originalValue = sourceValue;
-        // Convert to string and pad with leading zeros to 10 digits
-        sourceValue = String(sourceValue).padStart(10, '0');
-        console.log(`      🔢 Invoice Number Transformation: ${originalValue} → ${sourceValue} (padded to 10 digits)`);
+        transformedValue = String(sourceValue).padStart(10, '0');
+        console.log(`      🔢 Invoice Number padded: ${sourceValue} → ${transformedValue}`);
     }
     
-    // PATTERN 1: OData V4 Function Import - /Function(Parameter='')/Set
-    if (apiReference.includes("='')/Set") || apiReference.includes("='')")) {
-        const finalURL = apiReference.replace("=''", `='${sourceValue}'`);
-        console.log(`      📋 Final URL: ${finalURL}`);
-        return finalURL;
+    // TRANSFORMATION 2: Customer Numbers - ensure proper formatting
+    if (sourceFieldName && sourceFieldName.toLowerCase().includes('customer')) {
+        transformedValue = String(sourceValue).padStart(10, '0');
+        console.log(`      🔢 Customer Number padded: ${sourceValue} → ${transformedValue}`);
     }
     
-    // PATTERN 2: OData Entity Key with $expand - /Entity(Key='')?$expand=...
-    if (apiReference.includes("='')?$expand=") || apiReference.includes("='')?$")) {
-        const finalURL = apiReference.replace("=''", `='${sourceValue}'`);
-        console.log(`      📋 Final URL: ${finalURL}`);
-        return finalURL;
-    }
+    // Replace placeholder ('') with actual value
+    // This works for patterns like:
+    // - P_DocumentNumber='' (OData V4 function)
+    // - BusinessPartner='' (OData V2 entity key)
+    const finalURL = apiReference.replace("=''", `='${transformedValue}'`);
     
-    // PATTERN 3: If no empty quotes found, append as query parameter
-    const separator = apiReference.includes('?') ? '&' : '?';
-    const finalURL = `${apiReference}${separator}$filter=Field eq '${sourceValue}'`;
-    console.log(`      📋 Final URL: ${finalURL}`);
+    console.log(`      ✅ Final URL: ${finalURL}`);
     return finalURL;
 }
 
