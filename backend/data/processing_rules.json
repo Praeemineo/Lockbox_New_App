@@ -27,12 +27,12 @@
       {
         "sourceField": "Invoice Number",
         "targetField": "AccountingDocument",
-        "apiField": "PaymentReference"
+        "apiField": "paymentreference"
       },
       {
         "sourceField": "Invoice Number",
         "targetField": "CompanyCode",
-        "apiField": "CompanyCode"
+        "apiField": "companyCode"
       }
     ],
     "createdAt": "2026-02-16T12:00:00Z",
