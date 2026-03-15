@@ -523,14 +523,6 @@ async function callSAPAPI(apiURL, httpMethod, destination) {
 }
 
 /**
- * Extract Dynamic Field from SAP Response
- * Handles nested paths like: d.results[0].BELNR, value[0].BankNumber
- * Handles navigation properties: to_BusinessPartnerBank/results/0/BankNumber
- * @param {object} responseData - API response
- * @param {string} fieldPath - Path to extract (e.g., "BELNR", "to_BusinessPartnerBank/results/0/BankNumber")
- * @returns {any} - Extracted value or null
- */
-/**
  * Extract field value from nested API response
  * Supports multiple OData formats and automatic path detection
  * @param {object} data - API response data
