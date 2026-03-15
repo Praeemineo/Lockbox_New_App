@@ -230,97 +230,43 @@ async function executeDynamicRule(rule, data) {
         return result;
     }
     
+    console.log(`   📋 Rule has ${fieldMappings.length} field mapping(s)`);
+    
     // Process each data row
     for (let i = 0; i < data.length; i++) {
         const row = data[i];
         
         try {
-            // Step 1: Get source field from fieldMappings (NEW STRUCTURE)
+            // Step 1: Get the FIRST source field from fieldMappings to use for API call
+            // All fieldMappings in a rule typically use the same sourceField as INPUT
             const firstFieldMapping = fieldMappings[0];
-            const sourceField = firstFieldMapping.sourceField;
+            const sourceFieldName = firstFieldMapping.sourceField;
             
-            console.log(`   🔍 Looking for source field: "${sourceField}"`);
+            console.log(`\n   🔍 Row ${i + 1}: Looking for source field "${sourceFieldName}" in Excel`);
             
-            // ENHANCED FUZZY FIELD MATCHING
-            // Handles all variations: "Invoice Number", "InvoiceNumber", "invoicenumber", "Invoice", "INVOICE", etc.
-            // Works for: Customer, CustomerNumber, Customer Number, CUSTOMER NUMBER, etc.
-            let sourceValue = null;
-            let actualSourceField = null;
-            
-            // Step 1: Normalize the source field (remove spaces, lowercase, remove special chars)
-            const normalizedSource = (sourceField || '')
-                .replace(/\s+/g, '')           // Remove all spaces
-                .replace(/[_-]/g, '')          // Remove underscores and dashes
-                .toLowerCase();                // Convert to lowercase
-            
-            console.log(`   🔍 Normalized source: "${sourceField}" → "${normalizedSource}"`);
-            
-            // Step 2: Search for matching field in Excel row with FUZZY matching
-            for (const rowKey of Object.keys(row)) {
-                const normalizedRowKey = rowKey
-                    .replace(/\s+/g, '')       // Remove all spaces
-                    .replace(/[_-]/g, '')      // Remove underscores and dashes
-                    .toLowerCase();            // Convert to lowercase
-                
-                // MATCHING STRATEGIES (in order of preference):
-                
-                // Strategy 1: Exact match after normalization
-                // "invoicenumber" === "invoicenumber"
-                if (normalizedRowKey === normalizedSource) {
-                    sourceValue = row[rowKey];
-                    actualSourceField = rowKey;
-                    console.log(`   ✅ Strategy 1 (Exact): Matched "${rowKey}" = "${sourceField}"`);
-                    break;
-                }
-                
-                // Strategy 2: Row key fully contains source
-                // "invoicenumber" contains "invoice"
-                if (normalizedRowKey.includes(normalizedSource)) {
-                    sourceValue = row[rowKey];
-                    actualSourceField = rowKey;
-                    console.log(`   ✅ Strategy 2 (Contains): Matched "${rowKey}" contains "${sourceField}"`);
-                    break;
-                }
-                
-                // Strategy 3: Source fully contains row key
-                // "invoicenumber" is contained in "invoice"
-                if (normalizedSource.includes(normalizedRowKey) && normalizedRowKey.length >= 5) {
-                    sourceValue = row[rowKey];
-                    actualSourceField = rowKey;
-                    console.log(`   ✅ Strategy 3 (Reverse): Matched "${sourceField}" contains "${rowKey}"`);
-                    break;
-                }
-                
-                // Strategy 4: Starts with match (minimum 5 characters)
-                // "invoicenumber" starts with "invoice" or "customer" starts with "custo"
-                if (normalizedSource.length >= 5 && normalizedRowKey.length >= 5) {
-                    const sourcePrefix = normalizedSource.substring(0, 5);
-                    const rowPrefix = normalizedRowKey.substring(0, 5);
-                    
-                    if (sourcePrefix === rowPrefix) {
-                        sourceValue = row[rowKey];
-                        actualSourceField = rowKey;
-                        console.log(`   ✅ Strategy 4 (Prefix): Matched "${rowKey}" prefix matches "${sourceField}"`);
-                        break;
-                    }
-                }
-            }
+            // Step 2: Find source field value in Excel row using FUZZY matching
+            const sourceValue = findFieldValue(row, sourceFieldName);
             
             if (!sourceValue) {
-                console.log(`   ⏭️  Row ${i + 1}: Source field "${sourceField}" not found in Excel`);
+                console.log(`   ⏭️  Row ${i + 1}: Source field "${sourceFieldName}" not found or empty`);
                 console.log(`   📋 Available Excel columns: ${Object.keys(row).join(', ')}`);
-                continue; // Skip row if source field is missing
+                continue;
             }
             
-            console.log(`   📝 Row ${i + 1}: Found ${actualSourceField}=${sourceValue}`);
+            console.log(`   ✅ Row ${i + 1}: Found ${sourceFieldName} = "${sourceValue}"`);
             
-            // Step 2: Build dynamic API URL using first API mapping
+            // Step 3: Build dynamic API URL
             const firstMapping = mappings[0];
-            const apiURL = buildDynamicAPIURL(firstMapping, row, sourceField, sourceValue);
+            const apiURL = buildDynamicAPIURL(firstMapping, sourceFieldName, sourceValue);
             
-            console.log(`   📞 API Call for row ${i + 1}`);
+            if (!apiURL) {
+                result.errors.push(`Row ${i + 1}: Failed to build API URL`);
+                continue;
+            }
             
-            // Step 3: Call SAP API via destination
+            console.log(`   📞 Calling API for row ${i + 1}...`);
+            
+            // Step 4: Call SAP API
             const response = await callSAPAPI(apiURL, firstMapping.httpMethod, rule.destination);
             
             if (!response || !response.data) {
@@ -328,34 +274,58 @@ async function executeDynamicRule(rule, data) {
                 continue;
             }
             
-            // Step 4: Extract and map output fields using fieldMappings (NEW STRUCTURE)
+            console.log(`   ✅ API Response received for row ${i + 1}`);
+            
+            // Step 5: Extract and map ALL output fields from API response
             let fieldsEnriched = 0;
+            
             for (const fieldMapping of fieldMappings) {
-                const apiValue = extractDynamicField(response.data, fieldMapping.targetField);
+                const targetFieldName = fieldMapping.targetField;   // Field in SAP response
+                const lockboxFieldName = fieldMapping.apiField;      // Field to store in lockbox
+                
+                console.log(`      🔍 Extracting "${targetFieldName}" from response...`);
+                
+                // Handle special case for RULE-002 Bank fields (nested navigation)
+                let apiValue = null;
+                
+                if (rule.ruleId === 'RULE-002' && targetFieldName === 'BankNumber') {
+                    apiValue = extractDynamicField(response.data, 'to_BusinessPartnerBank/results/0/BankNumber');
+                } else if (rule.ruleId === 'RULE-002' && targetFieldName === 'BankAccount') {
+                    apiValue = extractDynamicField(response.data, 'to_BusinessPartnerBank/results/0/BankAccount');
+                } else if (rule.ruleId === 'RULE-002' && targetFieldName === 'BankCountryKey') {
+                    apiValue = extractDynamicField(response.data, 'to_BusinessPartnerBank/results/0/BankCountryKey');
+                } else {
+                    // Standard extraction for other fields
+                    apiValue = extractDynamicField(response.data, targetFieldName);
+                }
                 
                 if (apiValue !== null && apiValue !== undefined) {
-                    const lockboxField = fieldMapping.apiField;
-                    row[lockboxField] = apiValue;
+                    row[lockboxFieldName] = apiValue;
                     fieldsEnriched++;
-                    console.log(`   ✅ ${lockboxField}: ${apiValue}`);
+                    console.log(`      ✅ ${lockboxFieldName} = "${apiValue}"`);
                     
                     // Add metadata for Field Mapping Preview
                     if (!row._apiDerivedFields) row._apiDerivedFields = [];
                     if (!row._apiFieldMappings) row._apiFieldMappings = {};
                     
-                    row._apiDerivedFields.push(lockboxField);
-                    row._apiFieldMappings[lockboxField] = {
+                    row._apiDerivedFields.push(lockboxFieldName);
+                    row._apiFieldMappings[lockboxFieldName] = {
                         apiEndpoint: firstMapping.apiReference,
-                        sourceField: fieldMapping.targetField,
+                        sourceField: targetFieldName,
                         derivedFrom: rule.ruleId,
-                        inputField: fieldMapping.sourceField,
+                        inputField: sourceFieldName,
                         inputValue: sourceValue
                     };
+                } else {
+                    console.log(`      ⚠️  ${targetFieldName} not found in response`);
                 }
             }
             
             if (fieldsEnriched > 0) {
                 result.recordsEnriched++;
+                console.log(`   ✅ Row ${i + 1}: Enriched ${fieldsEnriched} field(s)`);
+            } else {
+                console.log(`   ⚠️  Row ${i + 1}: No fields enriched`);
             }
             
         } catch (rowError) {
@@ -365,6 +335,72 @@ async function executeDynamicRule(rule, data) {
     }
     
     return result;
+}
+
+/**
+ * Find field value in row with fuzzy matching
+ * @param {object} row - Data row from Excel
+ * @param {string} fieldName - Field name to search for
+ * @returns {string|null} - Field value or null
+ */
+function findFieldValue(row, fieldName) {
+    // Normalize the search field name
+    const normalizedSearch = (fieldName || '')
+        .replace(/\s+/g, '')       // Remove spaces
+        .replace(/[_-]/g, '')      // Remove underscores/dashes
+        .toLowerCase();            // Lowercase
+    
+    console.log(`      Normalized search: "${fieldName}" → "${normalizedSearch}"`);
+    
+    // Try multiple matching strategies
+    for (const rowKey of Object.keys(row)) {
+        const normalizedRowKey = rowKey
+            .replace(/\s+/g, '')
+            .replace(/[_-]/g, '')
+            .toLowerCase();
+        
+        // Strategy 1: Exact match
+        if (normalizedRowKey === normalizedSearch) {
+            console.log(`      ✅ Exact match: "${rowKey}"`);
+            return row[rowKey];
+        }
+        
+        // Strategy 2: Row key contains search term
+        if (normalizedRowKey.includes(normalizedSearch)) {
+            console.log(`      ✅ Contains match: "${rowKey}" contains "${fieldName}"`);
+            return row[rowKey];
+        }
+        
+        // Strategy 3: Search term contains row key (for abbreviated columns)
+        if (normalizedSearch.includes(normalizedRowKey) && normalizedRowKey.length >= 5) {
+            console.log(`      ✅ Reverse match: "${fieldName}" contains "${rowKey}"`);
+            return row[rowKey];
+        }
+    }
+    
+    // Strategy 4: Prefix match (first 5 characters)
+    if (normalizedSearch.length >= 5) {
+        const searchPrefix = normalizedSearch.substring(0, 5);
+        
+        for (const rowKey of Object.keys(row)) {
+            const normalizedRowKey = rowKey
+                .replace(/\s+/g, '')
+                .replace(/[_-]/g, '')
+                .toLowerCase();
+            
+            if (normalizedRowKey.length >= 5) {
+                const rowPrefix = normalizedRowKey.substring(0, 5);
+                
+                if (rowPrefix === searchPrefix) {
+                    console.log(`      ✅ Prefix match: "${rowKey}"`);
+                    return row[rowKey];
+                }
+            }
+        }
+    }
+    
+    console.log(`      ❌ No match found for "${fieldName}"`);
+    return null;
 }
 
 /**
