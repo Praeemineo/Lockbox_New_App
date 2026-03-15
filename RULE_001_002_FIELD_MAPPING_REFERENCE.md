@@ -19,8 +19,10 @@ Fetch accounting document details from SAP using invoice number from Excel file.
 
 | sourceField | targetField | apiField | Description |
 |-------------|-------------|----------|-------------|
-| Invoice Number | BELNR | PaymentReference | Extract BELNR from SAP and store as PaymentReference |
+| Invoice Number | AccountingDocument | PaymentReference | Extract AccountingDocument from SAP and store as PaymentReference |
 | Invoice Number | CompanyCode | CompanyCode | Extract CompanyCode from SAP |
+
+> **📝 Note:** `AccountingDocument` is the semantic field name in the CDS view. The technical database field name is `BELNR`, but OData V4 services use the semantic names.
 
 ### Execution Flow
 
@@ -40,7 +42,7 @@ URL: .../ZFI_I_ACC_DOCUMENT(P_DocumentNumber='0000123456')/Set
 {
   "value": [
     {
-      "BELNR": "9876543210",
+      "AccountingDocument": "9876543210",
       "CompanyCode": "1710",
       "FiscalYear": "2025",
       ...
@@ -48,10 +50,11 @@ URL: .../ZFI_I_ACC_DOCUMENT(P_DocumentNumber='0000123456')/Set
   ]
 }
 ```
+> **💡 SAP Field Naming:** `AccountingDocument` (semantic) = `BELNR` (technical). The OData service uses semantic names.
 
 **Step 4: Field Extraction**
 ```
-targetField "BELNR" → Extract value "9876543210"
+targetField "AccountingDocument" → Extract value "9876543210"
 → Store in apiField "PaymentReference"
 
 targetField "CompanyCode" → Extract value "1710"
