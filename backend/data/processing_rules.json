@@ -1,16 +1,3 @@
-Updated RULE-001:
-[
-  {
-    "sourceField": "Invoice Number",
-    "targetField": "Belnr",
-    "apiField": "paymentreference"
-  },
-  {
-    "sourceField": "Invoice Number",
-    "targetField": "CompanyCode",
-    "apiField": "companyCode"
-  }
-]
 [
   {
     "id": "1",
