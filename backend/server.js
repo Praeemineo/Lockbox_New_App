@@ -5454,6 +5454,33 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
         
         console.log(`   📊 SAP returned ${documents.length} document(s)`);
         
+        // LOG FULL RESPONSE VALUES for debugging
+        console.log(`\n${'='.repeat(80)}`);
+        console.log(`📋 RULE-004 SAP RESPONSE VALUES:`);
+        console.log(`${'='.repeat(80)}`);
+        console.log(`🔍 LockboxId used in query: ${lockboxId}`);
+        console.log(`📥 Full SAP Response:`);
+        console.log(JSON.stringify(response.data, null, 2));
+        console.log(`\n📊 Documents Summary:`);
+        documents.forEach((doc, idx) => {
+            console.log(`\n   Document ${idx + 1}:`);
+            console.log(`   - LockBoxId: ${doc.LockBoxId || 'N/A'}`);
+            console.log(`   - SendingBank: ${doc.SendingBank || 'N/A'}`);
+            console.log(`   - BankStatement: ${doc.BankStatement || 'N/A'}`);
+            console.log(`   - StatementId: ${doc.StatementId || 'N/A'}`);
+            console.log(`   - CompanyCode: ${doc.CompanyCode || 'N/A'}`);
+            console.log(`   - HeaderStatus: ${doc.HeaderStatus || 'N/A'}`);
+            console.log(`   - BankStatementItem: ${doc.BankStatementItem || 'N/A'}`);
+            console.log(`   - DocumentNumber: ${doc.DocumentNumber || 'N/A'}`);
+            console.log(`   - PaymentAdvice: ${doc.PaymentAdvice || 'N/A'}`);
+            console.log(`   - SubledgerDocument: ${doc.SubledgerDocument || 'N/A'}`);
+            console.log(`   - SubledgerOnaccountDocument: ${doc.SubledgerOnaccountDocument || 'N/A'}`);
+            console.log(`   - Amount: ${doc.Amount || 0}`);
+            console.log(`   - Currency: ${doc.TransactionCurrency || 'N/A'}`);
+            console.log(`   - DocumentStatus: ${doc.DocumentStatus || 'N/A'}`);
+        });
+        console.log(`${'='.repeat(80)}\n`);
+        
         const mappedData = documents.map((doc, index) => ({
             item: (index + 1).toString(),
             LockBoxId: doc.LockBoxId || '',

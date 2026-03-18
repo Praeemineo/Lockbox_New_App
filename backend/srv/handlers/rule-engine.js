@@ -308,6 +308,14 @@ async function executeDynamicRule(rule, data) {
             console.log(`   ✅ API Response received for row ${i + 1}`);
             console.log(`   📦 Response structure:`, JSON.stringify(response.data).substring(0, 500));
             
+            // LOG FULL RESPONSE VALUES for debugging
+            console.log(`\n${'='.repeat(80)}`);
+            console.log(`📋 ${rule.ruleId} RESPONSE VALUES for Row ${i + 1}:`);
+            console.log(`${'='.repeat(80)}`);
+            console.log(`📥 Full SAP Response Data:`);
+            console.log(JSON.stringify(response.data, null, 2));
+            console.log(`${'='.repeat(80)}\n`);
+            
             // Step 5: Extract and map ALL output fields from API response
             let fieldsEnriched = 0;
             
@@ -352,7 +360,13 @@ async function executeDynamicRule(rule, data) {
                     
                     row[fieldToUpdate] = apiValue;
                     fieldsEnriched++;
-                    console.log(`      ✅ ${fieldToUpdate} = "${apiValue}" (was: "${row[fieldToUpdate] !== apiValue ? 'changed' : 'set'})")`);
+                    console.log(`      ✅ ${fieldToUpdate} = "${apiValue}"`);
+                    console.log(`      📊 Field enrichment details:`, {
+                        targetField: targetFieldName,
+                        extractedValue: apiValue,
+                        storedAs: fieldToUpdate,
+                        row: i + 1
+                    });
                     
                     // Add metadata for Field Mapping Preview
                     if (!row._apiDerivedFields) row._apiDerivedFields = [];
@@ -373,7 +387,16 @@ async function executeDynamicRule(rule, data) {
             
             if (fieldsEnriched > 0) {
                 result.recordsEnriched++;
-                console.log(`   ✅ Row ${i + 1}: Enriched ${fieldsEnriched} field(s)`);
+                console.log(`\n${'='.repeat(80)}`);
+                console.log(`✅ ${rule.ruleId} Row ${i + 1} ENRICHMENT SUMMARY:`);
+                console.log(`   Fields enriched: ${fieldsEnriched}`);
+                console.log(`   Enriched row data (relevant fields):`);
+                fieldMappings.forEach(fm => {
+                    if (row[fm.apiField]) {
+                        console.log(`   - ${fm.apiField}: "${row[fm.apiField]}"`);
+                    }
+                });
+                console.log(`${'='.repeat(80)}\n`);
             } else {
                 console.log(`   ⚠️  Row ${i + 1}: No fields enriched`);
             }
