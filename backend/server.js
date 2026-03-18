@@ -5354,9 +5354,10 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
         const apiEndpoint = apiMapping.apiReference;
         
         // Build query filter with lockbox ID
+        // Using LockBoxId field as specified in RULE-004 requirements
         const queryParams = {
-            '$filter': `LockboxBatchOrigin eq '${lockboxId}'`,
-            '$select': 'DocumentNumber,PaymentAdvice,SubledgerDocument,AccountingDocument,CompanyCode,FiscalYear',
+            '$filter': `LockBoxId eq '${lockboxId}'`,
+            '$select': 'LockBoxId,SendingBank,BankStatement,StatementId,CompanyCode,HeaderStatus,BankStatementItem,DocumentNumber,PaymentAdvice,SubledgerDocument,SubledgerOnaccountDocument,Amount,TransactionCurrency,DocumentStatus',
             '$top': '100'
         };
         
@@ -5384,14 +5385,23 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
         
         console.log(`   📊 Found ${documents.length} document(s)`);
         
-        // Map to frontend structure
-        const mappedData = documents.map(doc => ({
+        // Map to frontend structure - matching RULE-004 SAP response fields
+        const mappedData = documents.map((doc, index) => ({
+            item: (index + 1).toString(),
+            LockBoxId: doc.LockBoxId || '',
+            SendingBank: doc.SendingBank || '',
+            BankStatement: doc.BankStatement || '',
+            StatementId: doc.StatementId || '',
+            CompanyCode: doc.CompanyCode || '',
+            HeaderStatus: doc.HeaderStatus || '',
+            BankStatementItem: doc.BankStatementItem || '',
             DocumentNumber: doc.DocumentNumber || '',
             PaymentAdvice: doc.PaymentAdvice || '',
             SubledgerDocument: doc.SubledgerDocument || '',
-            AccountingDocument: doc.AccountingDocument || '',
-            CompanyCode: doc.CompanyCode || '',
-            FiscalYear: doc.FiscalYear || ''
+            SubledgerOnaccountDocument: doc.SubledgerOnaccountDocument || '',
+            Amount: doc.Amount || 0,
+            TransactionCurrency: doc.TransactionCurrency || 'USD',
+            DocumentStatus: doc.DocumentStatus || ''
         }));
         
         res.json({

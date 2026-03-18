@@ -8766,19 +8766,39 @@ sap.ui.define([
             var itemData = [];
             
             if (oRule004Data.success && oRule004Data.documents && oRule004Data.documents.length > 0) {
-                // Use RULE-004 data
+                // Use RULE-004 data with all fields from SAP response
                 itemData = oRule004Data.documents.map(function (doc, index) {
                     return {
-                        item: index + 1,
-                        bankStatementItem: index + 1,
-                        documentNumber: doc.DocumentNumber || doc.AccountingDocument || "",
+                        item: doc.item || (index + 1),
+                        bankStatementItem: doc.BankStatementItem || (index + 1).toString(),
+                        documentNumber: doc.DocumentNumber || "",
                         paymentAdvice: doc.PaymentAdvice || "",
                         subledgerDocument: doc.SubledgerDocument || "",
-                        subledgerOnAccount: "-",
-                        amount: "0.00",
-                        documentStatus: doc.DocumentNumber ? "Cleared" : "Pending"
+                        subledgerOnAccount: doc.SubledgerOnaccountDocument || "",
+                        amount: doc.Amount ? parseFloat(doc.Amount).toFixed(2) : "0.00",
+                        currency: doc.TransactionCurrency || "USD",
+                        documentStatus: doc.DocumentStatus || (doc.DocumentNumber ? "Posted" : "Pending")
                     };
                 });
+                
+                // Update header fields with RULE-004 data if available
+                if (oRule004Data.documents[0]) {
+                    var firstDoc = oRule004Data.documents[0];
+                    if (firstDoc.LockBoxId) lockboxId = firstDoc.LockBoxId;
+                    if (firstDoc.SendingBank) sendingBank = firstDoc.SendingBank;
+                    if (firstDoc.CompanyCode) companyCode = firstDoc.CompanyCode;
+                    if (firstDoc.HeaderStatus) {
+                        headerStatus = firstDoc.HeaderStatus;
+                        this.byId("txnHeaderStatus").setText(headerStatus);
+                        this.byId("txnHeaderStatus").setState(headerStatus === "Processed" ? "Success" : "Warning");
+                    }
+                    
+                    // Update header display with fresh RULE-004 data
+                    this.byId("txnLockboxId").setText(lockboxId);
+                    this.byId("txnCompanyCode").setText(companyCode);
+                    this.byId("txnCompanyCodeAlt").setText(companyCode);
+                    this.byId("txnSendingBank").setText(sendingBank);
+                }
             } else if (oRun.mappedData && oRun.mappedData.length > 0) {
                 // Fallback to run data if RULE-004 failed or no documents
                 itemData = oRun.mappedData.map(function (item, index) {
@@ -8808,10 +8828,11 @@ sap.ui.define([
                         new sap.m.Text({ text: item.paymentAdvice }),
                         new sap.m.Text({ text: item.subledgerDocument }),
                         new sap.m.Text({ text: item.subledgerOnAccount }),
-                        new sap.m.Text({ text: item.amount }),
+                        new sap.m.Text({ text: item.amount + " " + (item.currency || "") }),
                         new sap.m.ObjectStatus({ 
                             text: item.documentStatus,
-                            state: item.documentStatus === "Cleared" ? "Success" : "None"
+                            state: item.documentStatus === "Posted" || item.documentStatus === "Cleared" ? "Success" : 
+                                   item.documentStatus === "Posting Error" ? "Error" : "None"
                         })
                     ]
                 });
