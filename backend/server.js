@@ -5350,8 +5350,26 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
             });
         }
         
-        // Get lockbox ID from run
-        let lockboxId = run.lockboxId || run.lockbox || run.runId;
+        // Get lockbox ID from run - try multiple possible field names
+        let lockboxId = run.lockboxId || 
+                        run.lockbox || 
+                        run.lockbox_id || 
+                        run.lockboxBatchOrigin ||
+                        run.lockbox_batch_origin;
+        
+        // CRITICAL: If no lockboxId found, return error - DO NOT use runId as fallback!
+        if (!lockboxId) {
+            console.error(`   ❌ No LockboxID found in run:`, {
+                runId: run.runId,
+                availableFields: Object.keys(run)
+            });
+            return res.status(400).json({
+                success: false,
+                error: 'LockboxID not found in run data. Cannot fetch RULE-004 documents without LockboxID.',
+                runId: runId,
+                availableFields: Object.keys(run)
+            });
+        }
         
         // IMPORTANT: Strip hyphen and suffix from lockboxId
         // Example: "1000173-0" becomes "1000173"
@@ -5361,7 +5379,7 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
             console.log(`   📝 Stripped lockboxId: "${originalLockboxId}" → "${lockboxId}"`);
         }
         
-        console.log(`   Using LockboxId: ${lockboxId}`);
+        console.log(`   ✅ Using LockboxId: ${lockboxId} (NOT runId: ${runId})`);
         
         // STEP 2: Check if RULE-004 data is already stored in the run
         if (run.clearingDocuments && run.clearingDocuments.length > 0 && !refresh) {
