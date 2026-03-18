@@ -1555,7 +1555,10 @@
                                             <ObjectStatus id="txnProcessingStatus" text="" state="None"/>
                                         </VBox>
                                         
-                                        <VBox></VBox>
+                                        <VBox class="sapUiSmallMarginBottom">
+                                            <Label text="Bank Statement:" design="Bold"/>
+                                            <Text id="txnBankStatement" text=""/>
+                                        </VBox>
                                         
                                         <!-- Row 2 -->
                                         <VBox class="sapUiSmallMarginBottom">
@@ -1568,7 +1571,10 @@
                                             <Text id="txnSendingBank" text=""/>
                                         </VBox>
                                         
-                                        <VBox></VBox>
+                                        <VBox class="sapUiSmallMarginBottom">
+                                            <Label text="Statement ID:" design="Bold"/>
+                                            <Text id="txnStatementId" text=""/>
+                                        </VBox>
                                         
                                         <!-- Row 3 -->
                                         <VBox class="sapUiSmallMarginBottom">

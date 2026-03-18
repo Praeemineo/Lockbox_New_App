@@ -8766,6 +8766,50 @@ sap.ui.define([
             
             if (oRule004Data.success && oRule004Data.documents && oRule004Data.documents.length > 0) {
                 // Use RULE-004 data with all fields from SAP response
+                
+                // STEP 1: Extract header-level data from first document (shared across all items)
+                var firstDoc = oRule004Data.documents[0];
+                var bankStatement = "";
+                var statementId = "";
+                
+                if (firstDoc.LockBoxId) {
+                    lockboxId = firstDoc.LockBoxId;
+                }
+                if (firstDoc.SendingBank) {
+                    sendingBank = firstDoc.SendingBank;
+                }
+                if (firstDoc.CompanyCode) {
+                    companyCode = firstDoc.CompanyCode;
+                }
+                if (firstDoc.BankStatement) {
+                    bankStatement = firstDoc.BankStatement;
+                }
+                if (firstDoc.StatementId) {
+                    statementId = firstDoc.StatementId;
+                }
+                if (firstDoc.HeaderStatus) {
+                    headerStatus = firstDoc.HeaderStatus;
+                    // Update header status state based on value
+                    var headerState = "None";
+                    if (headerStatus === "Processed" || headerStatus === "Completed") {
+                        headerState = "Success";
+                    } else if (headerStatus === "Error" || headerStatus === "Failed") {
+                        headerState = "Error";
+                    } else if (headerStatus === "Pending" || headerStatus === "Processing") {
+                        headerState = "Warning";
+                    }
+                    this.byId("txnHeaderStatus").setState(headerState);
+                }
+                
+                // STEP 2: Update header fields with RULE-004 data
+                this.byId("txnLockboxId").setText(lockboxId);
+                this.byId("txnCompanyCode").setText(companyCode);
+                this.byId("txnSendingBank").setText(sendingBank);
+                this.byId("txnBankStatement").setText(bankStatement);
+                this.byId("txnStatementId").setText(statementId);
+                this.byId("txnHeaderStatus").setText(headerStatus);
+                
+                // STEP 3: Map item-level data (one row per document)
                 itemData = oRule004Data.documents.map(function (doc, index) {
                     return {
                         item: doc.item || (index + 1),
@@ -8780,24 +8824,16 @@ sap.ui.define([
                     };
                 });
                 
-                // Update header fields with RULE-004 data if available
-                if (oRule004Data.documents[0]) {
-                    var firstDoc = oRule004Data.documents[0];
-                    if (firstDoc.LockBoxId) lockboxId = firstDoc.LockBoxId;
-                    if (firstDoc.SendingBank) sendingBank = firstDoc.SendingBank;
-                    if (firstDoc.CompanyCode) companyCode = firstDoc.CompanyCode;
-                    if (firstDoc.HeaderStatus) {
-                        headerStatus = firstDoc.HeaderStatus;
-                        this.byId("txnHeaderStatus").setText(headerStatus);
-                        this.byId("txnHeaderStatus").setState(headerStatus === "Processed" ? "Success" : "Warning");
-                    }
-                    
-                    // Update header display with fresh RULE-004 data
-                    this.byId("txnLockboxId").setText(lockboxId);
-                    this.byId("txnCompanyCode").setText(companyCode);
-                    this.byId("txnCompanyCodeAlt").setText(companyCode);
-                    this.byId("txnSendingBank").setText(sendingBank);
-                }
+                console.log("✓ Populated Header Data from RULE-004:", {
+                    lockboxId: lockboxId,
+                    sendingBank: sendingBank,
+                    companyCode: companyCode,
+                    bankStatement: bankStatement,
+                    statementId: statementId,
+                    headerStatus: headerStatus
+                });
+                console.log("✓ Populated Item Data from RULE-004:", itemData.length, "items");
+                
             } else if (oRun.mappedData && oRun.mappedData.length > 0) {
                 // Fallback to run data if RULE-004 failed or no documents
                 itemData = oRun.mappedData.map(function (item, index) {
