@@ -1519,7 +1519,7 @@
             <!-- Transaction Dialog - Lockbox Processing with RULE-004 Data -->
             <Dialog
                 id="transactionDialog"
-                title="Lockbox Processing"
+                title="Transaction Details"
                 contentWidth="95%"
                 contentHeight="85%"
                 resizable="true"
@@ -1527,67 +1527,68 @@
                 <content>
                     <VBox class="sapUiSmallMargin">
                         
-                        <!-- Header Information Grid -->
-                        <l:Grid
-                            defaultSpan="XL4 L4 M6 S12"
-                            class="sapUiSmallMarginBottom">
-                            
-                            <!-- Row 1 -->
-                            <VBox class="sapUiSmallMarginBottom">
-                                <Label text="Lockbox ID:" design="Bold"/>
-                                <Text id="txnLockboxId" text=""/>
-                            </VBox>
-                            
-                            <VBox class="sapUiSmallMarginBottom">
-                                <Label text="Processing Status:" design="Bold"/>
-                                <ObjectStatus id="txnProcessingStatus" text="" state="None"/>
-                            </VBox>
-                            
-                            <VBox></VBox>
-                            
-                            <!-- Row 2 -->
-                            <VBox class="sapUiSmallMarginBottom">
-                                <Label text="Company Code:" design="Bold"/>
-                                <Text id="txnCompanyCode" text=""/>
-                            </VBox>
-                            
-                            <VBox class="sapUiSmallMarginBottom">
-                                <Label text="Company Code:" design="Bold"/>
-                                <Text id="txnCompanyCodeAlt" text=""/>
-                            </VBox>
-                            
-                            <VBox></VBox>
-                            
-                            <!-- Row 3 -->
-                            <VBox class="sapUiSmallMarginBottom">
-                                <Label text="Sending Bank:" design="Bold"/>
-                                <Text id="txnSendingBank" text=""/>
-                            </VBox>
-                            
-                            <VBox class="sapUiSmallMarginBottom">
-                                <Label text="Header Status:" design="Bold"/>
-                                <ObjectStatus id="txnHeaderStatus" text="" state="None"/>
-                            </VBox>
-                            
-                            <VBox></VBox>
-                        </l:Grid>
-                        
-                        <!-- Lockbox Data Section -->
-                        <OverflowToolbar class="sapUiTinyMarginTop">
-                            <Title text="Lockbox Data" level="H4"/>
-                            <ToolbarSpacer/>
-                        </OverflowToolbar>
-                        
-                        <!-- Item Data Tab -->
+                        <!-- Main Tab Bar: Header Data & Item Data -->
                         <IconTabBar
-                            id="transactionTabs"
+                            id="transactionMainTabs"
                             expandable="false"
                             class="sapUiResponsiveContentPadding">
                             <items>
+                                
+                                <!-- Header Data Tab -->
+                                <IconTabFilter
+                                    text="Header Data"
+                                    key="headerData"
+                                    icon="sap-icon://header">
+                                    
+                                    <l:Grid
+                                        defaultSpan="XL4 L4 M6 S12"
+                                        class="sapUiMediumMarginTop">
+                                        
+                                        <!-- Row 1 -->
+                                        <VBox class="sapUiSmallMarginBottom">
+                                            <Label text="Lockbox ID:" design="Bold"/>
+                                            <Text id="txnLockboxId" text=""/>
+                                        </VBox>
+                                        
+                                        <VBox class="sapUiSmallMarginBottom">
+                                            <Label text="Processing Status:" design="Bold"/>
+                                            <ObjectStatus id="txnProcessingStatus" text="" state="None"/>
+                                        </VBox>
+                                        
+                                        <VBox></VBox>
+                                        
+                                        <!-- Row 2 -->
+                                        <VBox class="sapUiSmallMarginBottom">
+                                            <Label text="Company Code:" design="Bold"/>
+                                            <Text id="txnCompanyCode" text=""/>
+                                        </VBox>
+                                        
+                                        <VBox class="sapUiSmallMarginBottom">
+                                            <Label text="Sending Bank:" design="Bold"/>
+                                            <Text id="txnSendingBank" text=""/>
+                                        </VBox>
+                                        
+                                        <VBox></VBox>
+                                        
+                                        <!-- Row 3 -->
+                                        <VBox class="sapUiSmallMarginBottom">
+                                            <Label text="Header Status:" design="Bold"/>
+                                            <ObjectStatus id="txnHeaderStatus" text="" state="None"/>
+                                        </VBox>
+                                        
+                                        <VBox></VBox>
+                                        <VBox></VBox>
+                                        
+                                    </l:Grid>
+                                    
+                                </IconTabFilter>
+                                
+                                <!-- Item Data Tab -->
                                 <IconTabFilter
                                     text="Item Data"
                                     key="itemData"
                                     icon="sap-icon://list">
+                                    
                                     <Table
                                         id="itemDataTable"
                                         growing="true"
@@ -1621,7 +1622,9 @@
                                             </Column>
                                         </columns>
                                     </Table>
+                                    
                                 </IconTabFilter>
+                                
                             </items>
                         </IconTabBar>
                         

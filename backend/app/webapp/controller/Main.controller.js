@@ -8757,7 +8757,6 @@ sap.ui.define([
             this.byId("txnProcessingStatus").setText(processingStatus);
             this.byId("txnProcessingStatus").setState(processingStatus === "Completed" ? "Success" : "None");
             this.byId("txnCompanyCode").setText(companyCode);
-            this.byId("txnCompanyCodeAlt").setText(companyCode);
             this.byId("txnSendingBank").setText(sendingBank);
             this.byId("txnHeaderStatus").setText(headerStatus);
             this.byId("txnHeaderStatus").setState(headerStatus === "Processed" ? "Success" : "None");
