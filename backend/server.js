@@ -5320,12 +5320,18 @@ app.post('/api/processing-rules/sync-to-db', async (req, res) => {
  */
 app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
     const { runId } = req.params;
+    const { refresh } = req.query; // Allow optional refresh parameter
     
-    console.log(`📋 RULE-004: Fetching accounting document for run ${runId}`);
+    console.log(`📋 RULE-004: Fetching accounting document for run ${runId} (refresh=${refresh || 'false'})`);
     
     try {
-        // Get the run data
-        const run = runs.find(r => r.runId === runId);
+        // STEP 1: Try to get run data from lockboxProcessingRuns (primary storage)
+        let run = lockboxProcessingRuns.find(r => r.runId === runId);
+        
+        // Fallback to legacy runs array if not found
+        if (!run) {
+            run = runs.find(r => r.runId === runId);
+        }
         
         if (!run) {
             return res.status(404).json({ 
@@ -5335,9 +5341,27 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
         }
         
         // Get lockbox ID from run
-        const lockboxId = run.lockboxId || run.runId;
+        const lockboxId = run.lockboxId || run.lockbox || run.runId;
         
         console.log(`   Using LockboxId: ${lockboxId}`);
+        
+        // STEP 2: Check if RULE-004 data is already stored in the run
+        if (run.clearingDocuments && run.clearingDocuments.length > 0 && !refresh) {
+            console.log(`   ✅ Using stored RULE-004 data (${run.clearingDocuments.length} documents)`);
+            console.log(`   💾 Data source: Run storage (no SAP call needed)`);
+            
+            return res.json({
+                success: true,
+                lockboxId: lockboxId,
+                documents: run.clearingDocuments,
+                count: run.clearingDocuments.length,
+                source: 'stored',
+                storedAt: run.clearingDocumentsTimestamp || run.updated_at
+            });
+        }
+        
+        // STEP 3: If not stored or refresh requested, fetch from SAP
+        console.log(`   🔄 Fetching fresh data from SAP (stored data not available or refresh requested)`);
         
         // Get RULE-004 configuration
         const rule004 = processingRules.find(r => r.ruleId === 'RULE-004');
@@ -5404,11 +5428,27 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
             DocumentStatus: doc.DocumentStatus || ''
         }));
         
+        // STEP 4: Store the fetched data back to the run for future use
+        try {
+            const runIndex = lockboxProcessingRuns.findIndex(r => r.runId === runId);
+            if (runIndex >= 0) {
+                lockboxProcessingRuns[runIndex].clearingDocuments = mappedData;
+                lockboxProcessingRuns[runIndex].clearingDocumentsTimestamp = new Date().toISOString();
+                saveRunsToFile();
+                console.log(`   💾 Stored RULE-004 data to run for future use`);
+            }
+        } catch (saveError) {
+            console.error(`   ⚠️  Failed to store RULE-004 data:`, saveError.message);
+            // Non-fatal
+        }
+        
         res.json({
             success: true,
             lockboxId: lockboxId,
             documents: mappedData,
-            count: mappedData.length
+            count: mappedData.length,
+            source: 'sap',
+            fetchedAt: new Date().toISOString()
         });
         
     } catch (error) {
