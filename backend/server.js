@@ -5425,11 +5425,47 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
         console.log(`   Query Params:`, queryParams);
         
         // Call SAP API using the same connection logic as RULE-001/002
-        const response = await sapClient.executeSapGetRequest(
-            rule004.destination,
-            apiEndpoint,
-            queryParams
-        );
+        let response;
+        try {
+            console.log(`   📞 Calling SAP API for RULE-004...`);
+            response = await sapClient.executeSapGetRequest(
+                rule004.destination,
+                apiEndpoint,
+                queryParams
+            );
+            console.log(`   ✅ SAP Response received successfully`);
+        } catch (error) {
+            console.error(`   ❌ RULE-004 SAP API call failed:`, {
+                error: error.message,
+                lockboxId: lockboxId,
+                apiEndpoint: apiEndpoint,
+                statusCode: error.response?.status,
+                statusText: error.response?.statusText
+            });
+            
+            // Fallback to stored data if available
+            if (run.clearingDocuments && run.clearingDocuments.length > 0) {
+                console.log(`   ⚠️  Using stored data as fallback (${run.clearingDocuments.length} documents)`);
+                return res.json({
+                    success: true,
+                    lockboxId: lockboxId,
+                    documents: run.clearingDocuments,
+                    source: 'stored-fallback',
+                    warning: 'SAP fetch failed, showing last stored data',
+                    error: error.message,
+                    storedAt: run.clearingDocumentsTimestamp
+                });
+            }
+            
+            // No fallback data available - return error
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to fetch accounting documents from SAP',
+                details: error.message,
+                lockboxId: lockboxId,
+                hint: 'Check SAP connection, credentials, and API endpoint configuration'
+            });
+        }
         
         if (!response || !response.data) {
             return res.status(500).json({ 

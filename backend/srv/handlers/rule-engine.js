@@ -274,8 +274,31 @@ async function executeDynamicRule(rule, data) {
             
             console.log(`   📞 Calling API for row ${i + 1}...`);
             
-            // Step 4: Call SAP API
-            const response = await callSAPAPI(apiURL, firstMapping.httpMethod, rule.destination);
+            // Step 4: Call SAP API with error handling
+            let response;
+            try {
+                response = await callSAPAPI(apiURL, firstMapping.httpMethod, rule.destination);
+                console.log(`   ✅ ${rule.ruleId}: SAP API call successful for row ${i + 1}`);
+            } catch (apiError) {
+                console.error(`   ❌ ${rule.ruleId}: SAP API call failed for row ${i + 1}:`, {
+                    rule: rule.ruleName,
+                    error: apiError.message,
+                    apiURL: apiURL,
+                    sourceValue: sourceValue,
+                    statusCode: apiError.response?.status,
+                    statusText: apiError.response?.statusText,
+                    row: i + 1
+                });
+                
+                // Mark row with error for tracking
+                row[`${rule.ruleId}_error`] = apiError.message;
+                row[`${rule.ruleId}_status`] = 'API_CALL_FAILED';
+                
+                result.errors.push(`Row ${i + 1}: ${rule.ruleId} API call failed - ${apiError.message}`);
+                
+                // Skip this row, continue to next
+                continue;
+            }
             
             if (!response || !response.data) {
                 result.errors.push(`Row ${i + 1}: API returned no data`);
