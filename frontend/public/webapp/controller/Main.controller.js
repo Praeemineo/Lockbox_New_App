@@ -8557,20 +8557,42 @@ sap.ui.define([
                         
                         // Prefer RULE-004 data if available
                         if (rule004Data.success && rule004Data.documents && rule004Data.documents.length > 0) {
-                            // Use RULE-004 accounting document data
+                            // Use RULE-004 accounting document data with complete field mapping
+                            var firstDoc = rule004Data.documents[0];
+                            
+                            // Update transaction header fields from RULE-004
+                            oTransaction.lockboxId = firstDoc.LockBoxId || oTransaction.lockboxId;
+                            oTransaction.sendingBank = firstDoc.SendingBank || '';
+                            oTransaction.companyCode = firstDoc.CompanyCode || oTransaction.companyCode;
+                            oTransaction.bankStatement = firstDoc.BankStatement || '';
+                            oTransaction.statementId = firstDoc.StatementId || '';
+                            oTransaction.headerStatus = firstDoc.HeaderStatus || '';
+                            
+                            // Map RULE-004 documents to lockboxItems
                             aLockboxItems = rule004Data.documents.map(function(doc, idx) {
                                 return {
                                     companyCode: doc.CompanyCode || oTransaction.companyCode || '',
-                                    lockboxId: oTransaction.sapPayload.Lockbox || oTransaction.lockbox || '',
+                                    lockboxId: doc.LockBoxId || oTransaction.lockboxId || '',
+                                    sendingBank: doc.SendingBank || '',
+                                    bankStatement: doc.BankStatement || '',
+                                    statementId: doc.StatementId || '',
                                     lockboxDest: oTransaction.sapPayload.LockboxBatchDestination || oTransaction.lockboxDestination || '',
                                     lockboxOrigin: oTransaction.sapPayload.LockboxBatchOrigin || oTransaction.lockboxOrigin || '',
-                                    item: (idx + 1).toString().padStart(4, '0'),
-                                    amount: '0.00',
-                                    postingDoc: doc.DocumentNumber || doc.AccountingDocument || '',
+                                    item: (idx + 1).toString(),
+                                    amount: doc.Amount || '0.00',
+                                    currency: doc.TransactionCurrency || 'USD',
+                                    postingDoc: doc.DocumentNumber || '',
                                     paytAdvice: doc.PaymentAdvice || '',
                                     clearingDoc: doc.SubledgerDocument || '',
-                                    subledgerOnaccountDoc: '-'
+                                    subledgerOnaccountDoc: doc.SubledgerOnaccountDocument || '',
+                                    documentStatus: doc.DocumentStatus || (doc.DocumentNumber ? 'Posted' : 'Pending')
                                 };
+                            });
+                            
+                            console.log("✓ Navigation dialog populated with complete RULE-004 data:", {
+                                lockboxId: oTransaction.lockboxId,
+                                sendingBank: oTransaction.sendingBank,
+                                items: aLockboxItems.length
                             });
                         } else if (aChecks && aChecks.length > 0) {
                             aChecks.forEach(function(check, idx) {
