@@ -2610,6 +2610,11 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                         }
                         
                         console.log('✓ Formatted', clearingDocuments.length, 'clearing documents for response');
+                        
+                        // NOTE: Do NOT store in BTP database
+                        // Data will be fetched fresh from SAP when UI needs it
+                        console.log('💡 RULE-004 data returned in response but NOT stored in BTP database');
+                        console.log('💡 UI will fetch fresh data from SAP via pass-through API');
                     } else {
                         console.warn('⚠ RULE-004 API configuration not found or invalid');
                     }
@@ -2635,30 +2640,16 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
             console.log('Error Details:', JSON.stringify(finalResponse.error, null, 2));
         }
         
-        // Add clearing documents to final response
+        // Add clearing documents to final response (for immediate display)
         if (clearingDocuments.length > 0) {
             finalResponse.clearingDocuments = clearingDocuments;
             
             // ========================================================
-            // SAVE CLEARING DOCUMENTS TO PROCESSING RUN
-            // So they're available when Transaction Dialog opens
+            // NO BTP DATABASE STORAGE - PURE PASS-THROUGH ARCHITECTURE
+            // UI will fetch fresh data from SAP via RULE-004 API
             // ========================================================
-            try {
-                console.log('=== SAVING CLEARING DOCUMENTS TO RUN ===');
-                // Find the run in lockboxProcessingRuns
-                const runIndex = lockboxProcessingRuns.findIndex(r => r.runId === runId);
-                if (runIndex >= 0) {
-                    lockboxProcessingRuns[runIndex].clearingDocuments = clearingDocuments;
-                    // Save to JSON file
-                    saveRunsToFile();
-                    console.log('✓ Clearing documents saved to run:', runId);
-                } else {
-                    console.warn('⚠ Run not found in lockboxProcessingRuns:', runId);
-                }
-            } catch (saveError) {
-                console.error('❌ Failed to save clearing documents:', saveError.message);
-                // Non-fatal - response still sent
-            }
+            console.log('💡 RULE-004: Clearing documents included in response (NOT stored in BTP)');
+            console.log('💡 RULE-004: UI will fetch fresh data from SAP when dialog opens');
         }
         
         res.json(finalResponse);
@@ -5330,15 +5321,13 @@ app.post('/api/processing-rules/sync-to-db', async (req, res) => {
  */
 app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
     const { runId } = req.params;
-    const { refresh } = req.query; // Allow optional refresh parameter
     
-    console.log(`📋 RULE-004: Fetching accounting document for run ${runId} (refresh=${refresh || 'false'})`);
+    console.log(`📋 RULE-004: Fetching accounting document for run ${runId} (always fresh from SAP)`);
     
     try {
-        // STEP 1: Try to get run data from lockboxProcessingRuns (primary storage)
+        // STEP 1: Get run data from BTP to extract LockboxId
         let run = lockboxProcessingRuns.find(r => r.runId === runId);
         
-        // Fallback to legacy runs array if not found
         if (!run) {
             run = runs.find(r => r.runId === runId);
         }
@@ -5346,88 +5335,67 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
         if (!run) {
             return res.status(404).json({ 
                 success: false, 
-                error: 'Run not found' 
+                error: 'Run not found in BTP' 
             });
         }
         
-        // Get lockbox ID from run - try multiple possible field names
+        // STEP 2: Extract LockboxID from BTP run data (try multiple field names)
         let lockboxId = run.lockboxId || 
                         run.lockbox || 
                         run.lockbox_id || 
                         run.lockboxBatchOrigin ||
                         run.lockbox_batch_origin;
         
-        // CRITICAL: If no lockboxId found, return error - DO NOT use runId as fallback!
+        // CRITICAL: Validate lockboxId exists
         if (!lockboxId) {
-            console.error(`   ❌ No LockboxID found in run:`, {
-                runId: run.runId,
-                availableFields: Object.keys(run)
-            });
+            console.error(`   ❌ No LockboxID found in BTP run:`, Object.keys(run));
             return res.status(400).json({
                 success: false,
-                error: 'LockboxID not found in run data. Cannot fetch RULE-004 documents without LockboxID.',
+                error: 'LockboxID not found in BTP run data',
                 runId: runId,
-                availableFields: Object.keys(run)
+                availableFields: Object.keys(run),
+                hint: 'Check: lockboxId, lockbox, lockbox_batch_origin fields'
             });
         }
         
-        // IMPORTANT: Strip hyphen and suffix from lockboxId
-        // Example: "1000173-0" becomes "1000173"
+        // STEP 3: Strip hyphen and suffix from lockboxId (BTP → SAP mapping)
+        // Example: "1000173-0" (BTP format) → "1000173" (SAP format)
         if (lockboxId && typeof lockboxId === 'string' && lockboxId.includes('-')) {
             const originalLockboxId = lockboxId;
             lockboxId = lockboxId.split('-')[0];
-            console.log(`   📝 Stripped lockboxId: "${originalLockboxId}" → "${lockboxId}"`);
+            console.log(`   📝 Mapped BTP LockboxId to SAP format: "${originalLockboxId}" → "${lockboxId}"`);
         }
         
-        console.log(`   ✅ Using LockboxId: ${lockboxId} (NOT runId: ${runId})`);
+        console.log(`   ✅ Using LockboxId: ${lockboxId} for SAP query`);
         
-        // STEP 2: Check if RULE-004 data is already stored in the run
-        if (run.clearingDocuments && run.clearingDocuments.length > 0 && !refresh) {
-            console.log(`   ✅ Using stored RULE-004 data (${run.clearingDocuments.length} documents)`);
-            console.log(`   💾 Data source: Run storage (no SAP call needed)`);
-            
-            return res.json({
-                success: true,
-                lockboxId: lockboxId,
-                documents: run.clearingDocuments,
-                count: run.clearingDocuments.length,
-                source: 'stored',
-                storedAt: run.clearingDocumentsTimestamp || run.updated_at
-            });
-        }
-        
-        // STEP 3: If not stored or refresh requested, fetch from SAP
-        console.log(`   🔄 Fetching fresh data from SAP (stored data not available or refresh requested)`);
-        
-        // Get RULE-004 configuration
+        // STEP 4: Get RULE-004 configuration from BTP
         const rule004 = processingRules.find(r => r.ruleId === 'RULE-004');
         
         if (!rule004 || !rule004.active) {
             return res.status(404).json({ 
                 success: false, 
-                error: 'RULE-004 not found or not active' 
+                error: 'RULE-004 not found or not active in BTP configuration' 
             });
         }
         
-        // Build API URL dynamically
+        // STEP 5: Build SAP API query
         const apiMapping = rule004.apiMappings[0];
         const apiEndpoint = apiMapping.apiReference;
         
-        // Build query filter with lockbox ID
-        // Using LockBoxId field as specified in RULE-004 requirements
         const queryParams = {
             '$filter': `LockBoxId eq '${lockboxId}'`,
             '$select': 'LockBoxId,SendingBank,BankStatement,StatementId,CompanyCode,HeaderStatus,BankStatementItem,DocumentNumber,PaymentAdvice,SubledgerDocument,SubledgerOnaccountDocument,Amount,TransactionCurrency,DocumentStatus',
             '$top': '100'
         };
         
-        console.log(`   API Endpoint: ${apiEndpoint}`);
-        console.log(`   Query Params:`, queryParams);
+        console.log(`   🔄 Fetching fresh data from SAP (no BTP storage)`);
+        console.log(`   📍 SAP API Endpoint: ${apiEndpoint}`);
+        console.log(`   🔍 SAP Query Params:`, queryParams);
         
-        // Call SAP API using the same connection logic as RULE-001/002
+        // STEP 6: Call SAP API (pure pass-through, no BTP caching)
         let response;
         try {
-            console.log(`   📞 Calling SAP API for RULE-004...`);
+            console.log(`   📞 Calling SAP API...`);
             response = await sapClient.executeSapGetRequest(
                 rule004.destination,
                 apiEndpoint,
@@ -5443,21 +5411,7 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
                 statusText: error.response?.statusText
             });
             
-            // Fallback to stored data if available
-            if (run.clearingDocuments && run.clearingDocuments.length > 0) {
-                console.log(`   ⚠️  Using stored data as fallback (${run.clearingDocuments.length} documents)`);
-                return res.json({
-                    success: true,
-                    lockboxId: lockboxId,
-                    documents: run.clearingDocuments,
-                    source: 'stored-fallback',
-                    warning: 'SAP fetch failed, showing last stored data',
-                    error: error.message,
-                    storedAt: run.clearingDocumentsTimestamp
-                });
-            }
-            
-            // No fallback data available - return error
+            // No fallback - pure pass-through architecture
             return res.status(500).json({
                 success: false,
                 error: 'Failed to fetch accounting documents from SAP',
@@ -5467,21 +5421,11 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
             });
         }
         
-        if (!response || !response.data) {
-            return res.status(500).json({ 
-                success: false, 
-                error: 'No response from SAP API' 
-            });
-        }
-        
-        console.log(`   ✅ SAP Response received`);
-        
-        // Extract data from response
+        // STEP 7: Format SAP response data for UI
         const documents = response.data.value || [];
         
-        console.log(`   📊 Found ${documents.length} document(s)`);
+        console.log(`   📊 SAP returned ${documents.length} document(s)`);
         
-        // Map to frontend structure - matching RULE-004 SAP response fields
         const mappedData = documents.map((doc, index) => ({
             item: (index + 1).toString(),
             LockBoxId: doc.LockBoxId || '',
@@ -5500,19 +5444,8 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
             DocumentStatus: doc.DocumentStatus || ''
         }));
         
-        // STEP 4: Store the fetched data back to the run for future use
-        try {
-            const runIndex = lockboxProcessingRuns.findIndex(r => r.runId === runId);
-            if (runIndex >= 0) {
-                lockboxProcessingRuns[runIndex].clearingDocuments = mappedData;
-                lockboxProcessingRuns[runIndex].clearingDocumentsTimestamp = new Date().toISOString();
-                saveRunsToFile();
-                console.log(`   💾 Stored RULE-004 data to run for future use`);
-            }
-        } catch (saveError) {
-            console.error(`   ⚠️  Failed to store RULE-004 data:`, saveError.message);
-            // Non-fatal
-        }
+        // STEP 8: Return data to UI (NO BTP storage - pure pass-through)
+        console.log(`   ✅ Returning ${mappedData.length} documents to UI (no BTP storage)`);
         
         res.json({
             success: true,
@@ -5520,7 +5453,8 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
             documents: mappedData,
             count: mappedData.length,
             source: 'sap',
-            fetchedAt: new Date().toISOString()
+            fetchedAt: new Date().toISOString(),
+            architecture: 'pass-through'  // Indicates no BTP storage
         });
         
     } catch (error) {
