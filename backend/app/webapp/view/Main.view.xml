@@ -1368,88 +1368,67 @@
                             </l:Grid>
                         </VBox>
                         
-                        <!-- New Lockbox Processing Layout (Image 2 Design) -->
+                        <!-- Lockbox Details - Tabbed Layout -->
                         <VBox class="sapUiMediumMargin">
                             
-                            <!-- Header Information Section -->
-                            <VBox class="sapUiSmallMarginBottom">
-                                <Title text="Lockbox Processing" level="H3" />
-                            </VBox>
-                            
-                            <!-- Header Fields Grid -->
-                            <l:Grid
-                                defaultSpan="XL4 L4 M6 S12"
-                                class="sapUiMediumMarginBottom">
-                                
-                                <!-- Row 1 -->
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Lockbox ID:" design="Bold"/>
-                                    <Text text="{app>/selectedTransaction/lockboxId}"/>
-                                </VBox>
-                                
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Processing Status:" design="Bold"/>
-                                    <ObjectStatus 
-                                        text="{= ${app>/selectedTransaction/status} === 'POSTED' ? 'Completed' : ${app>/selectedTransaction/status} }" 
-                                        state="{= ${app>/selectedTransaction/status} === 'POSTED' ? 'Success' : 'None' }"/>
-                                </VBox>
-                                
-                                <VBox></VBox>
-                                
-                                <!-- Row 2 -->
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Company Code:" design="Bold"/>
-                                    <Text text="{app>/selectedTransaction/companyCode}"/>
-                                </VBox>
-                                
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Company Code:" design="Bold"/>
-                                    <Text text="{app>/selectedTransaction/companyCode}"/>
-                                </VBox>
-                                
-                                <VBox></VBox>
-                                
-                                <!-- Row 3 -->
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Sending Bank:" design="Bold"/>
-                                    <Text text="{app>/selectedTransaction/sendingBank}"/>
-                                </VBox>
-                                
-                                <VBox class="sapUiSmallMarginBottom">
-                                    <Label text="Header Status:" design="Bold"/>
-                                    <ObjectStatus 
-                                        text="{= ${app>/selectedTransaction/status} === 'POSTED' ? 'Processed' : 'Pending' }" 
-                                        state="{= ${app>/selectedTransaction/status} === 'POSTED' ? 'Success' : 'None' }"/>
-                                </VBox>
-                                
-                                <VBox></VBox>
-                            </l:Grid>
-                            
-                            <!-- Lockbox Header Data Section Title -->
-                            <OverflowToolbar class="sapUiTinyMarginTop">
-                                <Title text="Lockbox Header Data" level="H4"/>
-                                <ToolbarSpacer/>
-                            </OverflowToolbar>
-                            
-                            <!-- Tabs for Header Data and Item Data -->
+                            <!-- Main Tab Bar: Header Data & Item Data -->
                             <IconTabBar
                                 id="lockboxDataTabs"
                                 expandable="false"
                                 class="sapUiResponsiveContentPadding">
-                                
-                                <!-- Header Data Tab -->
                                 <items>
+                                    
+                                    <!-- Header Data Tab -->
                                     <IconTabFilter
                                         text="Header Data"
                                         key="headerData"
                                         icon="sap-icon://header">
-                                        <VBox class="sapUiSmallMargin">
-                                            <MessageStrip 
-                                                text="Header data from the lockbox run" 
-                                                type="Information" 
-                                                showIcon="true" 
-                                                class="sapUiSmallMarginBottom" />
-                                        </VBox>
+                                        
+                                        <l:Grid
+                                            defaultSpan="XL4 L4 M6 S12"
+                                            class="sapUiMediumMarginTop">
+                                            
+                                            <!-- Row 1 -->
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="Lockbox ID:" design="Bold"/>
+                                                <Text text="{app>/selectedTransaction/lockboxId}"/>
+                                            </VBox>
+                                            
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="Processing Status:" design="Bold"/>
+                                                <ObjectStatus 
+                                                    text="{= ${app>/selectedTransaction/status} === 'POSTED' ? 'Completed' : ${app>/selectedTransaction/status} }" 
+                                                    state="{= ${app>/selectedTransaction/status} === 'POSTED' ? 'Success' : 'None' }"/>
+                                            </VBox>
+                                            
+                                            <VBox></VBox>
+                                            
+                                            <!-- Row 2 -->
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="Company Code:" design="Bold"/>
+                                                <Text text="{app>/selectedTransaction/companyCode}"/>
+                                            </VBox>
+                                            
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="Sending Bank:" design="Bold"/>
+                                                <Text text="{app>/selectedTransaction/sendingBank}"/>
+                                            </VBox>
+                                            
+                                            <VBox></VBox>
+                                            
+                                            <!-- Row 3 -->
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="Header Status:" design="Bold"/>
+                                                <ObjectStatus 
+                                                    text="{= ${app>/selectedTransaction/status} === 'POSTED' ? 'Processed' : 'Pending' }" 
+                                                    state="{= ${app>/selectedTransaction/status} === 'POSTED' ? 'Success' : 'None' }"/>
+                                            </VBox>
+                                            
+                                            <VBox></VBox>
+                                            <VBox></VBox>
+                                            
+                                        </l:Grid>
+                                        
                                     </IconTabFilter>
                                     
                                     <!-- Item Data Tab -->
@@ -1457,6 +1436,7 @@
                                         text="Item Data"
                                         key="itemData"
                                         icon="sap-icon://list">
+                                        
                                         <Table
                                             id="txnItemDataTable"
                                             items="{app>/selectedTransaction/lockboxItems}"
@@ -1507,7 +1487,9 @@
                                                 </ColumnListItem>
                                             </items>
                                         </Table>
+                                        
                                     </IconTabFilter>
+                                    
                                 </items>
                             </IconTabBar>
                             
