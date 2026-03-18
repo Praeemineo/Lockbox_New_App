@@ -5339,22 +5339,48 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
             });
         }
         
-        // STEP 2: Extract LockboxID from BTP run data (try multiple field names)
-        let lockboxId = run.lockboxId || 
-                        run.lockbox || 
-                        run.lockbox_id || 
-                        run.lockboxBatchOrigin ||
-                        run.lockbox_batch_origin;
+        // STEP 2: Extract LockboxID from BTP run data (comprehensive search)
+        let lockboxId = 
+            run.lockboxId ||                                      // Try direct field
+            run.lockbox ||                                        // Try alternate name
+            run.lockbox_id ||                                     // Try with underscore
+            run.lockboxBatchOrigin ||                            // Try batch origin
+            run.lockbox_batch_origin ||                          // Try with underscore
+            (run.sapPayload && run.sapPayload.Lockbox) ||       // Try in SAP payload
+            (run.sapPayload && run.sapPayload.LockboxBatchOrigin) || // Try batch origin in payload
+            (run.header && run.header.lockbox) ||               // Try in header
+            (run.header && run.header.lockbox_id) ||            // Try in header with underscore
+            (run.mappedData && run.mappedData[0] && run.mappedData[0]['Lockbox ID']) || // Try in first data row
+            (run.mappedData && run.mappedData[0] && run.mappedData[0]['LockboxId']) ||  // Try alternate casing
+            (run.mappedData && run.mappedData[0] && run.mappedData[0]['lockboxId']);    // Try camelCase
         
-        // CRITICAL: Validate lockboxId exists
+        // CRITICAL: Validate lockboxId exists and provide detailed debug info
         if (!lockboxId) {
-            console.error(`   ❌ No LockboxID found in BTP run:`, Object.keys(run));
+            console.error(`   ❌ No LockboxID found in BTP run. Debugging info:`);
+            console.error(`   📋 Run ID: ${run.runId}`);
+            console.error(`   📋 Available top-level fields:`, Object.keys(run));
+            
+            if (run.sapPayload) {
+                console.error(`   📋 SAP Payload fields:`, Object.keys(run.sapPayload));
+            }
+            if (run.header) {
+                console.error(`   📋 Header fields:`, Object.keys(run.header));
+            }
+            if (run.mappedData && run.mappedData.length > 0) {
+                console.error(`   📋 First data row fields:`, Object.keys(run.mappedData[0]));
+            }
+            
             return res.status(400).json({
                 success: false,
                 error: 'LockboxID not found in BTP run data',
                 runId: runId,
-                availableFields: Object.keys(run),
-                hint: 'Check: lockboxId, lockbox, lockbox_batch_origin fields'
+                debug: {
+                    availableTopLevelFields: Object.keys(run),
+                    sapPayloadFields: run.sapPayload ? Object.keys(run.sapPayload) : null,
+                    headerFields: run.header ? Object.keys(run.header) : null,
+                    firstDataRowFields: (run.mappedData && run.mappedData.length > 0) ? Object.keys(run.mappedData[0]) : null
+                },
+                hint: 'Possible field names: lockboxId, lockbox, lockbox_batch_origin, sapPayload.Lockbox, header.lockbox, mappedData[0]["Lockbox ID"]'
             });
         }
         
