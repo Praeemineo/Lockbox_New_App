@@ -5417,13 +5417,15 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
         console.log(`   🔄 Fetching fresh data from SAP (no BTP storage)`);
         console.log(`   📍 SAP API Endpoint: ${apiEndpoint}`);
         console.log(`   🔍 SAP Query Params:`, queryParams);
+        console.log(`   🔑 Using direct SAP connection (environment variables)`);
         
-        // STEP 6: Call SAP API (pure pass-through, no BTP caching)
+        // STEP 6: Call SAP API using DIRECT connection (like RULE-002)
+        // Use null or empty string for destination to force direct connection via env variables
         let response;
         try {
-            console.log(`   📞 Calling SAP API...`);
+            console.log(`   📞 Calling SAP API directly (not via BTP destination service)...`);
             response = await sapClient.executeSapGetRequest(
-                rule004.destination,
+                null,  // Use null to force direct connection via SAP_URL, SAP_USER, SAP_PASSWORD
                 apiEndpoint,
                 queryParams
             );
