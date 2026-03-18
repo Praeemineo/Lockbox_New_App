@@ -2542,7 +2542,17 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
         if (productionResponse.status === 'SUCCESS' && header.lockbox) {
             try {
                 console.log('=== RETRIEVING CLEARING DOCUMENTS (RULE-004) ===');
-                console.log('Lockbox ID:', header.lockbox);
+                
+                // Strip hyphen and suffix from lockbox ID if present
+                // Example: "1000173-0" becomes "1000173"
+                let lockboxIdForRule004 = header.lockbox;
+                if (lockboxIdForRule004 && typeof lockboxIdForRule004 === 'string' && lockboxIdForRule004.includes('-')) {
+                    const originalLockboxId = lockboxIdForRule004;
+                    lockboxIdForRule004 = lockboxIdForRule004.split('-')[0];
+                    console.log(`📝 Stripped lockboxId for RULE-004: "${originalLockboxId}" → "${lockboxIdForRule004}"`);
+                }
+                
+                console.log('Lockbox ID:', lockboxIdForRule004);
                 
                 // Fetch RULE-004 configuration
                 const rule004 = await getRuleById('RULE-004');
@@ -2559,7 +2569,7 @@ app.post('/api/lockbox/post/:headerId', async (req, res) => {
                         const inputFieldName = getAccountingDocApi.inputField || 'LockBoxId';
                         
                         const queryParams = {
-                            $filter: `${inputFieldName} eq '${header.lockbox}'`
+                            $filter: `${inputFieldName} eq '${lockboxIdForRule004}'`
                         };
                         
                         const outputFields = getAccountingDocApi.outputField ? 
@@ -5341,7 +5351,15 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
         }
         
         // Get lockbox ID from run
-        const lockboxId = run.lockboxId || run.lockbox || run.runId;
+        let lockboxId = run.lockboxId || run.lockbox || run.runId;
+        
+        // IMPORTANT: Strip hyphen and suffix from lockboxId
+        // Example: "1000173-0" becomes "1000173"
+        if (lockboxId && typeof lockboxId === 'string' && lockboxId.includes('-')) {
+            const originalLockboxId = lockboxId;
+            lockboxId = lockboxId.split('-')[0];
+            console.log(`   📝 Stripped lockboxId: "${originalLockboxId}" → "${lockboxId}"`);
+        }
         
         console.log(`   Using LockboxId: ${lockboxId}`);
         
