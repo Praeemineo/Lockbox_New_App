@@ -391,18 +391,12 @@ async function executeDynamicRule(rule, data) {
                 const apiValue = extractDynamicField(response.data, targetFieldName);
                 
                 if (apiValue !== null && apiValue !== undefined) {
-                    // IMPORTANT: Overwrite existing field value (case-insensitive match)
-                    // Check if field already exists with different casing
-                    console.log(`      🔍 Looking for existing field matching: "${lockboxFieldName}"`);
-                    console.log(`      🔍 Available keys in row: ${Object.keys(row).join(', ')}`);
-                    const existingKey = Object.keys(row).find(k => k.toLowerCase() === lockboxFieldName.toLowerCase());
-                    const fieldToUpdate = existingKey || lockboxFieldName;
-                    console.log(`      🔍 Existing key found: "${existingKey}"`);
-                    console.log(`      🔍 Will update field: "${fieldToUpdate}"`);
+                    // CRITICAL: Use the EXACT apiField name from config (matches SAP API field name)
+                    // Do NOT use case-insensitive matching - enforce exact SAP field name
+                    const fieldToUpdate = lockboxFieldName; // Use exact name from config
                     
-                    if (existingKey && existingKey !== lockboxFieldName) {
-                        console.log(`      ⚠️  Field exists with different casing: "${existingKey}" (will overwrite)`);
-                    }
+                    console.log(`      🔍 Will create/update field: "${fieldToUpdate}" (exact SAP API field name)`);
+                    console.log(`      🔍 Available keys before: ${Object.keys(row).join(', ')}`);
                     
                     row[fieldToUpdate] = apiValue;
                     fieldsEnriched++;

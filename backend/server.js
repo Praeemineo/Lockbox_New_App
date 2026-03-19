@@ -6940,9 +6940,8 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
             };
         }
         // Add invoice/payment reference under this check
-        // Include XBLNR and BELNR for reference document rule processing
-        // PRIORITY: Use PaymentReference (enriched by RULE-001 with AccountingDocument) if available
-        const enrichedPayRef = row.PaymentReference || row.Paymentreference || row.paymentreference || '';
+        // RULE-001 enriched field MUST match SAP API field name: PaymentReference
+        const enrichedPayRef = row.PaymentReference || '';
         if (enrichedPayRef) {
             console.log(`  ✅ Row has RULE-001 enriched PaymentReference: ${enrichedPayRef}, CompanyCode: ${row.CompanyCode}`);
         }
@@ -6952,13 +6951,13 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
             invoiceAmount: parseFloat(row['Invoice Amount'] || row.InvoiceAmount || row.NetPaymentAmountInPaytCurrency) || 0,
             deductionAmount: parseFloat(row['Deduction Amount'] || row.DeductionAmount || row.DeductionAmountInPaytCurrency) || 0,
             reasonCode: row['Reason Code'] || row.ReasonCode || row.PaymentDifferenceReason || '',
-            customer: row.Customer || '', // Customer for each invoice line
+            customer: row.Customer || '',
             // Reference Document Rule fields
-            xblnr: row.XBLNR || '',  // External reference / Invoice reference
-            belnr: row.BELNR || '',   // Accounting document number
-            // RULE-001 enriched fields (use correct casing to match SAP payload)
-            PaymentReference: enrichedPayRef, // AccountingDocument from SAP (RULE-001)
-            CompanyCode: row.CompanyCode || '' // CompanyCode from SAP (RULE-001) - for reporting only
+            xblnr: row.XBLNR || '',
+            belnr: row.BELNR || '',
+            // RULE-001 enriched fields - MUST match SAP API field names
+            PaymentReference: enrichedPayRef, // AccountingDocument from SAP (matches SAP Lockbox API)
+            CompanyCode: row.CompanyCode || '' // CompanyCode from SAP (for reporting only)
         });
     }
     
@@ -7055,14 +7054,13 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
             
             const clearingResults = checkData.invoices.map(inv => {
                 // Determine PaymentReference from RULE-001 enriched field
-                // File fields: invoiceNumber (Invoice Number), xblnr (XBLNR), belnr (BELNR)
-                // RULE-001 enriched field: PaymentReference (AccountingDocument from SAP)
+                // RULE-001 enriched field MUST match SAP Lockbox API field name: PaymentReference
                 let paymentReference = '';
                 const invoiceNumber = (inv.invoiceNumber || inv['Invoice Number'] || '').toString().trim();
                 const xblnr = (inv.xblnr || '').toString().trim();
                 const belnr = (inv.belnr || '').toString().trim();
-                const enrichedPaymentRef = (inv.PaymentReference || inv.paymentreference || '').toString().trim(); // From RULE-001 (try both casings)
-                const companyCode = (inv.CompanyCode || inv.companyCode || '').toString().trim(); // From RULE-001 (try both casings)
+                const enrichedPaymentRef = (inv.PaymentReference || '').toString().trim(); // From RULE-001 (SAP API field name)
+                const companyCode = (inv.CompanyCode || '').toString().trim(); // From RULE-001
                 
                 console.log(`    Rule evaluation: InvoiceNumber=${invoiceNumber}, XBLNR=${xblnr}, BELNR=${belnr}, EnrichedPaymentRef=${enrichedPaymentRef}, CompanyCode=${companyCode}`);
                 
@@ -7891,11 +7889,8 @@ function buildFieldMappingPreview(extractedData) {
         'Deduction Amount': 'Deduction Amount',
         'ReasonCode': 'Reason Code',
         'Reason Code': 'Reason Code',
-        'PaymentReference': 'Payment Reference',
-        'Paymentreference': 'Payment Reference',  // Case variant for RULE-001
-        'paymentreference': 'Payment Reference',  // Case variant for RULE-001
-        'CompanyCode': 'Company Code',
-        'companyCode': 'Company Code'  // Case-insensitive mapping
+        'PaymentReference': 'Payment Reference',  // SAP Lockbox API field name
+        'CompanyCode': 'Company Code'
     };
     
     // Classify and build preview for each field
