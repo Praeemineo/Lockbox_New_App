@@ -5415,11 +5415,21 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
             console.log(`   🔧 Cleaned apiReference (removed hardcoded parameters)`);
         }
         
+        // TESTING: Start with minimal query to identify the issue
+        const queryParams = {
+            '$filter': `LockBoxId eq '${lockboxId}'`
+            // Temporarily removed $select and $top to test if filter works
+        };
+        
+        console.log(`   🧪 TESTING: Using minimal query (filter only)`);
+        
+        /* ORIGINAL FULL QUERY (restore after testing):
         const queryParams = {
             '$filter': `LockBoxId eq '${lockboxId}'`,
             '$select': 'LockBoxId,SendingBank,BankStatement,StatementId,CompanyCode,HeaderStatus,BankStatementItem,DocumentNumber,PaymentAdvice,SubledgerDocument,SubledgerOnaccountDocument,Amount,TransactionCurrency,DocumentStatus',
             '$top': '100'
         };
+        */
         
         console.log(`   🔄 Fetching fresh data from SAP (no BTP storage)`);
         console.log(`   📍 SAP API Endpoint: ${apiEndpoint}`);
