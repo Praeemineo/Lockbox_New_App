@@ -439,8 +439,9 @@ function initializeServices() {
 
 // Register modular routes
 app.use('/api/lockbox/run', runRoutes);
-app.use('/api/posting', postingRoutes);
-app.use('/api/lockbox', postingRoutes);  // Backward compatibility
+// TEMPORARILY DISABLED: Posting routes being refactored - using server.js implementations for now
+// app.use('/api/posting', postingRoutes);
+// app.use('/api/lockbox', postingRoutes);  // Backward compatibility
 
 // ============================================================================
 // LOCKBOX API

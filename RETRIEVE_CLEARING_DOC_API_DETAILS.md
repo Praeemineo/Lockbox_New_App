@@ -19,7 +19,7 @@ Content-Type: application/json
 
 **Example:**
 ```
-POST https://sap-enrichment.preview.emergentagent.com/api/lockbox/retrieve-clearing/abc-123-def
+POST https://sap-enrichment-fix.preview.emergentagent.com/api/lockbox/retrieve-clearing/abc-123-def
 Content-Type: application/json
 
 {
