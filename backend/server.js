@@ -6941,10 +6941,10 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
         }
         // Add invoice/payment reference under this check
         // Include XBLNR and BELNR for reference document rule processing
-        // PRIORITY: Use Paymentreference (enriched by RULE-001 with AccountingDocument) if available
-        const enrichedPayRef = row.Paymentreference || '';
+        // PRIORITY: Use PaymentReference (enriched by RULE-001 with AccountingDocument) if available
+        const enrichedPayRef = row.PaymentReference || row.Paymentreference || row.paymentreference || '';
         if (enrichedPayRef) {
-            console.log(`  ✅ Row has RULE-001 enriched Paymentreference: ${enrichedPayRef}, CompanyCode: ${row.CompanyCode}`);
+            console.log(`  ✅ Row has RULE-001 enriched PaymentReference: ${enrichedPayRef}, CompanyCode: ${row.CompanyCode}`);
         }
         
         checkGroups[checkKey].invoices.push({
@@ -6956,9 +6956,9 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
             // Reference Document Rule fields
             xblnr: row.XBLNR || '',  // External reference / Invoice reference
             belnr: row.BELNR || '',   // Accounting document number
-            // RULE-001 enriched fields (note: capital P in Paymentreference)
-            paymentreference: enrichedPayRef, // AccountingDocument from SAP (RULE-001)
-            companyCode: row.CompanyCode || '' // CompanyCode from SAP (RULE-001) - for reporting only
+            // RULE-001 enriched fields (use correct casing to match SAP payload)
+            PaymentReference: enrichedPayRef, // AccountingDocument from SAP (RULE-001)
+            CompanyCode: row.CompanyCode || '' // CompanyCode from SAP (RULE-001) - for reporting only
         });
     }
     
@@ -7056,13 +7056,13 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
             const clearingResults = checkData.invoices.map(inv => {
                 // Determine PaymentReference from RULE-001 enriched field
                 // File fields: invoiceNumber (Invoice Number), xblnr (XBLNR), belnr (BELNR)
-                // RULE-001 enriched field: paymentreference (AccountingDocument from SAP)
+                // RULE-001 enriched field: PaymentReference (AccountingDocument from SAP)
                 let paymentReference = '';
-                const invoiceNumber = (inv.invoiceNumber || '').toString().trim();
+                const invoiceNumber = (inv.invoiceNumber || inv['Invoice Number'] || '').toString().trim();
                 const xblnr = (inv.xblnr || '').toString().trim();
                 const belnr = (inv.belnr || '').toString().trim();
-                const enrichedPaymentRef = (inv.paymentreference || '').toString().trim(); // From RULE-001
-                const companyCode = (inv.companyCode || '').toString().trim(); // From RULE-001
+                const enrichedPaymentRef = (inv.PaymentReference || inv.paymentreference || '').toString().trim(); // From RULE-001 (try both casings)
+                const companyCode = (inv.CompanyCode || inv.companyCode || '').toString().trim(); // From RULE-001 (try both casings)
                 
                 console.log(`    Rule evaluation: InvoiceNumber=${invoiceNumber}, XBLNR=${xblnr}, BELNR=${belnr}, EnrichedPaymentRef=${enrichedPaymentRef}, CompanyCode=${companyCode}`);
                 
@@ -7892,7 +7892,8 @@ function buildFieldMappingPreview(extractedData) {
         'ReasonCode': 'Reason Code',
         'Reason Code': 'Reason Code',
         'PaymentReference': 'Payment Reference',
-        'paymentreference': 'Payment Reference',  // Case-insensitive mapping for RULE-001
+        'Paymentreference': 'Payment Reference',  // Case variant for RULE-001
+        'paymentreference': 'Payment Reference',  // Case variant for RULE-001
         'CompanyCode': 'Company Code',
         'companyCode': 'Company Code'  // Case-insensitive mapping
     };
