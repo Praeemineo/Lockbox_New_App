@@ -7889,7 +7889,9 @@ function buildFieldMappingPreview(extractedData) {
         'ReasonCode': 'Reason Code',
         'Reason Code': 'Reason Code',
         'PaymentReference': 'Payment Reference',
-        'CompanyCode': 'Company Code'
+        'paymentreference': 'Payment Reference',  // Case-insensitive mapping for RULE-001
+        'CompanyCode': 'Company Code',
+        'companyCode': 'Company Code'  // Case-insensitive mapping
     };
     
     // Classify and build preview for each field

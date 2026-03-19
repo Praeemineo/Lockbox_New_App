@@ -393,8 +393,12 @@ async function executeDynamicRule(rule, data) {
                 if (apiValue !== null && apiValue !== undefined) {
                     // IMPORTANT: Overwrite existing field value (case-insensitive match)
                     // Check if field already exists with different casing
+                    console.log(`      🔍 Looking for existing field matching: "${lockboxFieldName}"`);
+                    console.log(`      🔍 Available keys in row: ${Object.keys(row).join(', ')}`);
                     const existingKey = Object.keys(row).find(k => k.toLowerCase() === lockboxFieldName.toLowerCase());
                     const fieldToUpdate = existingKey || lockboxFieldName;
+                    console.log(`      🔍 Existing key found: "${existingKey}"`);
+                    console.log(`      🔍 Will update field: "${fieldToUpdate}"`);
                     
                     if (existingKey && existingKey !== lockboxFieldName) {
                         console.log(`      ⚠️  Field exists with different casing: "${existingKey}" (will overwrite)`);
