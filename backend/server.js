@@ -5436,15 +5436,16 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
         console.log(`   🔍 SAP Query Params:`, queryParams);
         console.log(`   🔑 Using direct SAP connection (environment variables)`);
         
-        // STEP 6: Call SAP API using DIRECT connection (like RULE-002)
-        // Use null or empty string for destination to force direct connection via env variables
+        // STEP 6: Call SAP API using DIRECT connection (same method as RULE-002)
+        // Force direct connection - skip BTP Destination Service completely
         let response;
         try {
-            console.log(`   📞 Calling SAP API directly (not via BTP destination service)...`);
+            console.log(`   📞 Calling SAP API DIRECTLY via environment variables (not BTP destination)...`);
             response = await sapClient.executeSapGetRequest(
-                null,  // Use null to force direct connection via SAP_URL, SAP_USER, SAP_PASSWORD
-                apiEndpoint,
-                queryParams
+                null,           // destination = null
+                apiEndpoint,    // clean endpoint URL
+                queryParams,    // dynamic query params
+                true            // forceDirect = true (NEW: skip BTP, go straight to .env)
             );
             console.log(`   ✅ SAP Response received successfully`);
         } catch (error) {

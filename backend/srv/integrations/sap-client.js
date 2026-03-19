@@ -76,17 +76,19 @@ async function getDestinationViaBTP() {
  * Primary: BTP Destination Service (Cloud SDK)
  * Fallback: Direct HTTPS with .env credentials
  * 
- * @param {string} destinationName - BTP destination name from rule config
+ * @param {string} destinationName - BTP destination name from rule config (or null for direct)
  * @param {string} url - API endpoint path
  * @param {object} queryParams - Query parameters
+ * @param {boolean} forceDirect - If true, skip BTP and use direct connection immediately
  */
-async function executeSapGetRequest(destinationName, url, queryParams = {}) {
+async function executeSapGetRequest(destinationName, url, queryParams = {}, forceDirect = false) {
     const SAP_CLIENT = process.env.SAP_CLIENT || '100';
     
     logger.info('🚀 SAP GET Request', { 
         destination: destinationName,
         endpoint: url,
-        queryParams 
+        queryParams,
+        forceDirect 
     });
     
     // Validate url parameter
@@ -96,7 +98,13 @@ async function executeSapGetRequest(destinationName, url, queryParams = {}) {
         throw new Error(errorMsg);
     }
     
-    // STEP 1: Try BTP Destination Service (Same as POST)
+    // OPTION 1: Force Direct Connection (Skip BTP Destination Service)
+    if (forceDirect || destinationName === null || destinationName === 'null') {
+        logger.info('⚡ Using DIRECT SAP connection (bypassing BTP Destination Service)');
+        return await executeDirectConnection(url, queryParams);
+    }
+    
+    // OPTION 2: Try BTP Destination Service first
     const btpDest = await getDestinationViaBTP(destinationName);
     
     if (btpDest) {
@@ -130,15 +138,25 @@ async function executeSapGetRequest(destinationName, url, queryParams = {}) {
     
     // STEP 2: Fallback to Direct Connection (Same as POST)
     logger.info(`Using direct SAP connection fallback for destination: ${destinationName}`);
+    return await executeDirectConnection(url, queryParams);
+}
+
+/**
+ * Execute Direct SAP Connection (extracted for reuse)
+ * @param {string} url - API endpoint path
+ * @param {object} queryParams - Query parameters
+ */
+async function executeDirectConnection(url, queryParams = {}) {
     const SAP_URL = process.env.SAP_URL;
     const SAP_USER = process.env.SAP_USER;
     const SAP_PASSWORD = process.env.SAP_PASSWORD;
+    const SAP_CLIENT = process.env.SAP_CLIENT || '100';
     
     if (!SAP_URL || !SAP_USER || !SAP_PASSWORD) {
-        throw new Error(`SAP connection failed for destination ${destinationName}: BTP unavailable and .env credentials missing`);
+        throw new Error(`SAP direct connection failed: .env credentials missing (SAP_URL, SAP_USER, SAP_PASSWORD)`);
     }
     
-    logger.info('Direct SAP GET', { destination: destinationName, baseUrl: SAP_URL, endpoint: url });
+    logger.info('🔐 Direct SAP Connection', { baseUrl: SAP_URL, endpoint: url });
     
     try {
         const queryString = new URLSearchParams({
@@ -147,7 +165,7 @@ async function executeSapGetRequest(destinationName, url, queryParams = {}) {
         }).toString();
         
         const fullUrl = `${SAP_URL}${url}?${queryString}`;
-        logger.info('Full GET URL constructed', { destination: destinationName, fullUrl });
+        logger.info('📍 Full GET URL', { fullUrl });
         
         const response = await axios({
             method: 'GET',
@@ -161,18 +179,19 @@ async function executeSapGetRequest(destinationName, url, queryParams = {}) {
                 password: SAP_PASSWORD
             },
             httpsAgent: new https.Agent({
-                rejectUnauthorized: false // For self-signed certificates (same as POST)
+                rejectUnauthorized: false // For self-signed certificates
             }),
             timeout: parseInt(process.env.SAP_API_TIMEOUT) || 10000
         });
         
-        logger.info(`✅ Direct SAP GET Success via ${destinationName}`, { status: response.status });
+        logger.info(`✅ Direct SAP GET Success`, { status: response.status });
         return response;
         
     } catch (error) {
-        logger.error(`Direct SAP GET Error for destination ${destinationName}`, {
+        logger.error(`❌ Direct SAP GET Error`, {
             status: error.response?.status,
-            message: error.message
+            message: error.message,
+            data: error.response?.data
         });
         throw error;
     }
