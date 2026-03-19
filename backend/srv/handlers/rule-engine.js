@@ -272,7 +272,15 @@ async function executeDynamicRule(rule, data) {
                 continue;
             }
             
-            console.log(`   📞 Calling API for row ${i + 1}...`);
+            // Enhanced logging similar to RULE-004
+            console.log(`\n${'='.repeat(80)}`);
+            console.log(`⚙️  EXECUTING ${rule.ruleId} - Row ${i + 1}`);
+            console.log(`${'='.repeat(80)}`);
+            console.log(`   ➡️  Source Value (${sourceFieldName}): ${sourceValue}`);
+            console.log(`   📞 Calling SAP API with value: ${sourceValue}`);
+            console.log(`   🔗 Full API URL: ${apiURL}`);
+            console.log(`   🔑 Using direct SAP connection (environment variables)`);
+            console.log(`${'─'.repeat(80)}`);
             
             // Step 4: Call SAP API with error handling
             let response;
@@ -305,26 +313,43 @@ async function executeDynamicRule(rule, data) {
                 continue;
             }
             
-            console.log(`   ✅ API Response received for row ${i + 1}`);
-            console.log(`   📦 Response structure:`, JSON.stringify(response.data).substring(0, 500));
+            console.log(`   ✅ SAP API Response received (Status: ${response.status})`);
             
-            // LOG FULL RESPONSE VALUES for debugging
+            // LOG FULL RESPONSE VALUES - Same style as RULE-004
             console.log(`\n${'='.repeat(80)}`);
-            console.log(`📋 ${rule.ruleId} RESPONSE VALUES for Row ${i + 1}:`);
+            console.log(`📋 ${rule.ruleId} SAP RESPONSE VALUES - Row ${i + 1}:`);
             console.log(`${'='.repeat(80)}`);
-            console.log(`📥 Full SAP Response Data:`);
+            console.log(`🔍 Source value used in query: ${sourceValue}`);
+            console.log(`📥 Full SAP Response:`);
             console.log(JSON.stringify(response.data, null, 2));
+            
+            // Extract and display key fields with labels
+            console.log(`\n📊 Extracted Values:`);
+            for (const fieldMapping of fieldMappings) {
+                const targetFieldName = fieldMapping.targetField;
+                const lockboxFieldName = fieldMapping.apiField;
+                const apiValue = extractDynamicField(response.data, targetFieldName);
+                
+                if (apiValue !== null && apiValue !== undefined) {
+                    console.log(`   🎯 ${lockboxFieldName}: "${apiValue}" (from SAP field: ${targetFieldName})`);
+                } else {
+                    console.log(`   ⚠️  ${lockboxFieldName}: NOT FOUND (expected from: ${targetFieldName})`);
+                }
+            }
             console.log(`${'='.repeat(80)}\n`);
             
             // Step 5: Extract and map ALL output fields from API response
             let fieldsEnriched = 0;
             
+            console.log(`   📋 Processing ${fieldMappings.length} field mapping(s)...`);
+            
             for (const fieldMapping of fieldMappings) {
                 let targetFieldName = fieldMapping.targetField;   // Field path in SAP response
                 const lockboxFieldName = fieldMapping.apiField;      // Field to store in lockbox
                 
-                console.log(`      🔍 Extracting "${targetFieldName}" from response...`);
-                console.log(`      📋 Full fieldMapping:`, JSON.stringify(fieldMapping));
+                console.log(`\n   ${'─'.repeat(60)}`);
+                console.log(`   📝 Field Mapping: ${fieldMapping.sourceField} → ${targetFieldName} → ${lockboxFieldName}`);
+                console.log(`   ${'─'.repeat(60)}`);
                 
                 // AUTO-FIX: Convert simple field names to nested paths if needed
                 // For RULE-002 (Business Partner Bank API)
@@ -360,13 +385,10 @@ async function executeDynamicRule(rule, data) {
                     
                     row[fieldToUpdate] = apiValue;
                     fieldsEnriched++;
-                    console.log(`      ✅ ${fieldToUpdate} = "${apiValue}"`);
-                    console.log(`      📊 Field enrichment details:`, {
-                        targetField: targetFieldName,
-                        extractedValue: apiValue,
-                        storedAs: fieldToUpdate,
-                        row: i + 1
-                    });
+                    
+                    console.log(`   ✅ Enriched Field: ${fieldToUpdate} = "${apiValue}"`);
+                    console.log(`      ↳ Extracted from SAP field: ${targetFieldName}`);
+                    console.log(`      ↳ Input value: ${sourceValue}`);
                     
                     // Add metadata for Field Mapping Preview
                     if (!row._apiDerivedFields) row._apiDerivedFields = [];
