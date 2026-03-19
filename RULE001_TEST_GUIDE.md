@@ -74,7 +74,7 @@ InvoiceNumber,Amount,Currency,CustomerNumber
 ```
 
 **Step 2: Upload to Lockbox Transaction**
-1. Navigate to: https://lockbox-rule-debug.preview.emergentagent.com (or BTP URL)
+1. Navigate to: https://sap-enrichment.preview.emergentagent.com (or BTP URL)
 2. Click "Lockbox Transaction"
 3. Click "Upload File"
 4. Select `test_rule001.csv`
@@ -97,7 +97,7 @@ Look for the processing result showing:
 **Using curl:**
 ```bash
 # Set the backend URL
-API_URL="https://lockbox-rule-debug.preview.emergentagent.com"
+API_URL="https://sap-enrichment.preview.emergentagent.com"
 
 # Test RULE-001 directly
 curl -X POST "$API_URL/api/lockbox/test-rule" \
