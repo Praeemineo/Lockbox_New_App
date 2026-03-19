@@ -27,7 +27,7 @@
       {
         "sourceField": "Invoice Number",
         "targetField": "AccountingDocument",
-        "apiField": "paymentreference"
+        "apiField": "PaymentReference"
       },
       {
         "sourceField": "Invoice Number",
