@@ -7009,15 +7009,11 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
         
         // Build to_LockboxClearing entries for payment references
         if (checkData.invoices && checkData.invoices.length > 0) {
-            // Get active reference document rule using the proper getter function
-            const activeRule = getActiveReferenceDocRule();
-            const ruleType = activeRule?.ruleType || 'XBLNR'; // Default to XBLNR (Invoice Number)
-            
-            console.log(`  Reference Document Rule: ${activeRule?.ruleName || 'Default'} (${ruleType})`);
-            console.log(`  Rule Logic: ${activeRule?.logicCondition || 'default'}`);
+            console.log(`  Payment Reference Logic: Using RULE-001 enriched values (dynamic API-based)`);
+            console.log(`  Note: Old Reference Document Rules (XBLNR_THEN_BELNR) deprecated`);
             
             const clearingResults = checkData.invoices.map(inv => {
-                // Determine PaymentReference based on active reference document rule
+                // Determine PaymentReference from RULE-001 enriched field
                 // File fields: invoiceNumber (Invoice Number), xblnr (XBLNR), belnr (BELNR)
                 // RULE-001 enriched field: paymentreference (AccountingDocument from SAP)
                 let paymentReference = '';
@@ -7029,52 +7025,15 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
                 
                 console.log(`    Rule evaluation: InvoiceNumber=${invoiceNumber}, XBLNR=${xblnr}, BELNR=${belnr}, EnrichedPaymentRef=${enrichedPaymentRef}, CompanyCode=${companyCode}`);
                 
-                // PRIORITY 1: Use enriched PaymentReference from RULE-001 (AccountingDocument)
+                // Use ONLY enriched PaymentReference from RULE-001 (dynamic API-based enrichment)
+                // OLD Reference Document Rules (XBLNR_THEN_BELNR) are deprecated
                 if (enrichedPaymentRef) {
                     paymentReference = enrichedPaymentRef;
-                    console.log(`    ✅ Using RULE-001 enriched PaymentReference (AccountingDocument): ${paymentReference}`);
-                }
-                // PRIORITY 2: Apply reference document rule
-                else {
-                    switch (ruleType) {
-                        case 'BELNR':
-                            // Use Accounting Document number (BELNR)
-                            paymentReference = belnr || invoiceNumber;
-                            console.log(`    Using BELNR rule: ${paymentReference}`);
-                            break;
-                            
-                        case 'XBLNR':
-                            // Use Invoice Reference number (XBLNR)
-                            paymentReference = xblnr || invoiceNumber;
-                            console.log(`    Using XBLNR rule: ${paymentReference}`);
-                            break;
-                            
-                        case 'BELNR_THEN_XBLNR':
-                            // Try BELNR first, if not found use XBLNR
-                            paymentReference = belnr || xblnr || invoiceNumber;
-                            console.log(`    Using BELNR_THEN_XBLNR rule: ${paymentReference}`);
-                            break;
-                            
-                        case 'XBLNR_THEN_BELNR':
-                            // lbinvref = XBLNR else belnr
-                            // If Invoice Number matches XBLNR, use XBLNR; otherwise use BELNR
-                            if (xblnr && invoiceNumber === xblnr) {
-                                paymentReference = xblnr;
-                                console.log(`    Using XBLNR_THEN_BELNR rule: Invoice matches XBLNR, using ${paymentReference}`);
-                            } else if (belnr) {
-                                paymentReference = belnr;
-                                console.log(`    Using XBLNR_THEN_BELNR rule: Invoice doesn't match XBLNR, using BELNR ${paymentReference}`);
-                            } else {
-                                paymentReference = invoiceNumber;
-                                console.log(`    Using XBLNR_THEN_BELNR rule: Fallback to InvoiceNumber ${paymentReference}`);
-                            }
-                            break;
-                            
-                        default:
-                            // Default: Use Invoice Number from file
-                            paymentReference = invoiceNumber;
-                            console.log(`    Using default (InvoiceNumber): ${paymentReference}`);
-                    }
+                    console.log(`    ✅ Using RULE-001 enriched PaymentReference: ${paymentReference}`);
+                } else {
+                    // No enriched value - use Invoice Number as fallback
+                    paymentReference = invoiceNumber;
+                    console.log(`    ⚠️  RULE-001 enrichment missing - using Invoice Number as fallback: ${paymentReference}`);
                 }
                 
                 // Build clearing entry - OMIT empty optional fields (don't send empty strings)
