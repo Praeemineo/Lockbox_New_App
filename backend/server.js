@@ -5406,7 +5406,14 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
         
         // STEP 5: Build SAP API query
         const apiMapping = rule004.apiMappings[0];
-        const apiEndpoint = apiMapping.apiReference;
+        let apiEndpoint = apiMapping.apiReference;
+        
+        // CRITICAL FIX: Remove any hardcoded filters from apiReference
+        // The database may have stale data with old LockboxId filters
+        if (apiEndpoint.includes('?')) {
+            apiEndpoint = apiEndpoint.split('?')[0];
+            console.log(`   🔧 Cleaned apiReference (removed hardcoded parameters)`);
+        }
         
         const queryParams = {
             '$filter': `LockBoxId eq '${lockboxId}'`,
