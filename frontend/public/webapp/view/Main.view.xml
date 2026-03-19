@@ -1418,10 +1418,23 @@
                                             
                                             <!-- Row 3 -->
                                             <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="Bank Statement:" design="Bold"/>
+                                                <Text text="{app>/selectedTransaction/bankStatement}"/>
+                                            </VBox>
+                                            
+                                            <VBox class="sapUiSmallMarginBottom">
+                                                <Label text="Statement ID:" design="Bold"/>
+                                                <Text text="{app>/selectedTransaction/statementId}"/>
+                                            </VBox>
+                                            
+                                            <VBox></VBox>
+                                            
+                                            <!-- Row 4 -->
+                                            <VBox class="sapUiSmallMarginBottom">
                                                 <Label text="Header Status:" design="Bold"/>
                                                 <ObjectStatus 
-                                                    text="{= ${app>/selectedTransaction/status} === 'POSTED' ? 'Processed' : 'Pending' }" 
-                                                    state="{= ${app>/selectedTransaction/status} === 'POSTED' ? 'Success' : 'None' }"/>
+                                                    text="{app>/selectedTransaction/headerStatus}" 
+                                                    state="{= ${app>/selectedTransaction/headerStatus} === 'Processed' || ${app>/selectedTransaction/headerStatus} === 'Completed' ? 'Success' : (${app>/selectedTransaction/headerStatus} === 'Posting Error' || ${app>/selectedTransaction/headerStatus} === 'Failed' ? 'Error' : 'None') }"/>
                                             </VBox>
                                             
                                             <VBox></VBox>
@@ -1479,10 +1492,10 @@
                                                         <Text text="{app>paytAdvice}"/>
                                                         <Text text="{app>clearingDoc}"/>
                                                         <Text text="{app>subledgerOnaccountDoc}"/>
-                                                        <ObjectNumber number="{app>amount}" unit="USD"/>
+                                                        <ObjectNumber number="{app>amount}" unit="{app>currency}"/>
                                                         <ObjectStatus 
-                                                            text="{= ${app>postingDoc} ? 'Cleared' : 'Pending' }"
-                                                            state="{= ${app>postingDoc} ? 'Success' : 'None' }"/>
+                                                            text="{app>documentStatus}"
+                                                            state="{= ${app>documentStatus} === 'Posted' || ${app>documentStatus} === 'Cleared' ? 'Success' : (${app>documentStatus} === 'Posting Error' || ${app>documentStatus} === 'Not Cleared' ? 'Error' : 'None') }"/>
                                                     </cells>
                                                 </ColumnListItem>
                                             </items>
