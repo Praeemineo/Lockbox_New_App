@@ -157,19 +157,24 @@ function evaluateRuleCondition(conditions, data) {
         const matchedFields = new Set(); // Track which row fields have been used
         
         for (const condition of conditions) {
-            const fieldName = condition.documentFormat || condition.fieldName || '';
-            const conditionType = (condition.condition || '').toLowerCase();
+            // Support multiple condition formats:
+            // OLD: { condition: "EXIST", documentFormat: "Invoice Number" }
+            // NEW: { operator: "contains", attribute: "Invoice Number", value: "Value" }
+            const fieldName = condition.attribute || condition.documentFormat || condition.fieldName || '';
+            const conditionType = (condition.condition || condition.operator || '').toLowerCase();
+            const conditionValue = condition.value || '';
             
-            console.log(`      Checking condition: ${fieldName} ${condition.condition}`);
+            console.log(`      Checking condition: ${fieldName} ${conditionType} ${conditionValue ? '"' + conditionValue + '"' : ''}`);
             
-            // If condition is a specific value (e.g., "0001"), it's hardcoded - always pass
-            if (conditionType !== 'exist' && condition.condition) {
+            // If condition is checking for a specific hardcoded value, always pass
+            // (These don't need to be in the file, they're configuration values)
+            if (conditionType !== 'exist' && conditionType !== 'contains' && condition.condition) {
                 console.log(`      ✅ Hardcoded value "${condition.condition}" - condition passes`);
-                continue; // Hardcoded values don't need to be in the file
+                continue;
             }
             
-            // For EXIST conditions, check if field is in file
-            if (conditionType === 'exist') {
+            // For EXIST or CONTAINS conditions, check if field is in file
+            if (conditionType === 'exist' || conditionType === 'contains') {
                 // Check if field exists in row with smart matching
                 let fieldValue = null;
                 let foundField = null;
@@ -194,10 +199,22 @@ function evaluateRuleCondition(conditions, data) {
                     }
                 }
                 
+                // Check if field exists and has value
                 if (!fieldValue || fieldValue === '' || fieldValue === null) {
                     console.log(`      ❌ Field ${fieldName} not found or empty`);
                     allConditionsMet = false;
                     break;
+                }
+                
+                // For CONTAINS, check if value matches
+                if (conditionType === 'contains' && conditionValue) {
+                    // "contains" with value "Value" means: field must have a non-empty value
+                    // This is essentially the same as EXIST for our use case
+                    if (String(fieldValue).trim() === '') {
+                        console.log(`      ❌ Field ${fieldName} is empty (contains check failed)`);
+                        allConditionsMet = false;
+                        break;
+                    }
                 }
             }
         }
