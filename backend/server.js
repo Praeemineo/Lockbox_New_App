@@ -18,6 +18,12 @@ const dataModels = require('./srv/models/data-models');
 const { getRuleById, getApiConfig } = require('./services/rule.service'); // For dynamic API calls
 
 // ============================================================================
+// MODULAR IMPORTS - Routes (Refactored)
+// ============================================================================
+const runRoutes = require('./routes/runRoutes');
+const runService = require('./services/runService');
+
+// ============================================================================
 // MODULAR IMPORTS - SAP and Database Services
 // ============================================================================
 // SAP Service Modules (organized by HTTP method)
@@ -408,6 +414,21 @@ async function initTables() {
 app.get('/api/health', (req, res) => {
     res.json({ status: 'healthy', service: 'lockbox-srv', timestamp: new Date().toISOString() });
 });
+
+// ============================================================================
+// MODULAR ROUTES (Refactored)
+// ============================================================================
+// Initialize services with in-memory data (temporary until DB migration is complete)
+function initializeServices() {
+    runService.initialize({
+        lockboxProcessingRuns,
+        runs,
+        processingRules
+    });
+}
+
+// Register modular routes
+app.use('/api/lockbox/run', runRoutes);
 
 // ============================================================================
 // LOCKBOX API
@@ -3449,6 +3470,10 @@ async function loadProcessingRulesFromDb() {
         ruleEngine.loadProcessingRules(processingRules);
         console.log(`✅ Processing rules loaded into rule engine: ${processingRules.length}`);
         
+        // Initialize modular services with in-memory data
+        initializeServices();
+        console.log(`✅ Modular services initialized`);
+        
     } catch (err) {
         console.error('Error loading processing rules from LB_Processing_Rules:', err.message);
         loadProcessingRulesFromFile();
@@ -5313,13 +5338,16 @@ app.post('/api/processing-rules/sync-to-db', async (req, res) => {
 
 // ============================================================================
 // API ENDPOINTS - RULE-004: Fetch Accounting Document Details
+// ⚠️ DEPRECATED: This endpoint has been moved to /routes/runRoutes.js
+// Temporarily disabled by renaming to _disabled_accounting_document
 // ============================================================================
 
 /**
  * GET /api/lockbox/:runId/accounting-document
  * Fetch accounting document details using RULE-004 for a specific lockbox run
+ * ⚠️ DEPRECATED: Now handled by runRoutes.js -> runService.getAccountingDocument()
  */
-app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
+app.get('/api/lockbox/:runId/_disabled_accounting_document', async (req, res) => {
     const { runId } = req.params;
     
     console.log(`📋 RULE-004: Fetching accounting document for run ${runId} (always fresh from SAP)`);
@@ -5539,6 +5567,7 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
         });
     }
 });
+// END OF DEPRECATED RULE-004 ENDPOINT (Disabled - using modular route instead)
 
 // ============================================================================
 // PROCESSING RULES API ENDPOINTS
