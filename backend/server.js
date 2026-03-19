@@ -5357,9 +5357,9 @@ app.post('/api/processing-rules/sync-to-db', async (req, res) => {
 /**
  * GET /api/lockbox/:runId/accounting-document
  * Fetch accounting document details using RULE-004 for a specific lockbox run
- * ⚠️ DEPRECATED: Now handled by runRoutes.js -> runService.getAccountingDocument()
+ * RE-ENABLED: Modular route path didn't match frontend expectations
  */
-app.get('/api/lockbox/:runId/_disabled_accounting_document', async (req, res) => {
+app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
     const { runId } = req.params;
     
     console.log(`📋 RULE-004: Fetching accounting document for run ${runId} (always fresh from SAP)`);

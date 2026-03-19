@@ -1,12 +1,14 @@
-# Production Run Error - Fixed
+# Production Run & RULE-004 Errors - Fixed
 
-## Issue Reported
-- **Error Message:** "Production run failed: Run production - Implementation being migrated from server.js"
-- **Impact:** Simulation and production run functionality broken
+## Issues Reported
+1. **Production Run Error:** "Production run failed: Run production - Implementation being migrated from server.js"
+2. **RULE-004 Error:** Navigation/Accounting Document lookup broken
+- **Impact:** Simulation, production run, and RULE-004 functionality broken
 
 ## Root Cause
-The previous agent started migrating posting endpoints from `server.js` to modular files (`postingRoutes.js`, `postingService.js`) but did not complete the migration:
+The previous agent started migrating posting and run endpoints from `server.js` to modular files but did not complete the migration properly:
 
+### Issue 1: Posting Routes (Production Run, Simulation)
 1. **Routes were registered** in server.js (lines 442-443):
    ```javascript
    app.use('/api/posting', postingRoutes);
@@ -23,7 +25,20 @@ The previous agent started migrating posting endpoints from `server.js` to modul
 
 4. **The problem:** New incomplete routes intercepted requests before reaching the working code
 
-## Fix Applied
+### Issue 2: RULE-004 Route (Accounting Document)
+1. **Route path mismatch:**
+   - Frontend calls: `/api/lockbox/:runId/accounting-document`
+   - Router mounted at: `/api/lockbox/run`
+   - Route definition: `/:runId/accounting-document`
+   - **Resulting path:** `/api/lockbox/run/:runId/accounting-document` ❌ (Wrong!)
+
+2. **Old endpoint was disabled** in server.js as `_disabled_accounting_document`
+
+3. **The problem:** Frontend couldn't reach the endpoint due to path mismatch
+
+## Fixes Applied
+
+### Fix 1: Posting Routes
 **Temporarily disabled** the incomplete posting routes in `/app/backend/server.js` (line 442-443):
 
 ```javascript
@@ -34,10 +49,21 @@ The previous agent started migrating posting endpoints from `server.js` to modul
 
 This allows the original working endpoints in server.js to handle the requests.
 
+### Fix 2: RULE-004 Route
+**Re-enabled** the original RULE-004 endpoint in `/app/backend/server.js` (line 5362):
+
+```javascript
+// Changed from: app.get('/api/lockbox/:runId/_disabled_accounting_document'
+app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
+```
+
+This restores the correct path that the frontend expects.
+
 ## Current Status
 ✅ **Backend restarted successfully**
 ✅ **Production run endpoints now working** (handled by server.js)
 ✅ **Simulation endpoints now working** (handled by server.js)
+✅ **RULE-004 (Accounting Document) now working** (re-enabled in server.js)
 
 ## Next Steps
 To properly complete the refactoring (when ready):
@@ -63,4 +89,6 @@ To properly complete the refactoring (when ready):
 Please test:
 - ✅ Simulation run from UI
 - ✅ Production run from UI
-- Both should now work correctly using the original server.js implementations
+- ✅ RULE-004: Click on any run and open "Navigation View" dialog - should show accounting document details
+  
+All three should now work correctly using the original server.js implementations.
