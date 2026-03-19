@@ -3559,8 +3559,8 @@ function createBatchTemplate(filename, fileType, headers, sampleData, rowCount) 
         'CheckNumber': 'Cheque',
         'Check Amount': 'AmountInTransactionCurrency',
         'CheckAmount': 'AmountInTransactionCurrency',
-        'Invoice Number': 'PaymentReference',
-        'InvoiceNumber': 'PaymentReference',
+        // 'Invoice Number': 'PaymentReference',  // DISABLED: Let RULE-001 enrich this
+        // 'InvoiceNumber': 'PaymentReference',   // DISABLED: Let RULE-001 enrich this
         'Invoice Amount': 'NetPaymentAmountInPaytCurrency',
         'InvoiceAmount': 'NetPaymentAmountInPaytCurrency',
         'Deduction Amount': 'DeductionAmountInPaytCurrency',
@@ -7649,7 +7649,10 @@ function mapToApiFields(data, lockboxId) {
         Currency: row.Currency || 'USD',
         PartnerBank: 'BANK', PartnerBankAccount: '', PartnerBankCountry: 'US',
         DepositDateTime: row.DepositDate || new Date().toISOString(),
-        PaymentReference: (row.InvoiceNumber || row.PaymentReference || '').toString().substring(0, 30),
+        // PaymentReference will be enriched by RULE-001 from InvoiceNumber
+        // Do NOT pre-map InvoiceNumber to PaymentReference - let RULE-001 create it with AccountingDocument value
+        PaymentReference: (row.PaymentReference || '').toString().substring(0, 30),  // Only use if already exists
+        InvoiceNumber: (row.InvoiceNumber || row['Invoice Number'] || '').toString(),  // Keep original for RULE-001
         NetPaymentAmountInPaytCurrency: (parseFloat(row.InvoiceAmount) || 0).toString(),
         DeductionAmountInPaytCurrency: (parseFloat(row.DeductionAmount) || 0).toString(),
         PaymentDifferenceReason: row.ReasonCode || '',
