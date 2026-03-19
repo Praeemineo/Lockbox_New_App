@@ -563,9 +563,16 @@ async function callSAPAPI(apiURL, httpMethod, destination) {
         }
         
         console.log(`   🎯 Calling executeSapGetRequest: destination="${destination}", endpoint="${endpoint}"`);
+        console.log(`   ⚡ Using DIRECT connection (bypassing BTP Destination Service)`);
         
-        // Use SAP client's executeSapGetRequest which handles .env credentials
-        const response = await sapClient.executeSapGetRequest(destination, endpoint, queryParams);
+        // Use SAP client's executeSapGetRequest with forceDirect=true (like RULE-004)
+        // This bypasses BTP Destination Service and uses .env credentials directly
+        const response = await sapClient.executeSapGetRequest(
+            destination,   // destination name (or null)
+            endpoint,      // API endpoint
+            queryParams,   // query parameters
+            true           // forceDirect = true ✅ Direct connection via .env
+        );
         
         console.log(`   ✅ SAP API Response received (Status: ${response.status})`);
         console.log(`   📦 RAW RESPONSE DATA:`, JSON.stringify(response.data, null, 2));
