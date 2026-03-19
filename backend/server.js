@@ -21,7 +21,9 @@ const { getRuleById, getApiConfig } = require('./services/rule.service'); // For
 // MODULAR IMPORTS - Routes (Refactored)
 // ============================================================================
 const runRoutes = require('./routes/runRoutes');
+const postingRoutes = require('./routes/postingRoutes');
 const runService = require('./services/runService');
+const postingService = require('./services/postingService');
 
 // ============================================================================
 // MODULAR IMPORTS - SAP and Database Services
@@ -425,10 +427,20 @@ function initializeServices() {
         runs,
         processingRules
     });
+    
+    postingService.initialize({
+        pool,
+        lockboxProcessingRuns,
+        runs,
+        buildLockboxPayload,
+        DEFAULT_COMPANY_CODE
+    });
 }
 
 // Register modular routes
 app.use('/api/lockbox/run', runRoutes);
+app.use('/api/posting', postingRoutes);
+app.use('/api/lockbox', postingRoutes);  // Backward compatibility
 
 // ============================================================================
 // LOCKBOX API
@@ -1878,7 +1890,9 @@ app.get('/api/lockbox/preview-payload/:headerId', async (req, res) => {
 // 3. Return preview data (what WILL be sent to SAP during Production Run)
 // 4. NO actual SAP API call - just prepare and preview
 // ============================================================================
-app.post('/api/lockbox/simulate/:headerId', async (req, res) => {
+// ⚠️ DEPRECATED: Simulate endpoint moved to postingRoutes.js
+// Temporarily disabled - using modular route instead
+app.post('/api/lockbox/_disabled_simulate/:headerId', async (req, res) => {
     try {
         const { headerId } = req.params;
         
@@ -2030,13 +2044,10 @@ ${clearingProposalText}
 
 // ============================================================================
 // PRODUCTION RUN (Commit to SAP) - ACTUAL SAP POSTING
-// 1. Retrieve saved payload from simulation
-// 2. POST the payload to SAP (COMMITS to SAP backend)
-// 3. SAP creates Payment Advice and posts FI documents
-// 4. Read back: Accounting Document Number, Clearing details
-// 5. Return results for UI display
+// ⚠️ DEPRECATED: Production posting endpoint moved to postingRoutes.js
+// Temporarily disabled - using modular route instead
 // ============================================================================
-app.post('/api/lockbox/post/:headerId', async (req, res) => {
+app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
     try {
         const { headerId } = req.params;
         
