@@ -2636,7 +2636,7 @@ app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
                                 documentNumber: sapDoc.DocumentNumber || sapDoc.documentNumber || '',
                                 paymentAdvice: sapDoc.PaymentAdvice || sapDoc.paymentAdvice || '',
                                 subledgerDocument: sapDoc.SubledgerDocument || sapDoc.subledgerDocument || '',
-                                subledgerOnaccountDocument: sapDoc.SubledgerOnaccountDocument || sapDoc.subledgerOnaccountDocument || '',
+                                subledgerOnaccountDocument: sapDoc.SubledgerOnAccountDocument || sapDoc.SubledgerOnaccountDocument || sapDoc.subledgerOnaccountDocument || '', // Try capital A first
                                 amount: sapDoc.Amount || sapDoc.amount || '',
                                 companyCode: RUNTIME_COMPANY_CODE // From RULE-001
                             });
@@ -2850,7 +2850,7 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
             const documentNumber = sapDoc.DocumentNumber || sapDoc.documentNumber || '';
             const paymentAdvice = sapDoc.PaymentAdvice || sapDoc.paymentAdvice || '';
             const subledgerDocument = sapDoc.SubledgerDocument || sapDoc.subledgerDocument || '';
-            const subledgerOnaccountDoc = sapDoc.SubledgerOnaccountDocument || sapDoc.subledgerOnaccountDocument || '';
+            const subledgerOnaccountDoc = sapDoc.SubledgerOnAccountDocument || sapDoc.SubledgerOnaccountDocument || sapDoc.subledgerOnaccountDocument || ''; // Try capital A first
             
             // Get existing company code from lockbox item (set by RULE-001)
             let existingCompanyCode = '';
@@ -5532,7 +5532,8 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
             console.log(`   📝 Document Number: ${doc.DocumentNumber || 'N/A'}`);
             console.log(`   💳 Payment Advice: ${doc.PaymentAdvice || 'N/A'}`);
             console.log(`   📊 Subledger Document: ${doc.SubledgerDocument || 'N/A'}`);
-            console.log(`   📋 Subledger on-account: ${doc.SubledgerOnaccountDocument || 'N/A'}`);
+            console.log(`   📋 Subledger on-account (capital A): ${doc.SubledgerOnAccountDocument || 'N/A'}`);
+            console.log(`   📋 Subledger on-account (lowercase a): ${doc.SubledgerOnaccountDocument || 'N/A'}`);
             console.log(`   💰 Amount: ${doc.Amount || 0}`);
             console.log(`   💱 Transaction Currency: ${doc.TransactionCurrency || 'N/A'}`);
             console.log(`   📈 Document Status: ${doc.DocumentStatus || 'N/A'}`);
@@ -5552,7 +5553,7 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
             DocumentNumber: doc.DocumentNumber || '',
             PaymentAdvice: doc.PaymentAdvice || '',
             SubledgerDocument: doc.SubledgerDocument || '',
-            SubledgerOnaccountDocument: doc.SubledgerOnaccountDocument || '',
+            SubledgerOnaccountDocument: doc.SubledgerOnAccountDocument || doc.SubledgerOnaccountDocument || '', // Try capital A first
             Amount: doc.Amount || 0,
             TransactionCurrency: doc.TransactionCurrency || 'USD',
             DocumentStatus: doc.DocumentStatus || ''
