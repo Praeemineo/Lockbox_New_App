@@ -5802,6 +5802,29 @@ app.post('/api/processing-rules', async (req, res) => {
             return res.status(503).json({ error: 'Database not available' });
         }
         
+        // AUTO-GENERATE Rule ID in sequence (RULE-001, RULE-002, RULE-003...)
+        // Find the highest existing rule number
+        const maxRuleResult = await pool.query(`
+            SELECT rule_id FROM lb_processing_rules 
+            WHERE rule_id LIKE 'RULE-%'
+            ORDER BY rule_id DESC 
+            LIMIT 1
+        `);
+        
+        let nextRuleNumber = 1;
+        if (maxRuleResult.rows.length > 0) {
+            const lastRuleId = maxRuleResult.rows[0].rule_id; // e.g., "RULE-003"
+            const match = lastRuleId.match(/RULE-(\d+)/);
+            if (match) {
+                nextRuleNumber = parseInt(match[1]) + 1;
+            }
+        }
+        
+        // Generate new Rule ID with zero-padded 3-digit number
+        const generatedRuleId = `RULE-${String(nextRuleNumber).padStart(3, '0')}`;
+        
+        console.log(`🆕 Auto-generating Rule ID: ${generatedRuleId} (next in sequence)`);
+        
         const id = require('crypto').randomUUID();
         await pool.query(`
             INSERT INTO lb_processing_rules 
@@ -5809,14 +5832,14 @@ app.post('/api/processing-rules', async (req, res) => {
              condition_logic, conditions, actions)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         `, [
-            id, rule.ruleId, rule.fileType, rule.ruleType, rule.ruleDescription,
+            id, generatedRuleId, rule.fileType, rule.ruleType, rule.ruleDescription,
             rule.active !== false, rule.priority || 10,
             rule.conditionLogic || 'AND',
             JSON.stringify(rule.conditions || []),
             JSON.stringify(rule.actions || [])
         ]);
         
-        res.json({ success: true, ruleId: rule.ruleId });
+        res.json({ success: true, ruleId: generatedRuleId });
     } catch (err) {
         console.error('Error creating processing rule:', err);
         res.status(500).json({ error: 'Failed to create processing rule', message: err.message });

@@ -37,8 +37,10 @@
                                 columnsM="1"
                                 singleContainerFullSize="false">
                                 <f:content>
-                                    <Label text="Rule ID" required="true" />
-                                    <Input value="{processingRuleDialog>/rule/ruleId}" enabled="{= !${processingRuleDialog>/editMode}}" />
+                                    <Label text="Rule ID" />
+                                    <Text text="{processingRuleDialog>/rule/ruleId}" />
+                                    <Text text="(Auto-generated on save)" class="sapUiTinyMarginTop" />
+                                    <Text text="" />
                                     
                                     <Label text="Rule Name" required="true" />
                                     <Input value="{processingRuleDialog>/rule/ruleName}" />
