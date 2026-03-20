@@ -10051,16 +10051,24 @@ sap.ui.define([
             var that = this;
             var oModel = this.getOwnerComponent().getModel("app");
             
+            console.log("📊 Loading Processing Rules from API...");
+            
             fetch(API_BASE + "/field-mapping/processing-rules")
                 .then(function (response) { return response.json(); })
                 .then(function (data) {
-                    console.log("Loaded Processing Rules:", data.length);
+                    console.log("✅ Loaded Processing Rules:", data.length, "rules");
                     oModel.setProperty("/processingRules", data);
                     oModel.setProperty("/ruleCounts/rules", data.length);
+                    
+                    // Force model refresh to update UI
+                    oModel.refresh(true);
+                    
+                    console.log("📈 Rule count updated to:", data.length);
                 })
                 .catch(function (error) {
-                    console.error("Error loading processing rules:", error);
+                    console.error("❌ Error loading processing rules:", error);
                     oModel.setProperty("/processingRules", []);
+                    oModel.setProperty("/ruleCounts/rules", 0);
                 });
         },
         
