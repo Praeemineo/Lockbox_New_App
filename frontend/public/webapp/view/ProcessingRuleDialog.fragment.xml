@@ -37,10 +37,11 @@
                                 columnsM="1"
                                 singleContainerFullSize="false">
                                 <f:content>
-                                    <Label text="Rule ID" />
-                                    <Text text="{processingRuleDialog>/rule/ruleId}" />
-                                    <Text text="(Auto-generated on save)" class="sapUiTinyMarginTop" />
-                                    <Text text="" />
+                                    <Label text="Rule ID (System Generated)" />
+                                    <HBox>
+                                        <Text text="{processingRuleDialog>/rule/ruleId}" class="sapUiTinyMarginEnd" />
+                                        <core:Icon src="sap-icon://information" color="#0854A0" tooltip="Rule ID is automatically generated when you save the rule" />
+                                    </HBox>
                                     
                                     <Label text="Rule Name" required="true" />
                                     <Input value="{processingRuleDialog>/rule/ruleName}" />

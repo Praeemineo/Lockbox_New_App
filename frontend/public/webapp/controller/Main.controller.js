@@ -10205,7 +10205,7 @@ sap.ui.define([
             var oDialogModel = this.getView().getModel("processingRuleDialog");
             oDialogModel.setProperty("/editMode", false);
             oDialogModel.setProperty("/rule", {
-                ruleId: "(Auto-generated)",  // Display placeholder for new rules
+                ruleId: "Will be auto-generated",  // Clear placeholder for new rules
                 ruleName: "",
                 description: "",
                 fileType: "EXCEL",
