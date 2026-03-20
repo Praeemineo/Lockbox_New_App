@@ -174,23 +174,31 @@ async function getAccountingDocument(req, res) {
         });
         console.log(`${'='.repeat(80)}\n`);
         
-        const mappedData = documents.map((doc, index) => ({
-            item: (index + 1).toString(),
-            LockBoxId: doc.LockBoxId || '',
-            SendingBank: doc.SendingBank || '',
-            BankStatement: doc.BankStatement || '',
-            StatementId: doc.StatementId || '',
-            CompanyCode: doc.CompanyCode || '',
-            HeaderStatus: doc.HeaderStatus || '',
-            BankStatementItem: doc.BankStatementItem || '',
-            DocumentNumber: doc.DocumentNumber || '',
-            PaymentAdvice: doc.PaymentAdvice || '',
-            SubledgerDocument: doc.SubledgerDocument || '',
-            SubledgerOnaccountDocument: doc.SubledgerOnaccountDocument || '',
-            Amount: doc.Amount || 0,
-            TransactionCurrency: doc.TransactionCurrency || 'USD',
-            DocumentStatus: doc.DocumentStatus || ''
-        }));
+        const mappedData = documents.map((doc, index) => {
+            console.log(`   📄 Document ${index + 1} field mapping:`);
+            console.log(`      SubledgerDocument: "${doc.SubledgerDocument || ''}"`);
+            console.log(`      SubledgerOnaccountDocument: "${doc.SubledgerOnaccountDocument || ''}"`);
+            console.log(`      DocumentNumber: "${doc.DocumentNumber || ''}"`);
+            console.log(`      PaymentAdvice: "${doc.PaymentAdvice || ''}"`);
+            
+            return {
+                item: (index + 1).toString(),
+                LockBoxId: doc.LockBoxId || '',
+                SendingBank: doc.SendingBank || '',
+                BankStatement: doc.BankStatement || '',
+                StatementId: doc.StatementId || '',
+                CompanyCode: doc.CompanyCode || '',
+                HeaderStatus: doc.HeaderStatus || '',
+                BankStatementItem: doc.BankStatementItem || '',
+                DocumentNumber: doc.DocumentNumber || '',
+                PaymentAdvice: doc.PaymentAdvice || '',
+                SubledgerDocument: doc.SubledgerDocument || '',
+                SubledgerOnaccountDocument: doc.SubledgerOnaccountDocument || '',
+                Amount: doc.Amount || 0,
+                TransactionCurrency: doc.TransactionCurrency || 'USD',
+                DocumentStatus: doc.DocumentStatus || ''
+            };
+        });
         
         // STEP 8: Return data to UI (no BTP storage)
         console.log(`   ✅ Returning ${mappedData.length} documents to UI (pass-through architecture)`);
