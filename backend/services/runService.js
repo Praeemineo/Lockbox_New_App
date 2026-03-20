@@ -177,7 +177,8 @@ async function getAccountingDocument(req, res) {
         const mappedData = documents.map((doc, index) => {
             console.log(`   📄 Document ${index + 1} field mapping:`);
             console.log(`      SubledgerDocument: "${doc.SubledgerDocument || ''}"`);
-            console.log(`      SubledgerOnaccountDocument: "${doc.SubledgerOnaccountDocument || ''}"`);
+            console.log(`      SubledgerOnAccountDocument: "${doc.SubledgerOnAccountDocument || ''}" (capital A)`);
+            console.log(`      SubledgerOnaccountDocument: "${doc.SubledgerOnaccountDocument || ''}" (lowercase a)`);
             console.log(`      DocumentNumber: "${doc.DocumentNumber || ''}"`);
             console.log(`      PaymentAdvice: "${doc.PaymentAdvice || ''}"`);
             
@@ -193,7 +194,7 @@ async function getAccountingDocument(req, res) {
                 DocumentNumber: doc.DocumentNumber || '',
                 PaymentAdvice: doc.PaymentAdvice || '',
                 SubledgerDocument: doc.SubledgerDocument || '',
-                SubledgerOnaccountDocument: doc.SubledgerOnaccountDocument || '',
+                SubledgerOnaccountDocument: doc.SubledgerOnAccountDocument || doc.SubledgerOnaccountDocument || '', // Try both casings
                 Amount: doc.Amount || 0,
                 TransactionCurrency: doc.TransactionCurrency || 'USD',
                 DocumentStatus: doc.DocumentStatus || ''
