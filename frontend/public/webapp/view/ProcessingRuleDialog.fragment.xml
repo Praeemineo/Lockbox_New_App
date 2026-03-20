@@ -37,14 +37,22 @@
                                 columnsM="1"
                                 singleContainerFullSize="false">
                                 <f:content>
-                                    <Label text="Rule ID (System Generated)" />
-                                    <HBox>
-                                        <Text text="{processingRuleDialog>/rule/ruleId}" class="sapUiTinyMarginEnd" />
-                                        <core:Icon src="sap-icon://information" color="#0854A0" tooltip="Rule ID is automatically generated when you save the rule" />
-                                    </HBox>
+                                    <Label text="Rule ID" />
+                                    <VBox>
+                                        <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                            <Text text="{processingRuleDialog>/rule/ruleId}" class="sapUiTinyMarginEnd" />
+                                            <core:Icon src="sap-icon://locked" color="#BB0000" size="1rem" class="sapUiTinyMarginEnd" />
+                                            <Text text="(Auto-generated)" class="sapUiSmallMarginEnd" />
+                                        </HBox>
+                                        <MessageStrip 
+                                            text="Rule ID will be automatically assigned when you save (e.g., RULE-001, RULE-002, etc.)" 
+                                            type="Information" 
+                                            showIcon="true"
+                                            class="sapUiTinyMarginTop" />
+                                    </VBox>
                                     
                                     <Label text="Rule Name" required="true" />
-                                    <Input value="{processingRuleDialog>/rule/ruleName}" />
+                                    <Input value="{processingRuleDialog>/rule/ruleName}" placeholder="Enter a descriptive name for this rule" />
                                     
                                     <Label text="Description" />
                                     <TextArea value="{processingRuleDialog>/rule/description}" rows="3" />
