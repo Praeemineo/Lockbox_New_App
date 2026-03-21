@@ -4863,7 +4863,41 @@ app.get('/api/field-mapping/processing-rules/:ruleId', (req, res) => {
 app.post('/api/field-mapping/processing-rules', async (req, res) => {
     try {
         const ruleData = req.body;
-        const ruleId = ruleData.ruleId || `RULE-${String(processingRuleIdCounter++).padStart(3, '0')}`;
+        
+        // AUTO-GENERATE Descriptive Rule ID based on Rule Name
+        let ruleId = '';
+        
+        if (ruleData.ruleName && ruleData.ruleName.trim()) {
+            // Convert rule name to uppercase snake_case format
+            const cleanName = ruleData.ruleName
+                .trim()
+                .toUpperCase()
+                .replace(/[^A-Z0-9]+/g, '_')  // Replace non-alphanumeric with underscore
+                .replace(/^_+|_+$/g, '');      // Remove leading/trailing underscores
+            
+            ruleId = `RULE_${cleanName}`;
+            
+            // Check if this ID already exists
+            const exists = processingRules.find(r => r.ruleId === ruleId);
+            
+            if (exists) {
+                // If exists, append a number
+                let counter = 2;
+                let uniqueRuleId = `${ruleId}_${counter}`;
+                
+                while (processingRules.find(r => r.ruleId === uniqueRuleId)) {
+                    counter++;
+                    uniqueRuleId = `${ruleId}_${counter}`;
+                }
+                ruleId = uniqueRuleId;
+            }
+            
+            console.log(`🆕 Auto-generating Rule ID: ${ruleId} (from rule name: "${ruleData.ruleName}")`);
+        } else {
+            // Fallback: Generate sequential number if no rule name provided
+            ruleId = ruleData.ruleId || `RULE-${String(processingRuleIdCounter++).padStart(3, '0')}`;
+            console.log(`🆕 Generated sequential Rule ID: ${ruleId} (no rule name provided)`);
+        }
         
         const newRule = {
             id: uuidv4(),
@@ -4881,8 +4915,8 @@ app.post('/api/field-mapping/processing-rules', async (req, res) => {
         // Save to file backup
         saveProcessingRulesToFile();
         
-        console.log(`Created processing rule: ${newRule.ruleId}`);
-        res.status(201).json({ success: true, rule: newRule });
+        console.log(`✅ Created processing rule: ${newRule.ruleId}`);
+        res.status(201).json({ success: true, rule: newRule, ruleId: newRule.ruleId });
     } catch (err) {
         console.error('Error creating processing rule:', err);
         res.status(500).json({ success: false, error: 'Failed to create processing rule', message: err.message });

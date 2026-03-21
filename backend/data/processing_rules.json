@@ -219,5 +219,33 @@
     ],
     "createdAt": "2026-02-16T12:00:00Z",
     "updatedAt": "2026-02-16T12:00:00Z"
+  },
+  {
+    "id": "0d17c295-2104-44a1-b3a7-1a5236654419",
+    "ruleId": "RULE-006",
+    "ruleName": "Test Descriptive ID",
+    "description": "Testing",
+    "fileType": "EXCEL",
+    "ruleType": "API_LOOKUP",
+    "active": true,
+    "conditions": [],
+    "apiMappings": [],
+    "fieldMappings": [],
+    "createdAt": "2026-03-21T06:55:11.555Z",
+    "updatedAt": "2026-03-21T06:55:11.555Z"
+  },
+  {
+    "id": "a0c8b68e-3752-4d5c-af48-ed501809a065",
+    "ruleId": "RULE_TEST_ACCOUNT_VALIDATION",
+    "ruleName": "Test Account Validation",
+    "description": "Testing descriptive IDs",
+    "fileType": "EXCEL",
+    "ruleType": "API_LOOKUP",
+    "active": true,
+    "conditions": [],
+    "apiMappings": [],
+    "fieldMappings": [],
+    "createdAt": "2026-03-21T06:59:15.266Z",
+    "updatedAt": "2026-03-21T06:59:15.266Z"
   }
 ]
