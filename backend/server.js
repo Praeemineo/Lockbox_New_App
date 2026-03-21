@@ -52,22 +52,17 @@ const PORT = process.env.PORT || 8001;
 app.use(cors());
 app.use(express.json());
 
-// Serve static UI files - support both Kubernetes and BTP deployments
-// In Kubernetes: Use consolidated frontend from ../frontend/public
-// In BTP/CF: Use local frontend from ./app (included in deployment package)
-let frontendPath;
+// Serve static UI files
+// Frontend is located at /app/frontend/public (single source of truth)
+// Secondary copy at /app/backend/app/ was removed to avoid code duplication
+const frontendPath = path.join(__dirname, '../frontend/public');
 
-// Check if we're in Kubernetes environment (consolidated frontend exists)
-const consolidatedPath = path.join(__dirname, '../frontend/public');
-const localPath = path.join(__dirname, 'app');
-
-if (require('fs').existsSync(consolidatedPath)) {
-    frontendPath = consolidatedPath;
-    console.log('Using consolidated frontend path:', frontendPath);
-} else {
-    frontendPath = localPath;
-    console.log('Using local frontend path (BTP deployment):', frontendPath);
+if (!require('fs').existsSync(frontendPath)) {
+    console.error('❌ CRITICAL: Frontend path does not exist:', frontendPath);
+    process.exit(1);
 }
+
+console.log('✅ Serving frontend from:', frontendPath);
 
 // Serve static files with proper cache control
 // For view files (fragments, XMLs), use no-cache to prevent stale UI
