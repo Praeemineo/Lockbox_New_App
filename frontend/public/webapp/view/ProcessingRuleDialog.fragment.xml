@@ -100,6 +100,8 @@
                                         <cells>
                                             <Input value="{processingRuleDialog>attribute}" placeholder="e.g., Invoice Number" />
                                             <Select selectedKey="{processingRuleDialog>operator}">
+                                                <core:Item key="exists" text="Exists" />
+                                                <core:Item key="equals" text="Equals" />
                                                 <core:Item key="contains" text="Contains" />
                                                 <core:Item key="startsWith" text="Starts with" />
                                                 <core:Item key="endsWith" text="Ends with" />
@@ -107,7 +109,6 @@
                                                 <core:Item key="lessThan" text="Less than" />
                                                 <core:Item key="matches" text="Matches" />
                                                 <core:Item key="isEmpty" text="Is Empty" />
-                                                <core:Item key="equals" text="Equals" />
                                             </Select>
                                             <Input value="{processingRuleDialog>value}" placeholder="e.g., Source Value" />
                                             <Button icon="sap-icon://edit" type="Transparent" press="onEditRuleCondition" tooltip="Edit" />

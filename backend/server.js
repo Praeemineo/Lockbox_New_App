@@ -5803,28 +5803,68 @@ app.post('/api/processing-rules', async (req, res) => {
             return res.status(503).json({ error: 'Database not available' });
         }
         
-        // AUTO-GENERATE Rule ID in sequence (RULE-001, RULE-002, RULE-003...)
-        // Find the highest existing rule number
-        const maxRuleResult = await pool.query(`
-            SELECT rule_id FROM lb_processing_rules 
-            WHERE rule_id LIKE 'RULE-%'
-            ORDER BY rule_id DESC 
-            LIMIT 1
-        `);
+        // AUTO-GENERATE Descriptive Rule ID based on Rule Name
+        // Convert rule name to uppercase snake_case format
+        // Example: "Fetch Accounting Document" -> "RULE_FETCH_ACCOUNTING_DOCUMENT"
+        let generatedRuleId = '';
         
-        let nextRuleNumber = 1;
-        if (maxRuleResult.rows.length > 0) {
-            const lastRuleId = maxRuleResult.rows[0].rule_id; // e.g., "RULE-003"
-            const match = lastRuleId.match(/RULE-(\d+)/);
-            if (match) {
-                nextRuleNumber = parseInt(match[1]) + 1;
+        if (rule.ruleName && rule.ruleName.trim()) {
+            // Convert to uppercase and replace spaces/special chars with underscore
+            const cleanName = rule.ruleName
+                .trim()
+                .toUpperCase()
+                .replace(/[^A-Z0-9]+/g, '_')  // Replace non-alphanumeric with underscore
+                .replace(/^_+|_+$/g, '');      // Remove leading/trailing underscores
+            
+            generatedRuleId = `RULE_${cleanName}`;
+            
+            // Check if this ID already exists
+            const existingRule = await pool.query(
+                'SELECT rule_id FROM lb_processing_rules WHERE rule_id = $1',
+                [generatedRuleId]
+            );
+            
+            if (existingRule.rows.length > 0) {
+                // If exists, append a number
+                let counter = 2;
+                let uniqueRuleId = `${generatedRuleId}_${counter}`;
+                
+                while (true) {
+                    const checkUnique = await pool.query(
+                        'SELECT rule_id FROM lb_processing_rules WHERE rule_id = $1',
+                        [uniqueRuleId]
+                    );
+                    
+                    if (checkUnique.rows.length === 0) {
+                        generatedRuleId = uniqueRuleId;
+                        break;
+                    }
+                    counter++;
+                    uniqueRuleId = `${generatedRuleId}_${counter}`;
+                }
             }
+        } else {
+            // Fallback: Generate sequential number if no rule name provided
+            const maxRuleResult = await pool.query(`
+                SELECT rule_id FROM lb_processing_rules 
+                WHERE rule_id LIKE 'RULE_%'
+                ORDER BY rule_id DESC 
+                LIMIT 1
+            `);
+            
+            let nextRuleNumber = 1;
+            if (maxRuleResult.rows.length > 0) {
+                const lastRuleId = maxRuleResult.rows[0].rule_id;
+                const match = lastRuleId.match(/RULE_(\d+)/);
+                if (match) {
+                    nextRuleNumber = parseInt(match[1]) + 1;
+                }
+            }
+            
+            generatedRuleId = `RULE_${String(nextRuleNumber).padStart(3, '0')}`;
         }
         
-        // Generate new Rule ID with zero-padded 3-digit number
-        const generatedRuleId = `RULE-${String(nextRuleNumber).padStart(3, '0')}`;
-        
-        console.log(`🆕 Auto-generating Rule ID: ${generatedRuleId} (next in sequence)`);
+        console.log(`🆕 Auto-generating Rule ID: ${generatedRuleId} (from rule name: "${rule.ruleName || 'N/A'}")`);
         
         const id = require('crypto').randomUUID();
         await pool.query(`

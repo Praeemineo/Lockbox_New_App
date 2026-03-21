@@ -168,13 +168,13 @@ function evaluateRuleCondition(conditions, data) {
             
             // If condition is checking for a specific hardcoded value, always pass
             // (These don't need to be in the file, they're configuration values)
-            if (conditionType !== 'exist' && conditionType !== 'contains' && condition.condition) {
+            if (conditionType !== 'exist' && conditionType !== 'exists' && conditionType !== 'contains' && condition.condition) {
                 console.log(`      ✅ Hardcoded value "${condition.condition}" - condition passes`);
                 continue;
             }
             
-            // For EXIST or CONTAINS conditions, check if field is in file
-            if (conditionType === 'exist' || conditionType === 'contains') {
+            // For EXIST/EXISTS or CONTAINS conditions, check if field is in file
+            if (conditionType === 'exist' || conditionType === 'exists' || conditionType === 'contains') {
                 // Check if field exists in row with smart matching
                 let fieldValue = null;
                 let foundField = null;
