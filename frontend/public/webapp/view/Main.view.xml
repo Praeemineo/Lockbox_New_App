@@ -260,7 +260,9 @@
                             rowSelectionChange="onTableSelectionChange"
                             visibleRowCount="7"
                             enableColumnReordering="true"
-                            columnHeaderVisible="true">
+                            columnHeaderVisible="true"
+                            fixedColumnCount="6"
+                            fixedRightColumnCount="1">
                             <table:extension>
                                 <OverflowToolbar>
                                     <Title text="Items ({= ${app>/lockboxList} ? ${app>/lockboxList}.length : 0})" />
@@ -350,13 +352,14 @@
                                     </table:template>
                                 </table:Column>
                                 
-                                <table:Column width="4em" resizable="false" hAlign="Center">
+                                <table:Column width="4em" resizable="false" hAlign="Center" class="navigationColumn">
                                     <Label text="" />
                                     <table:template>
                                         <Button 
                                             icon="sap-icon://navigation-right-arrow" 
                                             type="Transparent"
-                                            press="onShowTransactionDetails" />
+                                            press="onShowTransactionDetails"
+                                            tooltip="Show Details" />
                                     </table:template>
                                 </table:Column>
                             </table:columns>
