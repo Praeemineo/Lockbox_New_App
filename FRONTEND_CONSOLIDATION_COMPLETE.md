@@ -138,7 +138,7 @@ Frontend Service (port 3000):
 - ✅ Frontend serving correctly on port 3000
 - ✅ CSS with SAP72 font configuration loading properly
 - ✅ Manifest.json correctly references custom.css
-- ✅ **Application loads successfully at: https://sap-enrichment-fix.preview.emergentagent.com**
+- ✅ **Application loads successfully at: https://posting-service.preview.emergentagent.com**
 - ✅ "Simulate" and "Production Run" buttons removed from all views
 - ✅ SAP72 font (referred to as '72') rendering correctly
 - ✅ All three tiles functional: Field Mapping Rules, Lockbox Transaction, PDF Lockbox (OCR)

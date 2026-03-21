@@ -37,11 +37,22 @@
                                 columnsM="1"
                                 singleContainerFullSize="false">
                                 <f:content>
-                                    <Label text="Rule ID" required="true" />
-                                    <Input value="{processingRuleDialog>/rule/ruleId}" enabled="{= !${processingRuleDialog>/editMode}}" />
+                                    <Label text="Rule ID" />
+                                    <VBox>
+                                        <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                            <Text text="{processingRuleDialog>/rule/ruleId}" class="sapUiTinyMarginEnd" />
+                                            <core:Icon src="sap-icon://locked" color="#BB0000" size="1rem" class="sapUiTinyMarginEnd" />
+                                            <Text text="(Auto-generated)" class="sapUiSmallMarginEnd" />
+                                        </HBox>
+                                        <MessageStrip 
+                                            text="Rule ID will be automatically assigned when you save (e.g., RULE-001, RULE-002, etc.)" 
+                                            type="Information" 
+                                            showIcon="true"
+                                            class="sapUiTinyMarginTop" />
+                                    </VBox>
                                     
                                     <Label text="Rule Name" required="true" />
-                                    <Input value="{processingRuleDialog>/rule/ruleName}" />
+                                    <Input value="{processingRuleDialog>/rule/ruleName}" placeholder="Enter a descriptive name for this rule" />
                                     
                                     <Label text="Description" />
                                     <TextArea value="{processingRuleDialog>/rule/description}" rows="3" />
@@ -89,6 +100,8 @@
                                         <cells>
                                             <Input value="{processingRuleDialog>attribute}" placeholder="e.g., Invoice Number" />
                                             <Select selectedKey="{processingRuleDialog>operator}">
+                                                <core:Item key="exists" text="Exists" />
+                                                <core:Item key="equals" text="Equals" />
                                                 <core:Item key="contains" text="Contains" />
                                                 <core:Item key="startsWith" text="Starts with" />
                                                 <core:Item key="endsWith" text="Ends with" />
@@ -96,7 +109,6 @@
                                                 <core:Item key="lessThan" text="Less than" />
                                                 <core:Item key="matches" text="Matches" />
                                                 <core:Item key="isEmpty" text="Is Empty" />
-                                                <core:Item key="equals" text="Equals" />
                                             </Select>
                                             <Input value="{processingRuleDialog>value}" placeholder="e.g., Source Value" />
                                             <Button icon="sap-icon://edit" type="Transparent" press="onEditRuleCondition" tooltip="Edit" />

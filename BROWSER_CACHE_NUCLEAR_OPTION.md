@@ -239,7 +239,7 @@ Failed to load resource: ProcessingRuleDialog.fragment.xml
 **This is guaranteed to work:**
 
 1. **Open Incognito:** Ctrl+Shift+N (Windows) or Cmd+Shift+N (Mac)
-2. **Go to:** https://sap-enrichment-fix.preview.emergentagent.com
+2. **Go to:** https://posting-service.preview.emergentagent.com
 3. **Navigate to:** Manage Lockbox Processing Rules
 4. **Click:** Create
 5. **Verify:** Rule ID field shows as text (not input) with lock icon

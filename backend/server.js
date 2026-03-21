@@ -69,6 +69,19 @@ if (require('fs').existsSync(consolidatedPath)) {
     console.log('Using local frontend path (BTP deployment):', frontendPath);
 }
 
+// Serve static files with proper cache control
+// For view files (fragments, XMLs), use no-cache to prevent stale UI
+app.use('/webapp/view', express.static(path.join(frontendPath, 'webapp/view'), {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.xml') || filePath.endsWith('.fragment.xml')) {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+        }
+    }
+}));
+
+// Regular static serving for other files
 app.use(express.static(frontendPath));
 app.use('/webapp', express.static(path.join(frontendPath, 'webapp')));
 
