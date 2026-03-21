@@ -1,7 +1,7 @@
 /**
  * LOCKBOX DYNAMIC VALIDATION ENGINE
  * 
- * Fully database-driven rule execution for RULE-001 and RULE-002
+ * Fully database-driven rule execution for RULE_FETCH_ACCT_DOC and RULE_FETCH_PARTNER_BANK
  * 
  * DATA STRUCTURE:
  * - sourceField: Excel column name (INPUT to API) - e.g., "Invoice Number", "Customer Number"
@@ -19,8 +19,8 @@
  * Step-8: Return enriched Lockbox payload
  * 
  * RULES SUPPORTED:
- * - RULE-001: Invoice Number → Accounting Document API → PaymentReference, CompanyCode
- * - RULE-002: Customer Number → Business Partner API → PartnerBank, PartnerBankAccount, PartnerBankCountry
+ * - RULE_FETCH_ACCT_DOC: Invoice Number → Accounting Document API → PaymentReference, CompanyCode
+ * - RULE_FETCH_PARTNER_BANK: Customer Number → Business Partner API → PartnerBank, PartnerBankAccount, PartnerBankCountry
  * 
  * ⚠️ All rule logic is DATABASE-DRIVEN. No hardcoded field names.
  * ⚠️ Supports fuzzy matching for Excel column names (case-insensitive, space-insensitive)
@@ -40,20 +40,22 @@ function loadProcessingRules(rules) {
     cachedProcessingRules = rules || [];
     console.log(`✅ Rule Engine: Loaded ${cachedProcessingRules.length} processing rules`);
     
-    // Log active RULE-001 and RULE-002
-    const activeRules = cachedProcessingRules.filter(r => r.active && (r.ruleId === 'RULE-001' || r.ruleId === 'RULE-002'));
+    // Log active enrichment rules
+    const activeRules = cachedProcessingRules.filter(r => 
+        r.active && (r.ruleId === 'RULE_FETCH_ACCT_DOC' || r.ruleId === 'RULE_FETCH_PARTNER_BANK')
+    );
     console.log(`   Active Validation Rules: ${activeRules.map(r => r.ruleId).join(', ')}`);
 }
 
 /**
- * Main Function: Process Lockbox with Dynamic Rules (RULE-001 & RULE-002 only)
+ * Main Function: Process Lockbox with Dynamic Rules (RULE_FETCH_ACCT_DOC & RULE_FETCH_PARTNER_BANK only)
  * @param {array} extractedData - Lockbox data from file
  * @param {string} fileType - File type (EXCEL, CSV, PDF)
  * @returns {Promise<object>} - Validation result with enriched data
  */
 async function processLockboxRules(extractedData, fileType = 'EXCEL') {
     console.log('='.repeat(80));
-    console.log('🔍 LOCKBOX DYNAMIC VALIDATION - RULE-001 & RULE-002');
+    console.log('🔍 LOCKBOX DYNAMIC VALIDATION - ENRICHMENT RULES');
     console.log('='.repeat(80));
     
     const result = {
@@ -66,7 +68,7 @@ async function processLockboxRules(extractedData, fileType = 'EXCEL') {
     };
     
     try {
-        // Step 1: Fetch applicable rules (RULE-001 and RULE-002 only)
+        // Step 1: Fetch applicable enrichment rules
         console.log(`   Filtering rules with: fileType="${fileType}", destination="S4HANA_SYSTEM_DESTINATION"`);
         console.log(`   Total cached rules: ${cachedProcessingRules.length}`);
         
@@ -75,7 +77,7 @@ async function processLockboxRules(extractedData, fileType = 'EXCEL') {
             return rule.active && 
                 rule.fileType === fileType &&
                 rule.destination === 'S4HANA_SYSTEM_DESTINATION' &&
-                (rule.ruleId === 'RULE-001' || rule.ruleId === 'RULE-002');
+                (rule.ruleId === 'RULE_FETCH_ACCT_DOC' || rule.ruleId === 'RULE_FETCH_PARTNER_BANK');
         });
         
         console.log(`\n📋 Found ${applicableRules.length} applicable validation rules`);
@@ -369,8 +371,8 @@ async function executeDynamicRule(rule, data) {
                 console.log(`   ${'─'.repeat(60)}`);
                 
                 // AUTO-FIX: Convert simple field names to nested paths if needed
-                // For RULE-002 (Business Partner Bank API)
-                if (rule.ruleId === 'RULE-002' && !targetFieldName.includes('/')) {
+                // For RULE_FETCH_PARTNER_BANK (Business Partner Bank API)
+                if (rule.ruleId === 'RULE_FETCH_PARTNER_BANK' && !targetFieldName.includes('/')) {
                     console.log(`      🔧 Auto-converting simple field name to nested path...`);
                     
                     // Map simple field names to their nested OData V2 navigation paths

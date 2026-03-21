@@ -4881,13 +4881,28 @@ app.post('/api/field-mapping/processing-rules', async (req, res) => {
     try {
         const ruleData = req.body;
         
-        // AUTO-GENERATE Descriptive Rule ID based on Rule Name
+        // AUTO-GENERATE Descriptive Rule ID based on Description (shortened)
         let ruleId = '';
         
-        if (ruleData.ruleName && ruleData.ruleName.trim()) {
-            // Convert rule name to uppercase snake_case format
-            const cleanName = ruleData.ruleName
-                .trim()
+        // Use description if available, otherwise fall back to rule name
+        const sourceText = ruleData.description && ruleData.description.trim() 
+            ? ruleData.description.trim() 
+            : ruleData.ruleName && ruleData.ruleName.trim() 
+                ? ruleData.ruleName.trim() 
+                : '';
+        
+        if (sourceText) {
+            // Extract key words from description (skip common words)
+            const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'from', 'by', 'as', 'is', 'are', 'was', 'were', 'be', 'been', 'being'];
+            
+            const words = sourceText
+                .split(/\s+/)
+                .filter(word => word.length > 2 && !commonWords.includes(word.toLowerCase()))
+                .slice(0, 4); // Take first 4 meaningful words
+            
+            // Convert to uppercase snake_case format
+            const cleanName = words
+                .join(' ')
                 .toUpperCase()
                 .replace(/[^A-Z0-9]+/g, '_')  // Replace non-alphanumeric with underscore
                 .replace(/^_+|_+$/g, '');      // Remove leading/trailing underscores
@@ -4909,11 +4924,11 @@ app.post('/api/field-mapping/processing-rules', async (req, res) => {
                 ruleId = uniqueRuleId;
             }
             
-            console.log(`🆕 Auto-generating Rule ID: ${ruleId} (from rule name: "${ruleData.ruleName}")`);
+            console.log(`🆕 Auto-generating Rule ID: ${ruleId} (from description: "${sourceText.substring(0, 50)}...")`);
         } else {
-            // Fallback: Generate sequential number if no rule name provided
+            // Fallback: Generate sequential number if no description/name provided
             ruleId = ruleData.ruleId || `RULE-${String(processingRuleIdCounter++).padStart(3, '0')}`;
-            console.log(`🆕 Generated sequential Rule ID: ${ruleId} (no rule name provided)`);
+            console.log(`🆕 Generated sequential Rule ID: ${ruleId} (no description/name provided)`);
         }
         
         const newRule = {

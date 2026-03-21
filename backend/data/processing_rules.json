@@ -1,7 +1,7 @@
 [
   {
     "id": "1",
-    "ruleId": "RULE-001",
+    "ruleId": "RULE_FETCH_ACCT_DOC",
     "ruleName": "Accounting Document Lookup",
     "description": "Fetch accounting document details from SAP using invoice number",
     "destination": "S4HANA_SYSTEM_DESTINATION",
@@ -36,11 +36,11 @@
       }
     ],
     "createdAt": "2026-02-16T12:00:00Z",
-    "updatedAt": "2026-02-28T13:30:00Z"
+    "updatedAt": "2026-03-21T08:06:23.040Z"
   },
   {
     "id": "2",
-    "ruleId": "RULE-002",
+    "ruleId": "RULE_FETCH_PARTNER_BANK",
     "ruleName": "Partner Bank Details",
     "description": "Retrieve bank account details for partner validation",
     "destination": "S4HANA_SYSTEM_DESTINATION",
@@ -80,11 +80,11 @@
       }
     ],
     "createdAt": "2026-02-16T12:00:00Z",
-    "updatedAt": "2026-02-28T13:45:00Z"
+    "updatedAt": "2026-03-21T08:06:25.129Z"
   },
   {
     "id": "3",
-    "ruleId": "RULE-003",
+    "ruleId": "RULE_POST_LOCKBOX_SAP",
     "ruleName": "SAP Production Run",
     "description": "Fetch Payload do production run and post accounting document",
     "destination": "S4HANA_SYSTEM_DESTINATION",
@@ -98,154 +98,39 @@
         "value": "Simulated"
       }
     ],
-    "apiMappings": [
-      {
-        "sourceType": "OData V2",
-        "destination": "S4HANA_SYSTEM_DESTINATION",
-        "httpMethod": "POST",
-        "apiReference": "/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxBatch"
-      },
-      {
-        "sourceType": "OData V2",
-        "destination": "S4HANA_SYSTEM_DESTINATION",
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxClearing"
-      }
-    ],
-    "fieldMappings": [
-      {
-        "sourceField": "Payment Advice",
-        "targetField": "Accounting Document",
-        "apiField": "SubledgerDocument"
-      }
-    ],
+    "apiMappings": [],
+    "fieldMappings": [],
     "createdAt": "2026-02-16T12:00:00Z",
-    "updatedAt": "2026-03-04T12:03:55.090Z"
+    "updatedAt": "2026-03-21T08:05:56.509Z"
   },
   {
     "id": "4",
-    "ruleId": "RULE-004",
+    "ruleId": "RULE_FETCH_CLEARING_DOC",
     "ruleName": "Get Accounting Document",
     "description": "Retrieve Accounting document details for a lockbox run",
     "destination": "S4HANA_SYSTEM_DESTINATION",
     "fileType": "EXCEL",
-    "ruleType": "Accounting_Document",
+    "ruleType": "Fetch_Document",
     "active": true,
-    "conditions": [
-      {
-        "attribute": "Status",
-        "operator": "equals",
-        "value": "Posted"
-      }
-    ],
-    "apiMappings": [
-      {
-        "sourceType": "OData V4",
-        "destination": "S4HANA_SYSTEM_DESTINATION",
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata4/sap/zsb_acc_bank_stmt/srvd_a2x/sap/zsd_acc_bank_stmt/0001/ZFI_I_ACC_BANK_STMT"
-      }
-    ],
-    "fieldMappings": [
-      {
-        "sourceField": "LockBox ID",
-        "targetField": "DocumentNumber",
-        "apiField": "DocumentNumber"
-      },
-      {
-        "sourceField": "LockBox ID",
-        "targetField": "PaymentAdvice",
-        "apiField": "PaymentAdvice"
-      },
-      {
-        "sourceField": "LockBox ID",
-        "targetField": "SubledgerDocument",
-        "apiField": "SubledgerDocument"
-      },
-      {
-        "sourceField": "LockBox ID",
-        "targetField": "AccountingDocument",
-        "apiField": "AccountingDocument"
-      },
-      {
-        "sourceField": "LockBox ID",
-        "targetField": "CompanyCode",
-        "apiField": "CompanyCode"
-      },
-      {
-        "sourceField": "LockBox ID",
-        "targetField": "FiscalYear",
-        "apiField": "FiscalYear"
-      }
-    ],
+    "conditions": [],
+    "apiMappings": [],
+    "fieldMappings": [],
     "createdAt": "2026-02-16T12:00:00Z",
-    "updatedAt": "2026-03-15T16:50:00.000Z"
+    "updatedAt": "2026-03-21T08:05:58.822Z"
   },
   {
     "id": "5",
-    "ruleId": "RULE-005",
+    "ruleId": "RULE_FETCH_LOCKBOX_DATA",
     "ruleName": "Payment Terms Lookup",
     "description": "Retrieve payment terms for invoice processing",
     "destination": "S4HANA_SYSTEM_DESTINATION",
     "fileType": "EXCEL",
-    "ruleType": "ENRICHMENT",
+    "ruleType": "Payment_Terms",
     "active": true,
-    "conditions": [
-      {
-        "attribute": "Customer Number",
-        "operator": "contains",
-        "value": "Payment Terms Lookup"
-      },
-      {
-        "attribute": "Due Date",
-        "operator": "isEmpty",
-        "value": ""
-      }
-    ],
-    "apiMappings": [
-      {
-        "sourceType": "OData V2",
-        "destination": "S4HANA_SYSTEM_DESTINATION",
-        "httpMethod": "GET",
-        "apiReference": "/sap/opu/odata/sap/API_PAYMENTTERMS/PaymentTerms"
-      }
-    ],
-    "fieldMappings": [
-      {
-        "sourceField": "Customer ID",
-        "targetField": "TermsOfPayment",
-        "apiField": "PaymentTerm"
-      }
-    ],
+    "conditions": [],
+    "apiMappings": [],
+    "fieldMappings": [],
     "createdAt": "2026-02-16T12:00:00Z",
-    "updatedAt": "2026-02-16T12:00:00Z"
-  },
-  {
-    "id": "0d17c295-2104-44a1-b3a7-1a5236654419",
-    "ruleId": "RULE-006",
-    "ruleName": "Test Descriptive ID",
-    "description": "Testing",
-    "fileType": "EXCEL",
-    "ruleType": "API_LOOKUP",
-    "active": true,
-    "conditions": [],
-    "apiMappings": [],
-    "fieldMappings": [],
-    "createdAt": "2026-03-21T06:55:11.555Z",
-    "updatedAt": "2026-03-21T06:55:11.555Z"
-  },
-  {
-    "id": "a0c8b68e-3752-4d5c-af48-ed501809a065",
-    "ruleId": "RULE_TEST_ACCOUNT_VALIDATION",
-    "ruleName": "Test Account Validation",
-    "description": "Testing descriptive IDs",
-    "fileType": "EXCEL",
-    "ruleType": "API_LOOKUP",
-    "active": true,
-    "conditions": [],
-    "apiMappings": [],
-    "fieldMappings": [],
-    "createdAt": "2026-03-21T06:59:15.266Z",
-    "updatedAt": "2026-03-21T06:59:15.266Z"
+    "updatedAt": "2026-03-21T08:06:00.510Z"
   }
 ]
