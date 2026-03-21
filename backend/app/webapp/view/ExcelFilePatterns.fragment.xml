@@ -1,0 +1,168 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form">
+    
+    <Dialog
+        id="excelFilePatternsDialog"
+        title="File Patterns - Excel Type"
+        contentWidth="95%"
+        contentHeight="90%"
+        resizable="true"
+        draggable="true">
+        
+        <content>
+            <VBox class="sapUiSmallMargin">
+                <!-- Toolbar -->
+                <Toolbar>
+                    <Title text="Condition &amp; Pattern Identification / Action" level="H4" />
+                    <ToolbarSpacer />
+                    <Button text="Add Pattern" icon="sap-icon://add" type="Emphasized" press="onAddExcelPattern" />
+                    <Button text="Save All" icon="sap-icon://save" type="Emphasized" press="onSaveExcelPatterns" />
+                    <Button text="Refresh" icon="sap-icon://refresh" press="onRefreshExcelPatterns" />
+                </Toolbar>
+                
+                <!-- Excel Patterns Table -->
+                <Table
+                    id="excelPatternsTable"
+                    items="{excelPatterns>/patterns}"
+                    mode="SingleSelectMaster"
+                    class="sapUiSizeCompact sapUiSmallMarginTop"
+                    growing="true"
+                    growingScrollToLoad="true">
+                    
+                    <columns>
+                        <Column width="8%">
+                            <Text text="File Pattern" />
+                        </Column>
+                        <Column width="12%">
+                            <Text text="Description" />
+                        </Column>
+                        <Column width="15%">
+                            <VBox>
+                                <Text text="Condition / Pattern Identification" class="sapUiTinyMarginBottom" />
+                                <Text text="Document/Date format" class="sapMTextSmall" />
+                            </VBox>
+                        </Column>
+                        <Column width="15%">
+                            <VBox>
+                                <Text text="" class="sapUiTinyMarginBottom" />
+                                <Text text="Condition" class="sapMTextSmall" />
+                            </VBox>
+                        </Column>
+                        <Column width="20%">
+                            <VBox>
+                                <Text text="Action and Field Mapping" class="sapUiTinyMarginBottom" />
+                                <Text text="Action" class="sapMTextSmall" />
+                            </VBox>
+                        </Column>
+                        <Column width="20%">
+                            <VBox>
+                                <Text text="" class="sapUiTinyMarginBottom" />
+                                <Text text="Related API/Field reference" class="sapMTextSmall" />
+                            </VBox>
+                        </Column>
+                        <Column width="10%" hAlign="Center">
+                            <Text text="Actions" />
+                        </Column>
+                    </columns>
+                    
+                    <items>
+                        <ColumnListItem vAlign="Top" type="Active" press="onExcelPatternPress">
+                            <cells>
+                                <!-- Pattern ID -->
+                                <VBox>
+                                    <Link text="{excelPatterns>patternId}" press="onEditExcelPattern" />
+                                </VBox>
+                                
+                                <!-- Description -->
+                                <VBox>
+                                    <Text text="{excelPatterns>description}" wrapping="true" class="sapMTextSmall" />
+                                </VBox>
+                                
+                                <!-- Document/Date Format & Conditions (Multiple Rows) -->
+                                <VBox>
+                                    <List
+                                        items="{excelPatterns>conditions}"
+                                        showSeparators="Inner">
+                                        <items>
+                                            <CustomListItem>
+                                                <content>
+                                                    <VBox class="sapUiTinyMargin">
+                                                        <Text text="{excelPatterns>documentFormat}" class="sapMTextSmall" />
+                                                    </VBox>
+                                                </content>
+                                            </CustomListItem>
+                                        </items>
+                                    </List>
+                                </VBox>
+                                
+                                <!-- Condition Values -->
+                                <VBox>
+                                    <List
+                                        items="{excelPatterns>conditions}"
+                                        showSeparators="Inner">
+                                        <items>
+                                            <CustomListItem>
+                                                <content>
+                                                    <VBox class="sapUiTinyMargin">
+                                                        <Text text="{excelPatterns>condition}" class="sapMTextSmall" />
+                                                    </VBox>
+                                                </content>
+                                            </CustomListItem>
+                                        </items>
+                                    </List>
+                                </VBox>
+                                
+                                <!-- Actions -->
+                                <VBox>
+                                    <List
+                                        items="{excelPatterns>conditions}"
+                                        showSeparators="Inner">
+                                        <items>
+                                            <CustomListItem>
+                                                <content>
+                                                    <VBox class="sapUiTinyMargin">
+                                                        <Text text="{excelPatterns>action}" class="sapMTextSmall" />
+                                                    </VBox>
+                                                </content>
+                                            </CustomListItem>
+                                        </items>
+                                    </List>
+                                </VBox>
+                                
+                                <!-- Related API/Field Reference -->
+                                <VBox>
+                                    <List
+                                        items="{excelPatterns>conditions}"
+                                        showSeparators="Inner">
+                                        <items>
+                                            <CustomListItem>
+                                                <content>
+                                                    <VBox class="sapUiTinyMargin">
+                                                        <Text text="{excelPatterns>apiFieldReference}" class="sapMTextSmall" />
+                                                    </VBox>
+                                                </content>
+                                            </CustomListItem>
+                                        </items>
+                                    </List>
+                                </VBox>
+                                
+                                <!-- Action Buttons -->
+                                <HBox alignItems="Center" justifyContent="Center">
+                                    <Button icon="sap-icon://edit" type="Transparent" press="onEditExcelPattern" tooltip="Edit" />
+                                    <Button icon="sap-icon://delete" type="Transparent" press="onDeleteExcelPattern" tooltip="Delete" />
+                                </HBox>
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
+        </content>
+        
+        <beginButton>
+            <Button text="Close" press="onCloseExcelPatternsDialog" />
+        </beginButton>
+    </Dialog>
+</core:FragmentDefinition>
