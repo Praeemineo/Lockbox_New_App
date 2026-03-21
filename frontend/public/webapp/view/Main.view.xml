@@ -261,7 +261,6 @@
                             visibleRowCount="7"
                             enableColumnReordering="true"
                             columnHeaderVisible="true"
-                            fixedColumnCount="6"
                             fixedRightColumnCount="1">
                             <table:extension>
                                 <OverflowToolbar>
