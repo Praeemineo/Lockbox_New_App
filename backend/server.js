@@ -2114,13 +2114,13 @@ app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
         console.log(JSON.stringify(payload, null, 2));
         
         // ========================================================
-        // FETCH RULE-003 and RULE-004 API CONFIGURATIONS (Using Service)
+        // FETCH RULE_POST_LOCKBOX_SAP and RULE_FETCH_CLEARING_DOC API CONFIGURATIONS (Using Service)
         // ========================================================
         console.log('=== FETCHING API CONFIGURATIONS FROM RULES ===');
         
         // Use rule service for cleaner code with PostgreSQL → JSON fallback
-        const rule003 = await getRuleById('RULE-003');
-        const rule004 = await getRuleById('RULE-004');
+        const rule003 = await getRuleById('RULE_POST_LOCKBOX_SAP');
+        const rule004 = await getRuleById('RULE_FETCH_CLEARING_DOC');
         
         // Extract API configurations using helper function
         const postLockboxBatchApi = getApiConfig(rule003, 'POST');
@@ -2128,9 +2128,9 @@ app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
         const getAccountingDocApi = getApiConfig(rule004, 'GET');
         
         console.log('API Configurations:');
-        console.log('  RULE-003 POST API:', postLockboxBatchApi?.apiReference);
-        console.log('  RULE-003 GET API:', getLockboxClearingApi?.apiReference);
-        console.log('  RULE-004 GET API:', getAccountingDocApi?.apiReference);
+        console.log('  RULE_POST_LOCKBOX_SAP POST API:', postLockboxBatchApi?.apiReference);
+        console.log('  RULE_POST_LOCKBOX_SAP GET API:', getLockboxClearingApi?.apiReference);
+        console.log('  RULE_FETCH_CLEARING_DOC GET API:', getAccountingDocApi?.apiReference);
         
         // ========================================================
         // LOGGING: Generate unique Run ID and record start time
@@ -2204,13 +2204,13 @@ app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
             console.log('Note: Partner Bank details already enriched by RULE-002');
             
             // ========================================================
-            // STEP 1: POST /LockboxBatch - Dynamic API from RULE-003
+            // STEP 1: POST /LockboxBatch - Dynamic API from RULE_POST_LOCKBOX_SAP
             // ========================================================
-            console.log('=== STEP 1: POST /LockboxBatch (Dynamic API from RULE-003) ===');
+            console.log('=== STEP 1: POST /LockboxBatch (Dynamic API from RULE_POST_LOCKBOX_SAP) ===');
             console.log('API Endpoint:', postLockboxBatchApi.apiReference);
             console.log('Destination:', postLockboxBatchApi.destination);
             
-            // Use dynamic API endpoint from RULE-003
+            // Use dynamic API endpoint from RULE_POST_LOCKBOX_SAP
             const postApiEndpoint = postLockboxBatchApi.apiReference || '/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxBatch';
             const postApiDestination = postLockboxBatchApi.destination || 'LOCKBOXDES';
             
@@ -2250,9 +2250,9 @@ app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
             console.log('✓ Wait complete');
             
             // ========================================================
-            // STEP 3: GET /LockboxClearing - Dynamic API from RULE-003
+            // STEP 3: GET /LockboxClearing - Dynamic API from RULE_POST_LOCKBOX_SAP
             // ========================================================
-            console.log('=== STEP 3: GET /LockboxClearing (Dynamic API from RULE-003) ===');
+            console.log('=== STEP 3: GET /LockboxClearing (Dynamic API from RULE_POST_LOCKBOX_SAP) ===');
             console.log('API Endpoint:', getLockboxClearingApi.apiReference);
             console.log('Destination:', getLockboxClearingApi.destination);
             
@@ -2580,18 +2580,18 @@ app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
         }
         
         // ========================================================
-        // STEP 4: RETRIEVE CLEARING DOCUMENTS (RULE-004)
+        // STEP 4: RETRIEVE CLEARING DOCUMENTS (RULE_FETCH_CLEARING_DOC)
         // Automatically fetch document details after successful posting
         // ========================================================
         let clearingDocuments = [];
-        console.log('=== CHECKING IF RULE-004 SHOULD BE CALLED ===');
+        console.log('=== CHECKING IF RULE_FETCH_CLEARING_DOC SHOULD BE CALLED ===');
         console.log('productionResponse.status:', productionResponse.status);
         console.log('header.lockbox:', header.lockbox);
-        console.log('Should call RULE-004:', productionResponse.status === 'SUCCESS' && header.lockbox);
+        console.log('Should call RULE_FETCH_CLEARING_DOC:', productionResponse.status === 'SUCCESS' && header.lockbox);
         
         if (productionResponse.status === 'SUCCESS' && header.lockbox) {
             try {
-                console.log('=== RETRIEVING CLEARING DOCUMENTS (RULE-004) ===');
+                console.log('=== RETRIEVING CLEARING DOCUMENTS (RULE_FETCH_CLEARING_DOC) ===');
                 
                 // Strip hyphen and suffix from lockbox ID if present
                 // Example: "1000173-0" becomes "1000173"
@@ -2599,14 +2599,14 @@ app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
                 if (lockboxIdForRule004 && typeof lockboxIdForRule004 === 'string' && lockboxIdForRule004.includes('-')) {
                     const originalLockboxId = lockboxIdForRule004;
                     lockboxIdForRule004 = lockboxIdForRule004.split('-')[0];
-                    console.log(`📝 Stripped lockboxId for RULE-004: "${originalLockboxId}" → "${lockboxIdForRule004}"`);
+                    console.log(`📝 Stripped lockboxId for RULE_FETCH_CLEARING_DOC: "${originalLockboxId}" → "${lockboxIdForRule004}"`);
                 }
                 
                 console.log('Lockbox ID:', lockboxIdForRule004);
                 
-                // Fetch RULE-004 configuration
-                const rule004 = await getRuleById('RULE-004');
-                console.log('RULE-004 found:', !!rule004);
+                // Fetch RULE_FETCH_CLEARING_DOC configuration
+                const rule004 = await getRuleById('RULE_FETCH_CLEARING_DOC');
+                console.log('RULE_FETCH_CLEARING_DOC found:', !!rule004);
                 
                 if (rule004) {
                     const getAccountingDocApi = getApiConfig(rule004, 'GET');
@@ -2630,7 +2630,7 @@ app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
                             queryParams.$select = outputFields.join(',');
                         }
                         
-                        console.log('Calling RULE-004 API:', apiEndpoint);
+                        console.log('Calling RULE_FETCH_CLEARING_DOC API:', apiEndpoint);
                         console.log('Destination:', destination);
                         console.log('Query:', queryParams);
                         
@@ -2663,21 +2663,21 @@ app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
                         
                         // NOTE: Do NOT store in BTP database
                         // Data will be fetched fresh from SAP when UI needs it
-                        console.log('💡 RULE-004 data returned in response but NOT stored in BTP database');
+                        console.log('💡 RULE_FETCH_CLEARING_DOC data returned in response but NOT stored in BTP database');
                         console.log('💡 UI will fetch fresh data from SAP via pass-through API');
                     } else {
-                        console.warn('⚠ RULE-004 API configuration not found or invalid');
+                        console.warn('⚠ RULE_FETCH_CLEARING_DOC API configuration not found or invalid');
                     }
                 } else {
-                    console.warn('⚠ RULE-004 not found in rules configuration');
+                    console.warn('⚠ RULE_FETCH_CLEARING_DOC not found in rules configuration');
                 }
             } catch (rule004Error) {
-                console.error('❌ RULE-004 retrieval failed (non-fatal):', rule004Error.message);
+                console.error('❌ RULE_FETCH_CLEARING_DOC retrieval failed (non-fatal):', rule004Error.message);
                 console.error('Stack:', rule004Error.stack);
-                // Continue - RULE-004 failure should not break production run
+                // Continue - RULE_FETCH_CLEARING_DOC failure should not break production run
             }
         } else {
-            console.log('✗ RULE-004 not called - conditions not met');
+            console.log('✗ RULE_FETCH_CLEARING_DOC not called - conditions not met');
         }
         
         console.log('=== FINAL RESPONSE TO FRONTEND ===');
@@ -2696,10 +2696,10 @@ app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
             
             // ========================================================
             // NO BTP DATABASE STORAGE - PURE PASS-THROUGH ARCHITECTURE
-            // UI will fetch fresh data from SAP via RULE-004 API
+            // UI will fetch fresh data from SAP via RULE_FETCH_CLEARING_DOC API
             // ========================================================
-            console.log('💡 RULE-004: Clearing documents included in response (NOT stored in BTP)');
-            console.log('💡 RULE-004: UI will fetch fresh data from SAP when dialog opens');
+            console.log('💡 RULE_FETCH_CLEARING_DOC: Clearing documents included in response (NOT stored in BTP)');
+            console.log('💡 RULE_FETCH_CLEARING_DOC: UI will fetch fresh data from SAP when dialog opens');
         }
         
         res.json(finalResponse);
@@ -2711,7 +2711,7 @@ app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
 });
 
 // ============================================================================
-// RETRIEVE CLEARING DOCUMENTS - Using RULE-004 (Dynamic SAP API Call)
+// RETRIEVE CLEARING DOCUMENTS - Using RULE_FETCH_CLEARING_DOC (Dynamic SAP API Call)
 // Similar pattern to RULE-001 and RULE-002
 // Fetches accounting document details from SAP and updates Lockbox Data
 // Updates both PostgreSQL (if available) and JSON fallback
@@ -2721,7 +2721,7 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
         const { headerId } = req.params;
         const { lockboxId: providedLockboxId } = req.body; // Optional: lockbox ID from frontend
         
-        console.log('=== RETRIEVING CLEARING DOCUMENTS FROM SAP (RULE-004) ===');
+        console.log('=== RETRIEVING CLEARING DOCUMENTS FROM SAP (RULE_FETCH_CLEARING_DOC) ===');
         console.log('Header ID:', headerId);
         console.log('Provided Lockbox ID:', providedLockboxId);
         
@@ -2780,19 +2780,19 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
         console.log('Processing with Lockbox ID:', lockboxId);
         
         // ========================================================
-        // STEP 1: Fetch RULE-004 Configuration Dynamically
+        // STEP 1: Fetch RULE_FETCH_CLEARING_DOC Configuration Dynamically
         // ========================================================
-        const rule004 = await getRuleById('RULE-004');
+        const rule004 = await getRuleById('RULE_FETCH_CLEARING_DOC');
         if (!rule004) {
-            return res.status(500).json({ success: false, message: 'RULE-004 configuration not found' });
+            return res.status(500).json({ success: false, message: 'RULE_FETCH_CLEARING_DOC configuration not found' });
         }
         
         const getAccountingDocApi = getApiConfig(rule004, 'GET');
         if (!getAccountingDocApi || !getAccountingDocApi.apiReference) {
-            return res.status(500).json({ success: false, message: 'RULE-004 API configuration not found' });
+            return res.status(500).json({ success: false, message: 'RULE_FETCH_CLEARING_DOC API configuration not found' });
         }
         
-        console.log('RULE-004 Configuration:');
+        console.log('RULE_FETCH_CLEARING_DOC Configuration:');
         console.log('  API Endpoint:', getAccountingDocApi.apiReference);
         console.log('  Destination:', getAccountingDocApi.destination);
         console.log('  Input Field:', getAccountingDocApi.inputField);
@@ -2818,7 +2818,7 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
             $filter: `${inputFieldName} eq '${cleanLockboxId}'`
         };
         
-        // Parse output fields from RULE-004 configuration
+        // Parse output fields from RULE_FETCH_CLEARING_DOC configuration
         const outputFields = getAccountingDocApi.outputField ? 
             getAccountingDocApi.outputField.split(',').map(f => f.trim()) : 
             ['DocumentNumber', 'PaymentAdvice', 'SubledgerDocument', 'CompanyCode', 'SubledgerOnaccountDocument'];
@@ -2899,7 +2899,7 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
             
             // Format for response - use existing company code from item, not from SAP
             formattedDocs.push({
-                companyCode: existingCompanyCode, // From RULE-001, not RULE-004
+                companyCode: existingCompanyCode, // From RULE-001, not RULE_FETCH_CLEARING_DOC
                 lockboxId: cleanLockboxId,
                 documentNumber: documentNumber,
                 paymentAdvice: paymentAdvice,
@@ -2909,7 +2909,7 @@ app.post('/api/lockbox/retrieve-clearing/:headerId', async (req, res) => {
         }
         
         console.log('✓ Retrieved and formatted', formattedDocs.length, 'clearing documents');
-        console.log('✓ Preserved Company Code from RULE-001 (not overwritten by RULE-004)');
+        console.log('✓ Preserved Company Code from RULE-001 (not overwritten by RULE_FETCH_CLEARING_DOC)');
         
         // ========================================================
         // STEP 5: Return Response for Dialog Update
@@ -3866,9 +3866,9 @@ let fieldMappingRules = [
     { ruleId: "RULE-011", templateId: "TPL-002", ruleName: "Currency Symbol Removal", fileFormat: "CSV", category: "AMOUNT", ruleType: "TEXT_CONVERSION", triggerSummary: "Remove $ € symbols from amounts", active: true, priority: 3, description: "Strips currency symbols and thousand separators from amount fields", triggerConditions: [], textConversionSettings: { conversionType: "REPLACE", targetFields: "CheckAmount,InvoiceAmount,DeductionAmount", findText: "[$€£¥,\\s]", replaceWith: "" }, createdAt: new Date().toISOString(), lastChanged: new Date().toISOString() },
     
     // ===== Rules for TPL-003 (Chase BAI2 Format) =====
-    { ruleId: "RULE-003", templateId: "TPL-003", ruleName: "Date Format Conversion (EU)", fileFormat: "BAI2", category: "DATE", ruleType: "VALIDATE", triggerSummary: "Convert DD-MM-YYYY to ISO format", active: true, priority: 5, description: "Converts European date format to ISO format for SAP", triggerConditions: [], validateSettings: { validationType: "SOFT" }, createdAt: new Date().toISOString(), lastChanged: new Date().toISOString() },
+    { ruleId: "RULE_POST_LOCKBOX_SAP", templateId: "TPL-003", ruleName: "Date Format Conversion (EU)", fileFormat: "BAI2", category: "DATE", ruleType: "VALIDATE", triggerSummary: "Convert DD-MM-YYYY to ISO format", active: true, priority: 5, description: "Converts European date format to ISO format for SAP", triggerConditions: [], validateSettings: { validationType: "SOFT" }, createdAt: new Date().toISOString(), lastChanged: new Date().toISOString() },
     
-    { ruleId: "RULE-004", templateId: "TPL-003", ruleName: "Cheque Number Derive", fileFormat: "BAI2", category: "CHEQUE", ruleType: "DERIVE", triggerSummary: "Derive from transaction code", active: true, priority: 20, description: "Derives cheque number from BAI2 transaction code field", triggerConditions: [{ attribute: "FILE_TYPE", operator: "EQUALS", value: "BAI2", logic: "AND" }], deriveSettings: { formula: "EXTRACT_NUMERIC(Transaction_Code)", sourceFields: "Transaction_Code", defaultValue: "0000000000000" }, createdAt: new Date().toISOString(), lastChanged: new Date().toISOString() },
+    { ruleId: "RULE_FETCH_CLEARING_DOC", templateId: "TPL-003", ruleName: "Cheque Number Derive", fileFormat: "BAI2", category: "CHEQUE", ruleType: "DERIVE", triggerSummary: "Derive from transaction code", active: true, priority: 20, description: "Derives cheque number from BAI2 transaction code field", triggerConditions: [{ attribute: "FILE_TYPE", operator: "EQUALS", value: "BAI2", logic: "AND" }], deriveSettings: { formula: "EXTRACT_NUMERIC(Transaction_Code)", sourceFields: "Transaction_Code", defaultValue: "0000000000000" }, createdAt: new Date().toISOString(), lastChanged: new Date().toISOString() },
     
     // ===== Rules for TPL-004 (Wells Fargo Payment Advice) =====
     { ruleId: "RULE-005", templateId: "TPL-004", ruleName: "Payment Allocation FIFO", fileFormat: "PDF", category: "AMOUNT", ruleType: "ALLOCATE", triggerSummary: "Allocate payment to open invoices", active: true, priority: 25, description: "FIFO (First In First Out) allocation of payment amounts across multiple invoices", triggerConditions: [{ attribute: "AMOUNT", operator: "GREATER_THAN", value: "0", logic: "AND" }], allocateSettings: { method: "FIFO", roundingRule: "ADJUST_LAST", tolerance: 0.01, decimalPlaces: 2 }, createdAt: new Date().toISOString(), lastChanged: new Date().toISOString() },
@@ -3894,7 +3894,7 @@ let apiFields = [
     { fieldId: "FLD-010", fieldName: "PartnerBank", necessity: "Optional", fieldType: "From BP API", dataType: "String", maxLength: 15, defaultValue: "15051554", description: "Partner bank - fetched from Business Partner API, fallback to default", isEditable: true, createdAt: new Date().toISOString() },
     { fieldId: "FLD-011", fieldName: "PartnerBankAccount", necessity: "Optional", fieldType: "From BP API", dataType: "String", maxLength: 18, defaultValue: "314129119", description: "Partner bank account - fetched from Business Partner API, fallback to default", isEditable: true, createdAt: new Date().toISOString() },
     { fieldId: "FLD-011b", fieldName: "PartnerBankCountry", necessity: "Optional", fieldType: "From BP API", dataType: "String", maxLength: 3, defaultValue: "US", description: "Partner bank country - fetched from Business Partner API, fallback to US", isEditable: true, createdAt: new Date().toISOString() },
-    { fieldId: "FLD-013", fieldName: "PaymentReference", necessity: "Optional", fieldType: "User Input", dataType: "String", maxLength: 50, description: "Payment reference/Invoice number - Auto-detects XBLNR (Reference) vs BELNR (Accounting) based on format: 10-digit numeric = BELNR, others = XBLNR. Override with explicit XBLNR/BELNR columns in upload file. Controlled by Reference Document Rules (RULE-001 to RULE-004).", isEditable: false, createdAt: new Date().toISOString() },
+    { fieldId: "FLD-013", fieldName: "PaymentReference", necessity: "Optional", fieldType: "User Input", dataType: "String", maxLength: 50, description: "Payment reference/Invoice number - Auto-detects XBLNR (Reference) vs BELNR (Accounting) based on format: 10-digit numeric = BELNR, others = XBLNR. Override with explicit XBLNR/BELNR columns in upload file. Controlled by Reference Document Rules (RULE-001 to RULE_FETCH_CLEARING_DOC).", isEditable: false, createdAt: new Date().toISOString() },
     { fieldId: "FLD-014", fieldName: "NetPaymentAmountInPaytCurrency", necessity: "Optional", fieldType: "User Input", dataType: "Currency", maxLength: 0, description: "Net payment amount", isEditable: false, createdAt: new Date().toISOString() },
     { fieldId: "FLD-015", fieldName: "DeductionAmountInPaytCurrency", necessity: "Optional", fieldType: "User Input", dataType: "Currency", maxLength: 0, description: "Deduction amount", isEditable: false, createdAt: new Date().toISOString() },
     { fieldId: "FLD-016", fieldName: "PaymentDifferenceReason", necessity: "Optional", fieldType: "User Input", dataType: "String", maxLength: 3, description: "Reason for payment difference (3 chars)", isEditable: false, createdAt: new Date().toISOString() },
@@ -4046,7 +4046,7 @@ const DEFAULT_REFERENCE_DOC_RULES = [
     },
     {
         id: uuidv4(),
-        ruleId: 'RULE-003',
+        ruleId: 'RULE_POST_LOCKBOX_SAP',
         ruleName: 'Doc Number First - If Not Found Reference Doc',
         description: 'Try Accounting Document first, if not found use Invoice Reference. Requires both BELNR and XBLNR columns in upload file. SAP configuration determines actual matching behavior.',
         ruleType: 'BELNR_THEN_XBLNR',
@@ -4060,7 +4060,7 @@ const DEFAULT_REFERENCE_DOC_RULES = [
     },
     {
         id: uuidv4(),
-        ruleId: 'RULE-004',
+        ruleId: 'RULE_FETCH_CLEARING_DOC',
         ruleName: 'Ref Document First - If Not Found Doc Number',
         description: 'Try Invoice Reference first, if not found use Accounting Document. Requires both XBLNR and BELNR columns in upload file. SAP configuration determines actual matching behavior. Use when prioritizing external invoice references.',
         ruleType: 'XBLNR_THEN_BELNR',
@@ -5415,20 +5415,20 @@ app.post('/api/processing-rules/sync-to-db', async (req, res) => {
 });
 
 // ============================================================================
-// API ENDPOINTS - RULE-004: Fetch Accounting Document Details
+// API ENDPOINTS - RULE_FETCH_CLEARING_DOC: Fetch Accounting Document Details
 // ⚠️ DEPRECATED: This endpoint has been moved to /routes/runRoutes.js
 // Temporarily disabled by renaming to _disabled_accounting_document
 // ============================================================================
 
 /**
  * GET /api/lockbox/:runId/accounting-document
- * Fetch accounting document details using RULE-004 for a specific lockbox run
+ * Fetch accounting document details using RULE_FETCH_CLEARING_DOC for a specific lockbox run
  * RE-ENABLED: Modular route path didn't match frontend expectations
  */
 app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
     const { runId } = req.params;
     
-    console.log(`📋 RULE-004: Fetching accounting document for run ${runId} (always fresh from SAP)`);
+    console.log(`📋 RULE_FETCH_CLEARING_DOC: Fetching accounting document for run ${runId} (always fresh from SAP)`);
     
     try {
         // STEP 1: Get run data from BTP to extract LockboxId
@@ -5500,13 +5500,13 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
         
         console.log(`   ✅ Using LockboxId: ${lockboxId} for SAP query`);
         
-        // STEP 4: Get RULE-004 configuration from BTP
-        const rule004 = processingRules.find(r => r.ruleId === 'RULE-004');
+        // STEP 4: Get RULE_FETCH_CLEARING_DOC configuration from BTP
+        const rule004 = processingRules.find(r => r.ruleId === 'RULE_FETCH_CLEARING_DOC');
         
         if (!rule004 || !rule004.active) {
             return res.status(404).json({ 
                 success: false, 
-                error: 'RULE-004 not found or not active in BTP configuration' 
+                error: 'RULE_FETCH_CLEARING_DOC not found or not active in BTP configuration' 
             });
         }
         
@@ -5555,7 +5555,7 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
             );
             console.log(`   ✅ SAP Response received successfully`);
         } catch (error) {
-            console.error(`   ❌ RULE-004 SAP API call failed:`, {
+            console.error(`   ❌ RULE_FETCH_CLEARING_DOC SAP API call failed:`, {
                 error: error.message,
                 lockboxId: lockboxId,
                 apiEndpoint: apiEndpoint,
@@ -5580,7 +5580,7 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
         
         // LOG FULL RESPONSE VALUES for debugging
         console.log(`\n${'='.repeat(80)}`);
-        console.log(`📋 RULE-004 SAP RESPONSE VALUES:`);
+        console.log(`📋 RULE_FETCH_CLEARING_DOC SAP RESPONSE VALUES:`);
         console.log(`${'='.repeat(80)}`);
         console.log(`🔍 LockboxId used in query: ${lockboxId}`);
         console.log(`📥 Full SAP Response:`);
@@ -5639,14 +5639,14 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ RULE-004 Error:', error.message);
+        console.error('❌ RULE_FETCH_CLEARING_DOC Error:', error.message);
         res.status(500).json({ 
             success: false, 
             error: error.message 
         });
     }
 });
-// END OF DEPRECATED RULE-004 ENDPOINT (Disabled - using modular route instead)
+// END OF DEPRECATED RULE_FETCH_CLEARING_DOC ENDPOINT (Disabled - using modular route instead)
 
 // ============================================================================
 // PROCESSING RULES API ENDPOINTS
@@ -6711,10 +6711,10 @@ async function executeApiMapping(mapping, extractedData, ruleId) {
                 // For now, pass the single mapping and let it handle
                 result = await ruleEngine.executeRule002(mapping, extractedData);
                 break;
-            case 'RULE-003':
+            case 'RULE_POST_LOCKBOX_SAP':
                 result = await ruleEngine.executeRule003(mapping, extractedData);
                 break;
-            case 'RULE-004':
+            case 'RULE_FETCH_CLEARING_DOC':
                 result = await ruleEngine.executeRule004(mapping, extractedData);
                 break;
             default:

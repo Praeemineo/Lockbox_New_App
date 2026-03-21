@@ -291,7 +291,7 @@ async function executeDynamicRule(rule, data) {
                 continue;
             }
             
-            // Enhanced logging similar to RULE-004
+            // Enhanced logging similar to RULE_FETCH_CLEARING_DOC
             console.log(`\n${'='.repeat(80)}`);
             console.log(`⚙️  EXECUTING ${rule.ruleId} - Row ${i + 1}`);
             console.log(`${'='.repeat(80)}`);
@@ -334,7 +334,7 @@ async function executeDynamicRule(rule, data) {
             
             console.log(`   ✅ SAP API Response received (Status: ${response.status})`);
             
-            // LOG FULL RESPONSE VALUES - Same style as RULE-004
+            // LOG FULL RESPONSE VALUES - Same style as RULE_FETCH_CLEARING_DOC
             console.log(`\n${'='.repeat(80)}`);
             console.log(`📋 ${rule.ruleId} SAP RESPONSE VALUES - Row ${i + 1}:`);
             console.log(`${'='.repeat(80)}`);
@@ -604,7 +604,7 @@ async function callSAPAPI(apiURL, httpMethod, destination) {
         console.log(`   🎯 Calling executeSapGetRequest: destination="${destination}", endpoint="${endpoint}"`);
         console.log(`   ⚡ Using DIRECT connection (bypassing BTP Destination Service)`);
         
-        // Use SAP client's executeSapGetRequest with forceDirect=true (like RULE-004)
+        // Use SAP client's executeSapGetRequest with forceDirect=true (like RULE_FETCH_CLEARING_DOC)
         // This bypasses BTP Destination Service and uses .env credentials directly
         const response = await sapClient.executeSapGetRequest(
             destination,   // destination name (or null)

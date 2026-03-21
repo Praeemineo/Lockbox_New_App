@@ -705,13 +705,13 @@ async function callSapApi(endpoint, method = 'GET', params = {}, payload = null)
 }
 
 /**
- * RULE-003: Fetch Customer Master Data - DYNAMIC VERSION
- * @param {object} apiMapping - API mapping from RULE-003
+ * RULE_POST_LOCKBOX_SAP: Fetch Customer Master Data - DYNAMIC VERSION
+ * @param {object} apiMapping - API mapping from RULE_POST_LOCKBOX_SAP
  * @param {string} businessPartner - Business Partner Number
  * @returns {Promise<object>} - Customer details or defaults
  */
 async function fetchCustomerMasterData(apiMapping, businessPartner) {
-    logger.info('RULE-003: Fetching Customer Master Data - DYNAMIC', { 
+    logger.info('RULE_POST_LOCKBOX_SAP: Fetching Customer Master Data - DYNAMIC', { 
         api: apiMapping?.apiReference,
         businessPartner 
     });
@@ -724,7 +724,7 @@ async function fetchCustomerMasterData(apiMapping, businessPartner) {
         const result = await executeDynamicApiCall(apiMapping, inputValues);
         
         if (!result.success || !result.data?.d?.results?.length) {
-            logger.warn('RULE-003: No customer data found', { businessPartner });
+            logger.warn('RULE_POST_LOCKBOX_SAP: No customer data found', { businessPartner });
             return {
                 success: false,
                 error: result.error || 'Customer not found',
@@ -736,7 +736,7 @@ async function fetchCustomerMasterData(apiMapping, businessPartner) {
         
         const customer = result.data.d.results[0];
         
-        logger.info('RULE-003: Customer Data Retrieved', {
+        logger.info('RULE_POST_LOCKBOX_SAP: Customer Data Retrieved', {
             businessPartner,
             customerName: customer.BusinessPartnerName
         });
@@ -751,7 +751,7 @@ async function fetchCustomerMasterData(apiMapping, businessPartner) {
         };
         
     } catch (error) {
-        logger.error('RULE-003: Error fetching customer data', { error: error.message });
+        logger.error('RULE_POST_LOCKBOX_SAP: Error fetching customer data', { error: error.message });
         return {
             success: false,
             error: error.message,
@@ -763,14 +763,14 @@ async function fetchCustomerMasterData(apiMapping, businessPartner) {
 }
 
 /**
- * RULE-004: Fetch Open Item Details - DYNAMIC VERSION
- * @param {object} apiMapping - API mapping from RULE-004
+ * RULE_FETCH_CLEARING_DOC: Fetch Open Item Details - DYNAMIC VERSION
+ * @param {object} apiMapping - API mapping from RULE_FETCH_CLEARING_DOC
  * @param {string} invoiceNumber - Invoice/Document Number
  * @param {string} companyCode - Company Code
  * @returns {Promise<object>} - Open item details or defaults
  */
 async function fetchOpenItemDetails(apiMapping, invoiceNumber, companyCode) {
-    logger.info('RULE-004: Fetching Open Item Details - DYNAMIC', { 
+    logger.info('RULE_FETCH_CLEARING_DOC: Fetching Open Item Details - DYNAMIC', { 
         api: apiMapping?.apiReference,
         invoiceNumber, 
         companyCode 
@@ -785,7 +785,7 @@ async function fetchOpenItemDetails(apiMapping, invoiceNumber, companyCode) {
         const result = await executeDynamicApiCall(apiMapping, inputValues);
         
         if (!result.success || !result.data?.d?.results?.length) {
-            logger.warn('RULE-004: No open items found', { invoiceNumber });
+            logger.warn('RULE_FETCH_CLEARING_DOC: No open items found', { invoiceNumber });
             return {
                 success: false,
                 error: result.error || 'No open items found',
@@ -796,7 +796,7 @@ async function fetchOpenItemDetails(apiMapping, invoiceNumber, companyCode) {
         
         const item = result.data.d.results[0];
         
-        logger.info('RULE-004: Open Item Retrieved', {
+        logger.info('RULE_FETCH_CLEARING_DOC: Open Item Retrieved', {
             invoiceNumber,
             openAmount: item.AmountInCompanyCodeCurrency,
             dueDate: item.NetDueDate
@@ -811,7 +811,7 @@ async function fetchOpenItemDetails(apiMapping, invoiceNumber, companyCode) {
         };
         
     } catch (error) {
-        logger.error('RULE-004: Error fetching open items', { error: error.message });
+        logger.error('RULE_FETCH_CLEARING_DOC: Error fetching open items', { error: error.message });
         return {
             success: false,
             error: error.message,
