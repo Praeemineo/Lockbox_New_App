@@ -1818,7 +1818,7 @@ async function buildLockboxPayload(headerId, pool) {
             NetPaymentAmountInPaytCurrency: c.net_payment_amount ? c.net_payment_amount.toString() : "0",
             DeductionAmountInPaytCurrency: c.deduction_amount ? c.deduction_amount.toString() : "0",
             PaymentDifferenceReason: (c.payment_difference_reason || "").substring(0, 3),
-            Currency: (c.currency || item.currency || "USD").substring(0, 5)
+            Currency: (c.currency || item.currency).substring(0, 5)
         }));
         
         // Build item object with exact SAP field names
@@ -1828,7 +1828,7 @@ async function buildLockboxPayload(headerId, pool) {
             LockboxBatch: (item.lockbox_batch || "001").substring(0, 3),
             LockboxBatchItem: (item.lockbox_batch_item || "001").substring(0, 5),
             AmountInTransactionCurrency: item.amount_in_transaction_currency ? item.amount_in_transaction_currency.toString() : "0",
-            Currency: (item.currency || "USD").substring(0, 5),
+            Currency: (item.currency).substring(0, 5),
             Cheque: (item.cheque || "").substring(0, 13),
             // DEFAULT: Partner bank information (hardcoded defaults as per SAP requirement)
             PartnerBank: (item.partner_bank || "15051554").substring(0, 15),
@@ -1979,7 +1979,7 @@ app.post('/api/lockbox/_disabled_simulate/:headerId', async (req, res) => {
         ).join('\n');
         
         // Build formatted SAP response message
-        const currency = items[0]?.currency || 'USD';
+        const currency = items[0]?.currency;
         const sapResponseMessage = `
 ═══════════════════════════════════════════════════════════════
                     SIMULATION PREVIEW
@@ -2137,7 +2137,7 @@ app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
         // ========================================================
         const runId = await generateRunId();
         const startedAt = new Date();
-        const currency = payload.to_Item?.results?.[0]?.Currency || 'USD';
+        const currency = payload.to_Item?.results?.[0]?.Currency;
         
         console.log('=== PRODUCTION RUN LOG ===');
         console.log('Run ID:', runId);
@@ -5621,7 +5621,7 @@ app.get('/api/lockbox/:runId/accounting-document', async (req, res) => {
             SubledgerDocument: doc.SubledgerDocument || '',
             SubledgerOnaccountDocument: doc.SubledgerOnAccountDocument || doc.SubledgerOnaccountDocument || '', // Try capital A first
             Amount: doc.Amount || 0,
-            TransactionCurrency: doc.TransactionCurrency || 'USD',
+            TransactionCurrency: doc.TransactionCurrency,
             DocumentStatus: doc.DocumentStatus || ''
         }));
         
@@ -7774,7 +7774,7 @@ function mapToApiFields(data, lockboxId) {
         LockboxBatchItem: String(idx + 1).padStart(5, '0'),
         Cheque: (row.CheckNumber || row.Cheque || '').toString().padStart(13, '0').substring(0, 13),
         AmountInTransactionCurrency: (parseFloat(row.CheckAmount) || parseFloat(row.InvoiceAmount) || 0).toString(),
-        Currency: row.Currency || 'USD',
+        Currency: row.Currency,
         PartnerBank: 'BANK', PartnerBankAccount: '', PartnerBankCountry: 'US',
         DepositDateTime: row.DepositDate || new Date().toISOString(),
         // PaymentReference will be enriched by RULE-001 from InvoiceNumber
@@ -7824,7 +7824,7 @@ function buildHierarchicalStructure(mappedData, lockboxId, sourceFilename = '') 
                 cheque: chequeKey,
                 customer: customerKey,
                 amount: parseFloat(row.AmountInTransactionCurrency) || parseFloat(row.Amount) || 0,
-                currency: row.Currency || 'USD',
+                currency: row.Currency,
                 depositDate: row.DepositDateTime || row.Date,
                 partnerBank: row.PartnerBank || '',
                 partnerBankAccount: row.PartnerBankAccount || '',
@@ -7843,7 +7843,7 @@ function buildHierarchicalStructure(mappedData, lockboxId, sourceFilename = '') 
             netAmount: parseFloat(row.NetPaymentAmountInPaytCurrency) || parseFloat(row.InvoiceAmount) || 0,
             deductionAmount: parseFloat(row.DeductionAmountInPaytCurrency) || 0,
             reasonCode: row.PaymentDifferenceReason || '',
-            currency: row.Currency || 'USD'
+            currency: row.Currency
         });
     }
     
@@ -7914,7 +7914,7 @@ function buildSapPayloadFromHierarchy(hierarchy) {
     const DEFAULT_PARTNER_BANK_ACCOUNT = getApiFieldDefault('PartnerBankAccount') || '8765432195';
     const DEFAULT_PARTNER_BANK_COUNTRY = getApiFieldDefault('PartnerBankCountry') || 'US';
     
-    const currency = getApiFieldDefault('Currency') || 'USD';
+    const currency = getApiFieldDefault('Currency');
     const lockboxBatchDestination = getApiFieldDefault('LockboxBatchDestination') || 'LOCKBOXDES';
     const lockboxBatchOrigin = getApiFieldDefault('LockboxBatchOrigin') || 'LOCKBOXORI';
     
@@ -9459,7 +9459,7 @@ app.post('/api/lockbox/runs/:runId/production', async (req, res) => {
                     details: (run.sapPayload?.to_Item?.results || []).map((item, idx) => ({
                         PaymentReference: item.to_LockboxClearing?.results?.[0]?.PaymentReference || `REF-${idx + 1}`,
                         NetPaymentAmountInPaytCurrency: item.AmountInTransactionCurrency,
-                        Currency: item.Currency || 'USD',
+                        Currency: item.Currency,
                         ClearingDocument: clearingDoc,
                         AccountingDocument: accountingDoc,
                         FiscalYear: new Date().getFullYear().toString(),
@@ -9879,7 +9879,7 @@ app.post('/api/lockbox/runs/:runId/production', async (req, res) => {
                                 fiscalYear: step4Data?.FiscalYear || new Date().getFullYear().toString(),
                                 companyCode: step4Data?.CompanyCode || DEFAULT_COMPANY_CODE,
                                 netAmount: step4Data?.NetPaymentAmountInPaytCurrency || '',
-                                currency: step4Data?.Currency || 'USD',
+                                currency: step4Data?.Currency,
                                 status: step4Data?.AccountingDocument ? 'CLEARED' : 'UNAPPLIED',
                                 rawResponse: step4Data
                             };
