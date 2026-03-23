@@ -73,11 +73,18 @@ async function processLockboxRules(extractedData, fileType = 'EXCEL') {
         console.log(`   Total cached rules: ${cachedProcessingRules.length}`);
         
         const applicableRules = cachedProcessingRules.filter(rule => {
-            console.log(`   Checking rule ${rule.ruleId}: active=${rule.active}, fileType=${rule.fileType}, destination=${rule.destination}`);
+            console.log(`   Checking rule ${rule.ruleId}: active=${rule.active}, fileType=${rule.fileType}, destination=${rule.destination}, ruleType=${rule.ruleType}`);
+            
+            // Include enrichment rules (API lookup) and constant mapping rules
+            const isEnrichmentRule = rule.destination === 'S4HANA_SYSTEM_DESTINATION' &&
+                (rule.ruleId === 'RULE_FETCH_ACCT_DOC' || rule.ruleId === 'RULE_FETCH_PARTNER_BANK');
+            
+            const isConstantMappingRule = rule.ruleType === 'CONSTANT_MAPPING' && 
+                rule.ruleId === 'RULE_FETCH_LOCKBOX_DATA';
+            
             return rule.active && 
                 rule.fileType === fileType &&
-                rule.destination === 'S4HANA_SYSTEM_DESTINATION' &&
-                (rule.ruleId === 'RULE_FETCH_ACCT_DOC' || rule.ruleId === 'RULE_FETCH_PARTNER_BANK');
+                (isEnrichmentRule || isConstantMappingRule);
         });
         
         console.log(`\n📋 Found ${applicableRules.length} applicable validation rules`);
@@ -247,6 +254,39 @@ async function executeDynamicRule(rule, data) {
     const mappings = rule.apiMappings || [];
     const fieldMappings = rule.fieldMappings || [];
     
+    // Special handling for CONSTANT_MAPPING rules (no API call needed)
+    if (rule.ruleType === 'CONSTANT_MAPPING') {
+        console.log(`   📌 ${rule.ruleId}: Applying constant field mappings (no API call)`);
+        
+        if (fieldMappings.length === 0) {
+            result.warnings.push(`${rule.ruleId}: No field mappings configured`);
+            return result;
+        }
+        
+        // Apply constant values to all rows
+        for (let i = 0; i < data.length; i++) {
+            const row = data[i];
+            
+            console.log(`   📝 Row ${i + 1}: Applying ${fieldMappings.length} constant mappings`);
+            
+            for (const fieldMapping of fieldMappings) {
+                const constantValue = fieldMapping.sourceField; // For constants, source is the value
+                const apiField = fieldMapping.apiField; // Target field in lockbox data
+                
+                // Apply constant value directly
+                row[apiField] = constantValue;
+                
+                console.log(`      ✅ ${apiField} = "${constantValue}"`);
+            }
+            
+            result.recordsEnriched++;
+        }
+        
+        console.log(`   ✅ ${rule.ruleId}: Applied constant mappings to ${result.recordsEnriched} rows`);
+        return result;
+    }
+    
+    // Regular API-based enrichment rules
     if (mappings.length === 0) {
         result.warnings.push(`${rule.ruleId}: No API mappings configured`);
         return result;
