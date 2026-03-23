@@ -87,7 +87,26 @@ async function processLockboxRules(extractedData, fileType = 'EXCEL') {
                 (isEnrichmentRule || isConstantMappingRule);
         });
         
-        console.log(`\n📋 Found ${applicableRules.length} applicable validation rules`);
+        // IMPORTANT: Sort rules to ensure correct execution order
+        // 1. RULE_FETCH_ACCT_DOC must run first (enriches CompanyCode)
+        // 2. RULE_FETCH_LOCKBOX_DATA runs second (uses CompanyCode from step 1)
+        // 3. RULE_FETCH_PARTNER_BANK runs third
+        const ruleOrder = {
+            'RULE_FETCH_ACCT_DOC': 1,
+            'RULE_FETCH_LOCKBOX_DATA': 2,
+            'RULE_FETCH_PARTNER_BANK': 3
+        };
+        
+        applicableRules.sort((a, b) => {
+            const orderA = ruleOrder[a.ruleId] || 999;
+            const orderB = ruleOrder[b.ruleId] || 999;
+            return orderA - orderB;
+        });
+        
+        console.log(`\n📋 Found ${applicableRules.length} applicable validation rules (in execution order):`);
+        applicableRules.forEach((r, idx) => {
+            console.log(`   ${idx + 1}. ${r.ruleId} - ${r.ruleName}`);
+        });
         
         if (applicableRules.length === 0) {
             result.warnings.push('No active validation rules found for file type: ' + fileType);
