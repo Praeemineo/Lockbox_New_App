@@ -71,10 +71,10 @@ console.log('✅ Serving frontend from:', frontendPath);
 ### Application Still Works ✅
 ```bash
 # HTTP Response: 200 OK
-curl -I https://posting-service.preview.emergentagent.com/
+curl -I https://dedup-server.preview.emergentagent.com/
 
 # "Exists" operator still present in served file
-curl https://posting-service.preview.emergentagent.com/webapp/view/ProcessingRuleDialog.fragment.xml | grep "key=\"exists\""
+curl https://dedup-server.preview.emergentagent.com/webapp/view/ProcessingRuleDialog.fragment.xml | grep "key=\"exists\""
 # OUTPUT: <core:Item key="exists" text="Exists" />
 
 # Server logs confirm correct path

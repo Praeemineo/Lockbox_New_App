@@ -71,7 +71,7 @@ The backend is 100% correct. You MUST clear your browser cache to see the new Ru
 
 ### Option 3: New Incognito/Private Window
 1. Open a **NEW** Incognito/Private window
-2. Navigate to: https://posting-service.preview.emergentagent.com
+2. Navigate to: https://dedup-server.preview.emergentagent.com
 3. Login fresh
 4. Check if Rule IDs are correct
 
@@ -99,7 +99,7 @@ To confirm backend is serving correct data, you can test the API directly:
 
 ```bash
 # Test from command line or Postman
-curl https://posting-service.preview.emergentagent.com/api/field-mapping/processing-rules
+curl https://dedup-server.preview.emergentagent.com/api/field-mapping/processing-rules
 
 # Should return:
 # RULE_FETCH_ACCT_DOC

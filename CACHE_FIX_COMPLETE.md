@@ -49,11 +49,11 @@ Copied the correct files from `/app/frontend/public/` to `/app/backend/app/` to 
 ### Server is NOW Serving Correct Files
 ```bash
 # Verified "Exists" operator is in the served XML
-curl -s "https://posting-service.preview.emergentagent.com/webapp/view/ProcessingRuleDialog.fragment.xml" | grep "key=\"exists\""
+curl -s "https://dedup-server.preview.emergentagent.com/webapp/view/ProcessingRuleDialog.fragment.xml" | grep "key=\"exists\""
 # OUTPUT: <core:Item key="exists" text="Exists" />
 
 # Verified cache headers are correct
-curl -I "https://posting-service.preview.emergentagent.com/webapp/view/ProcessingRuleDialog.fragment.xml"
+curl -I "https://dedup-server.preview.emergentagent.com/webapp/view/ProcessingRuleDialog.fragment.xml"
 # OUTPUT: cache-control: no-store, no-cache, must-revalidate
 ```
 

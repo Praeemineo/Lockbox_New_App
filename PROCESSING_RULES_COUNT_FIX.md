@@ -147,7 +147,7 @@ The "Rules" tab should immediately show:
 **Debug:**
 ```bash
 # Check if API returns data
-curl https://posting-service.preview.emergentagent.com/api/field-mapping/processing-rules
+curl https://dedup-server.preview.emergentagent.com/api/field-mapping/processing-rules
 
 # Check backend logs
 tail -f /var/log/supervisor/backend.out.log | grep "processing-rules"

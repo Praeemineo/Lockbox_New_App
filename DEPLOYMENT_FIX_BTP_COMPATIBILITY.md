@@ -77,7 +77,7 @@ grep "key=\"exists\"" /app/backend/app/webapp/view/ProcessingRuleDialog.fragment
 ### Application Running ✅
 ```bash
 # HTTP 200 OK
-curl -I https://posting-service.preview.emergentagent.com/
+curl -I https://dedup-server.preview.emergentagent.com/
 
 # Server logs show correct path selection
 tail /var/log/supervisor/backend.out.log | grep "frontend path"

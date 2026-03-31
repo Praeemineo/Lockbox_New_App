@@ -32,7 +32,7 @@ Cmd + Shift + N
 
 **Steps:**
 1. Open Incognito window
-2. Go to: https://posting-service.preview.emergentagent.com
+2. Go to: https://dedup-server.preview.emergentagent.com
 3. Navigate to Processing Rules
 4. Click any rule → Conditions tab
 5. Check Operator dropdown
