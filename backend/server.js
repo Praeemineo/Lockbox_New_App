@@ -3898,7 +3898,7 @@ let apiFields = [
     { fieldId: "FLD-014", fieldName: "NetPaymentAmountInPaytCurrency", necessity: "Optional", fieldType: "User Input", dataType: "Currency", maxLength: 0, description: "Net payment amount", isEditable: false, createdAt: new Date().toISOString() },
     { fieldId: "FLD-015", fieldName: "DeductionAmountInPaytCurrency", necessity: "Optional", fieldType: "User Input", dataType: "Currency", maxLength: 0, description: "Deduction amount", isEditable: false, createdAt: new Date().toISOString() },
     { fieldId: "FLD-016", fieldName: "PaymentDifferenceReason", necessity: "Optional", fieldType: "User Input", dataType: "String", maxLength: 3, description: "Reason for payment difference (3 chars)", isEditable: false, createdAt: new Date().toISOString() },
-    { fieldId: "FLD-019", fieldName: "Customer", necessity: "Optional", fieldType: "User Input", dataType: "String", maxLength: 10, description: "Customer number (for GET API clearing lookup only - NOT in POST payload)", isEditable: false, createdAt: new Date().toISOString() }
+    { fieldId: "FLD-019", fieldName: "Customer", necessity: "Required", fieldType: "User Input", dataType: "String", maxLength: 10, description: "Customer number - Included in POST payload as PaymentAdviceAccount for proper customer assignment in accounting document, and also used in GET API clearing lookup", isEditable: false, createdAt: new Date().toISOString() }
 ];
 
 // File-based backup for API Fields (to persist default value changes)
@@ -7205,7 +7205,7 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
                     console.log(`    ⚠️  RULE-001 enrichment missing - using Invoice Number as fallback: ${paymentReference}`);
                 }
                 
-                // Build clearing entry - OMIT empty optional fields (don't send empty strings)
+                // Build clearing entry with customer information for proper account posting
                 const clearing = {
                     // PaymentReference: RULE-001 enriched value or determined by reference document rule
                     PaymentReference: paymentReference.substring(0, 30),
@@ -7214,8 +7214,17 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
                     // FROM FILE: Deduction amount - format with 2 decimal places
                     DeductionAmountInPaytCurrency: parseFloat(inv.deductionAmount || 0).toFixed(2),
                     // DEFAULT: Currency
-                    Currency: currency
+                    Currency: currency,
+                    // FROM FILE: Customer number for proper account assignment in SAP
+                    PaymentAdviceAccount: (checkData.customer || inv.customer || '').toString().trim(),
+                    // CONSTANT: Account type - 'D' = Customer (Debit), 'K' = Vendor (Credit)
+                    PaymentAdviceAccountType: 'D'
                 };
+                
+                // Validate customer presence
+                if (!clearing.PaymentAdviceAccount) {
+                    console.warn(`⚠️  Warning: No customer found for invoice ${inv.invoiceNumber} - SAP may use default customer`);
+                }
                 
                 // Note: CompanyCode is stored in mappedData for reporting but NOT sent in SAP payload
                 
@@ -7234,15 +7243,15 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
             
             console.log(`  Clearing entries: ${clearingResults.length}`);
             clearingResults.forEach((c, i) => {
-                console.log(`    [${i + 1}] PaymentReference: ${c.PaymentReference}, Net: ${c.NetPaymentAmountInPaytCurrency}, Deduction: ${c.DeductionAmountInPaytCurrency}${c.PaymentDifferenceReason ? ', Reason: ' + c.PaymentDifferenceReason : ''}`);
+                console.log(`    [${i + 1}] PaymentReference: ${c.PaymentReference}, Customer: ${c.PaymentAdviceAccount}, Net: ${c.NetPaymentAmountInPaytCurrency}, Deduction: ${c.DeductionAmountInPaytCurrency}${c.PaymentDifferenceReason ? ', Reason: ' + c.PaymentDifferenceReason : ''}`);
             });
         }
         
-        // Store customer for GET LockboxClearing API call (internal use only, not sent to SAP)
-        // PaymentAdviceAccount = Customer (from file)
-        // PaymentAdviceAccountType = "D" (constant)
+        // Customer is now included in POST payload's to_LockboxClearing entries
+        // AND also used in GET LockboxClearing API call for retrieving clearing details
+        // PaymentAdviceAccount = Customer (from file) - NOW SENT IN POST PAYLOAD
+        // PaymentAdviceAccountType = "D" (constant) - NOW SENT IN POST PAYLOAD
         // CompanyCode = "1710" (constant)
-        // Note: We store this in a separate map, not in the payload item
         
         payload.to_Item.results.push(item);
         itemId++;
@@ -7259,8 +7268,14 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
     console.log(`LockboxBatchDestination: ${payload.LockboxBatchDestination} (DEFAULT)`);
     console.log(`Items: ${payload.to_Item.results.length}`);
     console.log('');
+    console.log('Clearing Entry Fields:');
+    console.log('  PaymentReference = Invoice/Document number (FROM FILE or RULE-001)');
+    console.log('  PaymentAdviceAccount = Customer number (FROM FILE) ✅ NOW IN POST PAYLOAD');
+    console.log('  PaymentAdviceAccountType = "D" (CONSTANT) ✅ NOW IN POST PAYLOAD');
+    console.log('  Currency = USD (DEFAULT)');
+    console.log('');
     console.log('GET API Parameters (after POST):');
-    console.log('  PaymentAdviceAccount = Customer number (FROM FILE)');
+    console.log('  PaymentAdviceAccount = Customer number (FROM FILE) - Also used in GET');
     console.log('  PaymentAdviceAccountType = "D" (CONSTANT)');
     console.log('  CompanyCode = "1710" (CONSTANT)');
     console.log('  PaymentAdvice = (GENERATED BY SAP - NOT hardcoded)');
