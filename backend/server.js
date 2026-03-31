@@ -2251,6 +2251,7 @@ app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
             
             // ========================================================
             // STEP 3: GET /LockboxClearing - Dynamic API from RULE_POST_LOCKBOX_SAP
+            // Customer (PaymentAdviceAccount) must be passed here for proper retrieval
             // ========================================================
             console.log('=== STEP 3: GET /LockboxClearing (Dynamic API from RULE_POST_LOCKBOX_SAP) ===');
             console.log('API Endpoint:', getLockboxClearingApi.apiReference);
@@ -2261,14 +2262,23 @@ app.post('/api/lockbox/_disabled_post/:headerId', async (req, res) => {
                     const clearingApiEndpoint = getLockboxClearingApi.apiReference || '/sap/opu/odata/sap/API_LOCKBOXPOST_IN/LockboxClearing';
                     const clearingApiDestination = getLockboxClearingApi.destination || 'S4HANA_SYSTEM_DESTINATION';
                     
+                    // Extract customer from the first item in payload
+                    // Customer was stored with item._customerForClearing during payload build
+                    const firstItem = payload.to_Item?.results?.[0];
+                    const customerFromPayload = firstItem?._customerForClearing || '';
+                    
+                    console.log('Customer from payload:', customerFromPayload);
+                    
                     const clearingQueryParams = {
-                        LockboxBatchInternalKey: lockboxBatchInternalKey,
-                        LockboxBatch: lockboxBatch,
                         PaymentAdvice: paymentAdvice,
+                        PaymentAdviceItem: '1',
+                        PaymentAdviceAccount: customerFromPayload,  // Customer from file
+                        PaymentAdviceAccountType: 'D',              // 'D' = Customer (Debit)
                         CompanyCode: RUNTIME_COMPANY_CODE
                     };
                     
                     console.log('Query Parameters:', clearingQueryParams);
+                    console.log('GET URL format: /LockboxClearing(PaymentAdvice=\'' + paymentAdvice + '\',PaymentAdviceItem=\'1\',PaymentAdviceAccount=\'' + customerFromPayload + '\',PaymentAdviceAccountType=\'D\',CompanyCode=\'' + RUNTIME_COMPANY_CODE + '\')');
                     
                     const clearingResponse = await getLockboxClearing(clearingQueryParams, clearingApiDestination, clearingApiEndpoint);
                     clearingData = clearingResponse.data?.d?.results || [];
@@ -3898,7 +3908,7 @@ let apiFields = [
     { fieldId: "FLD-014", fieldName: "NetPaymentAmountInPaytCurrency", necessity: "Optional", fieldType: "User Input", dataType: "Currency", maxLength: 0, description: "Net payment amount", isEditable: false, createdAt: new Date().toISOString() },
     { fieldId: "FLD-015", fieldName: "DeductionAmountInPaytCurrency", necessity: "Optional", fieldType: "User Input", dataType: "Currency", maxLength: 0, description: "Deduction amount", isEditable: false, createdAt: new Date().toISOString() },
     { fieldId: "FLD-016", fieldName: "PaymentDifferenceReason", necessity: "Optional", fieldType: "User Input", dataType: "String", maxLength: 3, description: "Reason for payment difference (3 chars)", isEditable: false, createdAt: new Date().toISOString() },
-    { fieldId: "FLD-019", fieldName: "Customer", necessity: "Required", fieldType: "User Input", dataType: "String", maxLength: 10, description: "Customer number - Included in POST payload as PaymentAdviceAccount for proper customer assignment in accounting document, and also used in GET API clearing lookup", isEditable: false, createdAt: new Date().toISOString() }
+    { fieldId: "FLD-019", fieldName: "Customer", necessity: "Required", fieldType: "User Input", dataType: "String", maxLength: 10, description: "Customer number - NOT included in POST payload, but stored and used in GET LockboxClearing API call after SAP generates Payment Advice to retrieve clearing details for the correct customer", isEditable: false, createdAt: new Date().toISOString() }
 ];
 
 // File-based backup for API Fields (to persist default value changes)
@@ -7205,7 +7215,7 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
                     console.log(`    ⚠️  RULE-001 enrichment missing - using Invoice Number as fallback: ${paymentReference}`);
                 }
                 
-                // Build clearing entry with customer information for proper account posting
+                // Build clearing entry - OMIT empty optional fields (don't send empty strings)
                 const clearing = {
                     // PaymentReference: RULE-001 enriched value or determined by reference document rule
                     PaymentReference: paymentReference.substring(0, 30),
@@ -7214,19 +7224,11 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
                     // FROM FILE: Deduction amount - format with 2 decimal places
                     DeductionAmountInPaytCurrency: parseFloat(inv.deductionAmount || 0).toFixed(2),
                     // DEFAULT: Currency
-                    Currency: currency,
-                    // FROM FILE: Customer number for proper account assignment in SAP
-                    PaymentAdviceAccount: (checkData.customer || inv.customer || '').toString().trim(),
-                    // CONSTANT: Account type - 'D' = Customer (Debit), 'K' = Vendor (Credit)
-                    PaymentAdviceAccountType: 'D'
+                    Currency: currency
                 };
                 
-                // Validate customer presence
-                if (!clearing.PaymentAdviceAccount) {
-                    console.warn(`⚠️  Warning: No customer found for invoice ${inv.invoiceNumber} - SAP may use default customer`);
-                }
-                
                 // Note: CompanyCode is stored in mappedData for reporting but NOT sent in SAP payload
+                // Note: Customer (PaymentAdviceAccount) is stored separately for GET API call after POST
                 
                 // ONLY include PaymentDifferenceReason if it has a value (SAP rejects empty strings)
                 const reasonCode = (inv.reasonCode || '').trim().substring(0, 3);
@@ -7243,15 +7245,17 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
             
             console.log(`  Clearing entries: ${clearingResults.length}`);
             clearingResults.forEach((c, i) => {
-                console.log(`    [${i + 1}] PaymentReference: ${c.PaymentReference}, Customer: ${c.PaymentAdviceAccount}, Net: ${c.NetPaymentAmountInPaytCurrency}, Deduction: ${c.DeductionAmountInPaytCurrency}${c.PaymentDifferenceReason ? ', Reason: ' + c.PaymentDifferenceReason : ''}`);
+                console.log(`    [${i + 1}] PaymentReference: ${c.PaymentReference}, Net: ${c.NetPaymentAmountInPaytCurrency}, Deduction: ${c.DeductionAmountInPaytCurrency}${c.PaymentDifferenceReason ? ', Reason: ' + c.PaymentDifferenceReason : ''}`);
             });
         }
         
-        // Customer is now included in POST payload's to_LockboxClearing entries
-        // AND also used in GET LockboxClearing API call for retrieving clearing details
-        // PaymentAdviceAccount = Customer (from file) - NOW SENT IN POST PAYLOAD
-        // PaymentAdviceAccountType = "D" (constant) - NOW SENT IN POST PAYLOAD
-        // CompanyCode = "1710" (constant)
+        // Store customer for GET LockboxClearing API call (internal use only, not sent to SAP POST)
+        // Customer will be used AFTER Payment Advice is generated by SAP
+        // PaymentAdviceAccount = Customer (from file) - Used in GET API
+        // PaymentAdviceAccountType = "D" (constant) - Used in GET API
+        // CompanyCode = "1710" (constant) - Used in GET API
+        // Store customer with the item for later retrieval
+        item._customerForClearing = checkData.customer;
         
         payload.to_Item.results.push(item);
         itemId++;
@@ -7268,17 +7272,18 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
     console.log(`LockboxBatchDestination: ${payload.LockboxBatchDestination} (DEFAULT)`);
     console.log(`Items: ${payload.to_Item.results.length}`);
     console.log('');
-    console.log('Clearing Entry Fields:');
+    console.log('POST Payload Fields (to_LockboxClearing):');
     console.log('  PaymentReference = Invoice/Document number (FROM FILE or RULE-001)');
-    console.log('  PaymentAdviceAccount = Customer number (FROM FILE) ✅ NOW IN POST PAYLOAD');
-    console.log('  PaymentAdviceAccountType = "D" (CONSTANT) ✅ NOW IN POST PAYLOAD');
+    console.log('  NetPaymentAmountInPaytCurrency = Amount (FROM FILE)');
     console.log('  Currency = USD (DEFAULT)');
+    console.log('  ❌ Customer NOT in POST payload');
     console.log('');
-    console.log('GET API Parameters (after POST):');
-    console.log('  PaymentAdviceAccount = Customer number (FROM FILE) - Also used in GET');
+    console.log('GET API Parameters (AFTER POST - using Payment Advice from SAP):');
+    console.log('  PaymentAdvice = (GENERATED BY SAP during POST)');
+    console.log('  PaymentAdviceItem = "1" (CONSTANT)');
+    console.log('  PaymentAdviceAccount = Customer number (FROM FILE) ✅ USED HERE');
     console.log('  PaymentAdviceAccountType = "D" (CONSTANT)');
-    console.log('  CompanyCode = "1710" (CONSTANT)');
-    console.log('  PaymentAdvice = (GENERATED BY SAP - NOT hardcoded)');
+    console.log('  CompanyCode = "1710" (FROM FILE or DEFAULT)');
     console.log('═══════════════════════════════════════════════════════════════════');
     console.log('');
     
