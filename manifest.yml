@@ -12,11 +12,17 @@ applications:
     timeout: 180
     env:
       NODE_ENV: production
-      SAP_URL: "https://44.194.22.195:44301"
+      SAP_URL: "https://44.196.95.84:44301"
       SAP_CLIENT: "100"
       SAP_USER: "S4H_FIN"
       SAP_PASSWORD: "Welcome1"
       SAP_API_TIMEOUT: "10000"
+      DB_HOST: "postgres-aee790df-b48b-48cc-96b3-db432a62390e.czuelothxj0h.ap-southeast-2.rds.amazonaws.com"
+      DB_PORT: "2477"
+      DB_NAME: "CAmqjnIfEdIX"
+      DB_USER: "1cf523d60c97"
+      DB_PASSWORD: "593373429221a65ff07f625d1b"
+      DB_SSL: "true"
     services:
       - lockbox-destination
       - lockbox-xsuaa
