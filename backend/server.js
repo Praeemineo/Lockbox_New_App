@@ -3218,21 +3218,21 @@ const DEFAULT_FILE_PATTERNS = [
     },
     {
         patternId: "PAT-004",
-        patternName: "Invoice Range Pattern",
+        patternName: "Invoice Range Pattern (Hyphen-Delimited)",
         fileType: "EXCEL",
-        patternType: "INVOICE_RANGE",
+        patternType: "INVOICE_SPLIT",  // Changed from INVOICE_RANGE to use same code path
         category: "INVOICE",
-        description: "Invoice field contains ranges like '90004206-90004210'. Expands to individual invoices.",
+        description: "Invoice field contains hyphen-delimited ranges like '90003904-3905' with amounts '1365.00-1575.00'. Expands and pairs invoices with amounts.",
         delimiter: "-",
         active: true,
         priority: 110,
         fieldMappings: { checkField: "Check Number", amountField: "Check Amount", invoiceField: "Invoice Number", invoiceAmountField: "Invoice Amount" },
         detection: { invoiceDelimited: true, delimiter: "-", isRange: true },
         conditions: [
-            { priority: 1, detectionCondition: 'Invoice contains "-"', strategy: "RANGE_EXPAND", condition: "VALID_RANGE", fallbackAction: "MANUAL_REVIEW", externalDependency: "" },
-            { priority: 2, detectionCondition: 'Range expanded', strategy: "EQUAL_AMOUNT_SPLIT", condition: "DEFAULT", fallbackAction: "HOLD_IN_SUSPENSE", externalDependency: "" }
+            { priority: 1, detectionCondition: 'Invoice contains "-"', strategy: "RANGE_EXPAND_WITH_AMOUNTS", condition: "VALID_RANGE", fallbackAction: "MANUAL_REVIEW", externalDependency: "" },
+            { priority: 2, detectionCondition: 'Amounts delimited', strategy: "PAIR_AMOUNTS", condition: "DEFAULT", fallbackAction: "EQUAL_SPLIT", externalDependency: "" }
         ],
-        processingRules: ["EXPAND_RANGE", "SPLIT_INVOICE", "PAD_CHECK", "VALIDATE_AMOUNT"]
+        processingRules: ["EXPAND_RANGE", "SPLIT_INVOICE_AMOUNTS", "PAD_CHECK", "VALIDATE_AMOUNT"]
     },
     {
         patternId: "PAT-005",
@@ -6770,6 +6770,8 @@ function analyzeDataStructure(data, headerMapping) {
         hasDelimitedChecks: false,
         hasDelimitedInvoices: false,
         hasDelimitedAmounts: false,
+        hasHyphenDelimitedInvoices: false,  // NEW: Detect hyphen-delimited invoices
+        hasHyphenDelimitedAmounts: false,   // NEW: Detect hyphen-delimited amounts
         uniqueChecks: new Set(),
         uniqueInvoices: new Set(),
         uniqueCustomers: new Set()
@@ -6804,8 +6806,17 @@ function analyzeDataStructure(data, headerMapping) {
         if (invoiceIdx !== undefined) {
             const invoiceVal = row[invoiceIdx];
             if (invoiceVal) {
+                // Check for comma or pipe delimiters
                 if (invoiceVal.toString().includes(',') || invoiceVal.toString().includes('|')) {
                     analysis.hasDelimitedInvoices = true;
+                }
+                // Check for hyphen delimiter (invoice ranges)
+                if (invoiceVal.toString().includes('-')) {
+                    // Make sure it's not a negative number
+                    const parts = invoiceVal.toString().split('-').filter(p => p.trim());
+                    if (parts.length > 1) {
+                        analysis.hasHyphenDelimitedInvoices = true;
+                    }
                 }
                 if (analysis.uniqueInvoices.has(invoiceVal)) {
                     analysis.invoiceUnique = false;
@@ -6817,11 +6828,31 @@ function analyzeDataStructure(data, headerMapping) {
         // Check amount patterns
         if (amountIdx !== undefined) {
             const amountVal = row[amountIdx];
-            if (amountVal && (amountVal.toString().includes(',') || amountVal.toString().includes('|'))) {
-                // Check if it's a delimiter or decimal separator
-                const commaCount = (amountVal.toString().match(/,/g) || []).length;
-                if (commaCount > 1) {
-                    analysis.hasDelimitedAmounts = true;
+            if (amountVal) {
+                const strVal = amountVal.toString();
+                
+                // Check for comma delimiters (not decimal separators)
+                if (strVal.includes(',') || strVal.includes('|')) {
+                    const commaCount = (strVal.match(/,/g) || []).length;
+                    if (commaCount > 1) {
+                        analysis.hasDelimitedAmounts = true;
+                    }
+                }
+                
+                // Check for hyphen delimiter (amount ranges)
+                if (strVal.includes('-')) {
+                    // Split and check if we have multiple valid positive numbers
+                    const parts = strVal.split('-').map(p => p.trim()).filter(p => p);
+                    let validAmounts = 0;
+                    for (const part of parts) {
+                        const num = parseFloat(part.replace(/[^0-9.]/g, ''));
+                        if (!isNaN(num) && num > 0) {
+                            validAmounts++;
+                        }
+                    }
+                    if (validAmounts > 1) {
+                        analysis.hasHyphenDelimitedAmounts = true;
+                    }
                 }
             }
         }
@@ -6940,12 +6971,34 @@ function extractDataByPattern(data, headers, pattern, headerMapping) {
             console.log(`\n  Processing row ${i + 1} with INVOICE_SPLIT:`);
             console.log(`    Raw Invoice: "${extractedRow.InvoiceNumber}"`);
             console.log(`    Raw Amount: "${extractedRow._rawInvoiceAmount}"`);
+            console.log(`    Delimiter: "${pattern.delimiter}"`);
             
-            // Use enhanced split function that handles both invoices and amounts
-            const splits = splitInvoiceAndAmounts(
-                extractedRow.InvoiceNumber, 
-                extractedRow._rawInvoiceAmount
-            );
+            let splits = [];
+            let splitType = '';
+            
+            // Use appropriate split function based on delimiter
+            if (pattern.delimiter === ',') {
+                // Comma-delimited split (PAT-003)
+                splits = splitInvoiceAndAmounts(
+                    extractedRow.InvoiceNumber, 
+                    extractedRow._rawInvoiceAmount
+                );
+                splitType = 'COMMA_DELIMITED';
+            } else if (pattern.delimiter === '-') {
+                // Hyphen-delimited split (PAT-004: DOCUMENT_RANGE)
+                splits = splitInvoiceAndAmountsHyphen(
+                    extractedRow.InvoiceNumber, 
+                    extractedRow._rawInvoiceAmount
+                );
+                splitType = 'HYPHEN_RANGE';
+            } else {
+                // Fallback to comma split for other delimiters
+                splits = splitInvoiceAndAmounts(
+                    extractedRow.InvoiceNumber, 
+                    extractedRow._rawInvoiceAmount
+                );
+                splitType = 'DELIMITED';
+            }
             
             if (splits.length > 1) {
                 // Split into multiple rows with paired invoice-amount
@@ -6956,10 +7009,10 @@ function extractDataByPattern(data, headers, pattern, headerMapping) {
                         InvoiceAmount: split.amount,
                         _splitFrom: extractedRow.InvoiceNumber,
                         _splitRule: pattern.patternName,
-                        _splitType: 'COMMA_DELIMITED'
+                        _splitType: splitType
                     });
                 }
-                console.log(`    ✓ Split into ${splits.length} rows\n`);
+                console.log(`    ✓ Split into ${splits.length} rows (${splitType})\n`);
                 continue;
             }
         }
@@ -7497,6 +7550,110 @@ function splitInvoiceAndAmounts(invoiceStr, amountStr) {
     }
     
     return result;
+}
+
+// ============================================================================
+// SPLIT HYPHEN-DELIMITED INVOICES AND AMOUNTS (PAT-004: DOCUMENT_RANGE)
+// Similar to comma split but uses hyphen as delimiter
+// Handles invoice ranges like "90003904-3905" with amounts "1365.00-1575.00"
+// ============================================================================
+function splitInvoiceAndAmountsHyphen(invoiceStr, amountStr) {
+    // Split invoice numbers using hyphen
+    const invoices = splitInvoiceReferencesHyphen(invoiceStr);
+    
+    // Parse amount string - handle hyphen-delimited amounts
+    const amountParts = [];
+    if (amountStr && amountStr.toString().includes('-')) {
+        // Split by hyphen and parse each amount
+        // Need to be careful with negative numbers
+        const parts = amountStr.toString().split('-').map(p => p.trim()).filter(p => p);
+        
+        for (const part of parts) {
+            const num = parseFloat(part.replace(/[^0-9.]/g, ''));
+            if (!isNaN(num) && num > 0) {  // Only positive amounts
+                amountParts.push(num);
+            }
+        }
+    }
+    
+    // If no delimited amounts found, use the single amount
+    if (amountParts.length === 0) {
+        const singleAmount = parseFloat((amountStr || '0').toString().replace(/[^0-9.-]/g, '')) || 0;
+        amountParts.push(Math.abs(singleAmount));
+    }
+    
+    console.log(`  Hyphen Split Result: ${invoices.length} invoices, ${amountParts.length} amounts`);
+    console.log(`    Invoices: [${invoices.join(', ')}]`);
+    console.log(`    Amounts: [${amountParts.join(', ')}]`);
+    
+    // Create invoice-amount pairs using same logic as comma split
+    const result = [];
+    
+    if (amountParts.length === 1 && invoices.length > 1) {
+        // Single amount, multiple invoices → split equally
+        const amountPerInvoice = amountParts[0] / invoices.length;
+        console.log(`    → Single amount ${amountParts[0]} split equally: ${amountPerInvoice} per invoice`);
+        for (const inv of invoices) {
+            result.push({ invoice: inv, amount: amountPerInvoice });
+        }
+    } else if (amountParts.length === invoices.length) {
+        // Matching invoices and amounts → pair them
+        console.log(`    → Matching pairs: invoice[i] with amount[i]`);
+        for (let i = 0; i < invoices.length; i++) {
+            result.push({ invoice: invoices[i], amount: amountParts[i] });
+        }
+    } else if (amountParts.length > invoices.length) {
+        // More amounts than invoices → use first N amounts
+        console.log(`    → More amounts than invoices, using first ${invoices.length} amounts`);
+        for (let i = 0; i < invoices.length; i++) {
+            result.push({ invoice: invoices[i], amount: amountParts[i] || 0 });
+        }
+    } else {
+        // More invoices than amounts → distribute last amount equally among remaining invoices
+        console.log(`    → More invoices than amounts, distributing remaining`);
+        for (let i = 0; i < invoices.length; i++) {
+            if (i < amountParts.length) {
+                result.push({ invoice: invoices[i], amount: amountParts[i] });
+            } else {
+                // Distribute the last amount equally among remaining invoices
+                const remainingInvoices = invoices.length - amountParts.length + 1;
+                const lastAmount = amountParts[amountParts.length - 1] / remainingInvoices;
+                result.push({ invoice: invoices[i], amount: lastAmount });
+            }
+        }
+    }
+    
+    return result;
+}
+
+// ============================================================================
+// SPLIT HYPHEN-DELIMITED INVOICE REFERENCES
+// Handles invoice ranges with common prefix detection
+// Example: "90003904-3905" → ["90003904", "90003905"]
+// ============================================================================
+function splitInvoiceReferencesHyphen(invoiceStr) {
+    if (!invoiceStr || !invoiceStr.includes('-')) return [invoiceStr?.trim() || ''];
+    
+    const parts = invoiceStr.split('-').map(p => p.trim()).filter(p => p);
+    if (parts.length <= 1) return [invoiceStr.trim()];
+    
+    const firstPart = parts[0];
+    const otherParts = parts.slice(1);
+    
+    // Check if this is a range with common prefix (e.g., "90003904-3905")
+    const hasShortSuffixes = otherParts.every(p => p.length < firstPart.length);
+    
+    if (hasShortSuffixes && firstPart.length > 3) {
+        const firstSuffix = otherParts[0];
+        const prefixLength = firstPart.length - firstSuffix.length;
+        
+        if (prefixLength > 0) {
+            const commonPrefix = firstPart.substring(0, prefixLength);
+            return [firstPart, ...otherParts.map(suffix => commonPrefix + suffix)];
+        }
+    }
+    
+    return parts;
 }
 
 // ============================================================================
