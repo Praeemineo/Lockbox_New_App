@@ -6931,25 +6931,35 @@ function extractDataByPattern(data, headers, pattern, headerMapping) {
             BELNR: belnrValue,
             _documentTypeDetection: detectionLog,  // For debugging
             _rowIndex: i + 1,
-            _pattern: pattern.patternType
+            _pattern: pattern.patternType,
+            _rawInvoiceAmount: invoiceAmountIdx !== undefined ? row[invoiceAmountIdx] : '0'  // Keep raw for splitting
         };
         
-        // Handle delimiter splits (using common prefix detection)
+        // Handle delimiter splits with advanced invoice-amount pairing
         if (pattern.patternType === 'INVOICE_SPLIT' && pattern.delimiter) {
-            // Use the advanced split function with common prefix detection
-            const invoices = splitInvoiceReferencesForProcessing(extractedRow.InvoiceNumber);
-            if (invoices.length > 1) {
-                // Split into multiple rows with distributed amounts
-                const amountPerInvoice = extractedRow.InvoiceAmount / invoices.length;
-                for (const inv of invoices) {
+            console.log(`\n  Processing row ${i + 1} with INVOICE_SPLIT:`);
+            console.log(`    Raw Invoice: "${extractedRow.InvoiceNumber}"`);
+            console.log(`    Raw Amount: "${extractedRow._rawInvoiceAmount}"`);
+            
+            // Use enhanced split function that handles both invoices and amounts
+            const splits = splitInvoiceAndAmounts(
+                extractedRow.InvoiceNumber, 
+                extractedRow._rawInvoiceAmount
+            );
+            
+            if (splits.length > 1) {
+                // Split into multiple rows with paired invoice-amount
+                for (const split of splits) {
                     extractedRows.push({
                         ...extractedRow,
-                        InvoiceNumber: inv,
-                        InvoiceAmount: amountPerInvoice,
+                        InvoiceNumber: split.invoice,
+                        InvoiceAmount: split.amount,
                         _splitFrom: extractedRow.InvoiceNumber,
-                        _splitRule: pattern.patternName
+                        _splitRule: pattern.patternName,
+                        _splitType: 'COMMA_DELIMITED'
                     });
                 }
+                console.log(`    ✓ Split into ${splits.length} rows\n`);
                 continue;
             }
         }
@@ -7409,6 +7419,84 @@ function splitInvoiceReferencesForProcessing(invoiceStr) {
         }
     }
     return parts;
+}
+
+// ============================================================================
+// SPLIT COMMA-DELIMITED INVOICES AND AMOUNTS
+// Handles both invoice numbers and corresponding amounts
+// If amounts are delimited, use each amount; if single amount, split equally
+// ============================================================================
+function splitInvoiceAndAmounts(invoiceStr, amountStr) {
+    // Split invoice numbers using existing logic
+    const invoices = splitInvoiceReferencesForProcessing(invoiceStr);
+    
+    // Parse amount string - handle comma-delimited amounts
+    const amountParts = [];
+    if (amountStr && amountStr.toString().includes(',')) {
+        // Check if this is comma-delimited amounts (multiple commas or after decimal removal)
+        const cleaned = amountStr.toString().replace(/\./g, '');  // Remove decimal points
+        const commaCount = (cleaned.match(/,/g) || []).length;
+        
+        if (commaCount > 0) {
+            // Split by comma and parse each amount
+            const parts = amountStr.toString().split(',').map(p => p.trim());
+            for (const part of parts) {
+                const num = parseFloat(part.replace(/[^0-9.-]/g, ''));
+                if (!isNaN(num)) {
+                    amountParts.push(num);
+                }
+            }
+        }
+    }
+    
+    // If no delimited amounts found, use the single amount
+    if (amountParts.length === 0) {
+        const singleAmount = parseFloat((amountStr || '0').toString().replace(/[^0-9.-]/g, '')) || 0;
+        amountParts.push(singleAmount);
+    }
+    
+    console.log(`  Split Result: ${invoices.length} invoices, ${amountParts.length} amounts`);
+    console.log(`    Invoices: [${invoices.join(', ')}]`);
+    console.log(`    Amounts: [${amountParts.join(', ')}]`);
+    
+    // Create invoice-amount pairs
+    const result = [];
+    
+    if (amountParts.length === 1 && invoices.length > 1) {
+        // Single amount, multiple invoices → split equally
+        const amountPerInvoice = amountParts[0] / invoices.length;
+        console.log(`    → Single amount ${amountParts[0]} split equally: ${amountPerInvoice} per invoice`);
+        for (const inv of invoices) {
+            result.push({ invoice: inv, amount: amountPerInvoice });
+        }
+    } else if (amountParts.length === invoices.length) {
+        // Matching invoices and amounts → pair them
+        console.log(`    → Matching pairs: invoice[i] with amount[i]`);
+        for (let i = 0; i < invoices.length; i++) {
+            result.push({ invoice: invoices[i], amount: amountParts[i] });
+        }
+    } else if (amountParts.length > invoices.length) {
+        // More amounts than invoices → use first N amounts
+        console.log(`    → More amounts than invoices, using first ${invoices.length} amounts`);
+        for (let i = 0; i < invoices.length; i++) {
+            result.push({ invoice: invoices[i], amount: amountParts[i] || 0 });
+        }
+    } else {
+        // More invoices than amounts → distribute last amount equally among remaining invoices
+        console.log(`    → More invoices than amounts, distributing remaining`);
+        for (let i = 0; i < invoices.length; i++) {
+            if (i < amountParts.length) {
+                result.push({ invoice: invoices[i], amount: amountParts[i] });
+            } else {
+                // Distribute the last amount equally among remaining invoices
+                const remainingInvoices = invoices.length - amountParts.length + 1;
+                const lastAmount = amountParts[amountParts.length - 1] / remainingInvoices;
+                result.push({ invoice: invoices[i], amount: lastAmount });
+            }
+        }
+    }
+    
+    return result;
 }
 
 // ============================================================================
