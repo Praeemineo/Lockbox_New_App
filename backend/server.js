@@ -7165,6 +7165,17 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
         });
     }
     
+    // DEBUG: Log check groups
+    console.log('');
+    console.log('🔍 DEBUG: CHECK GROUPS AFTER GROUPING');
+    Object.entries(checkGroups).forEach(([checkKey, checkData]) => {
+        console.log(`   Check: ${checkKey}, Invoices: ${checkData.invoices.length}`);
+        checkData.invoices.forEach((inv, i) => {
+            console.log(`      Invoice ${i+1}: Number="${inv.invoiceNumber}", Amount=${inv.invoiceAmount}, PaymentRef="${inv.PaymentReference || 'EMPTY'}"`);
+        });
+    });
+    console.log('');
+    
     // Calculate total amount from all checks
     let totalAmount = 0;
     for (const checkData of Object.values(checkGroups)) {
@@ -8603,6 +8614,22 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
         // Use pattern engine for dynamic extraction
         let extractedData = patternEngine.executePatternExtraction(dataObjects, patternResult.pattern);  // Use dataObjects
         
+        // DEBUG: Check if split is working
+        console.log('');
+        console.log('🔍 DEBUG: POST-EXTRACTION DATA');
+        console.log(`   Total rows: ${extractedData.length}`);
+        if (extractedData.length > 0 && extractedData.length <= 10) {
+            extractedData.forEach((row, i) => {
+                console.log(`   Row ${i+1}: InvoiceNumber="${row.InvoiceNumber || row['Invoice Number']}", InvoiceAmount=${row.InvoiceAmount || row['Invoice Amount']}, SplitType="${row._splitType || 'N/A'}"`);
+            });
+        } else if (extractedData.length > 10) {
+            console.log(`   Showing first 3 rows only...`);
+            extractedData.slice(0, 3).forEach((row, i) => {
+                console.log(`   Row ${i+1}: InvoiceNumber="${row.InvoiceNumber || row['Invoice Number']}", InvoiceAmount=${row.InvoiceAmount || row['Invoice Amount']}, SplitType="${row._splitType || 'N/A'}"`);
+            });
+        }
+        console.log('');
+        
         // Get extraction log
         const extractionLog = extractedData._extractionLog || [];
         delete extractedData._extractionLog;
@@ -8639,13 +8666,20 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
             extractedData = validationResult.enrichedData;
             
             // DEBUG: Check if enrichment worked
-            console.log(`  🔍 DEBUG POST-ENRICHMENT: extractedData length: ${extractedData.length}`);
-            if (extractedData.length > 0) {
-                const firstRow = extractedData[0];
-                console.log(`  🔍 First row keys: ${Object.keys(firstRow).join(', ')}`);
-                console.log(`  🔍 Paymentreference value: "${firstRow.Paymentreference}"`);
-                console.log(`  🔍 CompanyCode value: "${firstRow.CompanyCode}"`);
+            console.log('');
+            console.log(`🔍 DEBUG: POST-ENRICHMENT DATA`);
+            console.log(`   Total rows: ${extractedData.length}`);
+            if (extractedData.length > 0 && extractedData.length <= 10) {
+                extractedData.forEach((row, i) => {
+                    console.log(`   Row ${i+1}: InvoiceNumber="${row.InvoiceNumber || row['Invoice Number']}", InvoiceAmount=${row.InvoiceAmount || row['Invoice Amount']}, PaymentReference="${row.PaymentReference || 'EMPTY'}", CompanyCode="${row.CompanyCode || 'EMPTY'}"`);
+                });
+            } else if (extractedData.length > 10) {
+                console.log(`   Showing first 3 rows only...`);
+                extractedData.slice(0, 3).forEach((row, i) => {
+                    console.log(`   Row ${i+1}: InvoiceNumber="${row.InvoiceNumber || row['Invoice Number']}", InvoiceAmount=${row.InvoiceAmount || row['Invoice Amount']}, PaymentReference="${row.PaymentReference || 'EMPTY'}", CompanyCode="${row.CompanyCode || 'EMPTY'}"`);
+                });
             }
+            console.log('');
             
             run.stages.validation.status = 'completed';
             run.stages.validation.message = `${validationResult.rulesExecuted.length}/2 rules executed, ${validationResult.recordsEnriched} records enriched`;
