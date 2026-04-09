@@ -647,7 +647,82 @@ function executeDefaultPatternActions(patternType, data) {
 }
 
 /**
- * Split comma-separated values into multiple rows
+ * ADVANCED: Split comma-separated invoice numbers with smart prefix detection
+ * @param {string} invoiceStr - Invoice string (e.g., "90003904, 3905")
+ * @returns {array} - Array of expanded invoice numbers
+ */
+function splitInvoiceReferencesWithPrefix(invoiceStr) {
+    if (!invoiceStr || !invoiceStr.includes(',')) return [invoiceStr?.trim() || ''];
+    const parts = invoiceStr.split(',').map(p => p.trim()).filter(p => p);
+    if (parts.length <= 1) return [invoiceStr.trim()];
+    const firstPart = parts[0];
+    const otherParts = parts.slice(1);
+    const hasShortSuffixes = otherParts.every(p => p.length < firstPart.length);
+    if (hasShortSuffixes && firstPart.length > 3) {
+        const firstSuffix = otherParts[0];
+        const prefixLength = firstPart.length - firstSuffix.length;
+        if (prefixLength > 0) {
+            const commonPrefix = firstPart.substring(0, prefixLength);
+            return [firstPart, ...otherParts.map(suffix => commonPrefix + suffix)];
+        }
+    }
+    return parts;
+}
+
+/**
+ * ADVANCED: Split comma-delimited invoices AND amounts with intelligent pairing
+ * @param {string} invoiceStr - Invoice numbers (e.g., "90003904, 3905")
+ * @param {string} amountStr - Amounts (e.g., "1365.00, 1575.00")
+ * @returns {array} - Array of {invoice, amount} pairs
+ */
+function splitInvoiceAndAmountsComma(invoiceStr, amountStr) {
+    const invoices = splitInvoiceReferencesWithPrefix(invoiceStr);
+    const amountParts = [];
+    if (amountStr && amountStr.toString().includes(',')) {
+        const cleaned = amountStr.toString().replace(/\./g, '');
+        const commaCount = (cleaned.match(/,/g) || []).length;
+        if (commaCount > 0) {
+            const parts = amountStr.toString().split(',').map(p => p.trim());
+            for (const part of parts) {
+                const num = parseFloat(part.replace(/[^0-9.-]/g, ''));
+                if (!isNaN(num)) amountParts.push(num);
+            }
+        }
+    }
+    if (amountParts.length === 0) {
+        const singleAmount = parseFloat((amountStr || '0').toString().replace(/[^0-9.-]/g, '')) || 0;
+        amountParts.push(singleAmount);
+    }
+    const result = [];
+    if (amountParts.length === 1 && invoices.length > 1) {
+        const amountPerInvoice = amountParts[0] / invoices.length;
+        for (const inv of invoices) {
+            result.push({ invoice: inv, amount: amountPerInvoice });
+        }
+    } else if (amountParts.length === invoices.length) {
+        for (let i = 0; i < invoices.length; i++) {
+            result.push({ invoice: invoices[i], amount: amountParts[i] });
+        }
+    } else if (amountParts.length > invoices.length) {
+        for (let i = 0; i < invoices.length; i++) {
+            result.push({ invoice: invoices[i], amount: amountParts[i] || 0 });
+        }
+    } else {
+        for (let i = 0; i < invoices.length; i++) {
+            if (i < amountParts.length) {
+                result.push({ invoice: invoices[i], amount: amountParts[i] });
+            } else {
+                const remainingInvoices = invoices.length - amountParts.length + 1;
+                const lastAmount = amountParts[amountParts.length - 1] / remainingInvoices;
+                result.push({ invoice: invoices[i], amount: lastAmount });
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ * Split comma-separated values into multiple rows (UPDATED WITH SMART PAIRING)
  * @param {array} data - Original data
  * @param {string} field - Field to split
  * @returns {array} - Expanded data
@@ -657,19 +732,22 @@ function splitByComma(data, field = 'InvoiceNumber') {
     
     data.forEach(row => {
         const fieldValue = row[field] || row['Invoice Number'];
+        const amountField = row['InvoiceAmount'] || row['Invoice Amount'] || 0;
         
         if (fieldValue && typeof fieldValue === 'string' && fieldValue.includes(',')) {
-            const values = fieldValue.split(',').map(v => v.trim());
-            const baseAmount = row.InvoiceAmount || row.CheckAmount || 0;
-            const splitAmount = values.length > 0 ? baseAmount / values.length : baseAmount;
+            // Use advanced splitting with amount pairing
+            const splits = splitInvoiceAndAmountsComma(fieldValue, amountField.toString());
             
-            values.forEach(val => {
+            splits.forEach(split => {
                 result.push({
                     ...row,
-                    [field]: val,
-                    InvoiceAmount: splitAmount,
+                    [field]: split.invoice,
+                    'Invoice Number': split.invoice,
+                    InvoiceAmount: split.amount,
+                    'Invoice Amount': split.amount,
                     _splitFrom: fieldValue,
-                    _splitCount: values.length
+                    _splitCount: splits.length,
+                    _splitType: 'COMMA_DELIMITED'
                 });
             });
         } else {
@@ -682,7 +760,80 @@ function splitByComma(data, field = 'InvoiceNumber') {
 }
 
 /**
- * Expand range values into multiple rows
+ * ADVANCED: Split hyphen-delimited invoice numbers with smart prefix detection
+ * @param {string} invoiceStr - Invoice string (e.g., "90003904-3905")
+ * @returns {array} - Array of expanded invoice numbers
+ */
+function splitInvoiceReferencesHyphen(invoiceStr) {
+    if (!invoiceStr || !invoiceStr.includes('-')) return [invoiceStr?.trim() || ''];
+    const parts = invoiceStr.split('-').map(p => p.trim()).filter(p => p);
+    if (parts.length <= 1) return [invoiceStr.trim()];
+    const firstPart = parts[0];
+    const otherParts = parts.slice(1);
+    const hasShortSuffixes = otherParts.every(p => p.length < firstPart.length);
+    if (hasShortSuffixes && firstPart.length > 3) {
+        const firstSuffix = otherParts[0];
+        const prefixLength = firstPart.length - firstSuffix.length;
+        if (prefixLength > 0) {
+            const commonPrefix = firstPart.substring(0, prefixLength);
+            return [firstPart, ...otherParts.map(suffix => commonPrefix + suffix)];
+        }
+    }
+    return parts;
+}
+
+/**
+ * ADVANCED: Split hyphen-delimited invoices AND amounts with intelligent pairing
+ * @param {string} invoiceStr - Invoice numbers (e.g., "90003904-3905")
+ * @param {string} amountStr - Amounts (e.g., "1365.00-1575.00")
+ * @returns {array} - Array of {invoice, amount} pairs
+ */
+function splitInvoiceAndAmountsHyphen(invoiceStr, amountStr) {
+    const invoices = splitInvoiceReferencesHyphen(invoiceStr);
+    const amountParts = [];
+    if (amountStr && amountStr.toString().includes('-')) {
+        const parts = amountStr.toString().split('-').map(p => p.trim()).filter(p => p);
+        for (const part of parts) {
+            const num = parseFloat(part.replace(/[^0-9.]/g, ''));
+            if (!isNaN(num) && num > 0) {
+                amountParts.push(num);
+            }
+        }
+    }
+    if (amountParts.length === 0) {
+        const singleAmount = parseFloat((amountStr || '0').toString().replace(/[^0-9.-]/g, '')) || 0;
+        amountParts.push(Math.abs(singleAmount));
+    }
+    const result = [];
+    if (amountParts.length === 1 && invoices.length > 1) {
+        const amountPerInvoice = amountParts[0] / invoices.length;
+        for (const inv of invoices) {
+            result.push({ invoice: inv, amount: amountPerInvoice });
+        }
+    } else if (amountParts.length === invoices.length) {
+        for (let i = 0; i < invoices.length; i++) {
+            result.push({ invoice: invoices[i], amount: amountParts[i] });
+        }
+    } else if (amountParts.length > invoices.length) {
+        for (let i = 0; i < invoices.length; i++) {
+            result.push({ invoice: invoices[i], amount: amountParts[i] || 0 });
+        }
+    } else {
+        for (let i = 0; i < invoices.length; i++) {
+            if (i < amountParts.length) {
+                result.push({ invoice: invoices[i], amount: amountParts[i] });
+            } else {
+                const remainingInvoices = invoices.length - amountParts.length + 1;
+                const lastAmount = amountParts[amountParts.length - 1] / remainingInvoices;
+                result.push({ invoice: invoices[i], amount: lastAmount });
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ * Expand range values into multiple rows (UPDATED WITH SMART PAIRING)
  * @param {array} data - Original data
  * @param {string} field - Field with range
  * @returns {array} - Expanded data
@@ -691,26 +842,25 @@ function expandRange(data, field = 'InvoiceNumber') {
     const result = [];
     
     data.forEach(row => {
-        const fieldValue = row[field];
+        const fieldValue = row[field] || row['Invoice Number'];
+        const amountField = row['InvoiceAmount'] || row['Invoice Amount'] || 0;
         
-        if (fieldValue && typeof fieldValue === 'string' && /(\d+)-(\d+)/.test(fieldValue)) {
-            const match = fieldValue.match(/(\d+)-(\d+)/);
-            const start = parseInt(match[1]);
-            const end = parseInt(match[2]);
+        if (fieldValue && typeof fieldValue === 'string' && fieldValue.includes('-')) {
+            // Use advanced splitting with amount pairing
+            const splits = splitInvoiceAndAmountsHyphen(fieldValue, amountField.toString());
             
-            const baseAmount = row.InvoiceAmount || row.CheckAmount || 0;
-            const count = end - start + 1;
-            const splitAmount = count > 0 ? baseAmount / count : baseAmount;
-            
-            for (let i = start; i <= end; i++) {
+            splits.forEach(split => {
                 result.push({
                     ...row,
-                    [field]: String(i),
-                    InvoiceAmount: splitAmount,
+                    [field]: split.invoice,
+                    'Invoice Number': split.invoice,
+                    InvoiceAmount: split.amount,
+                    'Invoice Amount': split.amount,
                     _expandedFrom: fieldValue,
-                    _expandCount: count
+                    _expandCount: splits.length,
+                    _splitType: 'HYPHEN_RANGE'
                 });
-            }
+            });
         } else {
             result.push(row);
         }
@@ -894,5 +1044,10 @@ module.exports = {
     expandRange,
     convertDateFormat,
     fillDownEmpty,
-    combineSheets
+    combineSheets,
+    // New advanced splitting functions
+    splitInvoiceReferencesWithPrefix,
+    splitInvoiceAndAmountsComma,
+    splitInvoiceReferencesHyphen,
+    splitInvoiceAndAmountsHyphen
 };
