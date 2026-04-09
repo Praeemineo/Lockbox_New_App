@@ -33,6 +33,11 @@
         "sourceField": "Invoice Number",
         "targetField": "CompanyCode",
         "apiField": "CompanyCode"
+      },
+      {
+        "sourceField": "Invoice Number",
+        "targetField": "FiscalYear",
+        "apiField": "FiscalYear"
       }
     ],
     "createdAt": "2026-02-16T12:00:00Z",

@@ -7159,9 +7159,10 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
             // Reference Document Rule fields
             xblnr: row.XBLNR || '',
             belnr: row.BELNR || '',
-            // RULE-001 enriched fields - MUST match SAP API field names
+            // RULE_FETCH_ACCT_DOC enriched fields - MUST match SAP API field names
             PaymentReference: enrichedPayRef, // AccountingDocument from SAP (matches SAP Lockbox API)
-            CompanyCode: row.CompanyCode || '' // CompanyCode from SAP (for reporting only)
+            CompanyCode: row.CompanyCode || '', // CompanyCode from SAP (for reporting only)
+            FiscalYear: row.FiscalYear || '' // FiscalYear from SAP (for clearing entry)
         });
     }
     
@@ -7171,7 +7172,7 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
     Object.entries(checkGroups).forEach(([checkKey, checkData]) => {
         console.log(`   Check: ${checkKey}, Invoices: ${checkData.invoices.length}`);
         checkData.invoices.forEach((inv, i) => {
-            console.log(`      Invoice ${i+1}: Number="${inv.invoiceNumber}", Amount=${inv.invoiceAmount}, PaymentRef="${inv.PaymentReference || 'EMPTY'}"`);
+            console.log(`      Invoice ${i+1}: Number="${inv.invoiceNumber}", Amount=${inv.invoiceAmount}, PaymentRef="${inv.PaymentReference || 'EMPTY'}", FiscalYear="${inv.FiscalYear || 'EMPTY'}"`);
         });
     });
     console.log('');
@@ -7278,10 +7279,11 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
                 const invoiceNumber = (inv.invoiceNumber || inv['Invoice Number'] || '').toString().trim();
                 const xblnr = (inv.xblnr || '').toString().trim();
                 const belnr = (inv.belnr || '').toString().trim();
-                const enrichedPaymentRef = (inv.PaymentReference || '').toString().trim(); // From RULE-001 (SAP API field name)
-                const companyCode = (inv.CompanyCode || '').toString().trim(); // From RULE-001
+                const enrichedPaymentRef = (inv.PaymentReference || '').toString().trim(); // From RULE_FETCH_ACCT_DOC (SAP API field name)
+                const companyCode = (inv.CompanyCode || '').toString().trim(); // From RULE_FETCH_ACCT_DOC
+                const fiscalYear = (inv.FiscalYear || '').toString().trim(); // From RULE_FETCH_ACCT_DOC
                 
-                console.log(`    Rule evaluation: InvoiceNumber=${invoiceNumber}, XBLNR=${xblnr}, BELNR=${belnr}, EnrichedPaymentRef=${enrichedPaymentRef}, CompanyCode=${companyCode}`);
+                console.log(`    Rule evaluation: InvoiceNumber=${invoiceNumber}, XBLNR=${xblnr}, BELNR=${belnr}, EnrichedPaymentRef=${enrichedPaymentRef}, CompanyCode=${companyCode}, FiscalYear=${fiscalYear}`);
                 
                 // Use ONLY enriched PaymentReference from RULE-001 (dynamic API-based enrichment)
                 // OLD Reference Document Rules (XBLNR_THEN_BELNR) are deprecated
@@ -7296,7 +7298,7 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
                 
                 // Build clearing entry - OMIT empty optional fields (don't send empty strings)
                 const clearing = {
-                    // PaymentReference: RULE-001 enriched value or determined by reference document rule
+                    // PaymentReference: RULE_FETCH_ACCT_DOC enriched value or determined by reference document rule
                     PaymentReference: paymentReference.substring(0, 30),
                     // FROM FILE: Net payment amount - format with 2 decimal places
                     NetPaymentAmountInPaytCurrency: parseFloat(inv.invoiceAmount || 0).toFixed(2),
@@ -7305,6 +7307,12 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
                     // DEFAULT: Currency
                     Currency: currency
                 };
+                
+                // Add FiscalYear if available from RULE_FETCH_ACCT_DOC enrichment
+                if (fiscalYear) {
+                    clearing.FiscalYear = fiscalYear;
+                    console.log(`    ✅ Adding FiscalYear to clearing entry: ${fiscalYear}`);
+                }
                 
                 // Note: CompanyCode is stored in mappedData for reporting but NOT sent in SAP payload
                 // Note: Customer (PaymentAdviceAccount) is stored separately for GET API call after POST
@@ -8671,7 +8679,7 @@ app.post('/api/lockbox/process', upload.single('file'), async (req, res) => {
             console.log(`   Total rows: ${extractedData.length}`);
             if (extractedData.length > 0 && extractedData.length <= 10) {
                 extractedData.forEach((row, i) => {
-                    console.log(`   Row ${i+1}: InvoiceNumber="${row.InvoiceNumber || row['Invoice Number']}", InvoiceAmount=${row.InvoiceAmount || row['Invoice Amount']}, PaymentReference="${row.PaymentReference || 'EMPTY'}", CompanyCode="${row.CompanyCode || 'EMPTY'}"`);
+                    console.log(`   Row ${i+1}: InvoiceNumber="${row.InvoiceNumber || row['Invoice Number']}", InvoiceAmount=${row.InvoiceAmount || row['Invoice Amount']}, PaymentReference="${row.PaymentReference || 'EMPTY'}", CompanyCode="${row.CompanyCode || 'EMPTY'}", FiscalYear="${row.FiscalYear || 'EMPTY'}"`);
                 });
             } else if (extractedData.length > 10) {
                 console.log(`   Showing first 3 rows only...`);
