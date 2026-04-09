@@ -7308,12 +7308,7 @@ function buildStandardPayload(extractedData, lockboxId, runId) {
                     Currency: currency
                 };
                 
-                // Add FiscalYear if available from RULE_FETCH_ACCT_DOC enrichment
-                if (fiscalYear) {
-                    clearing.FiscalYear = fiscalYear;
-                    console.log(`    ✅ Adding FiscalYear to clearing entry: ${fiscalYear}`);
-                }
-                
+                // Note: FiscalYear is fetched by RULE_FETCH_ACCT_DOC for reporting but NOT sent to SAP API
                 // Note: CompanyCode is stored in mappedData for reporting but NOT sent in SAP payload
                 // Note: Customer (PaymentAdviceAccount) is stored separately for GET API call after POST
                 
