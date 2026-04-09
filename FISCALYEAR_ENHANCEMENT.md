@@ -1,7 +1,27 @@
-# FiscalYear Enhancement - RULE_FETCH_ACCT_DOC
+# FiscalYear Enhancement - RULE_FETCH_ACCT_DOC (FOR REPORTING ONLY)
+
+## ⚠️ IMPORTANT UPDATE
+
+**FiscalYear is fetched and stored for reporting purposes ONLY.**  
+**It is NOT sent to SAP in the clearing entry payload** (SAP API rejects it).
+
+---
 
 ## Overview
-Enhanced `RULE_FETCH_ACCT_DOC` to fetch, store, and pass `FiscalYear` from SAP API to the clearing entries during lockbox production run.
+Enhanced `RULE_FETCH_ACCT_DOC` to fetch and store `FiscalYear` from SAP API for reporting and audit purposes. The FiscalYear is stored in the enriched data but is NOT included in the SAP production run payload.
+
+---
+
+## SAP API Error (Resolved)
+
+**Error Received:**
+```
+Property 'FiscalYear' is invalid
+```
+
+**Root Cause:** SAP Lockbox API (`API_LOCKBOXPOST_IN`) does not accept `FiscalYear` field in the `to_LockboxClearing` entry structure.
+
+**Resolution:** FiscalYear is still fetched and stored for internal use but is NOT sent to SAP.
 
 ---
 
@@ -147,29 +167,29 @@ Enriched Row:
 
 ---
 
-### STAGE 5: Payload Building
+### STAGE 5: Payload Building (FiscalYear NOT Included)
 
 **Clearing Entry Creation:**
 
 ```javascript
-// From enriched data
-const fiscalYear = inv.FiscalYear;  // "2025"
+// From enriched data (for reporting)
+const fiscalYear = inv.FiscalYear;  // "2025" - stored but NOT sent to SAP
 
-// Build clearing entry
+// Build clearing entry (FiscalYear excluded)
 const clearing = {
     PaymentReference: "4900012345",
     NetPaymentAmountInPaytCurrency: "1365.00",
     DeductionAmountInPaytCurrency: "0.00",
-    Currency: "USD",
-    FiscalYear: "2025"                ← ✅ Included in SAP payload
+    Currency: "USD"
+    // FiscalYear: NOT included (SAP API rejects it)
 };
 ```
 
 ---
 
-## SAP Payload Example
+## SAP Payload Example (FiscalYear EXCLUDED)
 
-### Complete Payload with FiscalYear
+### Complete Payload WITHOUT FiscalYear
 
 ```json
 {
@@ -189,15 +209,13 @@ const clearing = {
               "PaymentReference": "4900012345",
               "NetPaymentAmountInPaytCurrency": "1365.00",
               "DeductionAmountInPaytCurrency": "0.00",
-              "Currency": "USD",
-              "FiscalYear": "2025"
+              "Currency": "USD"
             },
             {
               "PaymentReference": "4900012346",
               "NetPaymentAmountInPaytCurrency": "1575.00",
               "DeductionAmountInPaytCurrency": "0.00",
-              "Currency": "USD",
-              "FiscalYear": "2025"
+              "Currency": "USD"
             }
           ]
         }
@@ -206,6 +224,8 @@ const clearing = {
   }
 }
 ```
+
+**Note:** FiscalYear is NOT included in the payload sent to SAP.
 
 ---
 
@@ -394,12 +414,17 @@ if (fiscalYear) {  // This check prevents empty strings
 
 **What Changed:**
 1. ✅ RULE_FETCH_ACCT_DOC now fetches FiscalYear from SAP
-2. ✅ FiscalYear stored in enriched data
-3. ✅ FiscalYear passed to SAP clearing entries
-4. ✅ Debug logging includes FiscalYear
+2. ✅ FiscalYear stored in enriched data for reporting
+3. ❌ FiscalYear is NOT sent to SAP clearing entries (API rejects it)
+4. ✅ Debug logging includes FiscalYear (for internal tracking)
 5. ✅ Works with both single and split invoices
 
-**Status:** Ready for production testing
+**FiscalYear Usage:**
+- **Stored:** Yes (in enrichedData, for reporting and audit)
+- **Sent to SAP:** No (SAP Lockbox API does not accept this field)
+- **Purpose:** Internal reporting, audit trail, fiscal period tracking
+
+**Status:** ✅ Ready for production (without FiscalYear in SAP payload)
 
 ---
 
